@@ -7,10 +7,10 @@ import { EditorTextoComponent } from '../shared/editor-texto.component';
 import { Caso, CasoResumen, Fila, Grupo, Participacion, Sesion, mensajeError } from '../core/api.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { AuthService } from '../core/auth.service';
 
 const enlaces = [
   { href: '/docente/casos', texto: 'Mis Casos', exacto: true },
-  { href: '/docente/casos/nuevo', texto: 'Crear Caso', exacto: true },
   { href: '/docente/grupos', texto: 'Grupos', exacto: true },
   { href: '/docente/seguimiento', texto: 'Reportes' }
 ];
@@ -53,7 +53,7 @@ export class PanelDocenteComponent { enlaces = enlaces; }
   template: `
     <app-marco [enlaces]="enlaces">
       <section class="card stack">
-        <div class="row"><h1>Mis casos</h1><a mat-stroked-button routerLink="/docente/casos/nuevo">Crear caso</a></div>
+        <div class="row"><h1>Mis casos</h1>@if (puedeEditar()) { <a mat-stroked-button routerLink="/docente/casos/nuevo">Crear caso</a> }</div>
         @for (caso of casos(); track caso.id) {
           <a class="item" [routerLink]="['/docente/casos', caso.id]">
             <small>{{ caso.estado }} · {{ caso.bloques }} escenarios · {{ caso.preguntas }} preguntas</small>
@@ -67,7 +67,9 @@ export class PanelDocenteComponent { enlaces = enlaces; }
 export class CasosComponent {
   enlaces = enlaces;
   private http = inject(HttpClient);
+  private auth = inject(AuthService);
   casos = signal<CasoResumen[]>([]);
+  puedeEditar() { return this.auth.puede('EDITAR'); }
   constructor() { this.http.get<CasoResumen[]>('/api/docente/casos').subscribe((dato) => this.casos.set(dato)); }
 }
 
@@ -264,10 +266,15 @@ export class EditorCasoComponent {
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private auth = inject(AuthService);
   private claveBoceto = 'dilema-boceto-nuevo';
 
   constructor() {
     const id = this.route.snapshot.paramMap.get('id');
+    if (!id && !this.auth.puede('EDITAR')) {
+      this.router.navigateByUrl('/docente/casos');
+      return;
+    }
     this.claveBoceto = `dilema-boceto-${id ?? 'nuevo'}`;
     const guardado = localStorage.getItem(this.claveBoceto);
     if (guardado) {
@@ -289,7 +296,9 @@ export class EditorCasoComponent {
       });
     }
   }
-  bloqueado() { return this.caso.estado === 'PUBLICADO' || this.caso.estado === 'ARCHIVADO'; }
+  bloqueado() {
+    return !this.auth.puede('EDITAR') || this.caso.estado === 'PUBLICADO' || this.caso.estado === 'ARCHIVADO';
+  }
   sincronizarPersona(indice: number) {
     const nombre = this.caso.personajes[indice]?.nombre;
     if (!nombre) return;
@@ -391,7 +400,7 @@ export class EditorCasoComponent {
         @if (error()) { <p class="error">{{ error() }}</p> }
         <div class="dos">
           <section class="card stack">
-            <div class="row"><h2>Mis grupos</h2><button mat-stroked-button type="button" (click)="nuevo.set(!nuevo())">Nuevo grupo</button></div>
+            <div class="row"><h2>Mis grupos</h2>@if (puedeGestionar()) { <button mat-stroked-button type="button" (click)="nuevo.set(!nuevo())">Nuevo grupo</button> }</div>
             @if (nuevo()) {
               <label class="field"><span>Nombre</span><input [(ngModel)]="nombre" /></label>
               <label class="field"><span>Semestre</span><input [(ngModel)]="espacio" placeholder="2026-I" /></label>
@@ -413,12 +422,16 @@ export class EditorCasoComponent {
                 </div>
                 <a mat-flat-button color="primary" [routerLink]="['/docente/programar']" [queryParams]="{ grupo: grupo.id }">Asignar caso a grupo</a>
               </div>
+              <label class="field"><span>Nombre del estudiante</span>
+                <input [(ngModel)]="nombres[grupo.id]" placeholder="Nombre completo" />
+              </label>
               <label class="field"><span>Correo institucional</span>
                 <div class="row">
                   <input [(ngModel)]="correos[grupo.id]" placeholder="estudiante@universidad.edu" />
                   <button mat-stroked-button type="button" (click)="agregar(grupo.id)">Matricular</button>
                 </div>
               </label>
+              <p class="sub">El estudiante no recibe contraseña. El código llega al agendar la sesión.</p>
               <table>
                 <thead><tr><th>Nombre</th><th>Correo</th><th></th></tr></thead>
                 <tbody>
@@ -448,7 +461,10 @@ export class GruposComponent {
   nombre = '';
   espacio = '';
   correos: Record<number, string> = {};
+  nombres: Record<number, string> = {};
+  private auth = inject(AuthService);
   error = signal('');
+  puedeGestionar() { return this.auth.puede('GESTIONAR_ESPACIOS_ACADEMICOS'); }
   constructor() { this.cargar(); }
   crear() {
     this.http.post<Grupo>('/api/docente/grupos', { nombre: this.nombre, espacioAcademico: this.espacio }).subscribe({
@@ -457,7 +473,7 @@ export class GruposComponent {
     });
   }
   agregar(id: number) {
-    this.http.post(`/api/docente/grupos/${id}/estudiantes`, { email: this.correos[id] ?? '' }).subscribe({
+    this.http.post(`/api/docente/grupos/${id}/estudiantes`, { nombre: this.nombres[id] ?? '', email: this.correos[id] ?? '' }).subscribe({
       next: () => this.cargar(),
       error: (falla) => this.error.set(mensajeError(falla))
     });
