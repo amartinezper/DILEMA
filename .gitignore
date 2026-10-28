@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.DS_Store
+psicosim.db
+node_modules/
+dist/
+.angular/
+backend/target/
