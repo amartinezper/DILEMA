@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MarcoComponent } from '../shared/marco.component';
 import { EditorTextoComponent } from '../shared/editor-texto.component';
-import { Caso, CasoResumen, Fila, Grupo, Participacion, Sesion, mensajeError } from '../core/api.service';
+import { Bloque, Caso, CasoResumen, Fila, Grupo, Participacion, Sesion, mensajeError } from '../core/api.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { AuthService } from '../core/auth.service';
@@ -26,7 +26,8 @@ function casoVacio(): Caso {
     nombre: '', desarrolloSituacional: '', contexto: '', tiempoEstimadoMin: 30, sensible: false, advertencia: '',
     bloques: [{ nombre: 'Escenario 1', contexto: '', preguntas: [preguntaVacia()] }],
     rubrica: [],
-    personajes: [1, 2, 3, 4].map((n) => ({ nombre: `Persona ${n}`, descripcion: '', escenarios: [0] }))
+    personajes: [1, 2, 3, 4].map((n) => ({ nombre: `Persona ${n}`, descripcion: '', escenarios: [0] })),
+    repartoRubrica: 'PONDERADA'
   };
 }
 
@@ -145,15 +146,16 @@ interface PersonaEscena { id: string; nombre: string; color: string; x: number; 
                         <label class="field"><span>OPCIÓN</span><input [(ngModel)]="opcion.texto" [disabled]="bloqueado()" /></label>
                         <label class="check"><input type="checkbox" [checked]="opcion.correcta" [disabled]="bloqueado()" (change)="marcar(pregunta, $index)" /> <span>Correcta</span></label>
                         <label class="field"><span>POR QUÉ</span><input [(ngModel)]="opcion.explicacion" [disabled]="bloqueado()" /></label>
+                        <label class="field"><span>FUNDAMENTO</span><input [(ngModel)]="opcion.fundamento" [disabled]="bloqueado()" /></label>
                       </div>
                     }
                     @if (!bloqueado()) {
                       <button mat-stroked-button type="button" (click)="pregunta.opciones.push(opcionVacia())">Agregar opción</button>
-                      <button mat-stroked-button type="button" (click)="bloque.preguntas.splice($index, 1)">Quitar pregunta</button>
+                      <button mat-stroked-button type="button" (click)="quitarPregunta(bloque, $index)">Quitar pregunta</button>
                     }
                   </div>
                 }
-                @if (!bloqueado()) { <button mat-flat-button color="primary" type="button" (click)="bloque.preguntas.push(preguntaVacia())">Agregar pregunta</button> }
+                @if (!bloqueado()) { <button mat-flat-button color="primary" type="button" (click)="agregarPregunta(bloque)">Agregar pregunta</button> }
               </article>
             }
           </section>
@@ -162,9 +164,21 @@ interface PersonaEscena { id: string; nombre: string; color: string; x: number; 
         @if (activo() === 'rubrica') {
           <section class="card stack">
             <p class="sub">Cada pregunta tiene su criterio. Los pesos van de 0,0 a 5,0 y deben sumar 5,0.</p>
+            <div class="row">
+              <button mat-stroked-button type="button" [disabled]="bloqueado()" (click)="elegirReparto('PONDERADA')">Ponderada</button>
+              <button mat-stroked-button type="button" [disabled]="bloqueado()" (click)="elegirReparto('EQUITATIVA')">Equitativa</button>
+              <span class="sub">{{ caso.repartoRubrica === 'EQUITATIVA' ? 'El sistema reparte 5,0.' : 'Tú fijas cada peso.' }}</span>
+            </div>
             @for (bloque of caso.bloques; track $index) {
               @for (pregunta of bloque.preguntas; track $index) {
-                <div class="row"><span>{{ bloque.nombre }} · {{ pregunta.criterio || 'Sin criterio' }}</span><strong>{{ pregunta.peso || 0 }}</strong></div>
+                <div class="row">
+                  <span>{{ bloque.nombre }} · {{ pregunta.criterio || 'Sin criterio' }}</span>
+                  @if (caso.repartoRubrica === 'EQUITATIVA') {
+                    <strong>{{ pregunta.peso || 0 }}</strong>
+                  } @else {
+                    <input type="number" min="0" max="5" step="0.1" [(ngModel)]="pregunta.peso" [disabled]="bloqueado()" />
+                  }
+                </div>
               }
             }
             <p>Suma actual: {{ suma() }}</p>
@@ -285,8 +299,7 @@ export class EditorCasoComponent {
     if (id) {
       this.http.get<Caso>(`/api/docente/casos/${id}`).subscribe({
         next: (dato) => {
-          this.caso = dato;
-          this.caso.personajes ??= [];
+          this.caso = this.recibir(dato);
           this.personas.update((lista) => lista.map((persona, indice) => ({
             ...persona,
             nombre: this.caso.personajes[indice]?.nombre || persona.nombre
@@ -306,10 +319,35 @@ export class EditorCasoComponent {
     this.guardarBoceto();
   }
   suma() {
-    return this.caso.bloques.reduce((total, bloque) => total + bloque.preguntas.reduce((peso, pregunta) => peso + Number(pregunta.peso || 0), 0), 0);
+    return Math.round(this.caso.bloques.reduce((total, bloque) => total + bloque.preguntas.reduce((peso, pregunta) => peso + Number(pregunta.peso || 0), 0), 0) * 10) / 10;
+  }
+  elegirReparto(modo: 'PONDERADA' | 'EQUITATIVA') {
+    this.caso.repartoRubrica = modo;
+    if (modo === 'EQUITATIVA') this.repartir();
+  }
+  repartir() {
+    const preguntas = this.caso.bloques.flatMap((bloque) => bloque.preguntas);
+    const cantidad = preguntas.length;
+    if (!cantidad) return;
+    const parte = Math.floor((5 / cantidad) * 10) / 10;
+    let acumulado = 0;
+    preguntas.forEach((pregunta, indice) => {
+      const peso = indice === cantidad - 1 ? Math.round((5 - acumulado) * 10) / 10 : parte;
+      acumulado = Math.round((acumulado + peso) * 10) / 10;
+      pregunta.peso = peso;
+    });
   }
   agregarBloque() {
     this.caso.bloques.push({ nombre: `Escenario académico ${this.caso.bloques.length + 1}`, contexto: '', preguntas: [preguntaVacia()] });
+    if (this.caso.repartoRubrica === 'EQUITATIVA') this.repartir();
+  }
+  agregarPregunta(bloque: Bloque) {
+    bloque.preguntas.push(preguntaVacia());
+    if (this.caso.repartoRubrica === 'EQUITATIVA') this.repartir();
+  }
+  quitarPregunta(bloque: Bloque, indice: number) {
+    bloque.preguntas.splice(indice, 1);
+    if (this.caso.repartoRubrica === 'EQUITATIVA') this.repartir();
   }
   marcar(pregunta: { opciones: { correcta: boolean }[] }, indice: number) {
     pregunta.opciones.forEach((opcion, i) => opcion.correcta = i === indice);
@@ -339,7 +377,7 @@ export class EditorCasoComponent {
       : this.http.post<Caso>('/api/docente/casos', this.caso);
     pedido.subscribe({
       next: (dato) => {
-        this.caso = dato;
+        this.caso = this.recibir(dato);
         this.ok.set('Borrador guardado.');
         if (!this.route.snapshot.paramMap.get('id')) this.router.navigate(['/docente/casos', dato.id]);
       },
@@ -349,20 +387,20 @@ export class EditorCasoComponent {
   publicar() {
     this.guardarYluego(() => {
       this.http.post<Caso>(`/api/docente/casos/${this.caso.id}/publicar`, {}).subscribe({
-        next: (dato) => { this.caso = dato; this.ok.set('Caso publicado. Ya se puede programar.'); },
+        next: (dato) => { this.caso = this.recibir(dato); this.ok.set('Caso publicado. Ya se puede programar.'); },
         error: (falla) => this.error.set(mensajeError(falla))
       });
     });
   }
   archivar() {
     this.http.post<Caso>(`/api/docente/casos/${this.caso.id}/archivar`, {}).subscribe({
-      next: (dato) => { this.caso = dato; this.ok.set('Caso archivado.'); },
+      next: (dato) => { this.caso = this.recibir(dato); this.ok.set('Caso archivado.'); },
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
   despublicar() {
     this.http.post<Caso>(`/api/docente/casos/${this.caso.id}/despublicar`, {}).subscribe({
-      next: (dato) => { this.caso = dato; this.ok.set('El caso volvió a borrador.'); },
+      next: (dato) => { this.caso = this.recibir(dato); this.ok.set('El caso volvió a borrador.'); },
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
@@ -378,9 +416,14 @@ export class EditorCasoComponent {
       ? this.http.put<Caso>(`/api/docente/casos/${this.caso.id}`, this.caso)
       : this.http.post<Caso>('/api/docente/casos', this.caso);
     pedido.subscribe({
-      next: (dato) => { this.caso = dato; luego(); },
+      next: (dato) => { this.caso = this.recibir(dato); luego(); },
       error: (falla) => this.error.set(mensajeError(falla))
     });
+  }
+  private recibir(dato: Caso) {
+    dato.repartoRubrica ??= 'PONDERADA';
+    dato.personajes ??= [];
+    return dato;
   }
   private guardarBoceto() {
     localStorage.setItem(this.claveBoceto, JSON.stringify({ fondo: this.fondoActivo(), personas: this.personas() }));

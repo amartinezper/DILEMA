@@ -72,16 +72,16 @@ public class DatosIniciales implements CommandLineRunner {
         caso.docente = docente;
         caso.escenarios.add(escenario(caso, "Encuadre", "El grupo acaba de llegar. Todavía no hay un acuerdo sobre cómo se va a conversar.", 0,
                 pregunta(caso, "¿Cuál es el primer paso al abrir el espacio?", "Piensa en el permiso antes que en la solución.", "Encuadre ético", "2.0", 0,
-                        opcion("Presentarte y pedir permiso para conversar.", true, "El encuadre reconoce a las personas antes de intervenir. La relación se construye cuando el otro autoriza la conversación.", 0),
-                        opcion("Dar la instrucción y pasar de inmediato a la decisión.", false, "Saltarse el permiso concentra la voz de quien facilita y deja fuera a quien todavía no habló.", 1))));
+                        opcion("Presentarte y pedir permiso para conversar.", true, "El encuadre reconoce a las personas antes de intervenir. La relación se construye cuando el otro autoriza la conversación.", "El encuadre ético pide consentimiento antes de intervenir.", 0),
+                        opcion("Dar la instrucción y pasar de inmediato a la decisión.", false, "Saltarse el permiso concentra la voz de quien facilita y deja fuera a quien todavía no habló.", "Dirigir sin permiso desplaza la voz del grupo.", 1))));
         caso.escenarios.add(escenario(caso, "Intervención", "Una persona insiste en decidir ya y el resto guarda silencio.", 1,
                 pregunta(caso, "¿Cómo respondes a la presión de cerrar la decisión?", null, "Participación del grupo", "1.5", 0,
-                        opcion("Abrir un turno breve para que cada persona hable.", true, "El turno devuelve la palabra a quienes no la habían tomado.", 0),
-                        opcion("Aceptar la propuesta de quien insiste, para no alargar la sesión.", false, "Ceder a la prisa convierte el silencio del grupo en un falso acuerdo.", 1))));
+                        opcion("Abrir un turno breve para que cada persona hable.", true, "El turno devuelve la palabra a quienes no la habían tomado.", "La participación se sostiene dando la palabra, no cerrándola.", 0),
+                        opcion("Aceptar la propuesta de quien insiste, para no alargar la sesión.", false, "Ceder a la prisa convierte el silencio del grupo en un falso acuerdo.", "La prisa no equivale a consenso.", 1))));
         caso.escenarios.add(escenario(caso, "Cierre", "La conversación ya produjo una idea, pero no quedó escrita.", 2,
                 pregunta(caso, "¿Qué dejas registrado al cerrar?", null, "Cierre y registro", "1.5", 0,
-                        opcion("Los acuerdos, los disensos y el siguiente paso.", true, "El registro permite retomar la conversación sin perder matices.", 0),
-                        opcion("Solo la decisión final, en una frase.", false, "Una frase única borra quién estuvo de acuerdo y qué quedó pendiente.", 1))));
+                        opcion("Los acuerdos, los disensos y el siguiente paso.", true, "El registro permite retomar la conversación sin perder matices.", "La memoria del grupo incluye lo que no se cerró.", 0),
+                        opcion("Solo la decisión final, en una frase.", false, "Una frase única borra quién estuvo de acuerdo y qué quedó pendiente.", "Reducir el cierre a una frase pierde el disenso.", 1))));
         String[] nombres = {"Ana", "Luis", "Marta", "Pedro"};
         for (String nombre : nombres) {
             Personaje personaje = new Personaje();
@@ -165,7 +165,7 @@ public class DatosIniciales implements CommandLineRunner {
         return pregunta;
     }
 
-    private Opcion opcion(String texto, boolean correcta, String explicacion, int orden) {
+    private Opcion opcion(String texto, boolean correcta, String explicacion, String fundamento, int orden) {
         Opcion opcion = new Opcion();
         opcion.descripcion = texto;
         opcion.esCorrecta = correcta;
@@ -173,6 +173,7 @@ public class DatosIniciales implements CommandLineRunner {
         Retroalimentacion retro = new Retroalimentacion();
         retro.opcion = opcion;
         retro.explicacion = explicacion;
+        retro.fundamento = fundamento;
         opcion.retroalimentacion = retro;
         return opcion;
     }

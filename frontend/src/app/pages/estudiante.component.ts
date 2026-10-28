@@ -173,6 +173,7 @@ export class BriefingComponent {
                     {{ pregunta.seleccionId === opcion.id ? 'Tu elección: ' : '' }}{{ opcion.texto }}
                     @if (pregunta.seleccionId === opcion.id || opcion.correcta) {
                       <p class="sub">{{ opcion.explicacion }}</p>
+                      @if (opcion.fundamento) { <p class="sub">{{ opcion.fundamento }}</p> }
                     }
                   </div>
                 }

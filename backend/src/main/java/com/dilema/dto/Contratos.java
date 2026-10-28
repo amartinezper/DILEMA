@@ -17,10 +17,11 @@ public final class Contratos {
     public record CriterioIn(Long id, String nombre, double peso, String descripcion) {}
     public record CasoIn(String nombre, String desarrolloSituacional, String contexto, Integer tiempoEstimadoMin,
                          boolean sensible, String advertencia, List<BloqueIn> bloques, List<CriterioIn> rubrica,
-                         List<PersonajeIn> personajes) {}
+                         List<PersonajeIn> personajes, String repartoRubrica) {}
     public record CasoVista(Long id, String nombre, String desarrolloSituacional, String contexto, Integer tiempoEstimadoMin,
                             boolean sensible, String advertencia, String estado, Long docenteId,
-                            List<BloqueIn> bloques, List<CriterioIn> rubrica, List<PersonajeIn> personajes) {}
+                            List<BloqueIn> bloques, List<CriterioIn> rubrica, List<PersonajeIn> personajes,
+                            String repartoRubrica) {}
     public record CasoResumen(Long id, String nombre, String estado, Integer tiempoEstimadoMin, int bloques, int preguntas) {}
 
     public record GrupoIn(String nombre, String espacioAcademico) {}

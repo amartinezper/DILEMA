@@ -23,6 +23,8 @@ public class Caso {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     public Catalogo.EstadoCaso estado = Catalogo.EstadoCaso.BORRADOR;
+    @Column(name = "reparto_rubrica", length = 20)
+    public String repartoRubrica = "PONDERADA";
 
     @OneToMany(mappedBy = "caso", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("orden")
