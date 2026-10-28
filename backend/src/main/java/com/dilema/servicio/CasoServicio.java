@@ -4,7 +4,6 @@ import com.dilema.dto.Contratos;
 import com.dilema.modelo.*;
 import com.dilema.repo.CasoRepo;
 import com.dilema.repo.EscenarioPersonajeRepo;
-import com.dilema.repo.SesionRepo;
 import com.dilema.servicio.diseno.ArbolCaso;
 import com.dilema.servicio.diseno.DirectorCaso;
 import jakarta.persistence.EntityManager;
@@ -17,16 +16,14 @@ import java.util.stream.Collectors;
 @Service
 public class CasoServicio {
     private final CasoRepo casos;
-    private final SesionRepo sesiones;
     private final EscenarioPersonajeRepo vinculos;
     private final ProxyOperacion proxy;
     private final Mapeador mapeador;
     private final EntityManager em;
 
-    public CasoServicio(CasoRepo casos, SesionRepo sesiones, EscenarioPersonajeRepo vinculos,
+    public CasoServicio(CasoRepo casos, EscenarioPersonajeRepo vinculos,
                         ProxyOperacion proxy, Mapeador mapeador, EntityManager em) {
         this.casos = casos;
-        this.sesiones = sesiones;
         this.vinculos = vinculos;
         this.proxy = proxy;
         this.mapeador = mapeador;
@@ -61,7 +58,6 @@ public class CasoServicio {
     public Contratos.CasoVista actualizar(Usuario docente, Long id, Contratos.CasoIn entrada) {
         proxy.crearCaso(docente);
         Caso caso = propio(docente, id);
-        estadoDe(caso).editar();
         vinculos.deleteByCasoId(caso.id);
         caso.escenarios.clear();
         caso.personajes.clear();
@@ -70,33 +66,6 @@ public class CasoServicio {
         em.flush();
         fijarCasoId(caso);
         enlazar(caso, entrada);
-        return mapeador.caso(caso, vinculos.findByCasoId(caso.id));
-    }
-
-    @Transactional
-    public Contratos.CasoVista publicar(Usuario docente, Long id) {
-        proxy.crearCaso(docente);
-        Caso caso = propio(docente, id);
-        estadoDe(caso).publicar(caso, validar(caso));
-        return mapeador.caso(caso, vinculos.findByCasoId(caso.id));
-    }
-
-    @Transactional
-    public Contratos.CasoVista archivar(Usuario docente, Long id) {
-        proxy.crearCaso(docente);
-        Caso caso = propio(docente, id);
-        estadoDe(caso).archivar(caso);
-        return mapeador.caso(caso, vinculos.findByCasoId(caso.id));
-    }
-
-    @Transactional
-    public Contratos.CasoVista despublicar(Usuario docente, Long id) {
-        proxy.crearCaso(docente);
-        Caso caso = propio(docente, id);
-        boolean usado = sesiones.findAll().stream().anyMatch(s -> s.caso.id.equals(caso.id))
-                || em.createQuery("select count(p) from Participacion p where p.casoId = :id", Long.class)
-                .setParameter("id", caso.id).getSingleResult() > 0;
-        estadoDe(caso).despublicar(caso, usado);
         return mapeador.caso(caso, vinculos.findByCasoId(caso.id));
     }
 
@@ -165,58 +134,5 @@ public class CasoServicio {
                 .map(v -> v.personajeId).collect(Collectors.toSet());
         new ArbolCaso.NodoCaso(caso, ligados).validar(errores);
         return errores;
-    }
-
-    private EstadoCaso estadoDe(Caso caso) {
-        return switch (caso.estado) {
-            case PUBLICADO -> new Publicado();
-            case ARCHIVADO -> new Archivado();
-            default -> new Borrador();
-        };
-    }
-    /** State (RF-09): cada estado acepta o rechaza editar, publicar, despublicar y archivar. */
-    interface EstadoCaso {
-        void editar();
-        void publicar(Caso caso, List<String> errores);
-        void archivar(Caso caso);
-        void despublicar(Caso caso, boolean usado);
-    }
-
-    class Borrador implements EstadoCaso {
-        public void editar() {}
-        public void publicar(Caso caso, List<String> errores) {
-            if (!errores.isEmpty()) throw new ReglaNegocio(String.join(" ", errores));
-            caso.estado = Catalogo.EstadoCaso.PUBLICADO;
-        }
-        public void archivar(Caso caso) {
-            throw new ReglaNegocio("INV-11: un borrador se publica. Solo un caso publicado se archiva.");
-        }
-        public void despublicar(Caso caso, boolean usado) {
-            throw new ReglaNegocio("Solo un caso publicado puede volver a borrador.");
-        }
-    }
-
-    class Publicado implements EstadoCaso {
-        public void editar() { throw new ReglaNegocio("RF-09: solo se edita un caso en borrador."); }
-        public void publicar(Caso caso, List<String> errores) {
-            throw new ReglaNegocio("RF-09: solo un borrador puede publicarse.");
-        }
-        public void archivar(Caso caso) { caso.estado = Catalogo.EstadoCaso.ARCHIVADO; }
-        public void despublicar(Caso caso, boolean usado) {
-            if (usado) throw new ReglaNegocio("INV-11: no se puede volver a borrador un caso que ya tiene sesiones o participaciones.");
-            caso.estado = Catalogo.EstadoCaso.BORRADOR;
-        }
-    }
-
-    class Archivado implements EstadoCaso {
-        public void editar() { throw new ReglaNegocio("RF-09: solo se edita un caso en borrador."); }
-        public void publicar(Caso caso, List<String> errores) {
-            if (!errores.isEmpty()) throw new ReglaNegocio(String.join(" ", errores));
-            caso.estado = Catalogo.EstadoCaso.PUBLICADO;
-        }
-        public void archivar(Caso caso) { throw new ReglaNegocio("El caso ya está archivado."); }
-        public void despublicar(Caso caso, boolean usado) {
-            throw new ReglaNegocio("Solo un caso publicado puede volver a borrador.");
-        }
     }
 }

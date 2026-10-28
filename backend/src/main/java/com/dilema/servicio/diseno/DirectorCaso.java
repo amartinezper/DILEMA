@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * Builder (RF-05). El director recorre nombre, desarrollo, contexto, escenarios y tiempo.
  * {@code obtenerBorrador} entrega el caso aunque el árbol esté incompleto.
- * La validez completa la revisa el Composite al publicar.
+ * La validez completa la revisa el Composite.
  */
 public class DirectorCaso {
     public Caso construirNuevo(com.dilema.modelo.Usuario docente, Contratos.CasoIn entrada) {
@@ -24,9 +24,6 @@ public class DirectorCaso {
     }
 
     public void reconstruir(Caso caso, Contratos.CasoIn entrada) {
-        if (caso.estado != Catalogo.EstadoCaso.BORRADOR) {
-            throw new ReglaNegocio("RF-09: solo se edita un caso en borrador.");
-        }
         ConstructorCasoNuevo constructor = new ConstructorCasoNuevo();
         constructor.sobre(caso);
         llenar(constructor, entrada);

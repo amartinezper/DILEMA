@@ -221,12 +221,7 @@ interface PersonaEscena { id: string; nombre: string; color: string; x: number; 
         @if (activo() === 'estado') {
           <section class="card stack">
             <p class="kicker">{{ caso.estado || 'SIN GUARDAR' }}</p>
-            <p class="sub">Publicar exige nombre, desarrollo, contexto, al menos un escenario con preguntas, una sola opción correcta, su explicación y pesos que sumen 5,0.</p>
             @if (!bloqueado()) { <button mat-flat-button color="primary" type="button" (click)="guardar()">Guardar borrador</button> }
-            @if (caso.id && caso.estado === 'BORRADOR') { <button mat-flat-button color="primary" type="button" (click)="publicar()">Publicar</button> }
-            @if (caso.estado === 'PUBLICADO') { <button mat-stroked-button type="button" (click)="archivar()">Archivar</button> }
-            @if (caso.estado === 'PUBLICADO') { <button mat-stroked-button type="button" (click)="despublicar()">Volver a borrador</button> }
-            @if (caso.estado === 'ARCHIVADO') { <button mat-flat-button color="primary" type="button" (click)="publicar()">Volver a publicar</button> }
             @if (caso.id) { <button mat-stroked-button type="button" (click)="duplicar()">Duplicar</button> }
           </section>
         }
@@ -384,39 +379,9 @@ export class EditorCasoComponent {
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
-  publicar() {
-    this.guardarYluego(() => {
-      this.http.post<Caso>(`/api/docente/casos/${this.caso.id}/publicar`, {}).subscribe({
-        next: (dato) => { this.caso = this.recibir(dato); this.ok.set('Caso publicado. Ya se puede programar.'); },
-        error: (falla) => this.error.set(mensajeError(falla))
-      });
-    });
-  }
-  archivar() {
-    this.http.post<Caso>(`/api/docente/casos/${this.caso.id}/archivar`, {}).subscribe({
-      next: (dato) => { this.caso = this.recibir(dato); this.ok.set('Caso archivado.'); },
-      error: (falla) => this.error.set(mensajeError(falla))
-    });
-  }
-  despublicar() {
-    this.http.post<Caso>(`/api/docente/casos/${this.caso.id}/despublicar`, {}).subscribe({
-      next: (dato) => { this.caso = this.recibir(dato); this.ok.set('El caso volvió a borrador.'); },
-      error: (falla) => this.error.set(mensajeError(falla))
-    });
-  }
   duplicar() {
     this.http.post<Caso>(`/api/docente/casos/${this.caso.id}/duplicar`, {}).subscribe({
       next: (dato) => this.router.navigate(['/docente/casos', dato.id]),
-      error: (falla) => this.error.set(mensajeError(falla))
-    });
-  }
-  private guardarYluego(luego: () => void) {
-    if (this.caso.estado && this.caso.estado !== 'BORRADOR') { luego(); return; }
-    const pedido = this.caso.id
-      ? this.http.put<Caso>(`/api/docente/casos/${this.caso.id}`, this.caso)
-      : this.http.post<Caso>('/api/docente/casos', this.caso);
-    pedido.subscribe({
-      next: (dato) => { this.caso = this.recibir(dato); luego(); },
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
