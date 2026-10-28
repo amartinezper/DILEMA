@@ -40,6 +40,8 @@ h3 { font-size: 15px; font-weight: 650; }
 .main { padding: 22px 24px 40px; }
 .login-page { min-height: 100vh; display: grid; grid-template-rows: 52px 1fr; }
 .login-wrap { display: grid; place-items: center; padding: 24px; }
+.ingreso-dos { grid-template-columns: repeat(auto-fit, minmax(280px, 420px)); gap: 16px; justify-content: center; align-items: start; }
+.ingreso-dos mat-card { width: 100%; }
 mat-form-field { width: 100%; }
 mat-toolbar.topbar { height: 56px; }
 .login-card { width: min(460px, 100%); background: var(--paper); border: 1px solid var(--line); padding: 28px; }

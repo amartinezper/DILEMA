@@ -28,5 +28,7 @@ docker compose up --build
 | Rol | Correo | Acceso |
 |-----|--------|--------|
 | Estudiante | estudiante@psicosim.edu | código `DILEMA-2026` |
-| Docente | docente@psicosim.edu | `docente123` |
+| Docente | docente@psicosim.edu | `docente123` (solo Visualizar) |
 | Administración | admin@psicosim.edu | `admin123` |
+
+El estudiante entra con el código de la sesión. El docente y la administración entran con contraseña. Un docente nuevo nace con Visualizar. Crear casos exige el permiso Editar, y crear grupos exige Gestionar espacios académicos. Esos permisos los asigna la administración.
