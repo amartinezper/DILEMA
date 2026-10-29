@@ -35,7 +35,7 @@ export interface Criterio { id?: number; nombre: string; peso: number; descripci
 export interface Caso {
   id?: number; nombre: string; desarrolloSituacional: string; contexto: string; tiempoEstimadoMin: number;
   sensible: boolean; advertencia: string; estado?: string; bloques: Bloque[]; rubrica: Criterio[];
-  personajes: PersonajeCaso[];
+  personajes: PersonajeCaso[]; repartoRubrica?: string;
 }
 export interface CasoResumen { id: number; nombre: string; estado: string; tiempoEstimadoMin: number; bloques: number; preguntas: number; }
 export interface Persona { id: number; nombre: string; email: string; }

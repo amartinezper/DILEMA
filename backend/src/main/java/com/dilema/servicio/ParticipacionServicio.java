@@ -263,7 +263,7 @@ public class ParticipacionServicio {
                         .map(o -> new Contratos.OpcionJuego(o.id, o.descripcion,
                                 revelar ? o.esCorrecta : null,
                                 revelar && o.retroalimentacion != null ? o.retroalimentacion.explicacion : null,
-                                null))
+                                revelar && o.retroalimentacion != null ? o.retroalimentacion.fundamento : null))
                         .toList();
                 String criterio = pregunta.criterio == null ? "" : pregunta.criterio.criterio;
                 preguntas.add(new Contratos.PreguntaJuego(pregunta.id, escenario.titulo, escenario.contexto,

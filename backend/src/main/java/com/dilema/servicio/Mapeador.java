@@ -22,7 +22,8 @@ public class Mapeador {
     public Contratos.CasoVista caso(Caso caso, List<EscenarioPersonaje> vinculos) {
         return new Contratos.CasoVista(caso.id, caso.nombre, caso.desarrolloSituacional, caso.contexto,
                 caso.tiempoEstimadoMin, false, "", caso.estado.name(), caso.docente.id,
-                bloques(caso), rubrica(caso), personajes(caso, vinculos));
+                bloques(caso), rubrica(caso), personajes(caso, vinculos),
+                caso.repartoRubrica == null ? "PONDERADA" : caso.repartoRubrica);
     }
 
     public Contratos.CasoResumen resumen(Caso caso) {
@@ -38,7 +39,8 @@ public class Mapeador {
             for (Pregunta pregunta : escenario.preguntas) {
                 List<Contratos.OpcionIn> opciones = pregunta.opciones.stream()
                         .map(o -> new Contratos.OpcionIn(o.id, o.descripcion, o.esCorrecta,
-                                o.retroalimentacion == null ? "" : o.retroalimentacion.explicacion, ""))
+                                o.retroalimentacion == null ? "" : o.retroalimentacion.explicacion,
+                                o.retroalimentacion == null || o.retroalimentacion.fundamento == null ? "" : o.retroalimentacion.fundamento))
                         .toList();
                 String criterio = pregunta.criterio == null ? "" : pregunta.criterio.criterio;
                 double peso = pregunta.criterio == null || pregunta.criterio.peso == null ? 0 : pregunta.criterio.peso.doubleValue();

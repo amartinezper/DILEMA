@@ -14,4 +14,6 @@ public class Retroalimentacion {
     public Opcion opcion;
     @Column(nullable = false, columnDefinition = "text")
     public String explicacion;
+    @Column(columnDefinition = "text")
+    public String fundamento;
 }
