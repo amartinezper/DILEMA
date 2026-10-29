@@ -32,4 +32,63 @@ public class Caso {
 
     @OneToMany(mappedBy = "caso", cascade = CascadeType.ALL, orphanRemoval = true)
     public List<Personaje> personajes = new ArrayList<>();
+
+    /**
+     * Comportamiento del estado durante esta petición. No se guarda:
+     * en la base queda el enum {@code estado}. Al cargar el caso, el servicio
+     * vuelve a armar el objeto con {@code colocarEstado}.
+     */
+    @Transient
+    private EstadoDelCaso comportamiento;
+
+    /**
+     * Deja listo el objeto que corresponde al enum ya guardado.
+     * Si no coinciden, la operación no sigue: el caso no puede comportarse
+     * como un estado distinto del que tiene persistido.
+     */
+    public void colocarEstado(EstadoDelCaso estado) {
+        if (estado == null || estado.codigo() != this.estado) {
+            throw new IllegalStateException("RF-09: el comportamiento no coincide con el estado guardado del caso.");
+        }
+        this.comportamiento = estado;
+    }
+
+    /** Delega en el estado actual. La regla vive en Borrador, Publicado o Archivado. */
+    public void publicar() {
+        estadoActual().publicar(this);
+    }
+
+    /** Delega en el estado actual. Solo Publicado puede completar esta operación. */
+    public void despublicar() {
+        estadoActual().despublicar(this);
+    }
+
+    /** Delega en el estado actual. Solo Publicado pasa a Archivado. */
+    public void archivar() {
+        estadoActual().archivar(this);
+    }
+
+    /** Verdadero únicamente cuando el estado actual es el borrador. */
+    public boolean permiteEdicion() {
+        return estadoActual().permiteEdicion();
+    }
+
+    /**
+     * Lo usa el estado concreto después de aceptar la transición.
+     * Escribe el enum y el objeto juntos, con el valor que declara el estado nuevo.
+     */
+    public void cambiarEstado(EstadoDelCaso siguiente) {
+        if (siguiente == null) {
+            throw new IllegalStateException("RF-09: la transición no tiene estado de destino.");
+        }
+        this.estado = siguiente.codigo();
+        this.comportamiento = siguiente;
+    }
+
+    private EstadoDelCaso estadoActual() {
+        if (comportamiento == null || comportamiento.codigo() != estado) {
+            throw new IllegalStateException("RF-09: el caso no tiene cargado su estado de comportamiento.");
+        }
+        return comportamiento;
+    }
 }
