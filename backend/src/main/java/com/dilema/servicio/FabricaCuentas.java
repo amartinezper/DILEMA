@@ -10,8 +10,10 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * Factory Method (RF-03). {@code crear} fija el alta; cada creador decide el rol
- * y los permisos de nacimiento. Las pantallas no arman el usuario ni esos permisos.
+ * Factory Method (RF-03). {@code crear} fija el alta. Cada creador decide el rol y los permisos de nacimiento.
+ * El docente nace solo con Visualizar: Editar y gestionar espacios los asigna después la administración.
+ * El administrador nace con gestionar espacios. El estudiante nace sin clave y sin permisos de catálogo.
+ * Las pantallas no arman el usuario ni esos permisos.
  */
 @Component
 public class FabricaCuentas {
@@ -77,6 +79,7 @@ public class FabricaCuentas {
         });
     }
 
+    /** {@code crear} es el paso fijo. {@code fabricar} y {@code permisosDeNacimiento} cambian con el rol. */
     abstract static class CreadorUsuario {
         final Usuario crear(FabricaCuentas fabrica) {
             Usuario usuario = fabricar();

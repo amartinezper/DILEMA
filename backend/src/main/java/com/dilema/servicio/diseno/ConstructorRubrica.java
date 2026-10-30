@@ -15,7 +15,9 @@ import java.util.List;
 
 /**
  * Builder (RF-17). Solo construye la rúbrica de un caso en borrador.
- * La ponderada usa los pesos del docente. La equitativa reparte 5,0 y ajusta el último criterio.
+ * Hay un criterio por pregunta. Cada peso va de 0,0 a 5,0.
+ * La suma distinta de 5,0 no impide guardar el borrador: esa comprobación es del Composite.
+ * La subclase decide de dónde sale cada peso.
  */
 public abstract class ConstructorRubrica {
     public final void construir(Caso caso, Contratos.CasoIn entrada) {
@@ -45,6 +47,7 @@ public abstract class ConstructorRubrica {
     }
 }
 
+/** Usa el peso que escribió el docente, redondeado a un decimal. */
 class ConstructorRubricaPonderada extends ConstructorRubrica {
     @Override
     public String nombre() { return "PONDERADA"; }
@@ -60,6 +63,11 @@ class ConstructorRubricaPonderada extends ConstructorRubrica {
     }
 }
 
+/**
+ * Reparte 5,0 entre las preguntas, truncando cada parte a un decimal.
+ * La última pregunta recibe lo que falta para que la suma sea exactamente 5,0.
+ * Con tres preguntas eso es 1,6, 1,6 y 1,8.
+ */
 class ConstructorRubricaEquitativa extends ConstructorRubrica {
     @Override
     public String nombre() { return "EQUITATIVA"; }

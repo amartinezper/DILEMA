@@ -5,8 +5,11 @@ import com.dilema.modelo.Usuario;
 import org.springframework.stereotype.Component;
 
 /**
- * Proxy de protección (RF-02). La autorización vive en esta puerta.
- * El alta del caso, la matrícula y el grupo se escriben en el sujeto, no dentro del if.
+ * Proxy de protección (RF-02). La autorización vive en esta puerta, antes de tocar el caso o el grupo.
+ * Crear un caso exige docente con Editar. Revisar el grupo exige Visualizar.
+ * Gestionar un espacio exige Gestionar espacios académicos. Administrar usuarios exige el rol de administración.
+ * Participar exige el rol de estudiante. Si falta el rol, el mensaje es de operación.
+ * Si el rol está y falta el permiso, el mensaje es de permiso.
  */
 @Component
 public class ProxyOperacion {

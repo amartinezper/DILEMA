@@ -12,8 +12,9 @@ import java.util.List;
 
 /**
  * Builder (RF-07). El asistente elige el constructor con pista o sin ella.
- * Una pregunta terminada tiene enunciado, al menos dos opciones y una sola correcta.
- * El borrador puede guardar el enunciado vacío.
+ * No decide si la opción es correcta: eso lo hace el constructor de la opción.
+ * {@code obtenerBorrador} guarda la pregunta aunque el enunciado esté vacío.
+ * {@code obtenerResultado} exige enunciado, al menos dos opciones y una sola correcta.
  */
 public class AsistenteDePreguntas {
     public Pregunta construir(Caso caso, Escenario escenario, Contratos.PreguntaIn entrada, int orden) {
@@ -47,6 +48,7 @@ public class AsistenteDePreguntas {
     }
 }
 
+/** Paso fijo de la pregunta. La pista solo la escribe {@link ConstructorPreguntaConPista}. */
 abstract class ConstructorPregunta {
     private String enunciado = "";
     private String pista;
@@ -89,6 +91,8 @@ abstract class ConstructorPregunta {
     }
 }
 
+/** Hay texto de pista: se conserva para mostrarla durante la pregunta. */
 class ConstructorPreguntaConPista extends ConstructorPregunta {}
 
+/** La pista viene vacía o en blanco: la pregunta queda sin pista. */
 class ConstructorPreguntaSinPista extends ConstructorPregunta {}
