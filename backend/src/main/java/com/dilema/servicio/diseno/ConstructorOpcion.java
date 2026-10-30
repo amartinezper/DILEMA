@@ -6,8 +6,10 @@ import com.dilema.modelo.Retroalimentacion;
 import com.dilema.servicio.ReglaNegocio;
 
 /**
- * Builder (RF-08). {@code explicar} guarda el mensaje y el fundamento por separado.
- * La variante fija si la opción es correcta o incorrecta. El borrador puede omitirlos.
+ * Builder (RF-08). {@code explicar} guarda el mensaje y el fundamento en campos distintos.
+ * No los concatena. La subclase fija si la opción es correcta o incorrecta.
+ * {@code obtenerBorrador} acepta texto, explicación o fundamento vacíos.
+ * {@code obtenerResultado} exige los tres.
  */
 public abstract class ConstructorOpcion {
     private final Opcion opcion = new Opcion();
@@ -48,11 +50,13 @@ public abstract class ConstructorOpcion {
     protected abstract boolean esCorrecta();
 }
 
+/** La opción queda marcada como la única respuesta correcta de su pregunta. */
 class ConstructorOpcionCorrecta extends ConstructorOpcion {
     @Override
     protected boolean esCorrecta() { return true; }
 }
 
+/** La opción queda marcada como incorrecta. No decide cuál es la correcta. */
 class ConstructorOpcionIncorrecta extends ConstructorOpcion {
     @Override
     protected boolean esCorrecta() { return false; }

@@ -12,12 +12,16 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Composite (RF-06). {@code validar} recorre el árbol, {@code presentar} lo describe
- * y {@code esCompleto} mira solo esa rama. El borrador puede guardarse incompleto.
+ * Composite (RF-06). Los cuatro nodos implementan {@link ElementoCaso}.
+ * El caso exige además la suma 5,0 de la rúbrica. El escenario exige título, contexto y preguntas.
+ * La pregunta exige enunciado, al menos dos opciones, una sola correcta y su criterio.
+ * La opción, que es la hoja, exige texto, explicación y fundamento.
+ * Un borrador incompleto se guarda igual: estas comprobaciones no bloquean el alta.
  */
 public final class ArbolCaso {
     private ArbolCaso() {}
 
+    /** Raíz. Suma los pesos de todas las preguntas y exige exactamente 5,0. */
     public static final class NodoCaso implements ElementoCaso {
         private final Caso caso;
         private final Set<Long> personajesLigados;
@@ -85,6 +89,7 @@ public final class ArbolCaso {
         }
     }
 
+    /** Compuesto. No está completo si le falta título, contexto o alguna pregunta. */
     public static final class NodoEscenario implements ElementoCaso {
         private final Escenario escenario;
 
@@ -120,6 +125,7 @@ public final class ArbolCaso {
         }
     }
 
+    /** Compuesto. Mira su enunciado, sus opciones y su criterio, no el nombre del caso. */
     public static final class NodoPregunta implements ElementoCaso {
         private final Pregunta pregunta;
 
@@ -165,6 +171,7 @@ public final class ArbolCaso {
         }
     }
 
+    /** Hoja. Texto, explicación y fundamento se exigen por separado. */
     public static final class NodoOpcion implements ElementoCaso {
         private final Opcion opcion;
 

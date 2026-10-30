@@ -14,6 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
+/**
+ * Strategy (RF-01). {@code ingresar} no elige el mecanismo: se lo pide a {@link GestorAcceso}.
+ * Con código de convocatoria entra el estudiante. Sin código, docente y administración entran con clave.
+ * El estudiante no tiene contraseña. Su sesión solo se abre si el caso está publicado,
+ * el correo está en la convocatoria y el docente ya la inició.
+ */
 @Service
 public class AuthServicio {
     private final UsuarioRepo usuarios;
@@ -46,7 +52,10 @@ public class AuthServicio {
 
     public record Resultado(Usuario usuario, SesionCaso sesion) {}
 
-    /** Strategy (RF-01): el estudiante entra con código; docente y administración, con clave. */
+    /**
+     * Strategy (RF-01). Elige la estrategia y no valida la cuenta.
+     * Hay código: estudiante. No hay código, o viene en blanco: clave.
+     */
     class GestorAcceso {
         Autenticacion elegir(Contratos.Ingreso pedido) {
             if (pedido.codigoAutorizacion() != null && !pedido.codigoAutorizacion().isBlank()) {
@@ -56,10 +65,15 @@ public class AuthServicio {
         }
     }
 
+    /** Cada estrategia devuelve la cuenta. Solo el estudiante devuelve también la sesión. */
     interface Autenticacion {
         Resultado ingresar(Contratos.Ingreso pedido);
     }
 
+    /**
+     * Strategy (RF-01). Correo institucional y código compartido. No mira la contraseña.
+     * Rechaza el caso que no está publicado, la convocatoria ajena y la sesión que todavía no inició el docente.
+     */
     class AutenticacionEstudiante implements Autenticacion {
         @Override
         public Resultado ingresar(Contratos.Ingreso pedido) {
@@ -85,6 +99,11 @@ public class AuthServicio {
         }
     }
 
+    /**
+     * Strategy (RF-01). Correo y clave. Docente se guarda como PROFESOR.
+     * Si el rol pedido es estudiante, o la cuenta no tiene clave, esta estrategia no lo deja entrar.
+     * No abre sesión: eso solo ocurre con el código de la convocatoria.
+     */
     class AutenticacionCuenta implements Autenticacion {
         @Override
         public Resultado ingresar(Contratos.Ingreso pedido) {

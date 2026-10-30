@@ -11,9 +11,10 @@ import com.dilema.servicio.ReglaNegocio;
 import java.util.List;
 
 /**
- * Builder (RF-05). El director recorre nombre, desarrollo, contexto, escenarios y tiempo.
- * {@code obtenerBorrador} entrega el caso aunque el árbol esté incompleto.
- * La validez completa la revisa el Composite.
+ * Builder (RF-05). El director recorre, en este orden, nombre, desarrollo, contexto, escenarios y tiempo.
+ * No arma las piezas: se las pide a {@link ConstructorCasoNuevo} o a {@link ConstructorCasoDuplicado}.
+ * {@code obtenerBorrador} entrega el caso aunque falten escenarios, preguntas o la suma 5,0.
+ * Solo exige el nombre. La validez del árbol completo la revisa el Composite.
  */
 public class DirectorCaso {
     public Caso construirNuevo(com.dilema.modelo.Usuario docente, Contratos.CasoIn entrada) {
@@ -30,7 +31,10 @@ public class DirectorCaso {
         constructor.obtenerBorrador();
     }
 
-    /** La copia nace en borrador, sin sesiones ni participaciones (INV-12). */
+    /**
+     * La copia nace en borrador, sin sesiones ni participaciones (INV-12).
+     * Conserva los pesos que ya tenía el origen: no vuelve a calcular la rúbrica equitativa.
+     */
     public Caso duplicar(com.dilema.modelo.Usuario docente, Caso origen) {
         return new ConstructorCasoDuplicado().copiar(docente, origen).obtenerBorrador();
     }
@@ -43,6 +47,10 @@ public class DirectorCaso {
     }
 }
 
+/**
+ * Paso fijo del caso: datos, escenarios, personajes y rúbrica.
+ * La rúbrica equitativa o ponderada se elige con el reparto que trae la entrada.
+ */
 abstract class ConstructorCaso {
     protected Caso caso;
 
@@ -89,14 +97,14 @@ abstract class ConstructorCaso {
         constructor.construir(caso, entrada);
     }
 
-    /** El borrador exige nombre. El resto puede llegar incompleto. */
+    /** El borrador exige nombre. Escenarios, preguntas y pesos pueden llegar incompletos. */
     Caso obtenerBorrador() {
         if (Texto.vacio(caso.nombre)) throw new ReglaNegocio("El borrador necesita al menos un nombre.");
         return caso;
     }
 }
 
-/** Alta de un caso nuevo. */
+/** Alta. El caso nace en borrador, con el docente que lo escribe. */
 class ConstructorCasoNuevo extends ConstructorCaso {
     void iniciar(com.dilema.modelo.Usuario docente) {
         caso = new Caso();
@@ -110,7 +118,10 @@ class ConstructorCasoNuevo extends ConstructorCaso {
     }
 }
 
-/** Copia en borrador de un caso ya guardado. */
+/**
+ * Copia en borrador de un caso ya guardado. Si «(copia)» no cabe en el nombre, se deja el original.
+ * No copia sesiones ni participaciones.
+ */
 class ConstructorCasoDuplicado extends ConstructorCaso {
     ConstructorCasoDuplicado copiar(com.dilema.modelo.Usuario docente, Caso origen) {
         caso = new Caso();
