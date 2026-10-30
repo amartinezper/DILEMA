@@ -103,6 +103,15 @@ public class ApiControlador {
     @PostMapping("/docente/casos/{id}/duplicar")
     Contratos.CasoVista duplicar(@PathVariable Long id, HttpServletRequest request) { return casos.duplicar(docente(request), id); }
 
+    @PostMapping("/docente/casos/{id}/publicar")
+    Contratos.CasoVista publicar(@PathVariable Long id, HttpServletRequest request) { return casos.publicar(docente(request), id); }
+
+    @PostMapping("/docente/casos/{id}/despublicar")
+    Contratos.CasoVista despublicar(@PathVariable Long id, HttpServletRequest request) { return casos.despublicar(docente(request), id); }
+
+    @PostMapping("/docente/casos/{id}/archivar")
+    Contratos.CasoVista archivar(@PathVariable Long id, HttpServletRequest request) { return casos.archivar(docente(request), id); }
+
     @GetMapping("/docente/grupos")
     List<Contratos.GrupoVista> grupos(HttpServletRequest request) { return academia.listarGrupos(docente(request)); }
 

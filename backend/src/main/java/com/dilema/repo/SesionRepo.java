@@ -8,6 +8,9 @@ import java.util.Optional;
 
 public interface SesionRepo extends JpaRepository<SesionCaso, Long> {
     Optional<SesionCaso> findByCodigoIgnoreCase(String codigo);
+
+    /** Sesiones asignadas a un caso. Despublicar las consulta antes de volver a borrador. */
+    boolean existsByCaso_Id(Long casoId);
     List<SesionCaso> findByGrupo_Docente_IdOrderByIdDesc(Long docenteId);
     List<SesionCaso> findByCierreRealIsNull();
 

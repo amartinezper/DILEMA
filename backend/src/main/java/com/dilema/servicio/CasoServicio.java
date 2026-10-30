@@ -4,8 +4,12 @@ import com.dilema.dto.Contratos;
 import com.dilema.modelo.*;
 import com.dilema.repo.CasoRepo;
 import com.dilema.repo.EscenarioPersonajeRepo;
+import com.dilema.repo.ParticipacionRepo;
+import com.dilema.repo.SesionRepo;
 import com.dilema.servicio.diseno.ArbolCaso;
 import com.dilema.servicio.diseno.DirectorCaso;
+import com.dilema.servicio.diseno.EstadosDelCaso;
+import com.dilema.servicio.diseno.UsoDelCaso;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,14 +21,19 @@ import java.util.stream.Collectors;
 public class CasoServicio {
     private final CasoRepo casos;
     private final EscenarioPersonajeRepo vinculos;
+    private final SesionRepo sesiones;
+    private final ParticipacionRepo participaciones;
     private final ProxyOperacion proxy;
     private final Mapeador mapeador;
     private final EntityManager em;
 
     public CasoServicio(CasoRepo casos, EscenarioPersonajeRepo vinculos,
+                        SesionRepo sesiones, ParticipacionRepo participaciones,
                         ProxyOperacion proxy, Mapeador mapeador, EntityManager em) {
         this.casos = casos;
         this.vinculos = vinculos;
+        this.sesiones = sesiones;
+        this.participaciones = participaciones;
         this.proxy = proxy;
         this.mapeador = mapeador;
         this.em = em;
@@ -58,6 +67,7 @@ public class CasoServicio {
     public Contratos.CasoVista actualizar(Usuario docente, Long id, Contratos.CasoIn entrada) {
         proxy.crearCaso(docente);
         Caso caso = propio(docente, id);
+        exigirEditable(caso);
         vinculos.deleteByCasoId(caso.id);
         caso.escenarios.clear();
         caso.personajes.clear();
@@ -80,6 +90,74 @@ public class CasoServicio {
         fijarCasoId(copia);
         copiarVinculos(origen, copia);
         return mapeador.caso(copia, vinculos.findByCasoId(copia.id));
+    }
+
+    /**
+     * RF-09. El caso delega en su estado. Borrador y Archivado publican
+     * solo si validar() no devuelve errores. Publicado rechaza la operación.
+     */
+    @Transactional
+    public Contratos.CasoVista publicar(Usuario docente, Long id) {
+        return transicionar(docente, id, Caso::publicar);
+    }
+
+    /**
+     * RF-09. Solo un caso publicado y sin sesiones ni participaciones vuelve a borrador.
+     */
+    @Transactional
+    public Contratos.CasoVista despublicar(Usuario docente, Long id) {
+        return transicionar(docente, id, Caso::despublicar);
+    }
+
+    /**
+     * RF-09. Solo un caso publicado pasa a archivado, aunque ya tenga sesiones.
+     */
+    @Transactional
+    public Contratos.CasoVista archivar(Usuario docente, Long id) {
+        return transicionar(docente, id, Caso::archivar);
+    }
+
+    private Contratos.CasoVista transicionar(Usuario docente, Long id, java.util.function.Consumer<Caso> operacion) {
+        proxy.crearCaso(docente);
+        Caso caso = propio(docente, id);
+        colocar(caso);
+        operacion.accept(caso);
+        casos.save(caso);
+        return mapeador.caso(caso, vinculos.findByCasoId(caso.id));
+    }
+
+    /** RF-09: la edición entra solo si el estado actual lo permite. */
+    private void exigirEditable(Caso caso) {
+        colocar(caso);
+        if (!caso.permiteEdicion()) {
+            throw new ReglaNegocio("RF-09: solo se edita un caso en borrador.");
+        }
+    }
+
+    /**
+     * Reconstruye el objeto de estado desde el enum guardado y lo deja en el caso.
+     * Las reglas no se deciden en este método.
+     */
+    private void colocar(Caso caso) {
+        caso.colocarEstado(EstadosDelCaso.de(caso.estado, new UsoGuardado()));
+    }
+
+    /** Lleva al estado la validación ya existente y la existencia de sesiones o participaciones. */
+    private final class UsoGuardado implements UsoDelCaso {
+        @Override
+        public List<String> validar(Caso caso) {
+            return CasoServicio.this.validar(caso);
+        }
+
+        @Override
+        public boolean tieneSesiones(Caso caso) {
+            return caso.id != null && sesiones.existsByCaso_Id(caso.id);
+        }
+
+        @Override
+        public boolean tieneParticipaciones(Caso caso) {
+            return caso.id != null && participaciones.existsByCasoId(caso.id);
+        }
     }
 
     private void copiarVinculos(Caso origen, Caso copia) {
