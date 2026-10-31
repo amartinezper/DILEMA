@@ -8,6 +8,8 @@ import com.dilema.servicio.evaluacion.EstadoDeParticipacion;
 import com.dilema.servicio.evaluacion.EstrategiaCalificacion;
 import com.dilema.servicio.evaluacion.ExplicacionReal;
 import com.dilema.servicio.evaluacion.RetroalimentacionProxy;
+import com.dilema.servicio.seguimiento.ExportadorCSV;
+import com.dilema.servicio.seguimiento.GeneradorReporte;
 import com.dilema.servicio.participacion.ComandoRespuesta;
 import com.dilema.servicio.participacion.FinalizadorParticipacion;
 import com.dilema.servicio.participacion.HistorialRespuestas;
@@ -211,10 +213,19 @@ public class ParticipacionServicio {
         return filas;
     }
 
+    /**
+     * RF-16. El CSV sale del mismo generador que PDF y Excel:
+     * una fila por intento, con ausencias en 0,0.
+     */
     @Transactional(readOnly = true)
     public String reporte(Usuario docente, Long sesionId) {
-        List<Contratos.FilaSeguimiento> filas = seguimiento(docente, sesionId);
-        return new ReporteCsv().generar(filas);
+        proxy.revisarGrupo(docente);
+        SesionCaso sesion = sesiones.findById(sesionId).orElseThrow(() -> new NoEncontrado("Sesión no encontrada."));
+        List<Participacion> deLaSesion = participaciones.findBySesion_Id(sesion.id);
+        GeneradorReporte generador = new GeneradorReporte();
+        generador.setFormato(new ExportadorCSV());
+        byte[] archivo = generador.generar(docente, sesion, deLaSesion == null ? List.of() : deLaSesion).contenido();
+        return new String(archivo, java.nio.charset.StandardCharsets.UTF_8);
     }
 
     private boolean cerrarSiVencio(Participacion participacion, LocalDateTime ahora) {
@@ -233,7 +244,8 @@ public class ParticipacionServicio {
     private Participacion propiaODocente(Usuario usuario, Long id) {
         Participacion participacion = participaciones.findById(id).orElseThrow(() -> new NoEncontrado("Participación no encontrada."));
         if (usuario.rol == Catalogo.Rol.ESTUDIANTE && participacion.estudiante.id.equals(usuario.id)) return participacion;
-        if (usuario.rol == Catalogo.Rol.PROFESOR && participacion.sesion.caso.docente.id.equals(usuario.id)) return participacion;
+        if (usuario.rol == Catalogo.Rol.PROFESOR && participacion.sesion.grupo != null
+                && participacion.sesion.grupo.esDirigidoPor(usuario)) return participacion;
         throw new AccesoDenegado("No puedes consultar esta participación.");
     }
 
@@ -323,23 +335,4 @@ public class ParticipacionServicio {
         public Usuario next() { return lista.get(indice++); }
     }
 
-    class ReporteCsv {
-        String generar(List<Contratos.FilaSeguimiento> filas) {
-            StringBuilder csv = new StringBuilder("\uFEFFestudiante,email,estado,nota,retroalimentacion\n");
-            for (Contratos.FilaSeguimiento fila : filas) {
-                csv.append(esc(fila.estudiante())).append(',')
-                        .append(esc(fila.email())).append(',')
-                        .append(fila.estado()).append(',')
-                        .append(fila.nota() == null ? "" : fila.nota()).append(',')
-                        .append(esc(fila.retroalimentacion()))
-                        .append('\n');
-            }
-            return csv.toString();
-        }
-    }
-
-    private static String esc(String valor) {
-        if (valor == null) return "";
-        return "\"" + valor.replace("\"", "'") + "\"";
-    }
 }

@@ -54,4 +54,10 @@ public final class Contratos {
     public record PanelEstudiante(List<SesionVista> sesiones, List<Aviso> avisos, int sinLeer) {}
     public record FilaSeguimiento(Long participacionId, Long estudianteId, String estudiante, String email,
                                   String estado, Double nota, String retroalimentacion, boolean repeticionAutorizada) {}
+
+    public record SesionRealizada(Long id, String caso, String grupo, String inicio, String fin) {}
+    public record IntentoConsultado(Long id, String estudiante, int numeroIntento, String estado) {}
+    public record RespuestaVigente(String pregunta, String opcion, Boolean acertada, String explicacion, String fundamento) {}
+    public record ParticipacionConsultada(Long id, String estudiante, int numeroIntento, String valoracionGeneral,
+                                          List<RespuestaVigente> respuestas) {}
 }
