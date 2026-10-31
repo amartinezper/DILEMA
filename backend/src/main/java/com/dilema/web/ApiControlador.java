@@ -3,8 +3,10 @@ package com.dilema.web;
 import com.dilema.dto.Contratos;
 import com.dilema.modelo.Usuario;
 import com.dilema.servicio.*;
+import com.dilema.servicio.seguimiento.ArchivoReporte;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,17 +20,19 @@ public class ApiControlador {
     private final CasoServicio casos;
     private final AcademiaServicio academia;
     private final ParticipacionServicio participaciones;
+    private final SeguimientoServicio seguimiento;
     private final AdminServicio admin;
     private final Tokens tokens;
     private final Mapeador mapeador;
 
     public ApiControlador(AuthServicio auth, CasoServicio casos, AcademiaServicio academia,
-                          ParticipacionServicio participaciones, AdminServicio admin,
-                          Tokens tokens, Mapeador mapeador) {
+                          ParticipacionServicio participaciones, SeguimientoServicio seguimiento,
+                          AdminServicio admin, Tokens tokens, Mapeador mapeador) {
         this.auth = auth;
         this.casos = casos;
         this.academia = academia;
         this.participaciones = participaciones;
+        this.seguimiento = seguimiento;
         this.admin = admin;
         this.tokens = tokens;
         this.mapeador = mapeador;
@@ -153,11 +157,37 @@ public class ApiControlador {
         return participaciones.seguimiento(docente(request), id);
     }
 
+    @GetMapping("/docente/seguimiento/sesiones")
+    List<Contratos.SesionRealizada> realizadas(HttpServletRequest request) {
+        return seguimiento.realizadas(docente(request));
+    }
+
+    @GetMapping("/docente/seguimiento/sesiones/{id}/participaciones")
+    List<Contratos.IntentoConsultado> participacionesDeSesion(@PathVariable Long id, HttpServletRequest request) {
+        return seguimiento.participaciones(docente(request), id);
+    }
+
+    @GetMapping("/docente/seguimiento/participaciones/{id}")
+    Contratos.ParticipacionConsultada verParticipacion(@PathVariable Long id, HttpServletRequest request) {
+        return seguimiento.ver(docente(request), id);
+    }
+
     @GetMapping(value = "/docente/sesiones/{id}/reporte.csv", produces = "text/csv")
     ResponseEntity<String> reporte(@PathVariable Long id, HttpServletRequest request) {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=reporte-sesion-" + id + ".csv")
                 .body(participaciones.reporte(docente(request), id));
+    }
+
+    @GetMapping("/docente/sesiones/{id}/reporte")
+    ResponseEntity<byte[]> reporteFormato(@PathVariable Long id,
+                                          @RequestParam(defaultValue = "csv") String formato,
+                                          HttpServletRequest request) {
+        ArchivoReporte archivo = seguimiento.reporte(docente(request), id, formato);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=reporte-sesion-" + id + "." + archivo.extension())
+                .contentType(tipo(archivo.extension()))
+                .body(archivo.contenido());
     }
 
     @PostMapping("/docente/participaciones/{id}/retroalimentacion")
@@ -188,6 +218,14 @@ public class ApiControlador {
 
     @GetMapping("/admin/auditoria")
     List<Contratos.AuditoriaVista> auditoria(HttpServletRequest request) { return admin.auditoria(admin(request)); }
+
+    private MediaType tipo(String extension) {
+        return switch (extension) {
+            case "pdf" -> MediaType.APPLICATION_PDF;
+            case "xlsx" -> MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            default -> MediaType.parseMediaType("text/csv");
+        };
+    }
 
     private Usuario docente(HttpServletRequest request) { return FiltroToken.actual(request); }
     private Usuario admin(HttpServletRequest request) { return FiltroToken.actual(request); }
