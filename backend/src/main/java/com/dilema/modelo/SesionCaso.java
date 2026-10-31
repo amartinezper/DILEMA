@@ -39,8 +39,26 @@ public class SesionCaso {
         return Catalogo.EstadoSesion.SIN_INICIAR;
     }
 
+    /** RF-23 / INV-27: la ventana de la sesión cierra en el fin programado. */
+    public boolean ventanaAbierta(java.time.LocalDateTime ahora) {
+        if (estado() != Catalogo.EstadoSesion.EN_CURSO) return false;
+        return fin == null || ahora.isBefore(fin);
+    }
+
+    /**
+     * RF-22: el primer ingreso solo cabe dentro de la tolerancia desde el inicio real
+     * y mientras la ventana de la sesión siga abierta.
+     */
     public boolean permiteIngreso(LocalDateTime ahora) {
-        if (estado() != Catalogo.EstadoSesion.EN_CURSO || inicioReal == null) return false;
-        return !ahora.isAfter(inicioReal.plusMinutes(toleranciaMin));
+        if (!ventanaAbierta(ahora) || inicioReal == null) return false;
+        return !ahora.isAfter(inicioReal.plusMinutes(Math.max(0, toleranciaMin)));
+    }
+
+    /** RF-23: el intento cierra por tiempo máximo o porque llegó el fin de la sesión. */
+    public boolean limiteDeIntentoAlcanzado(LocalDateTime inicioIntento, LocalDateTime ahora) {
+        if (inicioIntento == null) return false;
+        long usados = java.time.Duration.between(inicioIntento, ahora).getSeconds();
+        if (usados >= (long) tiempoMaxMin * 60L) return true;
+        return fin != null && !ahora.isBefore(fin);
     }
 }

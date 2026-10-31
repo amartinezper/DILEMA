@@ -92,8 +92,14 @@ public class AuthServicio {
                 throw new ReglaNegocio("La sesión todavía no ha sido iniciada por el docente.");
             }
             boolean yaParticipa = !participaciones.findByEstudianteIdAndSesionId(usuario.id, sesion.id).isEmpty();
-            if (sesion.estado() == Catalogo.EstadoSesion.EN_CURSO && !yaParticipa && !sesion.permiteIngreso(LocalDateTime.now())) {
-                throw new ReglaNegocio("RF-22: ya pasó el tiempo para iniciar la participación.");
+            LocalDateTime ahora = LocalDateTime.now();
+            if (sesion.estado() == Catalogo.EstadoSesion.EN_CURSO && !yaParticipa) {
+                if (!sesion.ventanaAbierta(ahora)) {
+                    throw new ReglaNegocio("RF-23: la ventana de la sesión ya cerró.");
+                }
+                if (!sesion.permiteIngreso(ahora)) {
+                    throw new ReglaNegocio("RF-22: ya pasó el tiempo para iniciar la participación.");
+                }
             }
             return new Resultado(usuario, sesion);
         }

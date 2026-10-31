@@ -12,6 +12,7 @@ import { AuthService } from '../core/auth.service';
 const enlaces = [
   { href: '/docente/casos', texto: 'Mis Casos', exacto: true },
   { href: '/docente/grupos', texto: 'Grupos', exacto: true },
+  { href: '/docente/programar', texto: 'Programar', exacto: true },
   { href: '/docente/seguimiento', texto: 'Reportes' }
 ];
 
@@ -547,15 +548,16 @@ export class GruposComponent {
             <p><strong>Ventana.</strong> {{ inicio || '—' }} → {{ fin || '—' }}</p>
             <p><strong>Tiempo.</strong> {{ tiempoMax }} minutos · tolerancia {{ tolerancia }}</p>
             <p><strong>Lugar.</strong> {{ lugar || 'Sin lugar físico' }}</p>
-            <p class="sub">Al notificar, cada estudiante autorizado recibe el aviso. El código de acceso no se muestra en pantalla.</p>
+            <p class="sub">Al notificar, cada estudiante recibe el mensaje, la URL y el código. La sesión nace sin iniciar hasta que el docente la abra.</p>
           </aside>
         </div>
         <h2>Convocatorias</h2>
         @for (sesion of sesiones(); track sesion.id) {
           <article class="item stack">
-            <small>{{ sesion.estado }}</small>
+            <small>{{ sesion.estado }} · código {{ sesion.codigo }}</small>
             <h3>{{ sesion.caso }}</h3>
             <p class="sub">{{ sesion.grupo }} · {{ sesion.inicio }} → {{ sesion.fin }}</p>
+            <p class="sub">{{ sesion.lugar || 'Sin lugar físico' }} · tolerancia {{ sesion.toleranciaMin }} min</p>
             <div class="row">
               @if (sesion.estado === 'SIN_INICIAR') { <button mat-flat-button color="primary" type="button" (click)="accion(sesion.id, 'iniciar')">Iniciar</button> }
               @if (sesion.estado === 'EN_CURSO') { <button mat-stroked-button type="button" (click)="accion(sesion.id, 'finalizar')">Finalizar</button> }
@@ -766,7 +768,11 @@ export class SeguimientoComponent {
           @if (error()) { <p class="error">{{ error() }}</p> }
           @if (ok()) { <p class="ok">{{ ok() }}</p> }
           <button mat-flat-button color="primary" type="button" [disabled]="actual.estado !== 'FINALIZADA'" (click)="valorar(actual.id)">Guardar valoración</button>
-          <button mat-stroked-button type="button" (click)="repetir(actual.id)">Autorizar repetición</button>
+          @if (actual.repeticionAutorizada) {
+            <p class="ok">Ya hay un intento adicional autorizado.</p>
+          } @else {
+            <button mat-stroked-button type="button" [disabled]="actual.estado !== 'FINALIZADA'" (click)="repetir(actual.id)">Autorizar repetición</button>
+          }
         </section>
       }
     </app-marco>

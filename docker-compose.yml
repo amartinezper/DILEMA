@@ -25,6 +25,7 @@ services:
       SPRING_MAIL_HOST: mailpit
       SPRING_MAIL_PORT: 1025
       CORREO_DESDE: dilema@psicosim.edu
+      APP_URL: http://localhost:4200
     depends_on:
       postgres:
         condition: service_healthy

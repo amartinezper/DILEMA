@@ -3,8 +3,14 @@ package com.dilema.servicio;
 import com.dilema.dto.Contratos;
 import com.dilema.modelo.*;
 import com.dilema.repo.ParticipacionRepo;
-import com.dilema.repo.SesionEstudianteRepo;
 import com.dilema.repo.SesionRepo;
+import com.dilema.servicio.participacion.ComandoRespuesta;
+import com.dilema.servicio.participacion.FinalizadorParticipacion;
+import com.dilema.servicio.participacion.HistorialRespuestas;
+import com.dilema.servicio.participacion.ProgresoParticipacion;
+import com.dilema.servicio.participacion.ProxyParticipacion;
+import com.dilema.servicio.participacion.RelojParticipacion;
+import com.dilema.servicio.programacion.PadronConvocatoria;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,23 +21,26 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Módulo 5. Participar, responder, controlar tiempo y autorizar una repetición.
+ */
 @Service
 public class ParticipacionServicio {
     private final ParticipacionRepo participaciones;
     private final SesionRepo sesiones;
-    private final SesionEstudianteRepo autorizados;
+    private final PadronConvocatoria padron;
     private final ProxyOperacion proxy;
     private final Mapeador mapeador;
     private final BitacoraServicio bitacora;
-    private final ConcurrentHashMap<Long, List<Paso>> historiales = new ConcurrentHashMap<>();
+    private final HistorialRespuestas historial = new HistorialRespuestas();
+    private final ProxyParticipacion puerta = new ProxyParticipacion();
 
-    public ParticipacionServicio(ParticipacionRepo participaciones, SesionRepo sesiones, SesionEstudianteRepo autorizados,
+    public ParticipacionServicio(ParticipacionRepo participaciones, SesionRepo sesiones, PadronConvocatoria padron,
                                  ProxyOperacion proxy, Mapeador mapeador, BitacoraServicio bitacora) {
         this.participaciones = participaciones;
         this.sesiones = sesiones;
-        this.autorizados = autorizados;
+        this.padron = padron;
         this.proxy = proxy;
         this.mapeador = mapeador;
         this.bitacora = bitacora;
@@ -72,46 +81,51 @@ public class ParticipacionServicio {
     public Contratos.ParticipacionVista iniciar(Usuario estudiante, Long sesionId) {
         proxy.participar(estudiante);
         SesionCaso sesion = sesiones.findById(sesionId).orElseThrow(() -> new NoEncontrado("Sesión no encontrada."));
-        if (!autorizados.existsBySesionIdAndEstudianteId(sesion.id, estudiante.id)) {
+        if (!padron.esta(sesion, estudiante)) {
             throw new AccesoDenegado("No estás autorizado en esta convocatoria.");
         }
-        new ProxyParticipacion().sesionAbierta(sesion);
+        LocalDateTime ahora = LocalDateTime.now();
+        puerta.sesionAbierta(sesion, ahora);
         List<Participacion> propias = participaciones.findByEstudianteIdAndSesionId(estudiante.id, sesion.id);
         Participacion enCurso = propias.stream().filter(Participacion::enCurso).findFirst().orElse(null);
-        if (enCurso != null) return vista(enCurso, false);
+        if (enCurso != null) {
+            if (cerrarSiVencio(enCurso, ahora)) return vista(enCurso, true);
+            return vista(enCurso, false);
+        }
         Participacion previa = propias.stream().filter(Participacion::finalizada).max(Comparator.comparing(p -> p.id)).orElse(null);
-        new ProxyParticipacion().puedeRepetir(previa);
-        if (previa == null) new ProxyParticipacion().ingresoTardio(sesion, LocalDateTime.now());
+        puerta.puedeRepetir(previa);
+        if (previa == null) puerta.ingresoTardio(sesion, ahora);
         Participacion nueva = new Participacion();
         nueva.estudiante = estudiante;
         nueva.sesion = sesion;
         nueva.casoId = sesion.caso.id;
         nueva.numeroIntento = previa == null ? 1 : previa.numeroIntento + 1;
-        nueva.inicio = LocalDateTime.now();
+        nueva.inicio = ahora;
         participaciones.save(nueva);
         return vista(nueva, false);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public Contratos.ParticipacionVista ver(Usuario usuario, Long id) {
         Participacion participacion = propiaODocente(usuario, id);
+        if (usuario.rol == Catalogo.Rol.ESTUDIANTE) cerrarSiVencio(participacion, LocalDateTime.now());
         boolean revelar = new ProxyResultado().revelar(usuario, participacion);
         return vista(participacion, revelar);
     }
 
-    /** Command (RF-10): el cambio de opción se puede deshacer durante el intento. */
     @Transactional
     public Contratos.ParticipacionVista responder(Usuario estudiante, Long id, Long preguntaId, Long opcionId) {
         proxy.participar(estudiante);
         Participacion participacion = enCurso(estudiante, id);
-        if (tiempoAgotado(participacion)) return vista(participacion, true);
+        if (cerrarSiVencio(participacion, LocalDateTime.now())) return vista(participacion, true);
         Pregunta pregunta = buscarPregunta(participacion.sesion.caso, preguntaId);
         Opcion opcion = pregunta.opciones.stream().filter(o -> o.id.equals(opcionId)).findFirst()
                 .orElseThrow(() -> new ReglaNegocio("La opción no pertenece a la pregunta."));
         Respuesta actual = participacion.respuestas.stream().filter(r -> r.pregunta.id.equals(preguntaId)).findFirst().orElse(null);
         Long antes = actual == null ? null : actual.opcion.id;
-        new ComandoRespuesta(preguntaId, antes, opcionId).ejecutar(participacion, pregunta, opcion, actual);
-        historiales.computeIfAbsent(participacion.id, k -> new ArrayList<>()).add(new Paso(preguntaId, antes, opcionId));
+        ComandoRespuesta comando = new ComandoRespuesta(preguntaId, antes, opcionId);
+        comando.ejecutar(participacion, pregunta, opcion, actual);
+        historial.registrar(participacion.id, comando);
         return vista(participacion, false);
     }
 
@@ -119,10 +133,9 @@ public class ParticipacionServicio {
     public Contratos.ParticipacionVista deshacer(Usuario estudiante, Long id) {
         proxy.participar(estudiante);
         Participacion participacion = enCurso(estudiante, id);
-        if (tiempoAgotado(participacion)) return vista(participacion, true);
-        List<Paso> pila = historiales.getOrDefault(participacion.id, new ArrayList<>());
-        Paso paso = new HistorialRespuestas().deshacer(pila);
-        new ComandoRespuesta(paso.preguntaId(), paso.antes(), paso.despues()).revertir(participacion, this);
+        if (cerrarSiVencio(participacion, LocalDateTime.now())) return vista(participacion, true);
+        ComandoRespuesta comando = historial.deshacer(participacion.id);
+        comando.revertir(participacion, preguntaId -> buscarPregunta(participacion.sesion.caso, preguntaId));
         return vista(participacion, false);
     }
 
@@ -130,13 +143,13 @@ public class ParticipacionServicio {
     public Contratos.ParticipacionVista finalizar(Usuario estudiante, Long id) {
         proxy.participar(estudiante);
         Participacion participacion = enCurso(estudiante, id);
-        cerrar(participacion);
+        new FinalizadorParticipacion.PorEstudiante(bitacora, this::calcularNota).finalizar(participacion);
         return vista(participacion, true);
     }
 
     @Transactional
     public void cerrarPorTiempo(Participacion participacion) {
-        if (participacion.enCurso()) cerrar(participacion);
+        new FinalizadorParticipacion.PorLimite(bitacora, this::calcularNota).finalizar(participacion);
     }
 
     @Transactional
@@ -156,21 +169,27 @@ public class ParticipacionServicio {
 
     @Transactional
     public void autorizarRepeticion(Usuario docente, Long id) {
-        proxy.crearCaso(docente);
+        proxy.revisarGrupo(docente);
         Participacion participacion = participaciones.findById(id).orElseThrow(() -> new NoEncontrado("Participación no encontrada."));
         if (!participacion.sesion.caso.docente.id.equals(docente.id)) {
             throw new AccesoDenegado("RF-25: solo el docente creador del caso autoriza la repetición.");
         }
-        if (participacion.sesion.estado() == Catalogo.EstadoSesion.FINALIZADO) {
-            throw new ReglaNegocio("RF-25: no se autoriza repetición en una sesión finalizada.");
+        if (participacion.sesion.estado() != Catalogo.EstadoSesion.EN_CURSO) {
+            throw new ReglaNegocio("RF-25: no se autoriza repetición si la sesión no está en curso.");
         }
         if (!participacion.finalizada()) throw new ReglaNegocio("Solo se autoriza repetir un intento ya terminado.");
-        if (participacion.autorizacion == null) {
-            AutorizacionRepeticion permiso = new AutorizacionRepeticion();
-            permiso.participacion = participacion;
-            permiso.fechaAutorizacion = LocalDateTime.now();
-            participacion.autorizacion = permiso;
+        Participacion ultima = participaciones.findByEstudianteIdAndSesionId(participacion.estudiante.id, participacion.sesion.id)
+                .stream().max(Comparator.comparing(p -> p.id)).orElse(participacion);
+        if (!ultima.id.equals(participacion.id)) {
+            throw new ReglaNegocio("RF-25: la autorización aplica al último intento del estudiante.");
         }
+        if (participacion.autorizacion != null) {
+            throw new ReglaNegocio("RF-25: ese intento ya tiene una repetición autorizada.");
+        }
+        AutorizacionRepeticion permiso = new AutorizacionRepeticion();
+        permiso.participacion = participacion;
+        permiso.fechaAutorizacion = LocalDateTime.now();
+        participacion.autorizacion = permiso;
     }
 
     @Transactional(readOnly = true)
@@ -187,10 +206,10 @@ public class ParticipacionServicio {
             if (ultima == null) {
                 Double nota = sesion.estado() == Catalogo.EstadoSesion.FINALIZADO ? 0.0 : null;
                 filas.add(new Contratos.FilaSeguimiento(null, estudiante.id, estudiante.nombre, estudiante.email,
-                        sesion.estado() == Catalogo.EstadoSesion.FINALIZADO ? "AUSENTE" : "SIN_INICIAR", nota, ""));
+                        sesion.estado() == Catalogo.EstadoSesion.FINALIZADO ? "AUSENTE" : "SIN_INICIAR", nota, "", false));
             } else {
                 filas.add(new Contratos.FilaSeguimiento(ultima.id, estudiante.id, estudiante.nombre, estudiante.email,
-                        ultima.estadoNombre(), ultima.nota(), ultima.comentarioDocente()));
+                        ultima.estadoNombre(), ultima.nota(), ultima.comentarioDocente(), ultima.autorizacion != null));
             }
         }
         return filas;
@@ -202,22 +221,10 @@ public class ParticipacionServicio {
         return new ReporteCsv().generar(filas);
     }
 
-    private void cerrar(Participacion participacion) {
-        participacion.fin = LocalDateTime.now();
-        participacion.fijarNota(calcularNota(participacion));
-        if (participacion.nota() != null) {
-            bitacora.avisar(participacion.estudiante, "CORREO", "Nota del caso",
-                    participacion.sesion.caso.nombre + ": " + participacion.nota() + " / 5,0.");
-        }
-    }
-
-    private boolean tiempoAgotado(Participacion participacion) {
-        long usados = Duration.between(participacion.inicio, LocalDateTime.now()).getSeconds();
-        if (usados >= participacion.sesion.tiempoMaxMin * 60L) {
-            cerrar(participacion);
-            return true;
-        }
-        return false;
+    private boolean cerrarSiVencio(Participacion participacion, LocalDateTime ahora) {
+        if (!RelojParticipacion.debeCerrar(participacion, ahora)) return false;
+        new FinalizadorParticipacion.PorLimite(bitacora, this::calcularNota).finalizar(participacion);
+        return true;
     }
 
     private Participacion enCurso(Usuario estudiante, Long id) {
@@ -273,86 +280,20 @@ public class ParticipacionServicio {
         LocalDateTime hasta = participacion.fin == null ? LocalDateTime.now() : participacion.fin;
         long usados = participacion.inicio == null ? 0 : Math.max(0, Duration.between(participacion.inicio, hasta).getSeconds());
         int total = preguntas.size();
-        int progreso = total == 0 ? 0 : (int) Math.round(participacion.respuestas.size() * 100.0 / total);
+        int progreso = ProgresoParticipacion.porcentaje(participacion, total);
         return new Contratos.ParticipacionVista(participacion.id, participacion.sesion.id, participacion.estadoNombre(),
                 participacion.sesion.caso.nombre, progreso, total,
                 participacion.sesion.tiempoMaxMin * 60, usados, participacion.nota(),
-                participacion.comentarioDocente(), participacion.estudiante.nombre, preguntas);
+                participacion.comentarioDocente(), participacion.estudiante.nombre, preguntas,
+                participacion.autorizacion != null);
     }
 
-    public record Paso(Long preguntaId, Long antes, Long despues) {}
-
-    /** Proxy de protección (RF-22 y RF-25). */
-    class ProxyParticipacion {
-        void sesionAbierta(SesionCaso sesion) {
-            if (sesion.estado() == Catalogo.EstadoSesion.FINALIZADO) {
-                throw new ReglaNegocio("RF-25: la sesión ya finalizó y no admite participación.");
-            }
-            if (sesion.estado() != Catalogo.EstadoSesion.EN_CURSO) {
-                throw new ReglaNegocio("La sesión todavía no está en curso.");
-            }
-        }
-        void ingresoTardio(SesionCaso sesion, LocalDateTime ahora) {
-            if (!sesion.permiteIngreso(ahora)) {
-                throw new ReglaNegocio("RF-22: ya pasó el tiempo definido por el docente para iniciar.");
-            }
-        }
-        void puedeRepetir(Participacion previa) {
-            if (previa != null && previa.autorizacion == null) {
-                throw new ReglaNegocio("RF-25: ya registraste una participación. Solo el docente creador puede autorizar otra.");
-            }
-        }
-    }
-
-    /** Proxy (RF-14): la explicación solo se revela al terminar. */
     class ProxyResultado {
         boolean revelar(Usuario usuario, Participacion participacion) {
             return usuario.rol != Catalogo.Rol.ESTUDIANTE || participacion.finalizada() || participacion.ausente();
         }
     }
 
-    /** Command (RF-10). */
-    class ComandoRespuesta {
-        private final Long preguntaId;
-        private final Long antes;
-        private final Long despues;
-        ComandoRespuesta(Long preguntaId, Long antes, Long despues) {
-            this.preguntaId = preguntaId;
-            this.antes = antes;
-            this.despues = despues;
-        }
-        void ejecutar(Participacion participacion, Pregunta pregunta, Opcion opcion, Respuesta actual) {
-            if (actual == null) {
-                Respuesta respuesta = new Respuesta();
-                respuesta.participacion = participacion;
-                respuesta.pregunta = pregunta;
-                respuesta.casoId = participacion.casoId;
-                respuesta.opcion = opcion;
-                participacion.respuestas.add(respuesta);
-            } else {
-                actual.opcion = opcion;
-            }
-        }
-        void revertir(Participacion participacion, ParticipacionServicio servicio) {
-            Respuesta actual = participacion.respuestas.stream().filter(r -> r.pregunta.id.equals(preguntaId)).findFirst().orElse(null);
-            if (antes == null) {
-                if (actual != null) participacion.respuestas.remove(actual);
-            } else if (actual != null) {
-                Pregunta pregunta = servicio.buscarPregunta(participacion.sesion.caso, preguntaId);
-                actual.opcion = pregunta.opciones.stream().filter(o -> o.id.equals(antes)).findFirst()
-                        .orElseThrow(() -> new ReglaNegocio("No se pudo restaurar la opción anterior."));
-            }
-        }
-    }
-
-    class HistorialRespuestas {
-        Paso deshacer(List<Paso> pila) {
-            if (pila.isEmpty()) throw new ReglaNegocio("No hay respuestas para deshacer.");
-            return pila.remove(pila.size() - 1);
-        }
-    }
-
-    /** State (RF-26): la valoración general solo existe al finalizar. */
     class EstadoValoracion {
         void aceptar(Participacion participacion) {
             if (!participacion.finalizada()) {
@@ -361,7 +302,6 @@ public class ParticipacionServicio {
         }
     }
 
-    /** Strategy (RF-13): la nota es la suma de los pesos de las preguntas acertadas. */
     class CalculadoraPorPesos {
         BigDecimal calcular(Participacion participacion) {
             BigDecimal acum = BigDecimal.ZERO;
@@ -373,7 +313,6 @@ public class ParticipacionServicio {
         }
     }
 
-    /** Observer (RF-11 y RF-27): la participación avisa nota y feedback sin guardar el aviso. */
     interface ObservadorAviso { void actualizar(Participacion participacion, List<Contratos.Aviso> destino); }
 
     class SujetoParticipacion {
@@ -400,18 +339,16 @@ public class ParticipacionServicio {
         }
     }
 
-    /** Iterator (RF-15): recorre la cohorte de uno en uno. */
     class IteradorCohorte implements java.util.Iterator<Usuario> {
         private final List<Usuario> lista;
         private int indice = 0;
         IteradorCohorte(java.util.Collection<Usuario> estudiantes) {
-            this.lista = estudiantes.stream().sorted(Comparator.comparing(u -> u.nombre)).toList();
+            this.lista = estudiantes.stream().sorted(Comparator.comparing(u -> u.nombre == null ? "" : u.nombre)).toList();
         }
         public boolean hasNext() { return indice < lista.size(); }
         public Usuario next() { return lista.get(indice++); }
     }
 
-    /** Strategy (RF-16). */
     class ReporteCsv {
         String generar(List<Contratos.FilaSeguimiento> filas) {
             StringBuilder csv = new StringBuilder("\uFEFFestudiante,email,estado,nota,retroalimentacion\n");

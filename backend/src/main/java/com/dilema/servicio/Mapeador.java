@@ -104,6 +104,7 @@ public class Mapeador {
                 participacion == null ? null : participacion.id,
                 participacion == null ? null : participacion.estadoNombre(),
                 participacion == null ? null : participacion.nota(),
-                progreso);
+                progreso,
+                participacion != null && participacion.autorizacion != null);
     }
 }
