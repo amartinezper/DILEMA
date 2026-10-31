@@ -6,8 +6,8 @@ import com.dilema.modelo.SesionCaso;
 import com.dilema.modelo.Usuario;
 import com.dilema.repo.ParticipacionRepo;
 import com.dilema.servicio.ParticipacionServicio;
+import com.dilema.servicio.evaluacion.CalificacionParcial;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +38,7 @@ public abstract class CierreSesion {
                 ausencia.sesion = sesion;
                 ausencia.casoId = sesion.caso.id;
                 ausencia.numeroIntento = 1;
-                ausencia.fijarNota(new BigDecimal("0.0"));
+                ausencia.fijarNota(new CalificacionParcial().calcularPuntaje(ausencia));
                 participaciones.save(ausencia);
             }
         }

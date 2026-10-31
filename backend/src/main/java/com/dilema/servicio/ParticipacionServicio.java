@@ -4,6 +4,10 @@ import com.dilema.dto.Contratos;
 import com.dilema.modelo.*;
 import com.dilema.repo.ParticipacionRepo;
 import com.dilema.repo.SesionRepo;
+import com.dilema.servicio.evaluacion.EstadoDeParticipacion;
+import com.dilema.servicio.evaluacion.EstrategiaCalificacion;
+import com.dilema.servicio.evaluacion.ExplicacionReal;
+import com.dilema.servicio.evaluacion.RetroalimentacionProxy;
 import com.dilema.servicio.participacion.ComandoRespuesta;
 import com.dilema.servicio.participacion.FinalizadorParticipacion;
 import com.dilema.servicio.participacion.HistorialRespuestas;
@@ -15,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -157,14 +160,7 @@ public class ParticipacionServicio {
         proxy.revisarGrupo(docente);
         Participacion participacion = participaciones.findById(id).orElseThrow(() -> new NoEncontrado("Participación no encontrada."));
         if (!participacion.sesion.caso.docente.id.equals(docente.id)) throw new AccesoDenegado("Solo el docente del caso puede valorarla.");
-        new EstadoValoracion().aceptar(participacion);
-        if (texto == null || texto.isBlank()) throw new ReglaNegocio("Escribe la valoración general.");
-        if (participacion.retroalimentacionDocente == null) {
-            RetroalimentacionDocente comentario = new RetroalimentacionDocente();
-            comentario.participacion = participacion;
-            participacion.retroalimentacionDocente = comentario;
-        }
-        participacion.retroalimentacionDocente.comentario = texto.trim();
+        EstadoDeParticipacion.de(participacion, bitacora).agregarRetroalimentacionGeneral(participacion, texto);
     }
 
     @Transactional
@@ -242,11 +238,7 @@ public class ParticipacionServicio {
     }
 
     BigDecimal calcularNota(Participacion participacion) {
-        return new CalculadoraPorPesos().calcular(participacion);
-    }
-
-    private boolean acierto(Participacion participacion, Pregunta pregunta) {
-        return participacion.respuestas.stream().anyMatch(r -> r.pregunta.id.equals(pregunta.id) && r.opcion.esCorrecta);
+        return EstrategiaCalificacion.paraEstadoDe(participacion).calcularPuntaje(participacion);
     }
 
     private List<Pregunta> preguntas(Caso caso) {
@@ -269,8 +261,8 @@ public class ParticipacionServicio {
                 List<Contratos.OpcionJuego> opciones = pregunta.opciones.stream()
                         .map(o -> new Contratos.OpcionJuego(o.id, o.descripcion,
                                 revelar ? o.esCorrecta : null,
-                                revelar && o.retroalimentacion != null ? o.retroalimentacion.explicacion : null,
-                                revelar && o.retroalimentacion != null ? o.retroalimentacion.fundamento : null))
+                                new RetroalimentacionProxy(participacion, new ExplicacionReal(o.retroalimentacion)).mostrar(),
+                                RetroalimentacionProxy.visible(participacion) && o.retroalimentacion != null ? o.retroalimentacion.fundamento : null))
                         .toList();
                 String criterio = pregunta.criterio == null ? "" : pregunta.criterio.criterio;
                 preguntas.add(new Contratos.PreguntaJuego(pregunta.id, escenario.titulo, escenario.contexto,
@@ -288,28 +280,10 @@ public class ParticipacionServicio {
                 participacion.autorizacion != null);
     }
 
+    /** RF-14: delega en el Proxy de protección la decisión de revelar el resultado al estudiante. */
     class ProxyResultado {
         boolean revelar(Usuario usuario, Participacion participacion) {
-            return usuario.rol != Catalogo.Rol.ESTUDIANTE || participacion.finalizada() || participacion.ausente();
-        }
-    }
-
-    class EstadoValoracion {
-        void aceptar(Participacion participacion) {
-            if (!participacion.finalizada()) {
-                throw new ReglaNegocio("RF-26: la valoración general solo se registra cuando la participación finalizó.");
-            }
-        }
-    }
-
-    class CalculadoraPorPesos {
-        BigDecimal calcular(Participacion participacion) {
-            BigDecimal acum = BigDecimal.ZERO;
-            for (Pregunta pregunta : preguntas(participacion.sesion.caso)) {
-                if (pregunta.criterio == null || pregunta.criterio.peso == null) continue;
-                if (acierto(participacion, pregunta)) acum = acum.add(pregunta.criterio.peso);
-            }
-            return acum.setScale(1, RoundingMode.HALF_UP);
+            return usuario.rol != Catalogo.Rol.ESTUDIANTE || RetroalimentacionProxy.visible(participacion);
         }
     }
 
