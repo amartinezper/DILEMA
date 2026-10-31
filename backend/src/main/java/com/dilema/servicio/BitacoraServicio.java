@@ -25,6 +25,10 @@ public class BitacoraServicio {
     }
 
     public void avisar(Usuario destinatario, String canal, String titulo, String cuerpo) {
+        if ("SISTEMA".equals(canal)) {
+            log.info("aviso sistema usuario={} titulo={} cuerpo={}", destinatario == null ? null : destinatario.email, titulo, cuerpo);
+            return;
+        }
         if (!"CORREO".equals(canal) || destinatario == null || destinatario.email == null || destinatario.email.isBlank()) {
             return;
         }

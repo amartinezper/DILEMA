@@ -2,6 +2,8 @@ package com.dilema.servicio.participacion;
 
 import com.dilema.modelo.Participacion;
 import com.dilema.servicio.BitacoraServicio;
+import com.dilema.servicio.evaluacion.ObservadorEstudiante;
+import com.dilema.servicio.evaluacion.SujetoNotificador;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -9,7 +11,8 @@ import java.util.function.Function;
 
 /**
  * Template Method (RF-12): siempre registra el fin, calcula la nota y avisa.
- * Cambia solo cómo se determina el instante de cierre.
+ * Cambia solo cómo se determina el instante de cierre. La nota (RF-13) la trae
+ * ya calculada la función inyectada; el aviso (RF-27) se dispara con el Observer.
  */
 public abstract class FinalizadorParticipacion {
     private final BitacoraServicio bitacora;
@@ -25,8 +28,10 @@ public abstract class FinalizadorParticipacion {
         participacion.fin = determinarFin(participacion);
         participacion.fijarNota(calcularNota.apply(participacion));
         if (participacion.nota() != null) {
-            bitacora.avisar(participacion.estudiante, "CORREO", "Nota del caso",
-                    participacion.sesion.caso.nombre + ": " + participacion.nota() + " / 5,0.");
+            SujetoNotificador sujeto = new SujetoNotificador();
+            sujeto.agregar(new ObservadorEstudiante(participacion.estudiante, bitacora));
+            sujeto.notificar("NOTA_PUBLICADA",
+                    participacion.sesion.caso.nombre + ": " + participacion.nota() + " / 5,0.", "CORREO");
         }
     }
 
