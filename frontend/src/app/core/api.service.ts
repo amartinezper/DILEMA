@@ -45,6 +45,7 @@ export interface Sesion {
   lugar: string; mensaje: string; casoId: number; caso: string; grupoId: number; grupo: string; espacio: string;
   desarrollo: string; contexto: string; sensible: boolean; advertencia: string;
   participacionId: number | null; participacionEstado: string | null; nota: number | null; progreso: number | null;
+  repeticionAutorizada: boolean;
 }
 export interface Aviso { id: number; canal: string; titulo: string; cuerpo: string; leida: boolean; fecha: string; }
 export interface PanelEstudiante { sesiones: Sesion[]; avisos: Aviso[]; sinLeer: number; }
@@ -56,7 +57,7 @@ export interface PreguntaJuego {
 export interface Participacion {
   id: number; sesionId: number; estado: string; caso: string; progreso: number; total: number;
   segundosMax: number; segundosUsados: number; nota: number | null; retroalimentacion: string | null;
-  estudiante: string; preguntas: PreguntaJuego[];
+  estudiante: string; preguntas: PreguntaJuego[]; repeticionAutorizada: boolean;
 }
-export interface Fila { participacionId: number | null; estudianteId: number; estudiante: string; email: string; estado: string; nota: number | null; retroalimentacion: string | null; }
+export interface Fila { participacionId: number | null; estudianteId: number; estudiante: string; email: string; estado: string; nota: number | null; retroalimentacion: string | null; repeticionAutorizada: boolean; }
 export interface Auditoria { id: number; fecha: string; accion: string; detalle: string; usuario: string; }

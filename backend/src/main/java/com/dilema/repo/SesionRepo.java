@@ -12,6 +12,7 @@ public interface SesionRepo extends JpaRepository<SesionCaso, Long> {
     /** Sesiones asignadas a un caso. Despublicar las consulta antes de volver a borrador. */
     boolean existsByCaso_Id(Long casoId);
     List<SesionCaso> findByGrupo_Docente_IdOrderByIdDesc(Long docenteId);
+    List<SesionCaso> findByGrupo_IdAndCierreRealIsNull(Long grupoId);
     List<SesionCaso> findByCierreRealIsNull();
 
     @Query("select s from SesionCaso s, SesionEstudiante a where a.sesionId = s.id and a.estudianteId = :estudianteId order by s.id desc")

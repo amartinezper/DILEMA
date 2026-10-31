@@ -2,6 +2,7 @@ package com.dilema.modelo;
 
 import jakarta.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "respuesta")
@@ -20,6 +21,8 @@ public class Respuesta {
     @ManyToOne(optional = false)
     @JoinColumn(name = "opcion_id")
     public Opcion opcion;
+    @Column(name = "fecha_respuesta")
+    public LocalDateTime fecha = LocalDateTime.now();
 
     public static class Clave implements Serializable {
         public Long participacion;

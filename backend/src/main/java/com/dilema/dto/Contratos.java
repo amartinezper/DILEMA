@@ -35,7 +35,7 @@ public final class Contratos {
                               int toleranciaMin, String lugar, String mensaje, Long casoId, String caso,
                               Long grupoId, String grupo, String espacio, String desarrollo, String contexto,
                               boolean sensible, String advertencia, Long participacionId, String participacionEstado,
-                              Double nota, Integer progreso) {}
+                              Double nota, Integer progreso, boolean repeticionAutorizada) {}
 
     public record UsuarioIn(String nombre, String email, String clave, String rol) {}
     public record PermisosIn(List<String> permisos) {}
@@ -48,10 +48,10 @@ public final class Contratos {
                                 Long seleccionId, List<OpcionJuego> opciones) {}
     public record ParticipacionVista(Long id, Long sesionId, String estado, String caso, int progreso, int total,
                                      int segundosMax, long segundosUsados, Double nota, String retroalimentacion,
-                                     String estudiante, List<PreguntaJuego> preguntas) {}
+                                     String estudiante, List<PreguntaJuego> preguntas, boolean repeticionAutorizada) {}
     public record RespuestaIn(Long preguntaId, Long opcionId) {}
     public record TextoIn(String texto) {}
     public record PanelEstudiante(List<SesionVista> sesiones, List<Aviso> avisos, int sinLeer) {}
     public record FilaSeguimiento(Long participacionId, Long estudianteId, String estudiante, String email,
-                                  String estado, Double nota, String retroalimentacion) {}
+                                  String estado, Double nota, String retroalimentacion, boolean repeticionAutorizada) {}
 }

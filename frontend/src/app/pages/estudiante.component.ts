@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -40,6 +40,9 @@ const enlaces = [
               </div>
               @if (sesion.participacionEstado === 'FINALIZADA' && sesion.participacionId) {
                 <a mat-stroked-button [routerLink]="['/estudiante/participacion', sesion.participacionId]">Ver resultados</a>
+                @if (sesion.repeticionAutorizada) {
+                  <a mat-flat-button color="primary" [routerLink]="['/estudiante/sesion', sesion.id]">Nuevo intento</a>
+                }
               } @else {
                 <a mat-flat-button color="primary" [routerLink]="['/estudiante/sesion', sesion.id]">Ingresar al caso</a>
               }
@@ -116,10 +119,10 @@ export class PanelEstudianteComponent {
           @if (error()) { <p class="error">{{ error() }}</p> }
           <div class="row">
             <a mat-stroked-button routerLink="/estudiante">Volver al panel</a>
-            @if (actual.participacionEstado === 'FINALIZADA' && actual.participacionId) {
+            @if (actual.participacionEstado === 'FINALIZADA' && actual.participacionId && !actual.repeticionAutorizada) {
               <button mat-flat-button color="primary" type="button" (click)="ver(actual.participacionId)">Ver resultados</button>
             } @else {
-              <button mat-flat-button color="primary" type="button" [disabled]="!acepto" (click)="iniciar(actual)">Iniciar simulación</button>
+              <button mat-flat-button color="primary" type="button" [disabled]="!acepto" (click)="iniciar(actual)">{{ actual.repeticionAutorizada ? 'Iniciar nuevo intento' : 'Iniciar simulación' }}</button>
             }
           </div>
         </section>
@@ -207,6 +210,7 @@ export class BriefingComponent {
               </article>
               @if (error()) { <p class="error">{{ error() }}</p> }
               <div class="row">
+                <button mat-stroked-button type="button" [disabled]="indice() === 0" (click)="mover(-1)">Escena anterior</button>
                 <button mat-stroked-button type="button" (click)="deshacer()">Deshacer</button>
                 @if (indice() < actual.preguntas.length - 1) {
                   <button mat-flat-button color="primary" type="button" (click)="mover(1)">Siguiente escena</button>
@@ -231,9 +235,17 @@ export class SimulacionComponent {
   error = signal('');
   restante = signal(0);
   private timer = 0;
+  private cerradoPorTiempo = false;
   constructor() {
     this.cargar();
-    this.timer = window.setInterval(() => this.restante.update((valor) => Math.max(0, valor - 1)), 1000);
+    this.timer = window.setInterval(() => {
+      this.restante.update((valor) => {
+        const siguiente = Math.max(0, valor - 1);
+        if (siguiente === 0 && valor > 0) this.porTiempo();
+        return siguiente;
+      });
+    }, 1000);
+    inject(DestroyRef).onDestroy(() => clearInterval(this.timer));
   }
   pregunta() { return this.juego()?.preguntas[this.indice()] ?? null; }
   nivel(nota: number | null) {
@@ -266,7 +278,15 @@ export class SimulacionComponent {
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
-  mover(delta: number) { this.indice.update((valor) => valor + delta); }
+  private porTiempo() {
+    if (this.cerradoPorTiempo || this.juego()?.estado !== 'EN_CURSO') return;
+    this.cerradoPorTiempo = true;
+    this.finalizar();
+  }
+  mover(delta: number) {
+    const total = this.juego()?.preguntas.length ?? 0;
+    this.indice.update((valor) => Math.min(total - 1, Math.max(0, valor + delta)));
+  }
   private cargar() {
     const id = this.route.snapshot.paramMap.get('id');
     this.http.get<Participacion>(`/api/participaciones/${id}`).subscribe({
