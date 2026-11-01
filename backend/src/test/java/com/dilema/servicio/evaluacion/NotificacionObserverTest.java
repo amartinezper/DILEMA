@@ -6,12 +6,17 @@ import com.dilema.servicio.BitacoraServicio;
 import com.dilema.servicio.ReglaNegocio;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 
 import java.time.LocalDateTime;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -70,6 +75,19 @@ class NotificacionObserverTest {
                 () -> EstadoDeParticipacion.de(enCurso, bitacora).agregarRetroalimentacionGeneral(enCurso, "texto"));
 
         verifyNoInteractions(bitacora);
+    }
+
+    @Test
+    @DisplayName("RF-27 si el correo falla, la operación continúa sin romperse")
+    void correoFallaYLaOperacionContinua() {
+        JavaMailSender mockSender = mock(JavaMailSender.class);
+        doThrow(new RuntimeException("SMTP caído")).when(mockSender).send(any(SimpleMailMessage.class));
+        BitacoraServicio bitacora = new BitacoraServicio(mockSender, "no-reply@dilema");
+        Usuario usuario = estudiante();
+
+        assertDoesNotThrow(() -> bitacora.avisar(usuario, "CORREO", "Nota", "cuerpo"));
+
+        verify(mockSender).send(any(SimpleMailMessage.class));
     }
 
     private Usuario estudiante() {
