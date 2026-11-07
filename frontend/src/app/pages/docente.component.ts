@@ -488,10 +488,7 @@ export class GruposComponent {
     });
   }
   retirar(grupoId: number, estudianteId: number) {
-    this.http.delete(`/api/docente/grupos/${grupoId}/estudiantes/${estudianteId}`).subscribe({
-      next: () => this.cargar(),
-      error: (falla) => this.error.set(mensajeError(falla))
-    });
+    this.http.delete(`/api/docente/grupos/${grupoId}/estudiantes/${estudianteId}`).subscribe({ next: () => this.cargar() });
   }
   elegir(id: number) { this.seleccionado.set(id); }
   private cargar() {

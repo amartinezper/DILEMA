@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -175,21 +174,9 @@ public class ApiControlador {
 
     @GetMapping(value = "/docente/sesiones/{id}/reporte.csv", produces = "text/csv")
     ResponseEntity<String> reporte(@PathVariable Long id, HttpServletRequest request) {
-        ArchivoReporte archivo = seguimiento.reporte(docente(request), id, "csv");
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=reporte-sesion-" + id + ".csv")
-                .body(new String(archivo.contenido(), StandardCharsets.UTF_8));
-    }
-
-    @GetMapping("/docente/sesiones/{id}/reporte")
-    ResponseEntity<byte[]> reporteFormato(@PathVariable Long id,
-                                          @RequestParam(defaultValue = "csv") String formato,
-                                          HttpServletRequest request) {
-        ArchivoReporte archivo = seguimiento.reporte(docente(request), id, formato);
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=reporte-sesion-" + id + "." + archivo.extension())
-                .contentType(tipo(archivo.extension()))
-                .body(archivo.contenido());
+                .body(participaciones.reporte(docente(request), id));
     }
 
     @GetMapping("/docente/sesiones/{id}/reporte")

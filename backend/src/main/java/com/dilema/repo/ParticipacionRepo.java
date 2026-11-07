@@ -13,5 +13,4 @@ public interface ParticipacionRepo extends JpaRepository<Participacion, Long> {
     /** Participaciones de un caso. Impiden despublicarlo aunque la sesión ya no esté. */
     boolean existsByCasoId(Long casoId);
     List<Participacion> findByEstudianteIdOrderByIdDesc(Long estudianteId);
-    List<Participacion> findBySesion_Id(Long sesionId);
 }
