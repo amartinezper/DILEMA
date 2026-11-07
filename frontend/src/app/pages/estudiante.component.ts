@@ -167,6 +167,9 @@ export class BriefingComponent {
             <p class="sub">{{ actual.caso }}</p>
             <p class="nota">Calificación final: {{ actual.nota ?? '—' }} / 5,0</p>
             <p class="sub">Nivel: {{ nivel(actual.nota) }}</p>
+            @if (actual.aciertos !== null) {
+              <p class="sub">Acertaste {{ actual.aciertos }} de {{ actual.total }} · Fallaste {{ actual.errores }} · Sin responder {{ actual.sinResponder }}</p>
+            }
             <h2>Resumen de respuestas</h2>
             @for (pregunta of actual.preguntas; track pregunta.id) {
               <article class="item">

@@ -7,6 +7,7 @@ import com.dilema.repo.SesionRepo;
 import com.dilema.servicio.evaluacion.EstadoDeParticipacion;
 import com.dilema.servicio.evaluacion.EstrategiaCalificacion;
 import com.dilema.servicio.evaluacion.ExplicacionReal;
+import com.dilema.servicio.evaluacion.ResumenIntento;
 import com.dilema.servicio.evaluacion.RetroalimentacionProxy;
 import com.dilema.servicio.seguimiento.ExportadorCSV;
 import com.dilema.servicio.seguimiento.GeneradorReporte;
@@ -291,11 +292,15 @@ public class ParticipacionServicio {
         long usados = participacion.inicio == null ? 0 : Math.max(0, Duration.between(participacion.inicio, hasta).getSeconds());
         int total = preguntas.size();
         int progreso = ProgresoParticipacion.porcentaje(participacion, total);
+        ResumenIntento resumen = ResumenIntento.de(participacion);
         return new Contratos.ParticipacionVista(participacion.id, participacion.sesion.id, participacion.estadoNombre(),
                 participacion.sesion.caso.nombre, progreso, total,
                 participacion.sesion.tiempoMaxMin * 60, usados, participacion.nota(),
                 participacion.comentarioDocente(), participacion.estudiante.nombre, preguntas,
-                participacion.autorizacion != null);
+                participacion.autorizacion != null,
+                resumen == null ? null : resumen.aciertos(),
+                resumen == null ? null : resumen.errores(),
+                resumen == null ? null : resumen.sinResponder());
     }
 
     /** RF-14: delega en el Proxy de protección la decisión de revelar el resultado al estudiante. */

@@ -58,6 +58,7 @@ export interface Participacion {
   id: number; sesionId: number; estado: string; caso: string; progreso: number; total: number;
   segundosMax: number; segundosUsados: number; nota: number | null; retroalimentacion: string | null;
   estudiante: string; preguntas: PreguntaJuego[]; repeticionAutorizada: boolean;
+  aciertos: number | null; errores: number | null; sinResponder: number | null;
 }
 export interface Fila { participacionId: number | null; estudianteId: number; estudiante: string; email: string; estado: string; nota: number | null; retroalimentacion: string | null; repeticionAutorizada: boolean; }
 export interface Auditoria { id: number; fecha: string; accion: string; detalle: string; usuario: string; }

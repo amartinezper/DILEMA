@@ -48,7 +48,8 @@ public final class Contratos {
                                 Long seleccionId, List<OpcionJuego> opciones) {}
     public record ParticipacionVista(Long id, Long sesionId, String estado, String caso, int progreso, int total,
                                      int segundosMax, long segundosUsados, Double nota, String retroalimentacion,
-                                     String estudiante, List<PreguntaJuego> preguntas, boolean repeticionAutorizada) {}
+                                     String estudiante, List<PreguntaJuego> preguntas, boolean repeticionAutorizada,
+                                     Integer aciertos, Integer errores, Integer sinResponder) {}
     public record RespuestaIn(Long preguntaId, Long opcionId) {}
     public record TextoIn(String texto) {}
     public record PanelEstudiante(List<SesionVista> sesiones, List<Aviso> avisos, int sinLeer) {}
