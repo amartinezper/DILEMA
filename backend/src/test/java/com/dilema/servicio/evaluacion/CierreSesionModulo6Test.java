@@ -29,8 +29,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -105,6 +107,64 @@ class CierreSesionModulo6Test {
         assertEquals(0.0, captor.getValue().nota());
         assertEquals(ausenteEstudiante.id, captor.getValue().estudiante.id);
         assertNotNull(sesion.cierreReal);
+    }
+
+    @Test
+    @DisplayName("RF-27 / RF-24 el ausente recibe el aviso de su nota 0,0 por correo y por sistema")
+    void ausenteRecibeAvisoDeNota() {
+        ParticipacionRepo participaciones = mock(ParticipacionRepo.class);
+        BitacoraServicio bitacora = mock(BitacoraServicio.class);
+        ParticipacionServicio servicio = new ParticipacionServicio(participaciones, mock(SesionRepo.class),
+                mock(PadronConvocatoria.class), new ProxyOperacion(), new Mapeador(), bitacora);
+        SesionCaso sesion = sesionConAusente();
+        Usuario ausente = sesion.grupo.estudiantes.iterator().next();
+        when(participaciones.findByEstudianteIdAndSesionId(ausente.id, sesion.id)).thenReturn(List.of());
+
+        new CierrePorDocente(servicio, participaciones, bitacora).cerrar(sesion);
+
+        verify(bitacora).avisar(eq(ausente), eq("CORREO"), eq("Nota del caso"), contains("0.0"));
+        verify(bitacora).avisar(eq(ausente), eq("SISTEMA"), eq("Nota del caso"), contains("0.0"));
+    }
+
+    @Test
+    @DisplayName("RF-24 sin bitácora (constructor anterior) el cierre sigue funcionando y no avisa")
+    void constructorAnteriorSigueFuncionando() {
+        ParticipacionRepo participaciones = mock(ParticipacionRepo.class);
+        BitacoraServicio bitacora = mock(BitacoraServicio.class);
+        ParticipacionServicio servicio = new ParticipacionServicio(participaciones, mock(SesionRepo.class),
+                mock(PadronConvocatoria.class), new ProxyOperacion(), new Mapeador(), bitacora);
+        SesionCaso sesion = sesionConAusente();
+        when(participaciones.findByEstudianteIdAndSesionId(any(), any())).thenReturn(List.of());
+
+        new CierrePorDocente(servicio, participaciones).cerrar(sesion);
+
+        verify(participaciones).save(any(Participacion.class));
+        verify(bitacora, never()).avisar(any(), any(), any(), any());
+    }
+
+    private SesionCaso sesionConAusente() {
+        Pregunta p1 = pregunta(21L, new BigDecimal("3.0"));
+        Pregunta p2 = pregunta(22L, new BigDecimal("2.0"));
+        p1.opciones.add(opcion(31L, true));
+        p2.opciones.add(opcion(41L, true));
+        Caso caso = new Caso();
+        caso.id = 5L;
+        caso.nombre = "Crisis";
+        Escenario escenario = new Escenario();
+        escenario.preguntas.add(p1);
+        escenario.preguntas.add(p2);
+        caso.escenarios.add(escenario);
+        Grupo grupo = new Grupo();
+        grupo.id = 8L;
+        grupo.estudiantes.add(estudiante(3L, "luis@psicosim.edu"));
+        SesionCaso sesion = new SesionCaso();
+        sesion.id = 4L;
+        sesion.caso = caso;
+        sesion.grupo = grupo;
+        sesion.inicioReal = LocalDateTime.now().minusHours(1);
+        sesion.fin = LocalDateTime.now().plusHours(1);
+        sesion.tiempoMaxMin = 40;
+        return sesion;
     }
 
     private Usuario estudiante(long id, String email) {

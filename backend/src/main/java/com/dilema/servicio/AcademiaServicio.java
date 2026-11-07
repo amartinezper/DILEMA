@@ -153,7 +153,7 @@ public class AcademiaServicio {
     public Contratos.SesionVista finalizar(Usuario docente, Long id) {
         proxy.revisarGrupo(docente);
         SesionCaso sesion = propia(docente, id);
-        new CierrePorDocente(participacionServicio, participaciones).cerrar(sesion);
+        new CierrePorDocente(participacionServicio, participaciones, bitacora).cerrar(sesion);
         bitacora.auditar(docente, "FINALIZAR_SESION", sesion.codigo);
         return mapeador.sesion(sesion);
     }
@@ -163,7 +163,7 @@ public class AcademiaServicio {
         LocalDateTime ahora = LocalDateTime.now();
         for (SesionCaso sesion : sesiones.findByCierreRealIsNull()) {
             if (EstadosDeSesion.vencioPlazoDeCierre(sesion, ahora)) {
-                new CierrePorFecha(participacionServicio, participaciones).cerrar(sesion);
+                new CierrePorFecha(participacionServicio, participaciones, bitacora).cerrar(sesion);
             }
         }
     }
