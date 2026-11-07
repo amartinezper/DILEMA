@@ -106,6 +106,11 @@ class CierreSesionModulo6Test {
         verify(participaciones).save(captor.capture());
         assertEquals(0.0, captor.getValue().nota());
         assertEquals(ausenteEstudiante.id, captor.getValue().estudiante.id);
+        assertEquals(2, captor.getValue().puntajes.size(), "RF-24: un registro por cada pregunta del caso");
+        assertEquals(new BigDecimal("0.0"), captor.getValue().puntajeDe(p1));
+        assertEquals(new BigDecimal("0.0"), captor.getValue().puntajeDe(p2));
+        assertEquals(new BigDecimal("3.0"), enCurso.puntajeDe(p1));
+        assertEquals(new BigDecimal("0.0"), enCurso.puntajeDe(p2));
         assertNotNull(sesion.cierreReal);
     }
 

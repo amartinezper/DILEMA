@@ -45,7 +45,7 @@ public final class Contratos {
 
     public record OpcionJuego(Long id, String texto, Boolean correcta, String explicacion, String fundamento) {}
     public record PreguntaJuego(Long id, String bloque, String contexto, String enunciado, String pista, String criterio,
-                                Long seleccionId, List<OpcionJuego> opciones) {}
+                                Long seleccionId, List<OpcionJuego> opciones, Double puntaje) {}
     public record ParticipacionVista(Long id, Long sesionId, String estado, String caso, int progreso, int total,
                                      int segundosMax, long segundosUsados, Double nota, String retroalimentacion,
                                      String estudiante, List<PreguntaJuego> preguntas, boolean repeticionAutorizada,

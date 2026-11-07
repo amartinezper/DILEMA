@@ -52,7 +52,7 @@ export interface PanelEstudiante { sesiones: Sesion[]; avisos: Aviso[]; sinLeer:
 export interface OpcionJuego { id: number; texto: string; correcta: boolean | null; explicacion: string | null; fundamento: string | null; }
 export interface PreguntaJuego {
   id: number; bloque: string; contexto: string; enunciado: string; pista: string | null; criterio: string;
-  seleccionId: number | null; opciones: OpcionJuego[];
+  seleccionId: number | null; opciones: OpcionJuego[]; puntaje: number | null;
 }
 export interface Participacion {
   id: number; sesionId: number; estado: string; caso: string; progreso: number; total: number;

@@ -71,6 +71,42 @@ class CalificacionParcialTest {
         assertEquals(new BigDecimal("5.0"), puntaje);
     }
 
+    @Test
+    @DisplayName("RF-24 el ausente queda con 0,0 registrado en cada pregunta del caso")
+    void ausenteTieneCeroPorPregunta() {
+        Pregunta p1 = pregunta(21L, new BigDecimal("3.0"));
+        Pregunta p2 = pregunta(22L, new BigDecimal("2.0"));
+        p1.opciones.add(opcion(31L, true));
+        p2.opciones.add(opcion(41L, true));
+        Participacion ausente = armarParticipacion(p1, p2);
+
+        new CalificacionParcial().calcularPuntaje(ausente);
+
+        assertEquals(2, ausente.puntajes.size());
+        assertEquals(new BigDecimal("0.0"), ausente.puntajeDe(p1));
+        assertEquals(new BigDecimal("0.0"), ausente.puntajeDe(p2));
+    }
+
+    @Test
+    @DisplayName("RF-13 el puntaje por pregunta suma la nota total y recalcular no duplica registros")
+    void puntajePorPreguntaSumaElTotal() {
+        Pregunta p1 = pregunta(21L, new BigDecimal("3.0"));
+        Pregunta p2 = pregunta(22L, new BigDecimal("2.0"));
+        Opcion correctaP1 = opcion(31L, true);
+        p1.opciones.add(correctaP1);
+        p2.opciones.add(opcion(41L, true));
+        Participacion participacion = armarParticipacion(p1, p2);
+        participacion.respuestas.add(respuesta(participacion, p1, correctaP1));
+
+        BigDecimal total = new CalificacionParcial().calcularPuntaje(participacion);
+        new CalificacionParcial().calcularPuntaje(participacion);
+
+        assertEquals(2, participacion.puntajes.size());
+        assertEquals(new BigDecimal("3.0"), participacion.puntajeDe(p1));
+        assertEquals(new BigDecimal("0.0"), participacion.puntajeDe(p2));
+        assertEquals(total, participacion.puntajes.stream().map(x -> x.puntaje).reduce(BigDecimal.ZERO, BigDecimal::add));
+    }
+
     private Respuesta respuesta(Participacion participacion, Pregunta pregunta, Opcion opcion) {
         Respuesta respuesta = new Respuesta();
         respuesta.participacion = participacion;

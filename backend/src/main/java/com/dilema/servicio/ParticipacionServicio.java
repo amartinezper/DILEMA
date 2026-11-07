@@ -284,8 +284,10 @@ public class ParticipacionServicio {
                                 RetroalimentacionProxy.visible(participacion) && o.retroalimentacion != null ? o.retroalimentacion.fundamento : null))
                         .toList();
                 String criterio = pregunta.criterio == null ? "" : pregunta.criterio.criterio;
+                BigDecimal puntaje = RetroalimentacionProxy.visible(participacion) ? participacion.puntajeDe(pregunta) : null;
                 preguntas.add(new Contratos.PreguntaJuego(pregunta.id, escenario.titulo, escenario.contexto,
-                        pregunta.enunciado, pregunta.pista, criterio, seleccion, opciones));
+                        pregunta.enunciado, pregunta.pista, criterio, seleccion, opciones,
+                        puntaje == null ? null : puntaje.doubleValue()));
             }
         }
         LocalDateTime hasta = participacion.fin == null ? LocalDateTime.now() : participacion.fin;
