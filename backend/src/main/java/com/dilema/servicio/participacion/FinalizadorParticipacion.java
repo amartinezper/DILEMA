@@ -2,7 +2,6 @@ package com.dilema.servicio.participacion;
 
 import com.dilema.modelo.Participacion;
 import com.dilema.servicio.BitacoraServicio;
-import com.dilema.servicio.evaluacion.ObservadorEstudiante;
 import com.dilema.servicio.evaluacion.SujetoNotificador;
 
 import java.math.BigDecimal;
@@ -27,12 +26,7 @@ public abstract class FinalizadorParticipacion {
         if (!participacion.enCurso()) return;
         participacion.fin = determinarFin(participacion);
         participacion.fijarNota(calcularNota.apply(participacion));
-        if (participacion.nota() != null) {
-            SujetoNotificador sujeto = new SujetoNotificador();
-            sujeto.agregar(new ObservadorEstudiante(participacion.estudiante, bitacora));
-            sujeto.notificar("NOTA_PUBLICADA",
-                    participacion.sesion.caso.nombre + ": " + participacion.nota() + " / 5,0.", "CORREO");
-        }
+        SujetoNotificador.publicarNota(participacion, bitacora);
     }
 
     protected abstract LocalDateTime determinarFin(Participacion participacion);

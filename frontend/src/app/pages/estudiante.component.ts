@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { forkJoin } from 'rxjs';
 import { MarcoComponent } from '../shared/marco.component';
 import { Aviso, PanelEstudiante, Participacion, Sesion, mensajeError } from '../core/api.service';
 
@@ -166,6 +167,9 @@ export class BriefingComponent {
             <p class="sub">{{ actual.caso }}</p>
             <p class="nota">Calificación final: {{ actual.nota ?? '—' }} / 5,0</p>
             <p class="sub">Nivel: {{ nivel(actual.nota) }}</p>
+            @if (actual.aciertos !== null) {
+              <p class="sub">Acertaste {{ actual.aciertos }} de {{ actual.total }} · Fallaste {{ actual.errores }} · Sin responder {{ actual.sinResponder }}</p>
+            }
             <h2>Resumen de respuestas</h2>
             @for (pregunta of actual.preguntas; track pregunta.id) {
               <article class="item">
@@ -326,13 +330,12 @@ export class AvisosComponent {
   enlaces = enlaces;
   private http = inject(HttpClient);
   avisos = signal<Aviso[]>([]);
-  leidos = signal<number[]>(JSON.parse(localStorage.getItem('dilema-leidos') || '[]'));
   constructor() { this.refrescar(); }
-  visibles() { return this.avisos().filter((aviso) => !this.leidos().includes(aviso.id)); }
+  visibles() { return this.avisos().filter((aviso) => !aviso.leida); }
   marcar() {
-    const ids = this.avisos().map((aviso) => aviso.id);
-    localStorage.setItem('dilema-leidos', JSON.stringify(ids));
-    this.leidos.set(ids);
+    const pendientes = this.visibles().map((aviso) => this.http.post<void>(`/api/estudiante/avisos/${aviso.id}/leer`, {}));
+    if (!pendientes.length) return;
+    forkJoin(pendientes).subscribe({ complete: () => this.refrescar(), error: () => this.refrescar() });
   }
   private refrescar() {
     this.http.get<PanelEstudiante>('/api/estudiante/panel').subscribe((panel) => this.avisos.set(panel.avisos));

@@ -1,0 +1,2911 @@
+{
+  "info": {
+    "name": "DILEMA — pruebas funcionales del backend",
+    "description": "Recorre el API de main (http://localhost:8080/api) con administración, docente y estudiante.\n\nImporta este archivo y ejecútalo con el Collection Runner, de arriba a abajo, en una sola corrida. El orden importa: cada petición guarda el id que usa la siguiente.\n\nLa primera petición genera un sello de tiempo, así que se puede correr otra vez sin chocar con correos ni grupos anteriores.\n\nCuentas de la semilla: admin@psicosim.edu / admin123 y docente@psicosim.edu / docente123. El estudiante de la prueba lo matricula el docente durante la corrida.\n\nEl backend tiene que estar levantado. Si corre en Docker, las fechas se envían en UTC, que es el reloj del contenedor.\n\nDeja en paz el caso de estudio inicial y el código DILEMA-2026. Esta colección crea su propio caso, grupo y convocatoria.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Salud y acceso",
+      "description": "Comprueba el servicio y separa el ingreso por clave del ingreso por código.",
+      "item": [
+        {
+          "name": "Salud",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/salud",
+            "description": "Público. Confirma que el backend está arriba."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const sello = String(Date.now());",
+                  "pm.collectionVariables.set(\"sello\", sello);",
+                  "pm.collectionVariables.set(\"emailEstudiante\", \"postman\" + sello + \"@psicosim.edu\");",
+                  "pm.collectionVariables.set(\"emailExtra\", \"extra\" + sello + \"@psicosim.edu\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"el servicio responde ok\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().estado).to.eql(\"ok\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Yo sin token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/auth/yo",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 401\", function () {",
+                  "  pm.response.to.have.status(401);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"Inicia sesión para continuar.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ingresar administración",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/ingresar",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@psicosim.edu\",\n  \"clave\": \"admin123\",\n  \"codigoAutorizacion\": \"\",\n  \"rol\": \"ADMIN\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const cuerpo = pm.response.json();",
+                  "pm.test(\"entra la administración\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(cuerpo.usuario.rol).to.eql(\"ADMIN\");",
+                  "  pm.expect(cuerpo.usuario.email).to.eql(\"admin@psicosim.edu\");",
+                  "  pm.expect(cuerpo.sesionId).to.eql(null);",
+                  "  pm.expect(cuerpo.token).to.be.a(\"string\").and.not.empty;",
+                  "});",
+                  "pm.collectionVariables.set(\"tokenAdmin\", cuerpo.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ingresar docente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/ingresar",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"docente@psicosim.edu\",\n  \"clave\": \"docente123\",\n  \"codigoAutorizacion\": \"\",\n  \"rol\": \"DOCENTE\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const cuerpo = pm.response.json();",
+                  "pm.test(\"entra el docente como PROFESOR\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(cuerpo.usuario.rol).to.eql(\"PROFESOR\");",
+                  "  pm.expect(cuerpo.usuario.email).to.eql(\"docente@psicosim.edu\");",
+                  "  pm.expect(cuerpo.sesionId).to.eql(null);",
+                  "});",
+                  "pm.collectionVariables.set(\"tokenDocente\", cuerpo.token);",
+                  "pm.collectionVariables.set(\"docenteId\", String(cuerpo.usuario.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Clave incorrecta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/ingresar",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"docente@psicosim.edu\",\n  \"clave\": \"no-es-la-clave\",\n  \"codigoAutorizacion\": \"\",\n  \"rol\": \"DOCENTE\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"Correo o clave incorrectos.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Estudiante con clave",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/ingresar",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"estudiante@psicosim.edu\",\n  \"clave\": \"cualquiera\",\n  \"codigoAutorizacion\": \"\",\n  \"rol\": \"ESTUDIANTE\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"El estudiante ingresa con el código de autorización de la convocatoria.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Yo docente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/yo",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const cuerpo = pm.response.json();",
+                  "pm.test(\"el token corresponde al docente\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(cuerpo.email).to.eql(\"docente@psicosim.edu\");",
+                  "  pm.expect(cuerpo.rol).to.eql(\"PROFESOR\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 Administración",
+      "description": "Permisos del docente, alta de cuentas y consultas de administración.",
+      "item": [
+        {
+          "name": "Listar usuarios",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/usuarios",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const lista = pm.response.json();",
+                  "pm.test(\"incluye al docente de la semilla\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(lista.some(u => u.email === \"docente@psicosim.edu\")).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Docente no administra usuarios",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/usuarios",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 403\", function () {",
+                  "  pm.response.to.have.status(403);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"No tienes permiso para esta operación.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Otorgar Editar y gestionar espacios",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/usuarios/{{docenteId}}/permisos",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"permisos\": [\n    \"EDITAR\",\n    \"GESTIONAR_ESPACIOS_ACADEMICOS\"\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const cuerpo = pm.response.json();",
+                  "pm.test(\"conserva Visualizar y suma los dos permisos\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(cuerpo.permisos).to.include(\"VISUALIZAR\");",
+                  "  pm.expect(cuerpo.permisos).to.include(\"EDITAR\");",
+                  "  pm.expect(cuerpo.permisos).to.include(\"GESTIONAR_ESPACIOS_ACADEMICOS\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "La administración no matricula estudiantes",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/usuarios",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Alguien\",\n  \"email\": \"alguien{{sello}}@psicosim.edu\",\n  \"clave\": \"secreto1\",\n  \"rol\": \"ESTUDIANTE\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"El docente registra y matricula a los estudiantes.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear otro docente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/usuarios",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Docente Postman\",\n  \"email\": \"docente{{sello}}@psicosim.edu\",\n  \"clave\": \"docente1\",\n  \"rol\": \"DOCENTE\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const cuerpo = pm.response.json();",
+                  "pm.test(\"nace docente y solo puede visualizar\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(cuerpo.rol).to.eql(\"PROFESOR\");",
+                  "  pm.expect(cuerpo.permisos).to.eql([\"VISUALIZAR\"]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar grupos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/grupos",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"devuelve una lista\", function () { pm.expect(pm.response.json()).to.be.an(\"array\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Auditoría",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/auditoria",
+            "description": "El endpoint existe y responde. Hoy la lista sale vacía."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde lista vacía\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json()).to.eql([]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 Diseño del caso",
+      "description": "Borrador, edición, publicación, copia, despublicar y archivar.",
+      "item": [
+        {
+          "name": "Listar casos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/casos",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const lista = pm.response.json();",
+                  "pm.test(\"la semilla incluye el caso publicado\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(lista.some(c => c.estado === \"PUBLICADO\")).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Borrador sin nombre",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/casos",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"nombre\":\"  \",\"bloques\":[],\"personajes\":[],\"rubrica\":[]}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"El borrador necesita al menos un nombre.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear caso para jugar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/casos",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Caso Postman {{sello}}\",\n  \"desarrolloSituacional\": \"El grupo debe acordar cómo abrir la conversación.\",\n  \"contexto\": \"Práctica en el aula.\",\n  \"tiempoEstimadoMin\": 40,\n  \"sensible\": false,\n  \"advertencia\": \"\",\n  \"repartoRubrica\": \"PONDERADA\",\n  \"bloques\": [\n    {\n      \"nombre\": \"Encuadre\",\n      \"contexto\": \"El grupo acaba de llegar.\",\n      \"preguntas\": [\n        {\n          \"enunciado\": \"¿Cuál es el primer paso?\",\n          \"pista\": \"Piensa en el permiso.\",\n          \"criterio\": \"Encuadre ético\",\n          \"peso\": 5.0,\n          \"opciones\": [\n            {\n              \"texto\": \"Pedir permiso para conversar.\",\n              \"correcta\": true,\n              \"explicacion\": \"El permiso abre la relación.\",\n              \"fundamento\": \"El encuadre pide consentimiento.\"\n            },\n            {\n              \"texto\": \"Dar la instrucción de inmediato.\",\n              \"correcta\": false,\n              \"explicacion\": \"Saltarse el permiso concentra la voz.\",\n              \"fundamento\": \"Dirigir sin permiso desplaza al grupo.\"\n            }\n          ]\n        }\n      ]\n    }\n  ],\n  \"personajes\": [\n    { \"nombre\": \"Ana\", \"descripcion\": \"Participa en el caso.\", \"escenarios\": [0] }\n  ],\n  \"rubrica\": []\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const caso = pm.response.json();",
+                  "pm.test(\"queda en borrador\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(caso.estado).to.eql(\"BORRADOR\");",
+                  "  pm.expect(caso.nombre).to.include(\"Caso Postman\");",
+                  "});",
+                  "pm.collectionVariables.set(\"casoId\", String(caso.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ver caso",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/casos/{{casoId}}",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"devuelve el caso creado\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().id).to.eql(Number(pm.collectionVariables.get(\"casoId\")));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Caso inexistente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/casos/999999999",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 404\", function () {",
+                  "  pm.response.to.have.status(404);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"Caso no encontrado.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Editar borrador",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/casos/{{casoId}}",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Caso Postman {{sello}} editado\",\n  \"desarrolloSituacional\": \"El grupo debe acordar cómo abrir la conversación.\",\n  \"contexto\": \"Práctica en el aula.\",\n  \"tiempoEstimadoMin\": 40,\n  \"sensible\": false,\n  \"advertencia\": \"\",\n  \"repartoRubrica\": \"PONDERADA\",\n  \"bloques\": [\n    {\n      \"nombre\": \"Encuadre\",\n      \"contexto\": \"El grupo acaba de llegar.\",\n      \"preguntas\": [\n        {\n          \"enunciado\": \"¿Cuál es el primer paso?\",\n          \"pista\": \"Piensa en el permiso.\",\n          \"criterio\": \"Encuadre ético\",\n          \"peso\": 5.0,\n          \"opciones\": [\n            {\n              \"texto\": \"Pedir permiso para conversar.\",\n              \"correcta\": true,\n              \"explicacion\": \"El permiso abre la relación.\",\n              \"fundamento\": \"El encuadre pide consentimiento.\"\n            },\n            {\n              \"texto\": \"Dar la instrucción de inmediato.\",\n              \"correcta\": false,\n              \"explicacion\": \"Saltarse el permiso concentra la voz.\",\n              \"fundamento\": \"Dirigir sin permiso desplaza al grupo.\"\n            }\n          ]\n        }\n      ]\n    }\n  ],\n  \"personajes\": [\n    { \"nombre\": \"Ana\", \"descripcion\": \"Participa en el caso.\", \"escenarios\": [0] }\n  ],\n  \"rubrica\": []\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const caso = pm.response.json();",
+                  "pm.test(\"sigue en borrador y trae la pregunta\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(caso.estado).to.eql(\"BORRADOR\");",
+                  "  pm.expect(caso.nombre).to.include(\"editado\");",
+                  "  pm.expect(caso.bloques[0].preguntas[0].opciones).to.have.lengthOf(2);",
+                  "});",
+                  "const pregunta = caso.bloques[0].preguntas[0];",
+                  "const correcta = pregunta.opciones.find(o => o.correcta);",
+                  "const incorrecta = pregunta.opciones.find(o => !o.correcta);",
+                  "pm.collectionVariables.set(\"preguntaId\", String(pregunta.id));",
+                  "pm.collectionVariables.set(\"opcionCorrectaId\", String(correcta.id));",
+                  "pm.collectionVariables.set(\"opcionIncorrectaId\", String(incorrecta.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Despublicar un borrador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/casos/{{casoId}}/despublicar",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"RF-09: un borrador no se despublica.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Archivar un borrador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/casos/{{casoId}}/archivar",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"RF-09: un borrador no se archiva. Primero se publica.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publicar caso para jugar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/casos/{{casoId}}/publicar",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"pasa a publicado\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().estado).to.eql(\"PUBLICADO\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publicar de nuevo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/casos/{{casoId}}/publicar",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"RF-09: el caso ya está publicado.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Duplicar caso",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/casos/{{casoId}}/duplicar",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const copia = pm.response.json();",
+                  "pm.test(\"la copia nace en borrador\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(copia.estado).to.eql(\"BORRADOR\");",
+                  "  pm.expect(copia.nombre).to.include(\"(copia)\");",
+                  "  pm.expect(copia.id).to.not.eql(Number(pm.collectionVariables.get(\"casoId\")));",
+                  "});",
+                  "pm.collectionVariables.set(\"casoCopiaId\", String(copia.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear caso para estados",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/casos",
+            "description": "Este caso no se agenda. Sirve para despublicar y archivar sin tocar la convocatoria.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Caso estados {{sello}}\",\n  \"desarrolloSituacional\": \"El grupo debe acordar cómo abrir la conversación.\",\n  \"contexto\": \"Práctica en el aula.\",\n  \"tiempoEstimadoMin\": 40,\n  \"sensible\": false,\n  \"advertencia\": \"\",\n  \"repartoRubrica\": \"PONDERADA\",\n  \"bloques\": [\n    {\n      \"nombre\": \"Encuadre\",\n      \"contexto\": \"El grupo acaba de llegar.\",\n      \"preguntas\": [\n        {\n          \"enunciado\": \"¿Cuál es el primer paso?\",\n          \"pista\": \"Piensa en el permiso.\",\n          \"criterio\": \"Encuadre ético\",\n          \"peso\": 5.0,\n          \"opciones\": [\n            {\n              \"texto\": \"Pedir permiso para conversar.\",\n              \"correcta\": true,\n              \"explicacion\": \"El permiso abre la relación.\",\n              \"fundamento\": \"El encuadre pide consentimiento.\"\n            },\n            {\n              \"texto\": \"Dar la instrucción de inmediato.\",\n              \"correcta\": false,\n              \"explicacion\": \"Saltarse el permiso concentra la voz.\",\n              \"fundamento\": \"Dirigir sin permiso desplaza al grupo.\"\n            }\n          ]\n        }\n      ]\n    }\n  ],\n  \"personajes\": [\n    { \"nombre\": \"Ana\", \"descripcion\": \"Participa en el caso.\", \"escenarios\": [0] }\n  ],\n  \"rubrica\": []\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const caso = pm.response.json();",
+                  "pm.test(\"borrador de estados\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(caso.estado).to.eql(\"BORRADOR\");",
+                  "});",
+                  "pm.collectionVariables.set(\"casoEstadoId\", String(caso.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publicar caso de estados",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/casos/{{casoEstadoId}}/publicar",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"publicado\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().estado).to.eql(\"PUBLICADO\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Despublicar sin sesiones",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/casos/{{casoEstadoId}}/despublicar",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"vuelve a borrador\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().estado).to.eql(\"BORRADOR\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publicar otra vez para archivar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/casos/{{casoEstadoId}}/publicar",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"publicado de nuevo\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().estado).to.eql(\"PUBLICADO\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Archivar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/casos/{{casoEstadoId}}/archivar",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"queda archivado\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().estado).to.eql(\"ARCHIVADO\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Archivar de nuevo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/casos/{{casoEstadoId}}/archivar",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"RF-09: el caso ya está archivado.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Editar un archivado",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/casos/{{casoEstadoId}}",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Caso estados {{sello}} tocado\",\n  \"desarrolloSituacional\": \"El grupo debe acordar cómo abrir la conversación.\",\n  \"contexto\": \"Práctica en el aula.\",\n  \"tiempoEstimadoMin\": 40,\n  \"sensible\": false,\n  \"advertencia\": \"\",\n  \"repartoRubrica\": \"PONDERADA\",\n  \"bloques\": [\n    {\n      \"nombre\": \"Encuadre\",\n      \"contexto\": \"El grupo acaba de llegar.\",\n      \"preguntas\": [\n        {\n          \"enunciado\": \"¿Cuál es el primer paso?\",\n          \"pista\": \"Piensa en el permiso.\",\n          \"criterio\": \"Encuadre ético\",\n          \"peso\": 5.0,\n          \"opciones\": [\n            {\n              \"texto\": \"Pedir permiso para conversar.\",\n              \"correcta\": true,\n              \"explicacion\": \"El permiso abre la relación.\",\n              \"fundamento\": \"El encuadre pide consentimiento.\"\n            },\n            {\n              \"texto\": \"Dar la instrucción de inmediato.\",\n              \"correcta\": false,\n              \"explicacion\": \"Saltarse el permiso concentra la voz.\",\n              \"fundamento\": \"Dirigir sin permiso desplaza al grupo.\"\n            }\n          ]\n        }\n      ]\n    }\n  ],\n  \"personajes\": [\n    { \"nombre\": \"Ana\", \"descripcion\": \"Participa en el caso.\", \"escenarios\": [0] }\n  ],\n  \"rubrica\": []\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"RF-09: solo se edita un caso en borrador.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 Grupo y convocatoria",
+      "description": "Matrícula, reglas de agenda e inicio de la sesión.",
+      "item": [
+        {
+          "name": "Grupo sin nombre",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/grupos",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"nombre\":\" \",\"espacioAcademico\":\"2026-I\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"El grupo necesita nombre y semestre.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear grupo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/grupos",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Grupo {{sello}}\",\n  \"espacioAcademico\": \"2026-I\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const grupo = pm.response.json();",
+                  "pm.test(\"grupo del docente\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(grupo.nombre).to.include(pm.collectionVariables.get(\"sello\"));",
+                  "  pm.expect(grupo.espacioAcademico).to.eql(\"2026-I\");",
+                  "  pm.expect(grupo.estudiantes).to.eql([]);",
+                  "});",
+                  "pm.collectionVariables.set(\"grupoId\", String(grupo.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar mis grupos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/grupos",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"incluye el grupo nuevo\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const id = Number(pm.collectionVariables.get(\"grupoId\"));",
+                  "  pm.expect(pm.response.json().some(g => g.id === id)).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Correo inválido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/grupos/{{grupoId}}/estudiantes",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"nombre\":\"Sin correo\",\"email\":\"correo-invalido\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"Indica un correo institucional válido.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Matricular estudiante",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/grupos/{{grupoId}}/estudiantes",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Estudiante Postman\",\n  \"email\": \"{{emailEstudiante}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const grupo = pm.response.json();",
+                  "pm.test(\"el estudiante queda en el grupo\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const estudiante = grupo.estudiantes.find(e => e.email === pm.collectionVariables.get(\"emailEstudiante\"));",
+                  "  pm.expect(estudiante).to.be.an(\"object\");",
+                  "  pm.expect(estudiante.nombre).to.eql(\"Estudiante Postman\");",
+                  "  pm.collectionVariables.set(\"estudianteId\", String(estudiante.id));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Matricular al mismo estudiante",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/grupos/{{grupoId}}/estudiantes",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Estudiante Postman\",\n  \"email\": \"{{emailEstudiante}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"El estudiante ya está en el grupo.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Matricular un segundo estudiante",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/grupos/{{grupoId}}/estudiantes",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Estudiante extra\",\n  \"email\": \"{{emailExtra}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const grupo = pm.response.json();",
+                  "pm.test(\"entra el segundo\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const extra = grupo.estudiantes.find(e => e.email === pm.collectionVariables.get(\"emailExtra\"));",
+                  "  pm.expect(extra).to.be.an(\"object\");",
+                  "  pm.collectionVariables.set(\"estudianteExtraId\", String(extra.id));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Retirar al segundo estudiante",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/grupos/{{grupoId}}/estudiantes/{{estudianteExtraId}}",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const grupo = pm.response.json();",
+                  "pm.test(\"sale el segundo y se queda el primero\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const correos = grupo.estudiantes.map(e => e.email);",
+                  "  pm.expect(correos).to.include(pm.collectionVariables.get(\"emailEstudiante\"));",
+                  "  pm.expect(correos).to.not.include(pm.collectionVariables.get(\"emailExtra\"));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Agendar un borrador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/sesiones",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"casoId\": {{casoCopiaId}},\n  \"grupoId\": {{grupoId}},\n  \"inicio\": \"{{inicio}}\",\n  \"fin\": \"{{fin}}\",\n  \"tiempoMaxMin\": 30,\n  \"toleranciaMin\": 180,\n  \"lugar\": \"Aula 3\",\n  \"mensaje\": \"No debe crearse.\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const inicio = new Date();",
+                  "const fin = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);",
+                  "const iso = (fecha) => fecha.toISOString().slice(0, 19);",
+                  "pm.collectionVariables.set(\"inicio\", iso(inicio));",
+                  "pm.collectionVariables.set(\"fin\", iso(fin));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"INV-17: el caso debe estar publicado para agendarlo.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tiempo mayor que el estimado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/sesiones",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"casoId\": {{casoId}},\n  \"grupoId\": {{grupoId}},\n  \"inicio\": \"{{inicio}}\",\n  \"fin\": \"{{fin}}\",\n  \"tiempoMaxMin\": 41,\n  \"toleranciaMin\": 180,\n  \"lugar\": \"Aula 3\",\n  \"mensaje\": \"Supera el estimado.\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"RF-18: el tiempo máximo no puede superar el estimado del caso.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Agendar convocatoria",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/sesiones",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"casoId\": {{casoId}},\n  \"grupoId\": {{grupoId}},\n  \"inicio\": \"{{inicio}}\",\n  \"fin\": \"{{fin}}\",\n  \"tiempoMaxMin\": 30,\n  \"toleranciaMin\": 180,\n  \"lugar\": \"Aula 3\",\n  \"mensaje\": \"Convocatoria de la prueba funcional.\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const sesion = pm.response.json();",
+                  "pm.test(\"queda sin iniciar y trae código\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(sesion.estado).to.eql(\"SIN_INICIAR\");",
+                  "  pm.expect(sesion.codigo).to.be.a(\"string\").and.not.empty;",
+                  "  pm.expect(sesion.casoId).to.eql(Number(pm.collectionVariables.get(\"casoId\")));",
+                  "  pm.expect(sesion.grupoId).to.eql(Number(pm.collectionVariables.get(\"grupoId\")));",
+                  "});",
+                  "pm.collectionVariables.set(\"sesionId\", String(sesion.id));",
+                  "pm.collectionVariables.set(\"codigo\", sesion.codigo);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar sesiones",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/sesiones",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"incluye la convocatoria\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const id = Number(pm.collectionVariables.get(\"sesionId\"));",
+                  "  pm.expect(pm.response.json().some(s => s.id === id)).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Entrar antes de que el docente inicie",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/ingresar",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailEstudiante}}\",\n  \"clave\": null,\n  \"codigoAutorizacion\": \"{{codigo}}\",\n  \"rol\": \"ESTUDIANTE\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"La sesión todavía no ha sido iniciada por el docente.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Iniciar sesión",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/sesiones/{{sesionId}}/iniciar",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"pasa a en curso\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().estado).to.eql(\"EN_CURSO\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Iniciar la sesión otra vez",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/sesiones/{{sesionId}}/iniciar",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"RF-19: solo se inicia una sesión sin iniciar.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Participaciones antes de jugar",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/seguimiento/sesiones/{{sesionId}}/participaciones",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"RF-15: la sesión no tiene participaciones.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 Juego, evaluación y reportes",
+      "description": "Intento del estudiante, nota, valoración, repetición, CSV, PDF y Excel.",
+      "item": [
+        {
+          "name": "Ingresar estudiante",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/ingresar",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailEstudiante}}\",\n  \"clave\": null,\n  \"codigoAutorizacion\": \"{{codigo}}\",\n  \"rol\": \"ESTUDIANTE\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const cuerpo = pm.response.json();",
+                  "pm.test(\"entra con el código de la convocatoria\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(cuerpo.usuario.rol).to.eql(\"ESTUDIANTE\");",
+                  "  pm.expect(cuerpo.usuario.email).to.eql(pm.collectionVariables.get(\"emailEstudiante\"));",
+                  "  pm.expect(cuerpo.sesionId).to.eql(Number(pm.collectionVariables.get(\"sesionId\")));",
+                  "});",
+                  "pm.collectionVariables.set(\"tokenEstudiante\", cuerpo.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "El estudiante no crea casos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEstudiante}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/casos",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"nombre\":\"No debe crearse\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 403\", function () {",
+                  "  pm.response.to.have.status(403);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"No tienes permiso para esta operación.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Panel",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEstudiante}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/estudiante/panel",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const panel = pm.response.json();",
+                  "pm.test(\"ve la convocatoria y el aviso\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const id = Number(pm.collectionVariables.get(\"sesionId\"));",
+                  "  pm.expect(panel.sesiones.some(s => s.id === id && s.estado === \"EN_CURSO\")).to.eql(true);",
+                  "  const aviso = panel.avisos.find(a => a.titulo === \"Caso asignado\");",
+                  "  pm.expect(aviso).to.be.an(\"object\");",
+                  "  pm.collectionVariables.set(\"avisoId\", String(aviso.id));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Marcar aviso leído",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEstudiante}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/estudiante/avisos/{{avisoId}}/leer",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Abrir participación",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEstudiante}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/estudiante/sesiones/{{sesionId}}/participaciones",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const juego = pm.response.json();",
+                  "pm.test(\"empieza sin nota y sin revelar la respuesta\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(juego.estado).to.eql(\"EN_CURSO\");",
+                  "  pm.expect(juego.total).to.eql(1);",
+                  "  pm.expect(juego.progreso).to.eql(0);",
+                  "  pm.expect(juego.nota).to.eql(null);",
+                  "  pm.expect(juego.preguntas[0].opciones[0].correcta).to.eql(null);",
+                  "});",
+                  "pm.collectionVariables.set(\"participacionId\", String(juego.id));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ver participación",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEstudiante}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/participaciones/{{participacionId}}",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"el estudiante ve su intento\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().id).to.eql(Number(pm.collectionVariables.get(\"participacionId\")));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "El docente consulta el intento abierto",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/participaciones/{{participacionId}}",
+            "description": "El docente del grupo puede ver el intento. La opción correcta se marca, y la explicación espera a que el intento termine."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const juego = pm.response.json();",
+                  "pm.test(\"ve cuál es la correcta y todavía no la explicación\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(juego.id).to.eql(Number(pm.collectionVariables.get(\"participacionId\")));",
+                  "  const correcta = juego.preguntas[0].opciones.find(o => o.id === Number(pm.collectionVariables.get(\"opcionCorrectaId\")));",
+                  "  pm.expect(correcta.correcta).to.eql(true);",
+                  "  pm.expect(correcta.explicacion).to.eql(null);",
+                  "  pm.expect(correcta.fundamento).to.eql(null);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Responder la opción incorrecta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEstudiante}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/participaciones/{{participacionId}}/responder",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"preguntaId\": {{preguntaId}}, \"opcionId\": {{opcionIncorrectaId}} }"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const juego = pm.response.json();",
+                  "pm.test(\"queda seleccionada y no revela si era correcta\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(juego.progreso).to.eql(100);",
+                  "  pm.expect(juego.preguntas[0].seleccionId).to.eql(Number(pm.collectionVariables.get(\"opcionIncorrectaId\")));",
+                  "  pm.expect(juego.preguntas[0].opciones.every(o => o.correcta === null)).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Deshacer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEstudiante}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/participaciones/{{participacionId}}/deshacer",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const juego = pm.response.json();",
+                  "pm.test(\"la selección vuelve a vacía\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(juego.progreso).to.eql(0);",
+                  "  pm.expect(juego.preguntas[0].seleccionId).to.eql(null);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Deshacer sin respuestas",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEstudiante}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/participaciones/{{participacionId}}/deshacer",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"No hay respuestas para deshacer.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Responder la opción correcta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEstudiante}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/participaciones/{{participacionId}}/responder",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"preguntaId\": {{preguntaId}}, \"opcionId\": {{opcionCorrectaId}} }"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"selecciona la opción correcta\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().preguntas[0].seleccionId).to.eql(Number(pm.collectionVariables.get(\"opcionCorrectaId\")));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Valorar antes de finalizar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/participaciones/{{participacionId}}/retroalimentacion",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"texto\":\"Todavía no.\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"RF-26: la valoración general solo se registra cuando la participación finalizó.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Finalizar participación",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEstudiante}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/participaciones/{{participacionId}}/finalizar",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const juego = pm.response.json();",
+                  "pm.test(\"cierra con 5,0 y revela la explicación\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(juego.estado).to.eql(\"FINALIZADA\");",
+                  "  pm.expect(juego.nota).to.eql(5);",
+                  "  const correcta = juego.preguntas[0].opciones.find(o => o.id === Number(pm.collectionVariables.get(\"opcionCorrectaId\")));",
+                  "  pm.expect(correcta.correcta).to.eql(true);",
+                  "  pm.expect(correcta.explicacion).to.eql(\"El permiso abre la relación.\");",
+                  "  pm.expect(correcta.fundamento).to.eql(\"El encuadre pide consentimiento.\");",
+                  "});",
+                  "pm.test(\"resumen de resultados: 1 acierto, 0 errores, 0 sin responder\", function () {",
+                  "  pm.expect(juego.aciertos).to.eql(1);",
+                  "  pm.expect(juego.errores).to.eql(0);",
+                  "  pm.expect(juego.sinResponder).to.eql(0);",
+                  "  pm.expect(juego.total).to.eql(1);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Panel tras marcar leído",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEstudiante}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/estudiante/panel",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const panel = pm.response.json();",
+                  "pm.test(\"el aviso marcado queda leído y sinLeer solo cuenta los no leídos\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const id = Number(pm.collectionVariables.get(\"avisoId\"));",
+                  "  const aviso = panel.avisos.find(a => a.id === id);",
+                  "  pm.expect(aviso).to.be.an(\"object\");",
+                  "  pm.expect(aviso.leida).to.eql(true);",
+                  "  pm.expect(panel.sinLeer).to.eql(panel.avisos.filter(a => !a.leida).length);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Seguimiento de la sesión",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/sesiones/{{sesionId}}/seguimiento",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const filas = pm.response.json();",
+                  "pm.test(\"el estudiante aparece finalizado con 5,0\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const fila = filas.find(f => f.email === pm.collectionVariables.get(\"emailEstudiante\"));",
+                  "  pm.expect(fila.estado).to.eql(\"FINALIZADA\");",
+                  "  pm.expect(fila.nota).to.eql(5);",
+                  "  pm.expect(fila.participacionId).to.eql(Number(pm.collectionVariables.get(\"participacionId\")));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Participaciones de la sesión",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/seguimiento/sesiones/{{sesionId}}/participaciones",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const lista = pm.response.json();",
+                  "pm.test(\"hay un intento finalizado\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(lista).to.have.lengthOf(1);",
+                  "  pm.expect(lista[0].id).to.eql(Number(pm.collectionVariables.get(\"participacionId\")));",
+                  "  pm.expect(lista[0].estado).to.eql(\"FINALIZADA\");",
+                  "  pm.expect(lista[0].numeroIntento).to.eql(1);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ver el intento",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/seguimiento/participaciones/{{participacionId}}",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const consulta = pm.response.json();",
+                  "pm.test(\"muestra la respuesta vigente y todavía sin valoración\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(consulta.numeroIntento).to.eql(1);",
+                  "  pm.expect(consulta.valoracionGeneral).to.eql(\"\");",
+                  "  pm.expect(consulta.respuestas[0].acertada).to.eql(true);",
+                  "  pm.expect(consulta.respuestas[0].explicacion).to.eql(\"El permiso abre la relación.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reporte CSV fijo",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/sesiones/{{sesionId}}/reporte.csv",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"el CSV trae el intento completo en nivel superior\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.headers.get(\"Content-Disposition\")).to.include(\"reporte-sesion-\");",
+                  "  const texto = pm.response.text();",
+                  "  pm.expect(texto).to.include(\"estudiante,estado,puntaje,aciertos,totalPreguntas,nivel,valoracionGeneral\");",
+                  "  pm.expect(texto).to.include(\"COMPLETA,5.0,1,1,SUPERIOR\");",
+                  "  pm.expect(texto).to.include(\"Estudiante Postman\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reporte CSV por formato",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/sesiones/{{sesionId}}/reporte?formato=csv",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"CSV descargable\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"text/csv\");",
+                  "  pm.expect(pm.response.headers.get(\"Content-Disposition\")).to.include(\".csv\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reporte PDF",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/sesiones/{{sesionId}}/reporte?formato=pdf",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"PDF descargable\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/pdf\");",
+                  "  pm.expect(pm.response.headers.get(\"Content-Disposition\")).to.include(\".pdf\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reporte Excel",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/sesiones/{{sesionId}}/reporte?formato=xlsx",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Excel descargable\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"spreadsheetml\");",
+                  "  pm.expect(pm.response.headers.get(\"Content-Disposition\")).to.include(\".xlsx\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Formato de reporte inválido",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/sesiones/{{sesionId}}/reporte?formato=doc",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"RF-16: el formato debe ser pdf, xlsx o csv.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registrar valoración",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/participaciones/{{participacionId}}/retroalimentacion",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"texto\":\"Valoración de la prueba funcional.\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Aviso de valoración en el panel",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEstudiante}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/estudiante/panel",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const panel = pm.response.json();",
+                  "pm.test(\"aparece el aviso de la valoración del docente sin leer\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const aviso = panel.avisos.find(a => a.titulo === \"Retroalimentación del docente\");",
+                  "  pm.expect(aviso).to.be.an(\"object\");",
+                  "  pm.expect(aviso.cuerpo).to.include(\"Valoración de la prueba funcional.\");",
+                  "  pm.expect(aviso.leida).to.eql(false);",
+                  "});",
+                  "pm.test(\"aparece el aviso de la nota\", function () {",
+                  "  const aviso = panel.avisos.find(a => a.titulo === \"Nota del caso\");",
+                  "  pm.expect(aviso).to.be.an(\"object\");",
+                  "  pm.expect(aviso.cuerpo).to.match(/5[.,]0/);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ver la valoración",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/seguimiento/participaciones/{{participacionId}}",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"guarda la valoración general\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().valoracionGeneral).to.eql(\"Valoración de la prueba funcional.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Autorizar repetición",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/participaciones/{{participacionId}}/repeticion",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Abrir el segundo intento",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEstudiante}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/estudiante/sesiones/{{sesionId}}/participaciones",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const juego = pm.response.json();",
+                  "pm.test(\"abre otro intento en curso\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(juego.estado).to.eql(\"EN_CURSO\");",
+                  "  pm.expect(juego.id).to.not.eql(Number(pm.collectionVariables.get(\"participacionId\")));",
+                  "  pm.expect(juego.progreso).to.eql(0);",
+                  "});",
+                  "pm.test(\"en curso no anticipa el resumen de resultados\", function () {",
+                  "  pm.expect(juego.aciertos ?? null).to.eql(null);",
+                  "  pm.expect(juego.errores ?? null).to.eql(null);",
+                  "  pm.expect(juego.sinResponder ?? null).to.eql(null);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sesiones realizadas todavía en curso",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/seguimiento/sesiones",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"la convocatoria en curso no aparece como realizada\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const id = Number(pm.collectionVariables.get(\"sesionId\"));",
+                  "  pm.expect(pm.response.json().some(s => s.id === id)).to.eql(false);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Matricular estudiante ausente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/grupos/{{grupoId}}/estudiantes",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Estudiante ausente\",\n  \"email\": \"{{emailAusente}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"emailAusente\", \"ausente\" + pm.collectionVariables.get(\"sello\") + \"@psicosim.edu\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const grupo = pm.response.json();",
+                  "pm.test(\"el estudiante ausente queda en el grupo\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const ausente = grupo.estudiantes.find(e => e.email === pm.collectionVariables.get(\"emailAusente\"));",
+                  "  pm.expect(ausente).to.be.an(\"object\");",
+                  "  pm.collectionVariables.set(\"estudianteAusenteId\", String(ausente.id));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ingresar estudiante ausente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/ingresar",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailAusente}}\",\n  \"clave\": null,\n  \"codigoAutorizacion\": \"{{codigo}}\",\n  \"rol\": \"ESTUDIANTE\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const cuerpo = pm.response.json();",
+                  "pm.test(\"el ausente entra con el código y guarda su token\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(cuerpo.usuario.rol).to.eql(\"ESTUDIANTE\");",
+                  "  pm.expect(cuerpo.usuario.email).to.eql(pm.collectionVariables.get(\"emailAusente\"));",
+                  "});",
+                  "pm.collectionVariables.set(\"tokenAusente\", cuerpo.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Finalizar sesión",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/sesiones/{{sesionId}}/finalizar",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"la sesión queda finalizada\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().estado).to.eql(\"FINALIZADO\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Seguimiento tras el cierre",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/sesiones/{{sesionId}}/seguimiento",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const filas = pm.response.json();",
+                  "pm.test(\"el ausente queda AUSENTE con nota 0,0\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const fila = filas.find(f => f.email === pm.collectionVariables.get(\"emailAusente\"));",
+                  "  pm.expect(fila).to.be.an(\"object\");",
+                  "  pm.expect(fila.estado).to.eql(\"AUSENTE\");",
+                  "  pm.expect(fila.nota).to.eql(0);",
+                  "  pm.expect(fila.participacionId).to.not.eql(null);",
+                  "  pm.collectionVariables.set(\"ausenteParticipacionId\", String(fila.participacionId));",
+                  "});",
+                  "pm.test(\"el intento que quedó incompleto se cierra con nota parcial\", function () {",
+                  "  const fila = filas.find(f => f.email === pm.collectionVariables.get(\"emailEstudiante\"));",
+                  "  pm.expect(fila.estado).to.eql(\"FINALIZADA\");",
+                  "  pm.expect(fila.nota).to.eql(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ver el intento del ausente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/participaciones/{{ausenteParticipacionId}}",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const juego = pm.response.json();",
+                  "pm.test(\"el ausente tiene 0 en cada pregunta del caso\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(juego.estado).to.eql(\"AUSENTE\");",
+                  "  pm.expect(juego.nota).to.eql(0);",
+                  "  pm.expect(juego.preguntas).to.have.lengthOf(juego.total);",
+                  "  pm.expect(juego.preguntas.every(p => p.puntaje === 0)).to.eql(true);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Panel del ausente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAusente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/estudiante/panel",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const panel = pm.response.json();",
+                  "pm.test(\"el ausente recibió el aviso de su nota 0,0 sin leer\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const aviso = panel.avisos.find(a => a.titulo === \"Nota del caso\");",
+                  "  pm.expect(aviso).to.be.an(\"object\");",
+                  "  pm.expect(aviso.cuerpo).to.match(/0[.,]0/);",
+                  "  pm.expect(aviso.leida).to.eql(false);",
+                  "  pm.expect(panel.sinLeer).to.be.at.least(1);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Entrar con la sesión cerrada",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEstudiante}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/estudiante/sesiones/{{sesionId}}/participaciones",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"RF-25: la sesión ya finalizó y no admite participación.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Finalizar la sesión otra vez",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/sesiones/{{sesionId}}/finalizar",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 400\", function () {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"RF-19: una sesión finalizada no admite operaciones.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sesiones realizadas",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/docente/seguimiento/sesiones",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"la convocatoria finalizada ya se puede recorrer\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  const id = Number(pm.collectionVariables.get(\"sesionId\"));",
+                  "  const encontrada = pm.response.json().find(s => s.id === id);",
+                  "  pm.expect(encontrada).to.be.an(\"object\");",
+                  "  pm.expect(encontrada.caso).to.include(\"Caso Postman\");",
+                  "  pm.expect(encontrada.grupo).to.include(pm.collectionVariables.get(\"sello\"));",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 Cierre de sesión",
+      "description": "Revoca un token y comprueba que ya no entra.",
+      "item": [
+        {
+          "name": "Ingresar para cerrar",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/ingresar",
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@psicosim.edu\",\n  \"clave\": \"admin123\",\n  \"codigoAutorizacion\": \"\",\n  \"rol\": \"ADMIN\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const cuerpo = pm.response.json();",
+                  "pm.test(\"token de un solo uso\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(cuerpo.token).to.be.a(\"string\").and.not.empty;",
+                  "});",
+                  "pm.collectionVariables.set(\"tokenCierre\", cuerpo.token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cerrar sesión",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCierre}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/sesion",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Usar el token revocado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCierre}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/yo",
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"responde 401\", function () {",
+                  "  pm.response.to.have.status(401);",
+                  "  pm.expect(pm.response.json().mensaje).to.eql(\"Inicia sesión para continuar.\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
