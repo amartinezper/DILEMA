@@ -192,6 +192,17 @@ public class ApiControlador {
                 .body(archivo.contenido());
     }
 
+    @GetMapping("/docente/sesiones/{id}/reporte")
+    ResponseEntity<byte[]> reporteFormato(@PathVariable Long id,
+                                          @RequestParam(defaultValue = "csv") String formato,
+                                          HttpServletRequest request) {
+        ArchivoReporte archivo = seguimiento.reporte(docente(request), id, formato);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=reporte-sesion-" + id + "." + archivo.extension())
+                .contentType(tipo(archivo.extension()))
+                .body(archivo.contenido());
+    }
+
     @PostMapping("/docente/participaciones/{id}/retroalimentacion")
     void retro(@PathVariable Long id, @RequestBody Contratos.TextoIn cuerpo, HttpServletRequest request) {
         participaciones.retroalimentar(docente(request), id, cuerpo.texto());

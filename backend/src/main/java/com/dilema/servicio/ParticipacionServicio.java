@@ -4,10 +4,16 @@ import com.dilema.dto.Contratos;
 import com.dilema.modelo.*;
 import com.dilema.repo.ParticipacionRepo;
 import com.dilema.repo.SesionRepo;
+import com.dilema.servicio.evaluacion.EstadoDeParticipacion;
+import com.dilema.servicio.evaluacion.EstrategiaCalificacion;
+import com.dilema.servicio.evaluacion.ExplicacionReal;
+import com.dilema.servicio.evaluacion.ResumenIntento;
+import com.dilema.servicio.evaluacion.RetroalimentacionProxy;
+import com.dilema.servicio.seguimiento.ExportadorCSV;
+import com.dilema.servicio.seguimiento.GeneradorReporte;
 import com.dilema.servicio.participacion.ComandoRespuesta;
 import com.dilema.servicio.participacion.FinalizadorParticipacion;
 import com.dilema.servicio.participacion.HistorialRespuestas;
-import com.dilema.servicio.participacion.LecturaAvisos;
 import com.dilema.servicio.participacion.ProgresoParticipacion;
 import com.dilema.servicio.participacion.ProxyParticipacion;
 import com.dilema.servicio.participacion.RelojParticipacion;
@@ -16,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -36,21 +41,22 @@ public class ParticipacionServicio {
     private final BitacoraServicio bitacora;
     private final HistorialRespuestas historial = new HistorialRespuestas();
     private final ProxyParticipacion puerta = new ProxyParticipacion();
-    private final LecturaAvisos lecturas;
 
     public ParticipacionServicio(ParticipacionRepo participaciones, SesionRepo sesiones, PadronConvocatoria padron,
-                                 ProxyOperacion proxy, Mapeador mapeador, BitacoraServicio bitacora,
-                                 LecturaAvisos lecturas) {
+                                 ProxyOperacion proxy, Mapeador mapeador, BitacoraServicio bitacora) {
         this.participaciones = participaciones;
         this.sesiones = sesiones;
         this.padron = padron;
         this.proxy = proxy;
         this.mapeador = mapeador;
         this.bitacora = bitacora;
-        this.lecturas = lecturas;
     }
 
-    @Transactional(readOnly = true)
+    /**
+     * RF-27: los avisos del panel son notificaciones guardadas. "Caso asignado" y
+     * "Recordatorio de vencimiento" se registran una sola vez por sesión para tener id real.
+     */
+    @Transactional
     public Contratos.PanelEstudiante panel(Usuario estudiante) {
         proxy.participar(estudiante);
         List<SesionCaso> propias = sesiones.delEstudiante(estudiante.id);
@@ -59,34 +65,28 @@ public class ParticipacionServicio {
                     .max(Comparator.comparing(p -> p.id)).orElse(null);
             return mapeador.sesion(sesion, ultima);
         }).toList();
-        List<Contratos.Aviso> avisos = new ArrayList<>();
         for (SesionCaso sesion : propias) {
-            avisos.add(new Contratos.Aviso(sesion.id, "CORREO", "Caso asignado",
-                    sesion.caso.nombre + ". " + (sesion.mensaje == null ? "" : sesion.mensaje),
-                    false, sesion.inicio.toString()));
+            bitacora.registrarUnaVez(estudiante, "sesion:" + sesion.id + ":asignado", "CORREO", "Caso asignado",
+                    sesion.caso.nombre + ". " + (sesion.mensaje == null ? "" : sesion.mensaje), sesion.inicio);
             if (sesion.estado() == Catalogo.EstadoSesion.EN_CURSO) {
-                avisos.add(new Contratos.Aviso(sesion.id + 10000, "SISTEMA", "Recordatorio de vencimiento",
+                bitacora.registrarUnaVez(estudiante, "sesion:" + sesion.id + ":recordatorio", "SISTEMA",
+                        "Recordatorio de vencimiento",
                         "La convocatoria sigue en curso. Tiempo máximo: " + sesion.tiempoMaxMin + " minutos.",
-                        false, sesion.inicioReal == null ? sesion.inicio.toString() : sesion.inicioReal.toString()));
+                        sesion.inicioReal == null ? sesion.inicio : sesion.inicioReal);
             }
         }
-        for (Participacion participacion : participaciones.findByEstudianteIdOrderByIdDesc(estudiante.id)) {
-            new SujetoParticipacion().notificar(participacion, avisos);
-        }
-        List<Contratos.Aviso> marcados = new ArrayList<>();
-        int sinLeer = 0;
-        for (Contratos.Aviso aviso : avisos) {
-            boolean leida = lecturas.esta(estudiante.id, aviso.id());
-            marcados.add(new Contratos.Aviso(aviso.id(), aviso.canal(), aviso.titulo(), aviso.cuerpo(), leida, aviso.fecha()));
-            if (!leida) sinLeer++;
-        }
-        return new Contratos.PanelEstudiante(sesionesVista, marcados, sinLeer);
+        List<Contratos.Aviso> avisos = bitacora.avisosDe(estudiante).stream()
+                .map(n -> new Contratos.Aviso(n.id, n.canal, n.titulo, n.cuerpo, n.leida,
+                        n.fecha == null ? "" : n.fecha.toString()))
+                .toList();
+        int sinLeer = (int) avisos.stream().filter(a -> !a.leida()).count();
+        return new Contratos.PanelEstudiante(sesionesVista, avisos, sinLeer);
     }
 
     @Transactional
     public void leerAviso(Usuario estudiante, Long id) {
         proxy.participar(estudiante);
-        lecturas.marcar(estudiante.id, id);
+        bitacora.marcarLeido(estudiante, id);
     }
 
     @Transactional
@@ -169,16 +169,7 @@ public class ParticipacionServicio {
         proxy.revisarGrupo(docente);
         Participacion participacion = participaciones.findById(id).orElseThrow(() -> new NoEncontrado("Participación no encontrada."));
         if (!participacion.sesion.caso.docente.id.equals(docente.id)) throw new AccesoDenegado("Solo el docente del caso puede valorarla.");
-        new EstadoValoracion().aceptar(participacion);
-        if (texto == null || texto.isBlank()) throw new ReglaNegocio("Escribe la valoración general.");
-        if (participacion.retroalimentacionDocente == null) {
-            RetroalimentacionDocente comentario = new RetroalimentacionDocente();
-            comentario.participacion = participacion;
-            participacion.retroalimentacionDocente = comentario;
-        }
-        participacion.retroalimentacionDocente.comentario = texto.trim();
-        bitacora.avisar(participacion.estudiante, "CORREO", "Feedback del docente",
-                participacion.retroalimentacionDocente.comentario);
+        EstadoDeParticipacion.de(participacion, bitacora).agregarRetroalimentacionGeneral(participacion, texto);
     }
 
     @Transactional
@@ -204,8 +195,6 @@ public class ParticipacionServicio {
         permiso.participacion = participacion;
         permiso.fechaAutorizacion = LocalDateTime.now();
         participacion.autorizacion = permiso;
-        bitacora.avisar(participacion.estudiante, "CORREO", "Repetición autorizada",
-                "El docente autorizó un nuevo intento de " + participacion.sesion.caso.nombre + ".");
     }
 
     @Transactional(readOnly = true)
@@ -231,10 +220,19 @@ public class ParticipacionServicio {
         return filas;
     }
 
+    /**
+     * RF-16. El CSV sale del mismo generador que PDF y Excel:
+     * una fila por intento, con ausencias en 0,0.
+     */
     @Transactional(readOnly = true)
     public String reporte(Usuario docente, Long sesionId) {
-        List<Contratos.FilaSeguimiento> filas = seguimiento(docente, sesionId);
-        return new ReporteCsv().generar(filas);
+        proxy.revisarGrupo(docente);
+        SesionCaso sesion = sesiones.findById(sesionId).orElseThrow(() -> new NoEncontrado("Sesión no encontrada."));
+        List<Participacion> deLaSesion = participaciones.findBySesion_Id(sesion.id);
+        GeneradorReporte generador = new GeneradorReporte();
+        generador.setFormato(new ExportadorCSV());
+        byte[] archivo = generador.generar(docente, sesion, deLaSesion == null ? List.of() : deLaSesion).contenido();
+        return new String(archivo, java.nio.charset.StandardCharsets.UTF_8);
     }
 
     private boolean cerrarSiVencio(Participacion participacion, LocalDateTime ahora) {
@@ -253,16 +251,13 @@ public class ParticipacionServicio {
     private Participacion propiaODocente(Usuario usuario, Long id) {
         Participacion participacion = participaciones.findById(id).orElseThrow(() -> new NoEncontrado("Participación no encontrada."));
         if (usuario.rol == Catalogo.Rol.ESTUDIANTE && participacion.estudiante.id.equals(usuario.id)) return participacion;
-        if (usuario.rol == Catalogo.Rol.PROFESOR && participacion.sesion.caso.docente.id.equals(usuario.id)) return participacion;
+        if (usuario.rol == Catalogo.Rol.PROFESOR && participacion.sesion.grupo != null
+                && participacion.sesion.grupo.esDirigidoPor(usuario)) return participacion;
         throw new AccesoDenegado("No puedes consultar esta participación.");
     }
 
     BigDecimal calcularNota(Participacion participacion) {
-        return new CalculadoraPorPesos().calcular(participacion);
-    }
-
-    private boolean acierto(Participacion participacion, Pregunta pregunta) {
-        return participacion.respuestas.stream().anyMatch(r -> r.pregunta.id.equals(pregunta.id) && r.opcion.esCorrecta);
+        return EstrategiaCalificacion.paraEstadoDe(participacion).calcularPuntaje(participacion);
     }
 
     private List<Pregunta> preguntas(Caso caso) {
@@ -285,82 +280,35 @@ public class ParticipacionServicio {
                 List<Contratos.OpcionJuego> opciones = pregunta.opciones.stream()
                         .map(o -> new Contratos.OpcionJuego(o.id, o.descripcion,
                                 revelar ? o.esCorrecta : null,
-                                revelar && o.retroalimentacion != null ? o.retroalimentacion.explicacion : null,
-                                revelar && o.retroalimentacion != null ? o.retroalimentacion.fundamento : null))
+                                new RetroalimentacionProxy(participacion, new ExplicacionReal(o.retroalimentacion)).mostrar(),
+                                RetroalimentacionProxy.visible(participacion) && o.retroalimentacion != null ? o.retroalimentacion.fundamento : null))
                         .toList();
                 String criterio = pregunta.criterio == null ? "" : pregunta.criterio.criterio;
+                BigDecimal puntaje = RetroalimentacionProxy.visible(participacion) ? participacion.puntajeDe(pregunta) : null;
                 preguntas.add(new Contratos.PreguntaJuego(pregunta.id, escenario.titulo, escenario.contexto,
-                        pregunta.enunciado, pregunta.pista, criterio, seleccion, opciones));
+                        pregunta.enunciado, pregunta.pista, criterio, seleccion, opciones,
+                        puntaje == null ? null : puntaje.doubleValue()));
             }
         }
         LocalDateTime hasta = participacion.fin == null ? LocalDateTime.now() : participacion.fin;
         long usados = participacion.inicio == null ? 0 : Math.max(0, Duration.between(participacion.inicio, hasta).getSeconds());
         int total = preguntas.size();
         int progreso = ProgresoParticipacion.porcentaje(participacion, total);
+        ResumenIntento resumen = ResumenIntento.de(participacion);
         return new Contratos.ParticipacionVista(participacion.id, participacion.sesion.id, participacion.estadoNombre(),
                 participacion.sesion.caso.nombre, progreso, total,
                 participacion.sesion.tiempoMaxMin * 60, usados, participacion.nota(),
                 participacion.comentarioDocente(), participacion.estudiante.nombre, preguntas,
-                participacion.autorizacion != null);
+                participacion.autorizacion != null,
+                resumen == null ? null : resumen.aciertos(),
+                resumen == null ? null : resumen.errores(),
+                resumen == null ? null : resumen.sinResponder());
     }
 
+    /** RF-14: delega en el Proxy de protección la decisión de revelar el resultado al estudiante. */
     class ProxyResultado {
         boolean revelar(Usuario usuario, Participacion participacion) {
-            return usuario.rol != Catalogo.Rol.ESTUDIANTE || participacion.finalizada() || participacion.ausente();
-        }
-    }
-
-    class EstadoValoracion {
-        void aceptar(Participacion participacion) {
-            if (!participacion.finalizada()) {
-                throw new ReglaNegocio("RF-26: la valoración general solo se registra cuando la participación finalizó.");
-            }
-        }
-    }
-
-    class CalculadoraPorPesos {
-        BigDecimal calcular(Participacion participacion) {
-            BigDecimal acum = BigDecimal.ZERO;
-            for (Pregunta pregunta : preguntas(participacion.sesion.caso)) {
-                if (pregunta.criterio == null || pregunta.criterio.peso == null) continue;
-                if (acierto(participacion, pregunta)) acum = acum.add(pregunta.criterio.peso);
-            }
-            return acum.setScale(1, RoundingMode.HALF_UP);
-        }
-    }
-
-    interface ObservadorAviso { void actualizar(Participacion participacion, List<Contratos.Aviso> destino); }
-
-    class SujetoParticipacion {
-        private final List<ObservadorAviso> observadores = List.of(new ObservadorNota(), new ObservadorFeedback(), new ObservadorRepeticion());
-        void notificar(Participacion participacion, List<Contratos.Aviso> destino) {
-            for (ObservadorAviso observador : observadores) observador.actualizar(participacion, destino);
-        }
-    }
-
-    class ObservadorNota implements ObservadorAviso {
-        public void actualizar(Participacion participacion, List<Contratos.Aviso> destino) {
-            if (participacion.nota() == null) return;
-            destino.add(new Contratos.Aviso(participacion.id + 20000, "SISTEMA", "Nota del caso",
-                    participacion.sesion.caso.nombre + ": " + participacion.nota() + " / 5,0.",
-                    false, participacion.fin == null ? "" : participacion.fin.toString()));
-        }
-    }
-
-    class ObservadorFeedback implements ObservadorAviso {
-        public void actualizar(Participacion participacion, List<Contratos.Aviso> destino) {
-            if (participacion.comentarioDocente() == null) return;
-            destino.add(new Contratos.Aviso(participacion.id + 30000, "DOCENTE", "Feedback del docente",
-                    participacion.comentarioDocente(), false, ""));
-        }
-    }
-
-    class ObservadorRepeticion implements ObservadorAviso {
-        public void actualizar(Participacion participacion, List<Contratos.Aviso> destino) {
-            if (participacion.autorizacion == null) return;
-            destino.add(new Contratos.Aviso(participacion.id + 40000, "SISTEMA", "Repetición autorizada",
-                    "El docente autorizó un nuevo intento de " + participacion.sesion.caso.nombre + ".",
-                    false, participacion.autorizacion.fechaAutorizacion == null ? "" : participacion.autorizacion.fechaAutorizacion.toString()));
+            return usuario.rol != Catalogo.Rol.ESTUDIANTE || RetroalimentacionProxy.visible(participacion);
         }
     }
 
@@ -374,23 +322,4 @@ public class ParticipacionServicio {
         public Usuario next() { return lista.get(indice++); }
     }
 
-    class ReporteCsv {
-        String generar(List<Contratos.FilaSeguimiento> filas) {
-            StringBuilder csv = new StringBuilder("\uFEFFestudiante,email,estado,nota,retroalimentacion\n");
-            for (Contratos.FilaSeguimiento fila : filas) {
-                csv.append(esc(fila.estudiante())).append(',')
-                        .append(esc(fila.email())).append(',')
-                        .append(fila.estado()).append(',')
-                        .append(fila.nota() == null ? "" : fila.nota()).append(',')
-                        .append(esc(fila.retroalimentacion()))
-                        .append('\n');
-            }
-            return csv.toString();
-        }
-    }
-
-    private static String esc(String valor) {
-        if (valor == null) return "";
-        return "\"" + valor.replace("\"", "'") + "\"";
-    }
 }

@@ -52,12 +52,13 @@ export interface PanelEstudiante { sesiones: Sesion[]; avisos: Aviso[]; sinLeer:
 export interface OpcionJuego { id: number; texto: string; correcta: boolean | null; explicacion: string | null; fundamento: string | null; }
 export interface PreguntaJuego {
   id: number; bloque: string; contexto: string; enunciado: string; pista: string | null; criterio: string;
-  seleccionId: number | null; opciones: OpcionJuego[];
+  seleccionId: number | null; opciones: OpcionJuego[]; puntaje: number | null;
 }
 export interface Participacion {
   id: number; sesionId: number; estado: string; caso: string; progreso: number; total: number;
   segundosMax: number; segundosUsados: number; nota: number | null; retroalimentacion: string | null;
   estudiante: string; preguntas: PreguntaJuego[]; repeticionAutorizada: boolean;
+  aciertos: number | null; errores: number | null; sinResponder: number | null;
 }
 export interface Fila { participacionId: number | null; estudianteId: number; estudiante: string; email: string; estado: string; nota: number | null; retroalimentacion: string | null; repeticionAutorizada: boolean; }
 export interface Auditoria { id: number; fecha: string; accion: string; detalle: string; usuario: string; }

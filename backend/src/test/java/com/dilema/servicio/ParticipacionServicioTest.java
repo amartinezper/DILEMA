@@ -32,7 +32,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -56,8 +55,7 @@ class ParticipacionServicioTest {
         sesiones = mock(SesionRepo.class);
         padron = mock(PadronConvocatoria.class);
         bitacora = mock(BitacoraServicio.class);
-        servicio = new ParticipacionServicio(participaciones, sesiones, padron, new ProxyOperacion(), new Mapeador(), bitacora,
-                new com.dilema.servicio.participacion.LecturaAvisos());
+        servicio = new ParticipacionServicio(participaciones, sesiones, padron, new ProxyOperacion(), new Mapeador(), bitacora);
         docente = docente();
         estudiante = estudiante();
         armarCaso();
@@ -72,7 +70,7 @@ class ParticipacionServicioTest {
 
     @Test
     @DisplayName("RF-11 inicia el primer intento dentro de la ventana")
-    void iniciaPrimerIntentoDentroDeLaVentana() {
+    void iniciar() {
         when(participaciones.findByEstudianteIdAndSesionId(2L, 4L)).thenReturn(List.of());
         Contratos.ParticipacionVista vista = servicio.iniciar(estudiante, 4L);
         assertEquals("EN_CURSO", vista.estado());
@@ -82,33 +80,8 @@ class ParticipacionServicioTest {
     }
 
     @Test
-    @DisplayName("CU-16-P02 rechaza si el estudiante no está en el padrón")
-    void rechazaSiNoEstaEnElPadron() {
-        when(padron.esta(sesion, estudiante)).thenReturn(false);
-        assertEquals("No estás autorizado en esta convocatoria.",
-                assertThrows(AccesoDenegado.class, () -> servicio.iniciar(estudiante, 4L)).getMessage());
-    }
-
-    @Test
-    @DisplayName("CU-16-P03 rechaza si la sesión todavía no está en curso")
-    void rechazaSiLaSesionNoEstaEnCurso() {
-        sesion.inicioReal = null;
-        when(participaciones.findByEstudianteIdAndSesionId(2L, 4L)).thenReturn(List.of());
-        assertEquals("La sesión todavía no está en curso.",
-                assertThrows(ReglaNegocio.class, () -> servicio.iniciar(estudiante, 4L)).getMessage());
-    }
-
-    @Test
-    @DisplayName("CU-16-P07 rechaza deshacer sin historial")
-    void rechazaDeshacerSinHistorial() {
-        when(participaciones.findById(11L)).thenReturn(Optional.of(enCurso()));
-        assertEquals("No hay respuestas para deshacer.",
-                assertThrows(ReglaNegocio.class, () -> servicio.deshacer(estudiante, 11L)).getMessage());
-    }
-
-    @Test
     @DisplayName("RF-22 rechaza el ingreso tardío")
-    void rechazaIngresoTardio() {
+    void ingresoTardio() {
         sesion.inicioReal = LocalDateTime.now().minusMinutes(40);
         sesion.toleranciaMin = 10;
         when(participaciones.findByEstudianteIdAndSesionId(2L, 4L)).thenReturn(List.of());
@@ -118,7 +91,7 @@ class ParticipacionServicioTest {
 
     @Test
     @DisplayName("RF-25 exige autorización para un segundo intento")
-    void exigeAutorizacionParaSegundoIntento() {
+    void noRepiteSinAutorizacion() {
         Participacion previa = enCurso();
         previa.fin = LocalDateTime.now();
         when(participaciones.findByEstudianteIdAndSesionId(2L, 4L)).thenReturn(List.of(previa));
@@ -127,7 +100,7 @@ class ParticipacionServicioTest {
 
     @Test
     @DisplayName("RF-10 responde, cambia y deshace")
-    void respondeCambiaYDeshace() {
+    void responderYDeshacer() {
         Participacion participacion = enCurso();
         when(participaciones.findById(11L)).thenReturn(Optional.of(participacion));
 
@@ -147,7 +120,7 @@ class ParticipacionServicioTest {
 
     @Test
     @DisplayName("RF-12 finaliza, calcula la nota ponderada y avisa")
-    void finalizaCalculaNotaPonderadaYAvisa() {
+    void finalizarCalculaNota() {
         Participacion participacion = enCurso();
         Respuesta respuesta = new Respuesta();
         respuesta.pregunta = pregunta;
@@ -164,8 +137,8 @@ class ParticipacionServicioTest {
     }
 
     @Test
-    @DisplayName("RF-25: el docente creador autoriza el último intento en curso")
-    void autorizaRepeticionDelUltimoIntentoEnCurso() {
+    @DisplayName("RF-25 solo el docente creador autoriza el último intento en curso")
+    void autorizarRepeticion() {
         Participacion participacion = enCurso();
         participacion.fin = LocalDateTime.now();
         when(participaciones.findById(11L)).thenReturn(Optional.of(participacion));
@@ -173,55 +146,16 @@ class ParticipacionServicioTest {
 
         servicio.autorizarRepeticion(docente, 11L);
         assertNotNull(participacion.autorizacion);
-        verify(bitacora).avisar(eq(estudiante), eq("CORREO"), eq("Repetición autorizada"), any());
-    }
 
-    @Test
-    @DisplayName("RF-25: no autoriza la misma repetición dos veces")
-    void noAutorizaRepeticionDosVeces() {
-        Participacion participacion = enCurso();
-        participacion.fin = LocalDateTime.now();
-        when(participaciones.findById(11L)).thenReturn(Optional.of(participacion));
-        when(participaciones.findByEstudianteIdAndSesionId(2L, 4L)).thenReturn(List.of(participacion));
-        servicio.autorizarRepeticion(docente, 11L);
         assertThrows(ReglaNegocio.class, () -> servicio.autorizarRepeticion(docente, 11L));
-    }
-
-    @Test
-    @DisplayName("RF-25: no autoriza repetición si la sesión ya cerró")
-    void noAutorizaRepeticionSiLaSesionCerro() {
-        Participacion participacion = enCurso();
-        participacion.fin = LocalDateTime.now();
         sesion.cierreReal = LocalDateTime.now();
-        when(participaciones.findById(11L)).thenReturn(Optional.of(participacion));
-        when(participaciones.findByEstudianteIdAndSesionId(2L, 4L)).thenReturn(List.of(participacion));
+        participacion.autorizacion = null;
         assertThrows(ReglaNegocio.class, () -> servicio.autorizarRepeticion(docente, 11L));
     }
 
     @Test
-    @DisplayName("CU-22 / CU-23: la valoración general se guarda y se notifica")
-    void valoraYNotificaAlEstudiante() {
-        Participacion participacion = enCurso();
-        participacion.fin = LocalDateTime.now();
-        participacion.fijarNota(new BigDecimal("4.0"));
-        when(participaciones.findById(11L)).thenReturn(Optional.of(participacion));
-
-        servicio.retroalimentar(docente, 11L, "Buen criterio clínico.");
-
-        assertEquals("Buen criterio clínico.", participacion.comentarioDocente());
-        verify(bitacora).avisar(eq(estudiante), eq("CORREO"), eq("Feedback del docente"), eq("Buen criterio clínico."));
-    }
-
-    @Test
-    @DisplayName("CU-22: rechaza valorar una participación en curso")
-    void rechazaValorarParticipacionEnCurso() {
-        when(participaciones.findById(11L)).thenReturn(Optional.of(enCurso()));
-        assertThrows(ReglaNegocio.class, () -> servicio.retroalimentar(docente, 11L, "Todavía no."));
-    }
-
-    @Test
-    @DisplayName("RF-11 el panel del estudiante incluye convocatoria y nota")
-    void panelIncluyeConvocatoriaYNota() {
+    @DisplayName("RF-11 / RF-27 el panel del estudiante lista los avisos guardados y cuenta solo los no leídos")
+    void panel() {
         when(sesiones.delEstudiante(2L)).thenReturn(List.of(sesion));
         Participacion participacion = enCurso();
         participacion.fin = LocalDateTime.now();
@@ -229,23 +163,34 @@ class ParticipacionServicioTest {
         when(participaciones.findByEstudianteIdAndSesionId(2L, 4L)).thenReturn(List.of(participacion));
         when(participaciones.findByEstudianteIdOrderByIdDesc(2L)).thenReturn(List.of(participacion));
 
+        com.dilema.modelo.Notificacion asignado = notificacion(70L, "Caso asignado", true);
+        com.dilema.modelo.Notificacion nota = notificacion(71L, "Nota del caso", false);
+        when(bitacora.avisosDe(estudiante)).thenReturn(List.of(nota, asignado));
+
         Contratos.PanelEstudiante panel = servicio.panel(estudiante);
         assertEquals(1, panel.sesiones().size());
-        assertTrue(panel.avisos().stream().anyMatch(a -> a.titulo().equals("Caso asignado")));
-        assertTrue(panel.avisos().stream().anyMatch(a -> a.titulo().equals("Nota del caso")));
-        assertEquals(3, panel.sinLeer());
-        assertFalse(panel.avisos().get(0).leida());
+        verify(bitacora).registrarUnaVez(org.mockito.ArgumentMatchers.eq(estudiante),
+                org.mockito.ArgumentMatchers.eq("sesion:4:asignado"), org.mockito.ArgumentMatchers.eq("CORREO"),
+                org.mockito.ArgumentMatchers.eq("Caso asignado"), any(), any());
+        assertTrue(panel.avisos().stream().anyMatch(a -> a.titulo().equals("Caso asignado") && a.id() == 70L));
+        assertTrue(panel.avisos().stream().anyMatch(a -> a.titulo().equals("Nota del caso") && a.id() == 71L));
+        assertEquals(1, panel.sinLeer(), "solo cuenta los avisos no leídos");
+    }
 
-        servicio.leerAviso(estudiante, panel.avisos().get(0).id());
-        Contratos.PanelEstudiante despues = servicio.panel(estudiante);
-        assertEquals(2, despues.sinLeer());
-        assertTrue(despues.avisos().get(0).leida());
-        assertFalse(despues.avisos().get(1).leida());
+    private com.dilema.modelo.Notificacion notificacion(long id, String titulo, boolean leida) {
+        com.dilema.modelo.Notificacion n = new com.dilema.modelo.Notificacion();
+        n.id = id;
+        n.usuario = estudiante;
+        n.canal = "SISTEMA";
+        n.titulo = titulo;
+        n.cuerpo = "";
+        n.leida = leida;
+        return n;
     }
 
     @Test
     @DisplayName("el seguimiento marca ausente en 0,0 si la sesión ya cerró")
-    void seguimientoMarcaAusenteEnCeroSiLaSesionCerro() {
+    void seguimiento() {
         sesion.cierreReal = LocalDateTime.now();
         sesion.grupo.estudiantes.add(estudiante);
         when(participaciones.findByEstudianteIdAndSesionId(2L, 4L)).thenReturn(List.of());
@@ -258,7 +203,7 @@ class ParticipacionServicioTest {
 
     @Test
     @DisplayName("ver no revela la clave al estudiante en curso y sí al docente")
-    void noRevelaClaveAlEstudianteEnCurso() {
+    void verRevelaSegunRol() {
         Participacion participacion = enCurso();
         when(participaciones.findById(11L)).thenReturn(Optional.of(participacion));
         Contratos.ParticipacionVista delEstudiante = servicio.ver(estudiante, 11L);

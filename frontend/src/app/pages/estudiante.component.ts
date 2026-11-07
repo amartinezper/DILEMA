@@ -4,9 +4,9 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { forkJoin } from 'rxjs';
 import { MarcoComponent } from '../shared/marco.component';
 import { Aviso, PanelEstudiante, Participacion, Sesion, mensajeError } from '../core/api.service';
-import { forkJoin } from 'rxjs';
 
 const enlaces = [
   { href: '/estudiante', texto: 'Casos asignados', exacto: true },
@@ -182,6 +182,9 @@ export class BriefingComponent {
             <p class="sub">{{ actual.caso }}</p>
             <p class="nota">Calificación final: {{ actual.nota ?? '—' }} / 5,0</p>
             <p class="sub">Nivel: {{ nivel(actual.nota) }}</p>
+            @if (actual.aciertos !== null) {
+              <p class="sub">Acertaste {{ actual.aciertos }} de {{ actual.total }} · Fallaste {{ actual.errores }} · Sin responder {{ actual.sinResponder }}</p>
+            }
             <h2>Resumen de respuestas</h2>
             @for (pregunta of actual.preguntas; track pregunta.id) {
               <article class="item">
@@ -359,11 +362,9 @@ export class AvisosComponent {
   constructor() { this.refrescar(); }
   visibles() { return this.avisos().filter((aviso) => !aviso.leida); }
   marcar() {
-    const pendientes = this.avisos().filter((item) => !item.leida);
+    const pendientes = this.visibles().map((aviso) => this.http.post<void>(`/api/estudiante/avisos/${aviso.id}/leer`, {}));
     if (!pendientes.length) return;
-    forkJoin(pendientes.map((aviso) => this.http.post(`/api/estudiante/avisos/${aviso.id}/leer`, {}))).subscribe({
-      next: () => this.refrescar()
-    });
+    forkJoin(pendientes).subscribe({ complete: () => this.refrescar(), error: () => this.refrescar() });
   }
   private refrescar() {
     this.http.get<PanelEstudiante>('/api/estudiante/panel').subscribe((panel) => this.avisos.set(panel.avisos));

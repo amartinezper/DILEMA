@@ -5,9 +5,11 @@ import com.dilema.modelo.Participacion;
 import com.dilema.modelo.SesionCaso;
 import com.dilema.modelo.Usuario;
 import com.dilema.repo.ParticipacionRepo;
+import com.dilema.servicio.BitacoraServicio;
 import com.dilema.servicio.ParticipacionServicio;
+import com.dilema.servicio.evaluacion.CalificacionParcial;
+import com.dilema.servicio.evaluacion.SujetoNotificador;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,10 +20,18 @@ import java.util.List;
 public abstract class CierreSesion {
     private final ParticipacionServicio participacionesSrv;
     private final ParticipacionRepo participaciones;
+    private final BitacoraServicio bitacora;
 
     protected CierreSesion(ParticipacionServicio participacionesSrv, ParticipacionRepo participaciones) {
+        this(participacionesSrv, participaciones, null);
+    }
+
+    /** RF-27: con bitácora, el ausente recibe el aviso de su nota 0,0 como los demás. */
+    protected CierreSesion(ParticipacionServicio participacionesSrv, ParticipacionRepo participaciones,
+                           BitacoraServicio bitacora) {
         this.participacionesSrv = participacionesSrv;
         this.participaciones = participaciones;
+        this.bitacora = bitacora;
     }
 
     public final void cerrar(SesionCaso sesion) {
@@ -38,8 +48,9 @@ public abstract class CierreSesion {
                 ausencia.sesion = sesion;
                 ausencia.casoId = sesion.caso.id;
                 ausencia.numeroIntento = 1;
-                ausencia.fijarNota(new BigDecimal("0.0"));
+                ausencia.fijarNota(new CalificacionParcial().calcularPuntaje(ausencia));
                 participaciones.save(ausencia);
+                if (bitacora != null) SujetoNotificador.publicarNota(ausencia, bitacora);
             }
         }
         sesion.cierreReal = LocalDateTime.now();

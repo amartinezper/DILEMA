@@ -145,7 +145,6 @@ public class AcademiaServicio {
         proxy.revisarGrupo(docente);
         SesionCaso sesion = propia(docente, id);
         EstadosDeSesion.de(sesion).iniciar(sesion);
-        avisarPadron(sesion, true);
         bitacora.auditar(docente, "INICIAR_SESION", sesion.codigo);
         return mapeador.sesion(sesion);
     }
@@ -154,8 +153,7 @@ public class AcademiaServicio {
     public Contratos.SesionVista finalizar(Usuario docente, Long id) {
         proxy.revisarGrupo(docente);
         SesionCaso sesion = propia(docente, id);
-        new CierrePorDocente(participacionServicio, participaciones).cerrar(sesion);
-        avisarPadron(sesion, false);
+        new CierrePorDocente(participacionServicio, participaciones, bitacora).cerrar(sesion);
         bitacora.auditar(docente, "FINALIZAR_SESION", sesion.codigo);
         return mapeador.sesion(sesion);
     }
@@ -165,18 +163,8 @@ public class AcademiaServicio {
         LocalDateTime ahora = LocalDateTime.now();
         for (SesionCaso sesion : sesiones.findByCierreRealIsNull()) {
             if (EstadosDeSesion.vencioPlazoDeCierre(sesion, ahora)) {
-                new CierrePorFecha(participacionServicio, participaciones).cerrar(sesion);
-                avisarPadron(sesion, false);
+                new CierrePorFecha(participacionServicio, participaciones, bitacora).cerrar(sesion);
             }
-        }
-    }
-
-    private void avisarPadron(SesionCaso sesion, boolean inicio) {
-        if (sesion.grupo == null || sesion.grupo.estudiantes == null) return;
-        for (Usuario estudiante : sesion.grupo.estudiantes) {
-            if (!padron.esta(sesion, estudiante)) continue;
-            if (inicio) notificador.sesionIniciada(estudiante, sesion);
-            else notificador.sesionCerrada(estudiante, sesion);
         }
     }
 
