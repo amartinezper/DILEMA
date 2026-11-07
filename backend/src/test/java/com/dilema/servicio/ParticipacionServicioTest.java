@@ -154,7 +154,7 @@ class ParticipacionServicioTest {
     }
 
     @Test
-    @DisplayName("RF-11 el panel del estudiante incluye convocatoria y nota")
+    @DisplayName("RF-11 / RF-27 el panel del estudiante lista los avisos guardados y cuenta solo los no leídos")
     void panel() {
         when(sesiones.delEstudiante(2L)).thenReturn(List.of(sesion));
         Participacion participacion = enCurso();
@@ -163,10 +163,29 @@ class ParticipacionServicioTest {
         when(participaciones.findByEstudianteIdAndSesionId(2L, 4L)).thenReturn(List.of(participacion));
         when(participaciones.findByEstudianteIdOrderByIdDesc(2L)).thenReturn(List.of(participacion));
 
+        com.dilema.modelo.Notificacion asignado = notificacion(70L, "Caso asignado", true);
+        com.dilema.modelo.Notificacion nota = notificacion(71L, "Nota del caso", false);
+        when(bitacora.avisosDe(estudiante)).thenReturn(List.of(nota, asignado));
+
         Contratos.PanelEstudiante panel = servicio.panel(estudiante);
         assertEquals(1, panel.sesiones().size());
-        assertTrue(panel.avisos().stream().anyMatch(a -> a.titulo().equals("Caso asignado")));
-        assertTrue(panel.avisos().stream().anyMatch(a -> a.titulo().equals("Nota del caso")));
+        verify(bitacora).registrarUnaVez(org.mockito.ArgumentMatchers.eq(estudiante),
+                org.mockito.ArgumentMatchers.eq("sesion:4:asignado"), org.mockito.ArgumentMatchers.eq("CORREO"),
+                org.mockito.ArgumentMatchers.eq("Caso asignado"), any(), any());
+        assertTrue(panel.avisos().stream().anyMatch(a -> a.titulo().equals("Caso asignado") && a.id() == 70L));
+        assertTrue(panel.avisos().stream().anyMatch(a -> a.titulo().equals("Nota del caso") && a.id() == 71L));
+        assertEquals(1, panel.sinLeer(), "solo cuenta los avisos no leídos");
+    }
+
+    private com.dilema.modelo.Notificacion notificacion(long id, String titulo, boolean leida) {
+        com.dilema.modelo.Notificacion n = new com.dilema.modelo.Notificacion();
+        n.id = id;
+        n.usuario = estudiante;
+        n.canal = "SISTEMA";
+        n.titulo = titulo;
+        n.cuerpo = "";
+        n.leida = leida;
+        return n;
     }
 
     @Test
