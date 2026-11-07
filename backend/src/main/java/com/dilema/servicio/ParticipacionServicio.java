@@ -7,6 +7,7 @@ import com.dilema.repo.SesionRepo;
 import com.dilema.servicio.participacion.ComandoRespuesta;
 import com.dilema.servicio.participacion.FinalizadorParticipacion;
 import com.dilema.servicio.participacion.HistorialRespuestas;
+import com.dilema.servicio.participacion.LecturaAvisos;
 import com.dilema.servicio.participacion.ProgresoParticipacion;
 import com.dilema.servicio.participacion.ProxyParticipacion;
 import com.dilema.servicio.participacion.RelojParticipacion;
@@ -35,15 +36,18 @@ public class ParticipacionServicio {
     private final BitacoraServicio bitacora;
     private final HistorialRespuestas historial = new HistorialRespuestas();
     private final ProxyParticipacion puerta = new ProxyParticipacion();
+    private final LecturaAvisos lecturas;
 
     public ParticipacionServicio(ParticipacionRepo participaciones, SesionRepo sesiones, PadronConvocatoria padron,
-                                 ProxyOperacion proxy, Mapeador mapeador, BitacoraServicio bitacora) {
+                                 ProxyOperacion proxy, Mapeador mapeador, BitacoraServicio bitacora,
+                                 LecturaAvisos lecturas) {
         this.participaciones = participaciones;
         this.sesiones = sesiones;
         this.padron = padron;
         this.proxy = proxy;
         this.mapeador = mapeador;
         this.bitacora = bitacora;
+        this.lecturas = lecturas;
     }
 
     @Transactional(readOnly = true)
@@ -69,12 +73,20 @@ public class ParticipacionServicio {
         for (Participacion participacion : participaciones.findByEstudianteIdOrderByIdDesc(estudiante.id)) {
             new SujetoParticipacion().notificar(participacion, avisos);
         }
-        return new Contratos.PanelEstudiante(sesionesVista, avisos, avisos.size());
+        List<Contratos.Aviso> marcados = new ArrayList<>();
+        int sinLeer = 0;
+        for (Contratos.Aviso aviso : avisos) {
+            boolean leida = lecturas.esta(estudiante.id, aviso.id());
+            marcados.add(new Contratos.Aviso(aviso.id(), aviso.canal(), aviso.titulo(), aviso.cuerpo(), leida, aviso.fecha()));
+            if (!leida) sinLeer++;
+        }
+        return new Contratos.PanelEstudiante(sesionesVista, marcados, sinLeer);
     }
 
     @Transactional
     public void leerAviso(Usuario estudiante, Long id) {
         proxy.participar(estudiante);
+        lecturas.marcar(estudiante.id, id);
     }
 
     @Transactional
@@ -165,6 +177,8 @@ public class ParticipacionServicio {
             participacion.retroalimentacionDocente = comentario;
         }
         participacion.retroalimentacionDocente.comentario = texto.trim();
+        bitacora.avisar(participacion.estudiante, "CORREO", "Feedback del docente",
+                participacion.retroalimentacionDocente.comentario);
     }
 
     @Transactional
@@ -190,6 +204,8 @@ public class ParticipacionServicio {
         permiso.participacion = participacion;
         permiso.fechaAutorizacion = LocalDateTime.now();
         participacion.autorizacion = permiso;
+        bitacora.avisar(participacion.estudiante, "CORREO", "Repetición autorizada",
+                "El docente autorizó un nuevo intento de " + participacion.sesion.caso.nombre + ".");
     }
 
     @Transactional(readOnly = true)
@@ -316,7 +332,7 @@ public class ParticipacionServicio {
     interface ObservadorAviso { void actualizar(Participacion participacion, List<Contratos.Aviso> destino); }
 
     class SujetoParticipacion {
-        private final List<ObservadorAviso> observadores = List.of(new ObservadorNota(), new ObservadorFeedback());
+        private final List<ObservadorAviso> observadores = List.of(new ObservadorNota(), new ObservadorFeedback(), new ObservadorRepeticion());
         void notificar(Participacion participacion, List<Contratos.Aviso> destino) {
             for (ObservadorAviso observador : observadores) observador.actualizar(participacion, destino);
         }
@@ -336,6 +352,15 @@ public class ParticipacionServicio {
             if (participacion.comentarioDocente() == null) return;
             destino.add(new Contratos.Aviso(participacion.id + 30000, "DOCENTE", "Feedback del docente",
                     participacion.comentarioDocente(), false, ""));
+        }
+    }
+
+    class ObservadorRepeticion implements ObservadorAviso {
+        public void actualizar(Participacion participacion, List<Contratos.Aviso> destino) {
+            if (participacion.autorizacion == null) return;
+            destino.add(new Contratos.Aviso(participacion.id + 40000, "SISTEMA", "Repetición autorizada",
+                    "El docente autorizó un nuevo intento de " + participacion.sesion.caso.nombre + ".",
+                    false, participacion.autorizacion.fechaAutorizacion == null ? "" : participacion.autorizacion.fechaAutorizacion.toString()));
         }
     }
 

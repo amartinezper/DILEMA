@@ -44,4 +44,28 @@ public class NotificadorConvocatoria {
         bitacora.avisar(estudiante, "CORREO", "Cambio de convocatoria",
                 "Fuiste retirado del espacio " + grupo.nombre + ".");
     }
+
+    public void sesionIniciada(Usuario estudiante, SesionCaso sesion) {
+        bitacora.avisar(estudiante, "CORREO", "La sesión inició: " + sesion.caso.nombre,
+                "El docente inició la sesión. Código: " + sesion.codigo + "\nURL: " + urlApp + "/ingreso");
+    }
+
+    public void sesionCerrada(Usuario estudiante, SesionCaso sesion) {
+        bitacora.avisar(estudiante, "CORREO", "La sesión finalizó: " + sesion.caso.nombre,
+                "La convocatoria de " + sesion.caso.nombre + " ya cerró.");
+    }
+
+    public void nota(Usuario estudiante, String caso, String puntaje) {
+        bitacora.avisar(estudiante, "CORREO", "Nota del caso", caso + ": " + puntaje + " / 5,0.");
+    }
+
+    public void feedback(Usuario estudiante, String comentario) {
+        bitacora.avisar(estudiante, "CORREO", "Feedback del docente", comentario);
+    }
+
+    public void repeticion(Usuario estudiante, SesionCaso sesion) {
+        bitacora.avisar(estudiante, "CORREO", "Repetición autorizada",
+                "El docente autorizó un nuevo intento de " + sesion.caso.nombre
+                        + ".\nURL: " + urlApp + "/ingreso");
+    }
 }

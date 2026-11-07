@@ -98,7 +98,7 @@ public class AuthServicio {
                     throw new ReglaNegocio("RF-23: la ventana de la sesión ya cerró.");
                 }
                 if (!sesion.permiteIngreso(ahora)) {
-                    throw new ReglaNegocio("RF-22: ya pasó el tiempo para iniciar la participación.");
+                    throw new ReglaNegocio("RF-22: ya pasó el tiempo definido por el docente para iniciar.");
                 }
             }
             return new Resultado(usuario, sesion);

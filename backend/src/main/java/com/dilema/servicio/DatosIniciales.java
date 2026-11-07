@@ -64,30 +64,38 @@ public class DatosIniciales implements CommandLineRunner {
         grupos.save(grupo);
 
         Caso caso = new Caso();
-        caso.nombre = "Caso de estudio inicial";
-        caso.desarrolloSituacional = "Un grupo comunitario debe acordar cómo conversar un conflicto entre vecinos. Este caso es un modelo inicial y se reemplazará más adelante.";
-        caso.contexto = "La práctica ocurre en un espacio académico. El estudiante elige un enfoque, escucha al grupo y cierra con acuerdos visibles.";
+        caso.nombre = "Feminicidio en Las Colinas";
+        caso.desarrolloSituacional = "Caso formativo de psicología social. El estudiante llega a un barrio de ladera después de un feminicidio. No reconstruye el crimen ni ve la escena violenta: escucha a la comunidad, cuida el consentimiento y activa la ruta de atención.";
+        caso.contexto = "Atardece en Las Colinas. Hay presencia institucional a distancia. Tu rol es de práctica: contención, encuadre y derivación. El trabajo empieza en la calle, con las vecinas.";
         caso.tiempoEstimadoMin = 40;
         caso.estado = Catalogo.EstadoCaso.PUBLICADO;
         caso.docente = docente;
-        caso.escenarios.add(escenario(caso, "Encuadre", "El grupo acaba de llegar. Todavía no hay un acuerdo sobre cómo se va a conversar.", 0,
-                pregunta(caso, "¿Cuál es el primer paso al abrir el espacio?", "Piensa en el permiso antes que en la solución.", "Encuadre ético", "2.0", 0,
-                        opcion("Presentarte y pedir permiso para conversar.", true, "El encuadre reconoce a las personas antes de intervenir. La relación se construye cuando el otro autoriza la conversación.", "El encuadre ético pide consentimiento antes de intervenir.", 0),
-                        opcion("Dar la instrucción y pasar de inmediato a la decisión.", false, "Saltarse el permiso concentra la voz de quien facilita y deja fuera a quien todavía no habló.", "Dirigir sin permiso desplaza la voz del grupo.", 1))));
-        caso.escenarios.add(escenario(caso, "Intervención", "Una persona insiste en decidir ya y el resto guarda silencio.", 1,
-                pregunta(caso, "¿Cómo respondes a la presión de cerrar la decisión?", null, "Participación del grupo", "1.5", 0,
-                        opcion("Abrir un turno breve para que cada persona hable.", true, "El turno devuelve la palabra a quienes no la habían tomado.", "La participación se sostiene dando la palabra, no cerrándola.", 0),
-                        opcion("Aceptar la propuesta de quien insiste, para no alargar la sesión.", false, "Ceder a la prisa convierte el silencio del grupo en un falso acuerdo.", "La prisa no equivale a consenso.", 1))));
-        caso.escenarios.add(escenario(caso, "Cierre", "La conversación ya produjo una idea, pero no quedó escrita.", 2,
+        caso.escenarios.add(escenario(caso, "Llegada al barrio", "Atardece en Las Colinas. Hay cinta a lo lejos, en una vivienda. Doña Carmen espera en la esquina. Nadie te ha pedido aún que entres.", 0,
+                pregunta(caso, "¿Cuál es tu primer paso al llegar?", "Piensa en el permiso antes que en la intervención.", "Encuadre ético", "2.0", 0,
+                        opcion("Presentarte y pedir permiso para hablar.", true, "El encuadre reconoce a las personas antes de intervenir. La relación se construye cuando el otro autoriza la conversación.", "El encuadre ético pide consentimiento antes de intervenir.", 0),
+                        opcion("Entrar de inmediato a la vivienda.", false, "Entrar sin autorización desplaza a la comunidad y confunde tu rol con el de investigación criminal.", "Dirigir sin permiso desplaza la voz del grupo.", 1),
+                        opcion("Grabar con el celular para tener evidencia.", false, "Grabar sin consentimiento expone a las personas y no es el objeto de esta práctica.", "La evidencia no sustituye el consentimiento.", 2))));
+        caso.escenarios.add(escenario(caso, "Conversación con la vecina", "Doña Carmen habla en voz baja. Quiere contar lo que oyó, pero pide que no la expongas frente al barrio.", 1,
+                pregunta(caso, "¿Cómo sostienes la conversación?", "Escucha el relato sin convertirlo en interrogatorio.", "Participación del grupo", "1.5", 0,
+                        opcion("Escuchar, no presionar el relato y explicar los límites de tu rol.", true, "La escucha protege a quien habla y deja claro que no eres autoridad investigativa.", "La participación se sostiene dando la palabra, no cerrándola.", 0),
+                        opcion("Pedirle todos los detalles del hecho para armar el caso.", false, "Forzar el relato revictimiza y sale del encuadre de la práctica.", "La prisa por el dato no equivale a contención.", 1),
+                        opcion("Prometerle que el responsable va a pagar si firma una denuncia ahora.", false, "Una promesa de resultado no está en tu competencia y puede ponerla en riesgo.", "No se ofrecen garantías que el rol no puede cumplir.", 2))));
+        caso.escenarios.add(escenario(caso, "Cierre y ruta de atención", "Ya hay una idea de qué necesita el barrio: contención, información y un canal institucional. Falta dejar el siguiente paso escrito.", 2,
                 pregunta(caso, "¿Qué dejas registrado al cerrar?", null, "Cierre y registro", "1.5", 0,
-                        opcion("Los acuerdos, los disensos y el siguiente paso.", true, "El registro permite retomar la conversación sin perder matices.", "La memoria del grupo incluye lo que no se cerró.", 0),
-                        opcion("Solo la decisión final, en una frase.", false, "Una frase única borra quién estuvo de acuerdo y qué quedó pendiente.", "Reducir el cierre a una frase pierde el disenso.", 1))));
-        String[] nombres = {"Ana", "Luis", "Marta", "Pedro"};
-        for (String nombre : nombres) {
+                        opcion("Los acuerdos, los disensos y la ruta de atención a la que se deriva.", true, "El registro permite retomar el trabajo sin perder matices y conecta con la ruta institucional.", "La memoria del grupo incluye lo que no se cerró.", 0),
+                        opcion("Solo tu opinión sobre lo que ocurrió.", false, "Una opinión personal borra a la comunidad y no activa la atención.", "Reducir el cierre a una frase pierde el disenso.", 1),
+                        opcion("Nada: cierras y te vas para no involucrarte.", false, "Salir sin registro deja a las personas sin un siguiente paso visible.", "La derivación forma parte del cierre ético.", 2))));
+        String[] nombres = {"Doña Carmen", "Lucía", "Inspector Ramírez"};
+        String[] roles = {
+                "Vecina que espera en la esquina y pide no ser expuesta.",
+                "Líder comunitaria que conoce la ruta de atención del barrio.",
+                "Autoridad presente a distancia. No es el rol del estudiante."
+        };
+        for (int i = 0; i < nombres.length; i++) {
             Personaje personaje = new Personaje();
             personaje.caso = caso;
-            personaje.nombre = nombre;
-            personaje.descripcion = "Participa en la conversación del caso.";
+            personaje.nombre = nombres[i];
+            personaje.descripcion = roles[i];
             caso.personajes.add(personaje);
         }
         casos.save(caso);
@@ -113,7 +121,7 @@ public class DatosIniciales implements CommandLineRunner {
         sesion.tiempoMaxMin = 30;
         sesion.toleranciaMin = 180;
         sesion.lugar = "Aula 3";
-        sesion.mensaje = "Bienvenida a la práctica. El caso de estudio es inicial y luego se va a cambiar.";
+        sesion.mensaje = "Caso formativo. El objetivo es el encuadre ético y la ruta de atención, no reconstruir el crimen. No hay escena violenta.";
         sesion.inicioReal = LocalDateTime.now().minusMinutes(15);
         sesiones.save(sesion);
 
