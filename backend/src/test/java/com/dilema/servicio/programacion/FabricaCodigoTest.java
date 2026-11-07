@@ -15,16 +15,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class FabricaCodigoTest {
 
     @Test
-    @DisplayName("RF-20 emite un código alfanumérico único con prefijo DL-")
-    void emiteCodigoUnico() {
+    @DisplayName("RF-20: emite un código alfanumérico único con prefijo DL-")
+    void emiteCodigoAlfanumericoUnicoConPrefijoDl() {
         String codigo = new FabricaCodigoAlfanumerico().emitir(valor -> false);
         assertTrue(codigo.startsWith("DL-"));
         assertEquals(7, codigo.length());
     }
 
     @Test
-    @DisplayName("RF-20 reintenta si el código ya existe y falla si no hay unicidad")
-    void reintentaHastaUnicidad() {
+    @DisplayName("RF-20: reintenta si el código ya existe")
+    void reintentaSiElCodigoYaExiste() {
         Set<String> usados = new HashSet<>();
         AtomicInteger intentos = new AtomicInteger();
         FabricaCodigo fabrica = new FabricaCodigo() {
@@ -34,7 +34,11 @@ class FabricaCodigoTest {
         };
         usados.add("DL-AAAA");
         assertEquals("DL-BBBB", fabrica.emitir(usados::contains));
+    }
 
+    @Test
+    @DisplayName("RF-20: falla si no logra unicidad")
+    void fallaSiNoLograUnicidad() {
         FabricaCodigo saturada = new FabricaCodigo() {
             @Override protected String crear() { return "DL-AAAA"; }
         };

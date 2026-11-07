@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Historias de usuario SP-8 a SP-14 — DILEMA</title>
+  <style>
+    :root { --ink:#161616; --muted:#5c5c5c; --line:#d8d8d8; --soft:#f3f3f3; --paper:#fff; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Segoe UI", Inter, Arial, sans-serif; color: var(--ink); background: #ececec; }
+    .page { max-width: 980px; margin: 28px auto 64px; padding: 0 16px; }
+    h1 { font-size: 22px; margin: 0 0 8px; }
+    .lead { color: var(--muted); margin: 0 0 28px; font-size: 14px; }
+    .hu { background: #fff; border: 1px solid #ddd; border-radius: 12px; padding: 22px 24px 28px; margin: 0 0 36px; }
+    .hu h2 { margin: 0 0 4px; font-size: 18px; }
+    .tag { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+    .card-line { margin: 0 0 10px; line-height: 1.45; }
+    .label { font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #333; margin: 16px 0 6px; }
+    ul { margin: 0; padding-left: 18px; }
+    li { margin: 4px 0; }
+    .stage { background: #2b2b2b; padding: 28px 18px; border-radius: 10px; margin-top: 16px; }
+    .app { background: #fff; max-width: 860px; margin: 0 auto; min-height: 420px; display: grid; grid-template-rows: 48px 1fr; font-size: 13px; }
+    .top { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid var(--line); }
+    .brand { font-weight: 700; font-size: 13px; }
+    .who { border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; font-size: 11px; color: #444; }
+    .work { display: grid; grid-template-columns: 168px 1fr; min-height: 372px; }
+    .side { border-right: 1px solid var(--line); padding: 12px 8px; background: #fafafa; }
+    .side div { padding: 8px 10px; border-radius: 6px; margin-bottom: 2px; color: #222; }
+    .side .on { background: #161616; color: #fff; }
+    .main { padding: 18px 20px 22px; }
+    .main h3 { margin: 0 0 4px; font-size: 18px; font-weight: 700; }
+    .sub { color: var(--muted); margin: 0 0 12px; font-size: 12px; }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .pill { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; background: #fff; flex: 1; text-align: center; font-size: 12px; }
+    .pill.on { background: #161616; color: #fff; border-color: #161616; }
+    .box { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: #fafafa; margin-top: 10px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .btn { display: inline-block; border: 1px solid #161616; background: #fff; padding: 8px 12px; border-radius: 6px; font-size: 12px; }
+    .btn.fill { background: #161616; color: #fff; }
+    .field { display: block; margin: 8px 0; }
+    .field span { display: block; font-size: 10px; letter-spacing: .06em; color: #666; margin-bottom: 4px; }
+    .field input, .field textarea { width: 100%; border: 1px solid var(--line); border-radius: 6px; padding: 7px 8px; font: inherit; background: #fff; }
+    .opt { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin: 6px 0; }
+    .opt.ok { background: #f3f3f3; }
+    .opt.bad { border-color: #bbb; }
+    .bar { height: 6px; background: #e8e8e8; border-radius: 99px; overflow: hidden; margin: 8px 0; }
+    .bar > i { display: block; height: 100%; background: #161616; }
+    .muted { color: var(--muted); font-size: 12px; }
+    .badge { float: right; border: 1px solid #161616; border-radius: 99px; padding: 3px 8px; font-size: 11px; }
+    .mock-img { display: block; width: 100%; height: auto; border-radius: 4px; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <h1>Historias de usuario SP-8 a SP-14</h1>
+  <p class="lead">Formato Ejemplo 5 (Unidad 2): Título + Como/Quiero/Para + entradas + escenario de uso + criterios de aceptación + un mock por historia. Los criterios se cargan en Jira como subtareas.</p>
+
+  <!-- SP-8 -->
+  <article class="hu" id="sp8">
+    <h2>SP-8 Justificar respuestas correctas e incorrectas</h2>
+    <p class="tag">CU-07 · Módulo 2 Diseño del caso · INVEST / CCC</p>
+    <p class="card-line"><strong>Como</strong> docente diseñador del caso,<br>
+    <strong>Quiero</strong> asociar a cada opción la explicación de por qué es correcta o incorrecta,<br>
+    <strong>Para</strong> que el estudiante, al finalizar, comprenda el fundamento de su decisión.</p>
+    <div class="label">Entradas del sistema (atributos)</div>
+    <ul>
+      <li>Texto de la opción</li>
+      <li>Marca de opción correcta (una sola por pregunta)</li>
+      <li>Explicación (por qué)</li>
+      <li>Fundamento teórico o normativo</li>
+    </ul>
+    <div class="label">Escenario de uso</div>
+    <p class="card-line">El docente abre Diseño de casos, elige el escenario «Urgencias» y la pregunta «¿Qué haces primero?». En cada opción escribe el porqué y el fundamento. Marca una sola como correcta. Guarda el borrador. Esas justificaciones no se muestran mientras el estudiante responde; solo aparecen cuando el intento ya finalizó.</p>
+    <div class="label">Criterios de aceptación (subtareas)</div>
+    <ul>
+      <li>1. Permitir capturar explicación y fundamento en cada opción, correcta o incorrecta.</li>
+      <li>2. Impedir publicar el caso si alguna opción queda sin explicación.</li>
+      <li>3. No revelar justificaciones ni la clave mientras la participación está en curso.</li>
+      <li>4. Mostrar la explicación de la opción elegida y de la correcta al consultar el resultado.</li>
+    </ul>
+    <div class="label">Mockup</div>
+    <div class="stage">
+      <img class="mock-img" src="mocks-SP8-SP14/SP-8.jpg" alt="SP-8 Justificar respuestas correctas e incorrectas" />
+    </div>
+  </article>
+
+  <!-- SP-9 -->
+  <article class="hu" id="sp9">
+    <h2>SP-9 Validar estructura y rúbrica del caso</h2>
+    <p class="tag">CU-09 / CU-10 / CU-11 · Módulo 3 Validación y publicación</p>
+    <p class="card-line"><strong>Como</strong> docente con permiso de editar,<br>
+    <strong>Quiero</strong> validar la estructura académica y la rúbrica antes de publicar, y archivar un caso cuando ya no deba programarse,<br>
+    <strong>Para</strong> que solo los casos publicados y completos se agenden a un grupo.</p>
+    <div class="label">Entradas del sistema (atributos)</div>
+    <ul>
+      <li>Estado del caso (Borrador, Publicado, Archivado)</li>
+      <li>Estructura: nombre, escenarios, preguntas, opciones</li>
+      <li>Rúbrica: criterios y pesos (suma 5,0)</li>
+      <li>Resultado de validación (lista de faltantes)</li>
+    </ul>
+    <div class="label">Escenario de uso</div>
+    <p class="card-line">El docente termina el caso en Borrador y pulsa Publicar. El sistema recorre el árbol: escenarios con contexto, preguntas con una sola correcta, justificaciones y rúbrica en 5,0. Si falta algo, muestra los errores y el caso sigue en Borrador. Si cierra, pasa a Publicado y queda disponible para programar. Más adelante puede archivarlo para que no entre en una programación nueva.</p>
+    <div class="label">Criterios de aceptación (subtareas)</div>
+    <ul>
+      <li>1. Todo caso nuevo nace en Borrador y se puede guardar incompleto.</li>
+      <li>2. Publicar solo si la validación de estructura y rúbrica no tiene errores (INV-10).</li>
+      <li>3. Un caso publicado no se edita; solo los publicados se pueden agendar (INV-17).</li>
+      <li>4. Permitir archivar un caso publicado o en borrador para que no se use en nuevas programaciones.</li>
+    </ul>
+    <div class="label">Mockup</div>
+    <div class="stage">
+      <img class="mock-img" src="mocks-SP8-SP14/SP-9.jpg" alt="SP-9 Validar estructura y rúbrica del caso" />
+    </div>
+  </article>
+
+  <!-- SP-10 -->
+  <article class="hu" id="sp10">
+    <h2>SP-10 Responder y modificar respuestas</h2>
+    <p class="tag">CU-16 · Módulo 5 Participación · RF-10</p>
+    <p class="card-line"><strong>Como</strong> estudiante convocado,<br>
+    <strong>Quiero</strong> consultar el contexto de cada escena, responder y volver a cambiar mi selección mientras el intento sigue abierto,<br>
+    <strong>Para</strong> resolver el dilema con la información del caso, sin que se me adelante la clave.</p>
+    <div class="label">Entradas del sistema (atributos)</div>
+    <ul>
+      <li>Identificador de la participación en curso</li>
+      <li>Identificador de la pregunta</li>
+      <li>Identificador de la opción elegida</li>
+      <li>Contexto del escenario (solo lectura)</li>
+    </ul>
+    <div class="label">Escenario de uso</div>
+    <p class="card-line">Laura entra a la simulación ya iniciada por el docente. Lee el contexto de Urgencias, elige la opción B, avanza a la siguiente pregunta y luego regresa y cambia a la A. El sistema reemplaza la respuesta anterior; no duplica la pregunta. No ve cuáles son correctas ni las explicaciones. Cuando termina, pulsa Finalizar y ya no puede modificar.</p>
+    <div class="label">Criterios de aceptación (subtareas)</div>
+    <ul>
+      <li>1. Mostrar contexto, enunciado y opciones sin marcar la correcta.</li>
+      <li>2. Permitir registrar o cambiar la selección de una pregunta ya respondida, sin duplicarla.</li>
+      <li>3. Permitir volver entre preguntas (anterior / siguiente) mientras el intento está en curso.</li>
+      <li>4. Rechazar responder o cambiar si la participación ya finalizó o se agotó el tiempo.</li>
+    </ul>
+    <div class="label">Mockup</div>
+    <div class="stage">
+      <img class="mock-img" src="mocks-SP8-SP14/SP-10.jpg" alt="SP-10 Responder y modificar respuestas" />
+    </div>
+  </article>
+
+  <!-- SP-11 -->
+  <article class="hu" id="sp11">
+    <h2>SP-11 Registrar respuestas y mostrar progreso</h2>
+    <p class="tag">CU-16 / CU-21 · Módulo 5 Participación · RF-11</p>
+    <p class="card-line"><strong>Como</strong> estudiante en participación,<br>
+    <strong>Quiero</strong> que cada respuesta quede registrada y ver cuánto he avanzado,<br>
+    <strong>Para</strong> saber cuántas decisiones me faltan antes de finalizar el caso.</p>
+    <div class="label">Entradas del sistema (atributos)</div>
+    <ul>
+      <li>Respuesta vigente por pregunta (opción actual)</li>
+      <li>Número de preguntas respondidas</li>
+      <li>Total de preguntas del caso</li>
+      <li>Porcentaje de progreso</li>
+    </ul>
+    <div class="label">Escenario de uso</div>
+    <p class="card-line">Laura responde la primera de dos preguntas. El sistema guarda esa selección como respuesta vigente y actualiza la barra al 50 %. En el panel de casos asignados también ve el mismo porcentaje. Si cambia la opción, el progreso no baja: la pregunta sigue contestada, solo cambia la elección.</p>
+    <div class="label">Criterios de aceptación (subtareas)</div>
+    <ul>
+      <li>1. Persistir una sola respuesta vigente por pregunta (la última elección).</li>
+      <li>2. Calcular el progreso como preguntas respondidas / total del caso.</li>
+      <li>3. Mostrar el porcentaje en la simulación y en el panel del estudiante.</li>
+      <li>4. No contar como avance una pregunta sin selección.</li>
+    </ul>
+    <div class="label">Mockup</div>
+    <div class="stage">
+      <img class="mock-img" src="mocks-SP8-SP14/SP-11.jpg" alt="SP-11 Registrar respuestas y mostrar progreso" />
+    </div>
+  </article>
+
+  <!-- SP-12 -->
+  <article class="hu" id="sp12">
+    <h2>SP-12 Registrar inicio y fin de la participación</h2>
+    <p class="tag">CU-16 · Módulo 5 Participación · RF-12</p>
+    <p class="card-line"><strong>Como</strong> estudiante convocado en una sesión en curso,<br>
+    <strong>Quiero</strong> que mi intento quede con hora de inicio, hora de fin, calificación y retroalimentación por pregunta,<br>
+    <strong>Para</strong> que el docente pueda auditar el intento y yo pueda consultar el resultado cerrado.</p>
+    <div class="label">Entradas del sistema (atributos)</div>
+    <ul>
+      <li>Inicio de la participación</li>
+      <li>Fin de la participación (estudiante, tiempo máximo o cierre de sesión)</li>
+      <li>Calificación final</li>
+      <li>Retroalimentación por pregunta (explicación de cada opción)</li>
+    </ul>
+    <div class="label">Escenario de uso</div>
+    <p class="card-line">Laura acepta las reglas e inicia la simulación. El sistema registra el inicio. Responde y pulsa Finalizar, o se agota el tiempo máximo, o el docente cierra la sesión: en todos los casos se guarda el fin, se calcula la nota y quedan disponibles las explicaciones de cada pregunta. Un intento en curso no tiene nota ni justificaciones visibles.</p>
+    <div class="label">Criterios de aceptación (subtareas)</div>
+    <ul>
+      <li>1. Al iniciar el primer intento (o el autorizado) guardar fecha/hora de inicio.</li>
+      <li>2. Al finalizar por el estudiante, por tiempo o por cierre de sesión, guardar el fin.</li>
+      <li>3. Asociar al intento cerrado la calificación final y la retroalimentación de cada pregunta.</li>
+      <li>4. No permitir un segundo inicio sin autorización si ya existe un intento finalizado (RF-25).</li>
+    </ul>
+    <div class="label">Mockup</div>
+    <div class="stage">
+      <img class="mock-img" src="mocks-SP8-SP14/SP-12.jpg" alt="SP-12 Registrar inicio y fin de la participación" />
+    </div>
+  </article>
+
+  <!-- SP-13 -->
+  <article class="hu" id="sp13">
+    <h2>SP-13 Calcular nota con rúbrica</h2>
+    <p class="tag">CU-17 · Módulo 6 Evaluación · RF-13 / INV-29</p>
+    <p class="card-line"><strong>Como</strong> docente del caso,<br>
+    <strong>Quiero</strong> que el sistema calcule y almacene la nota de cada intento con los pesos de la rúbrica,<br>
+    <strong>Para</strong> obtener una calificación objetiva sobre 5,0, también en intentos incompletos y ausencias.</p>
+    <div class="label">Entradas del sistema (atributos)</div>
+    <ul>
+      <li>Respuestas del intento</li>
+      <li>Peso de cada pregunta (rúbrica)</li>
+      <li>Aciertos (opción marcada como correcta)</li>
+      <li>Puntaje persistido (0,0 a 5,0)</li>
+    </ul>
+    <div class="label">Escenario de uso</div>
+    <p class="card-line">Laura acierta la pregunta de peso 3,0 y falla la de peso 2,0. Al finalizar, el sistema suma solo los pesos acertados: 3,0. Si no alcanza a responder y se cierra el tiempo, se califica lo contestado. Si no inició, al cerrar la sesión queda ausente con 0,0. La nota se guarda en la evaluación del intento y no se mezcla con un segundo intento autorizado.</p>
+    <div class="label">Criterios de aceptación (subtareas)</div>
+    <ul>
+      <li>1. Sumar únicamente los pesos de las preguntas con opción correcta vigente.</li>
+      <li>2. Guardar el puntaje con un decimal sobre 5,0 al cerrar el intento.</li>
+      <li>3. Calificar también el intento incompleto con lo respondido; ausencia = 0,0.</li>
+      <li>4. No mezclar respuestas ni notas entre intentos distintos del mismo estudiante.</li>
+    </ul>
+    <div class="label">Mockup</div>
+    <div class="stage">
+      <img class="mock-img" src="mocks-SP8-SP14/SP-13.jpg" alt="SP-13 Calcular nota con rúbrica" />
+    </div>
+  </article>
+
+  <!-- SP-14 -->
+  <article class="hu" id="sp14">
+    <h2>SP-14 Mostrar resultado y retroalimentación final</h2>
+    <p class="tag">CU-18 · Módulo 6 Evaluación · RF-14</p>
+    <p class="card-line"><strong>Como</strong> estudiante que ya finalizó el intento,<br>
+    <strong>Quiero</strong> ver aciertos, errores, explicaciones y la nota final,<br>
+    <strong>Para</strong> entender por qué cada decisión suma o no, sin que eso se adelante durante el juego.</p>
+    <div class="label">Entradas del sistema (atributos)</div>
+    <ul>
+      <li>Estado del intento (en curso / finalizada / ausente)</li>
+      <li>Opción elegida y opción correcta</li>
+      <li>Explicación y fundamento por opción</li>
+      <li>Nota final</li>
+    </ul>
+    <div class="label">Escenario de uso</div>
+    <p class="card-line">Mientras Laura responde, las opciones no dicen cuál es correcta. Al finalizar, abre Resultados del caso: ve 3,0 / 5,0, su elección marcada, la opción correcta y el texto «Prioriza seguridad…». Si el intento sigue en curso, el sistema no muestra nota ni justificaciones. El docente sí puede consultar el intento, pero el estudiante no ve la clave hasta cerrar.</p>
+    <div class="label">Criterios de aceptación (subtareas)</div>
+    <ul>
+      <li>1. Durante el intento en curso, no mostrar correcta, explicación ni nota al estudiante.</li>
+      <li>2. Al finalizar, mostrar aciertos, errores, explicaciones y nota sobre 5,0.</li>
+      <li>3. En ausencia, mostrar resultado con nota 0,0 y sin revelar el caso como si hubiera jugado en curso.</li>
+      <li>4. El docente puede ver claves del intento; el estudiante solo después de finalizar.</li>
+    </ul>
+    <div class="label">Mockup</div>
+    <div class="stage">
+      <img class="mock-img" src="mocks-SP8-SP14/SP-14.jpg" alt="SP-14 Mostrar resultado y retroalimentación final" />
+    </div>
+  </article>
+</div>
+</body>
+</html>

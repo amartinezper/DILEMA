@@ -15,7 +15,7 @@ class RelojParticipacionTest {
 
     @Test
     @DisplayName("RF-23 cierra el intento al agotar el tiempo máximo o al llegar el fin de la sesión")
-    void cierraPorTiempoOPorVentana() {
+    void cierraAlAgotarTiempoMaximoOFinDeSesion() {
         Participacion participacion = intento(LocalDateTime.of(2026, 6, 2, 9, 0), 10,
                 LocalDateTime.of(2026, 6, 2, 11, 0));
         assertFalse(RelojParticipacion.debeCerrar(participacion, LocalDateTime.of(2026, 6, 2, 9, 9)));
@@ -28,7 +28,7 @@ class RelojParticipacionTest {
 
     @Test
     @DisplayName("RF-12 registra el fin en el límite y no después")
-    void finPorLimite() {
+    void registraFinEnElLimiteYNoDespues() {
         Participacion participacion = intento(LocalDateTime.of(2026, 6, 2, 9, 0), 10,
                 LocalDateTime.of(2026, 6, 2, 9, 8));
         assertEquals(LocalDateTime.of(2026, 6, 2, 9, 8),

@@ -17,7 +17,7 @@ class EstadosDeSesionTest {
 
     @Test
     @DisplayName("RF-19: sin iniciar admite iniciar y rechaza finalizar o participar")
-    void sinIniciar() {
+    void sinIniciarAdmiteIniciarYRechazaFinalizar() {
         SesionCaso sesion = new SesionCaso();
         EstadoSesion estado = EstadosDeSesion.de(sesion);
         assertFalse(estado.permiteParticipar());
@@ -29,7 +29,7 @@ class EstadosDeSesionTest {
 
     @Test
     @DisplayName("RF-19: en curso admite participar y finalizar, no volver a iniciar")
-    void enCurso() {
+    void enCursoAdmiteParticiparYFinalizar() {
         SesionCaso sesion = new SesionCaso();
         sesion.inicioReal = LocalDateTime.now();
         EstadoSesion estado = EstadosDeSesion.de(sesion);
@@ -40,7 +40,7 @@ class EstadosDeSesionTest {
 
     @Test
     @DisplayName("RF-19: finalizada rechaza iniciar, finalizar y participar")
-    void finalizada() {
+    void finalizadaRechazaTodaOperacion() {
         SesionCaso sesion = new SesionCaso();
         sesion.inicioReal = LocalDateTime.now().minusHours(2);
         sesion.cierreReal = LocalDateTime.now();
@@ -51,8 +51,8 @@ class EstadosDeSesionTest {
     }
 
     @Test
-    @DisplayName("RF-19: el cierre automático ocurre un día después del fin, aunque no se haya iniciado")
-    void cierreUnDiaDespues() {
+    @DisplayName("CU-15-P04: el cierre automático ocurre un día después del fin, aunque no se haya iniciado")
+    void cierraAutomaticamenteUnDiaDespuesDelFin() {
         SesionCaso sesion = new SesionCaso();
         sesion.fin = LocalDateTime.of(2026, 6, 2, 10, 0);
         assertFalse(EstadosDeSesion.vencioPlazoDeCierre(sesion, LocalDateTime.of(2026, 6, 2, 18, 0)));

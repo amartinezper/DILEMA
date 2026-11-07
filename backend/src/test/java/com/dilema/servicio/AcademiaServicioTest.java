@@ -61,19 +61,53 @@ class AcademiaServicioTest {
     }
 
     @Test
-    @DisplayName("CU-03 crea el grupo con nombre y semestre")
-    void crearGrupo() {
+    @DisplayName("CU-03 / RF-04: crea el grupo con nombre y semestre")
+    void creaGrupoConNombreYSemestre() {
         Contratos.GrupoVista vista = servicio.crearGrupo(docente, new Contratos.GrupoIn("Grupo A", "2026-I"));
         assertEquals("Grupo A", vista.nombre());
         assertEquals("2026-I", vista.espacioAcademico());
         verify(grupos).save(any());
         verify(bitacora).auditar(eq(docente), eq("CREAR_GRUPO"), eq("Grupo A"));
+    }
+
+    @Test
+    @DisplayName("CU-03 / RF-04: rechaza grupo sin nombre")
+    void rechazaGrupoSinNombre() {
         assertThrows(ReglaNegocio.class, () -> servicio.crearGrupo(docente, new Contratos.GrupoIn(" ", "2026-I")));
     }
 
     @Test
+    @DisplayName("CU-12-P03 rechaza un correo institucional inválido")
+    void rechazaCorreoInstitucionalInvalido() {
+        when(grupos.findById(8L)).thenReturn(Optional.of(grupo()));
+        assertEquals("Indica un correo institucional válido.",
+                assertThrows(ReglaNegocio.class, () -> servicio.agregarEstudiante(docente, 8L, "Ana", "ana")).getMessage());
+    }
+
+    @Test
+    @DisplayName("CU-12-P04 rechaza un estudiante que ya está en el grupo")
+    void rechazaEstudianteDuplicado() {
+        Grupo grupo = grupo();
+        Usuario existente = estudiante(9L, "ana@psicosim.edu");
+        grupo.estudiantes.add(existente);
+        when(grupos.findById(8L)).thenReturn(Optional.of(grupo));
+        when(usuarios.findByEmailIgnoreCase("ana@psicosim.edu")).thenReturn(Optional.of(existente));
+        assertEquals("El estudiante ya está en el grupo.",
+                assertThrows(ReglaNegocio.class, () -> servicio.agregarEstudiante(docente, 8L, "Ana", "ana@psicosim.edu")).getMessage());
+    }
+
+    @Test
+    @DisplayName("CU-12-P05 rechaza el correo de un docente")
+    void rechazaCorreoDeDocente() {
+        when(grupos.findById(8L)).thenReturn(Optional.of(grupo()));
+        when(usuarios.findByEmailIgnoreCase("docente@psicosim.edu")).thenReturn(Optional.of(docente));
+        assertEquals("Ese correo pertenece a otra cuenta.",
+                assertThrows(ReglaNegocio.class, () -> servicio.agregarEstudiante(docente, 8L, "Ana", "docente@psicosim.edu")).getMessage());
+    }
+
+    @Test
     @DisplayName("RF-21 convoca al estudiante agregado si hay sesión abierta")
-    void agregarEstudiante() {
+    void convocaEstudianteSiHaySesionAbierta() {
         Grupo grupo = grupo();
         when(grupos.findById(8L)).thenReturn(Optional.of(grupo));
         Usuario existente = estudiante(9L, "ana@psicosim.edu");
@@ -91,7 +125,7 @@ class AcademiaServicioTest {
 
     @Test
     @DisplayName("RF-21 avisa alta sin sesión y crea la cuenta si no existe")
-    void agregarSinSesion() {
+    void avisaAltaSinSesionYCreaCuentaSiNoExiste() {
         Grupo grupo = grupo();
         when(grupos.findById(8L)).thenReturn(Optional.of(grupo));
         when(usuarios.findByEmailIgnoreCase("nueva@psicosim.edu")).thenReturn(Optional.empty());
@@ -107,7 +141,7 @@ class AcademiaServicioTest {
 
     @Test
     @DisplayName("RF-21 retira al estudiante del padrón de sesiones abiertas")
-    void retirar() {
+    void retiraEstudianteDelPadronDeSesionesAbiertas() {
         Grupo grupo = grupo();
         Usuario estudiante = estudiante(9L, "ana@psicosim.edu");
         grupo.estudiantes.add(estudiante);
@@ -124,7 +158,7 @@ class AcademiaServicioTest {
 
     @Test
     @DisplayName("RF-19 inicia y finaliza la sesión del docente")
-    void iniciarYFinalizar() {
+    void iniciaYFinalizaSesionDelDocente() {
         SesionCaso sesion = sesionAbierta();
         sesion.inicioReal = null;
         when(sesiones.findById(4L)).thenReturn(Optional.of(sesion));
@@ -142,7 +176,7 @@ class AcademiaServicioTest {
 
     @Test
     @DisplayName("cierra automáticamente las sesiones vencidas")
-    void cerrarVencidas() {
+    void cierraAutomaticamenteSesionesVencidas() {
         SesionCaso sesion = sesionAbierta();
         sesion.fin = LocalDateTime.now().minusDays(2);
         when(sesiones.findByCierreRealIsNull()).thenReturn(List.of(sesion));

@@ -28,7 +28,7 @@ class CierreSesionTest {
 
     @Test
     @DisplayName("RF-19 y RF-24: el docente cierra incompletos y registra ausencias en 0,0")
-    void cierrePorDocente() {
+    void docenteCierraIncompletosYRegistraAusenciasEnCero() {
         ParticipacionServicio servicio = mock(ParticipacionServicio.class);
         ParticipacionRepo repo = mock(ParticipacionRepo.class);
         SesionCaso sesion = sesionEnCurso();
@@ -53,14 +53,14 @@ class CierreSesionTest {
 
     @Test
     @DisplayName("RF-19 no finaliza una sesión que todavía no inició")
-    void noCierraSinIniciar() {
+    void noFinalizaSesionSinIniciar() {
         assertThrows(ReglaNegocio.class, () -> new CierrePorDocente(mock(ParticipacionServicio.class), mock(ParticipacionRepo.class))
                 .cerrar(new SesionCaso()));
     }
 
     @Test
-    @DisplayName("el cierre por fecha espera un día después del fin previsto")
-    void cierrePorFecha() {
+    @DisplayName("CU-15-P04: el cierre por fecha actúa un día después del fin previsto")
+    void cierraPorFechaUnDiaDespuesDelFin() {
         ParticipacionServicio servicio = mock(ParticipacionServicio.class);
         ParticipacionRepo repo = mock(ParticipacionRepo.class);
         SesionCaso sesion = sesionEnCurso();
@@ -76,7 +76,7 @@ class CierreSesionTest {
 
     @Test
     @DisplayName("el cierre por fecha no actúa si todavía no venció el plazo")
-    void noCierraSiNoVencio() {
+    void noCierraPorFechaSiElPlazoNoVencio() {
         ParticipacionServicio servicio = mock(ParticipacionServicio.class);
         ParticipacionRepo repo = mock(ParticipacionRepo.class);
         SesionCaso sesion = sesionEnCurso();
