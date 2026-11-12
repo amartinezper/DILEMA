@@ -130,7 +130,8 @@ h3 { font-size: 15px; font-weight: 650; }
 .punto { width: 8px; height: 8px; border-radius: 50%; background: var(--azul); margin-top: 6px; flex: 0 0 auto; }
 .punto[data-tono="1"] { background: var(--violeta); }
 .punto[data-tono="2"] { background: var(--verde); }
-.login-page { min-height: 100vh; display: grid; grid-template-rows: 52px 1fr; }
+.login-page { min-height: 100vh; display: grid; grid-template-rows: 72px 1fr; background: var(--bg); }
+.login-barra { display: flex; align-items: center; gap: 10px; padding: 0 28px; }
 .login-wrap { display: grid; place-items: center; padding: 24px; }
 .ingreso-dos { grid-template-columns: repeat(auto-fit, minmax(280px, 420px)); gap: 16px; justify-content: center; align-items: start; }
 .ingreso-dos mat-card { width: 100%; }
