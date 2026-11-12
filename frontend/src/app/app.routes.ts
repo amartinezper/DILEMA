@@ -16,7 +16,7 @@ export const routes: Routes = [
   { path: 'docente/programar', canActivate: [rolGuard('PROFESOR')], loadComponent: () => import('./pages/docente.component').then(m => m.ProgramarComponent) },
   { path: 'docente/seguimiento', canActivate: [rolGuard('PROFESOR')], loadComponent: () => import('./pages/docente.component').then(m => m.SeguimientoComponent) },
   { path: 'docente/seguimiento/:id', canActivate: [rolGuard('PROFESOR')], loadComponent: () => import('./pages/docente.component').then(m => m.DetalleParticipacionComponent) },
-  { path: 'admin', pathMatch: 'full', redirectTo: 'admin/usuarios' },
+  { path: 'admin', canActivate: [rolGuard('ADMIN')], loadComponent: () => import('./pages/admin.component').then(m => m.PanelAdminComponent) },
   { path: 'admin/usuarios', canActivate: [rolGuard('ADMIN')], loadComponent: () => import('./pages/admin.component').then(m => m.UsuariosComponent) },
   { path: 'admin/usuarios/nuevo', canActivate: [rolGuard('ADMIN')], loadComponent: () => import('./pages/admin.component').then(m => m.CrearUsuarioComponent) },
   { path: 'admin/usuarios/:id', canActivate: [rolGuard('ADMIN')], loadComponent: () => import('./pages/admin.component').then(m => m.PermisosDocenteComponent) },
