@@ -8,8 +8,10 @@ import { Bloque, Caso, CasoResumen, Fila, Grupo, Participacion, Sesion, mensajeE
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { AuthService } from '../core/auth.service';
+import { BusquedaService } from '../core/busqueda.service';
 
 const enlaces = [
+  { href: '/docente', texto: 'Inicio', exacto: true },
   { href: '/docente/casos', texto: 'Mis Casos', exacto: true },
   { href: '/docente/grupos', texto: 'Grupos', exacto: true },
   { href: '/docente/programar', texto: 'Programar', exacto: true },
@@ -34,20 +36,117 @@ function casoVacio(): Caso {
 
 @Component({
   selector: 'app-panel-docente',
-  imports: [MatButtonModule, MatCardModule, MarcoComponent, RouterLink],
+  imports: [MarcoComponent, RouterLink],
   template: `
     <app-marco [enlaces]="enlaces">
-      <section class="card stack">
-        <p class="kicker">Docente</p>
-        <h1>Diseño y seguimiento</h1>
-        <p class="sub">Arma el caso en borrador, publícalo cuando la rúbrica cierre y prográmalo con un grupo.</p>
-        <a mat-stroked-button routerLink="/docente/casos">Ver casos</a>
-        <a mat-stroked-button routerLink="/docente/programar">Programar sesión</a>
+      <section class="tablero">
+        <header class="saludo">
+          <h1>Hola, {{ nombre() }}</h1>
+          <p>Tus casos, grupos y sesiones.</p>
+        </header>
+        <div class="atajos">
+          <a class="atajo oscuro" routerLink="/docente/casos">Mis casos</a>
+          <a class="atajo" routerLink="/docente/grupos">Grupos</a>
+          <a class="atajo" routerLink="/docente/programar">Programar</a>
+          <a class="atajo" routerLink="/docente/seguimiento">Reportes</a>
+        </div>
+        <div class="tablero-cuerpo">
+          <div class="stack">
+            <article class="tarjeta">
+              <div class="tarjeta-cabeza">
+                <h2>Mis casos</h2>
+                <a class="ver-todos" routerLink="/docente/casos">Ver todos</a>
+              </div>
+              <div class="rejilla-casos">
+                @for (caso of casosVisibles(); track caso.id; let i = $index) {
+                  <a class="curso" [routerLink]="['/docente/casos', caso.id]">
+                    <div class="franja" [attr.data-tono]="i % 3"></div>
+                    <span class="estado-pill">{{ caso.estado }}</span>
+                    <h3>{{ caso.nombre }}</h3>
+                    <p class="sub">{{ caso.bloques }} escenarios · {{ caso.preguntas }} preguntas</p>
+                  </a>
+                } @empty { <p class="sub">{{ casos().length ? 'Ningún caso coincide con la búsqueda.' : 'Todavía no tienes casos.' }}</p> }
+              </div>
+            </article>
+            <article class="tarjeta">
+              <h2>Grupos</h2>
+              <p class="nota-grande">{{ grupos().length }}</p>
+              <p class="sub">Espacios a tu cargo. La matrícula se hace en Grupos.</p>
+            </article>
+          </div>
+          <aside class="stack">
+            <article class="tarjeta">
+              <div class="tarjeta-cabeza">
+                <h2>Tu horario de hoy</h2>
+                <a class="ver-todos" routerLink="/docente/programar">Ver todas</a>
+              </div>
+              <div class="stack">
+                @for (sesion of hoy(); track sesion.id; let i = $index) {
+                  <div class="fila-lista">
+                    <span class="punto" [attr.data-tono]="i % 3"></span>
+                    <div>
+                      <strong>{{ sesion.caso }}</strong>
+                      <p class="sub">{{ cuando(sesion.inicio) }} · {{ sesion.grupo }}</p>
+                    </div>
+                  </div>
+                } @empty { <p class="sub">Hoy no tienes sesiones.</p> }
+              </div>
+            </article>
+            <article class="tarjeta">
+              <h2>Próximas sesiones</h2>
+              <div class="stack">
+                @for (sesion of proximas(); track sesion.id) {
+                  <div class="fila-lista">
+                    <span class="punto"></span>
+                    <div>
+                      <strong>{{ sesion.caso }}</strong>
+                      <p class="sub">{{ sesion.estado }} · {{ cuando(sesion.inicio) }}</p>
+                    </div>
+                  </div>
+                } @empty { <p class="sub">No hay sesiones por delante.</p> }
+              </div>
+            </article>
+          </aside>
+        </div>
       </section>
     </app-marco>
   `
 })
-export class PanelDocenteComponent { enlaces = enlaces; }
+export class PanelDocenteComponent {
+  enlaces = enlaces;
+  private http = inject(HttpClient);
+  private auth = inject(AuthService);
+  private busqueda = inject(BusquedaService);
+  casos = signal<CasoResumen[]>([]);
+  sesiones = signal<Sesion[]>([]);
+  grupos = signal<Grupo[]>([]);
+  constructor() {
+    this.http.get<CasoResumen[]>('/api/docente/casos').subscribe((dato) => this.casos.set(dato));
+    this.http.get<Sesion[]>('/api/docente/sesiones').subscribe((dato) => this.sesiones.set(dato));
+    this.http.get<Grupo[]>('/api/docente/grupos').subscribe((dato) => this.grupos.set(dato));
+  }
+  nombre() {
+    const completo = this.auth.usuario()?.nombre ?? '';
+    return completo.trim().split(/\s+/)[0] || 'docente';
+  }
+  casosVisibles() {
+    const q = this.busqueda.texto().trim().toLowerCase();
+    return this.casos().filter((caso) => !q || caso.nombre.toLowerCase().includes(q)).slice(0, 6);
+  }
+  hoy() { return this.sesiones().filter((sesion) => this.mismoDia(sesion.inicio)); }
+  proximas() { return this.sesiones().filter((sesion) => sesion.estado !== 'FINALIZADO').slice(0, 4); }
+  cuando(iso: string) {
+    const fecha = new Date(iso);
+    if (Number.isNaN(fecha.getTime())) return iso;
+    return fecha.toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  }
+  private mismoDia(iso: string) {
+    const fecha = new Date(iso);
+    if (Number.isNaN(fecha.getTime())) return false;
+    const hoy = new Date();
+    return fecha.getFullYear() === hoy.getFullYear() && fecha.getMonth() === hoy.getMonth() && fecha.getDate() === hoy.getDate();
+  }
+}
 
 @Component({
   selector: 'app-casos',

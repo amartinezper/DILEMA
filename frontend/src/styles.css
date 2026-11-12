@@ -106,7 +106,7 @@ h3 { font-size: 15px; font-weight: 650; }
 .tarjeta-cabeza { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .ver-todos { color: var(--azul); font-size: 13px; font-weight: 650; }
 .rejilla-casos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 14px; }
-.curso { background: var(--soft); border-radius: 18px; overflow: hidden; display: grid; gap: 6px; padding-bottom: 14px; }
+.curso, a.curso { background: var(--soft); border-radius: 18px; overflow: hidden; display: grid; gap: 6px; padding-bottom: 14px; color: inherit; }
 .franja { height: 72px; }
 .franja[data-tono="0"] { background: linear-gradient(135deg, #d9e4ff, #8eaaef); }
 .franja[data-tono="1"] { background: linear-gradient(135deg, #e7dff8, #b7a6e6); }

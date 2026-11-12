@@ -8,7 +8,7 @@ export const routes: Routes = [
   { path: 'estudiante/sesion/:id', canActivate: [rolGuard('ESTUDIANTE')], loadComponent: () => import('./pages/estudiante.component').then(m => m.BriefingComponent) },
   { path: 'estudiante/participacion/:id', canActivate: [rolGuard('ESTUDIANTE')], loadComponent: () => import('./pages/estudiante.component').then(m => m.SimulacionComponent) },
   { path: 'estudiante/avisos', canActivate: [rolGuard('ESTUDIANTE')], loadComponent: () => import('./pages/estudiante.component').then(m => m.AvisosComponent) },
-  { path: 'docente', pathMatch: 'full', redirectTo: 'docente/casos' },
+  { path: 'docente', canActivate: [rolGuard('PROFESOR')], loadComponent: () => import('./pages/docente.component').then(m => m.PanelDocenteComponent) },
   { path: 'docente/casos', canActivate: [rolGuard('PROFESOR')], loadComponent: () => import('./pages/docente.component').then(m => m.CasosComponent) },
   { path: 'docente/casos/nuevo', canActivate: [rolGuard('PROFESOR')], loadComponent: () => import('./pages/docente.component').then(m => m.EditorCasoComponent) },
   { path: 'docente/casos/:id', canActivate: [rolGuard('PROFESOR')], loadComponent: () => import('./pages/docente.component').then(m => m.EditorCasoComponent) },
