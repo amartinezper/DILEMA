@@ -150,17 +150,30 @@ export class PanelDocenteComponent {
 
 @Component({
   selector: 'app-casos',
-  imports: [MatButtonModule, MatCardModule, MarcoComponent, RouterLink],
+  imports: [MarcoComponent, RouterLink],
   template: `
     <app-marco [enlaces]="enlaces">
-      <section class="card stack">
-        <div class="row"><h1>Mis casos</h1>@if (puedeEditar()) { <a mat-stroked-button routerLink="/docente/casos/nuevo">Crear caso</a> }</div>
-        @for (caso of casos(); track caso.id) {
-          <a class="item" [routerLink]="['/docente/casos', caso.id]">
-            <small>{{ caso.estado }} · {{ caso.bloques }} escenarios · {{ caso.preguntas }} preguntas</small>
-            <h3>{{ caso.nombre }}</h3>
-          </a>
-        }
+      <section class="tablero">
+        <header class="saludo">
+          <h1>Mis casos</h1>
+          <p>El listado abre el editor que ya existe. Crear un caso sigue en la misma pantalla de siempre.</p>
+        </header>
+        <article class="tarjeta">
+          <div class="tarjeta-cabeza">
+            <h2>Listado</h2>
+            @if (puedeEditar()) { <a class="btn-oscuro" routerLink="/docente/casos/nuevo">Crear caso</a> }
+          </div>
+          <div class="rejilla-casos">
+            @for (caso of visibles(); track caso.id; let i = $index) {
+              <a class="curso" [routerLink]="['/docente/casos', caso.id]">
+                <div class="franja" [attr.data-tono]="i % 3"></div>
+                <span class="estado-pill">{{ caso.estado }}</span>
+                <h3>{{ caso.nombre }}</h3>
+                <p class="sub">{{ caso.bloques }} escenarios · {{ caso.preguntas }} preguntas</p>
+              </a>
+            } @empty { <p class="sub">No hay casos para mostrar.</p> }
+          </div>
+        </article>
       </section>
     </app-marco>
   `
@@ -169,9 +182,14 @@ export class CasosComponent {
   enlaces = enlaces;
   private http = inject(HttpClient);
   private auth = inject(AuthService);
+  private filtro = inject(BusquedaService);
   casos = signal<CasoResumen[]>([]);
   puedeEditar() { return this.auth.puede('EDITAR'); }
   constructor() { this.http.get<CasoResumen[]>('/api/docente/casos').subscribe((dato) => this.casos.set(dato)); }
+  visibles() {
+    const q = this.filtro.texto().trim().toLowerCase();
+    return this.casos().filter((caso) => !q || caso.nombre.toLowerCase().includes(q) || caso.estado.toLowerCase().includes(q));
+  }
 }
 
 interface PersonaEscena { id: string; nombre: string; color: string; x: number; y: number; }
@@ -500,21 +518,21 @@ export class EditorCasoComponent {
   imports: [MatButtonModule, MatCardModule, MarcoComponent, FormsModule, RouterLink],
   template: `
     <app-marco [enlaces]="enlaces">
-      <section class="stack">
-        <div>
-          <h1>Gestión de grupos</h1>
-          <p class="sub">Cohortes, matrícula y asignación de casos.</p>
-        </div>
+      <section class="tablero">
+        <header class="saludo">
+          <h1>Grupos</h1>
+          <p>Cohortes, matrícula y asignación de casos.</p>
+        </header>
         @if (error()) { <p class="error">{{ error() }}</p> }
         <div class="dos">
-          <section class="card stack">
-            <div class="row"><h2>Mis grupos</h2>@if (puedeGestionar()) { <button mat-stroked-button type="button" (click)="nuevo.set(!nuevo())">Nuevo grupo</button> }</div>
+          <section class="tarjeta stack">
+            <div class="row"><h2>Mis grupos</h2>@if (puedeGestionar()) { <button class="btn-oscuro" type="button" (click)="nuevo.set(!nuevo())">Nuevo grupo</button> }</div>
             @if (nuevo()) {
               <label class="field"><span>Nombre</span><input [(ngModel)]="nombre" /></label>
               <label class="field"><span>Semestre</span><input [(ngModel)]="espacio" placeholder="2026-I" /></label>
-              <button mat-flat-button color="primary" type="button" (click)="crear()">Crear grupo</button>
+              <button class="btn-oscuro" type="button" (click)="crear()">Crear grupo</button>
             }
-            @for (grupo of grupos(); track grupo.id) {
+            @for (grupo of gruposVisibles(); track grupo.id) {
               <button class="item grupo-item" type="button" [class.activa]="seleccionado() === grupo.id" (click)="elegir(grupo.id)">
                 <strong>{{ grupo.nombre }}</strong>
                 <p class="sub">{{ grupo.espacioAcademico }} · {{ grupo.estudiantes.length }} estudiantes</p>
@@ -522,7 +540,7 @@ export class EditorCasoComponent {
             }
           </section>
           @if (actual(); as grupo) {
-            <section class="card stack">
+            <section class="tarjeta stack">
               <div class="row">
                 <div>
                   <h2>{{ grupo.nombre }}</h2>
@@ -571,8 +589,13 @@ export class GruposComponent {
   correos: Record<number, string> = {};
   nombres: Record<number, string> = {};
   private auth = inject(AuthService);
+  private filtro = inject(BusquedaService);
   error = signal('');
   puedeGestionar() { return this.auth.puede('GESTIONAR_ESPACIOS_ACADEMICOS'); }
+  gruposVisibles() {
+    const q = this.filtro.texto().trim().toLowerCase();
+    return this.grupos().filter((grupo) => !q || grupo.nombre.toLowerCase().includes(q) || grupo.espacioAcademico.toLowerCase().includes(q));
+  }
   constructor() { this.cargar(); }
   crear() {
     this.http.post<Grupo>('/api/docente/grupos', { nombre: this.nombre, espacioAcademico: this.espacio }).subscribe({
@@ -603,13 +626,13 @@ export class GruposComponent {
   imports: [MatButtonModule, MatCardModule, MarcoComponent, FormsModule, RouterLink],
   template: `
     <app-marco [enlaces]="enlaces">
-      <section class="stack">
-        <div>
-          <p class="kicker">Módulo de planificación</p>
-          <h1>Agendar caso de estudio a grupo</h1>
-        </div>
+      <section class="tablero">
+        <header class="saludo">
+          <h1>Programar</h1>
+          <p>Agenda un caso publicado con un grupo y abre la sesión cuando corresponda.</p>
+        </header>
         <div class="dos-ancha">
-          <section class="card stack">
+          <section class="tarjeta stack">
             <h2>Caso y grupo</h2>
             <label class="field"><span>Caso publicado</span>
               <select [(ngModel)]="casoId">
@@ -640,7 +663,7 @@ export class GruposComponent {
               <button mat-flat-button color="primary" type="button" (click)="agendar()">Guardar y notificar</button>
             </div>
           </section>
-          <aside class="card stack">
+          <aside class="tarjeta stack">
             <h2>Resumen</h2>
             <p><strong>Caso.</strong> {{ nombreCaso() }}</p>
             <p><strong>Grupo.</strong> {{ nombreGrupo() }}</p>
@@ -651,8 +674,8 @@ export class GruposComponent {
           </aside>
         </div>
         <h2>Convocatorias</h2>
-        @for (sesion of sesiones(); track sesion.id) {
-          <article class="item stack">
+        @for (sesion of sesionesVisibles(); track sesion.id) {
+          <article class="tarjeta stack">
             <small>{{ sesion.estado }} · código {{ sesion.codigo }}</small>
             <h3>{{ sesion.caso }}</h3>
             <p class="sub">{{ sesion.grupo }} · {{ sesion.inicio }} → {{ sesion.fin }}</p>
@@ -671,6 +694,7 @@ export class ProgramarComponent {
   enlaces = enlaces;
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
+  private filtro = inject(BusquedaService);
   casos = signal<CasoResumen[]>([]);
   grupos = signal<Grupo[]>([]);
   sesiones = signal<Sesion[]>([]);
@@ -704,6 +728,10 @@ export class ProgramarComponent {
     this.cargar();
   }
   nombreCaso() { return this.casos().find((c) => c.id === Number(this.casoId))?.nombre ?? 'Sin caso'; }
+  sesionesVisibles() {
+    const q = this.filtro.texto().trim().toLowerCase();
+    return this.sesiones().filter((sesion) => !q || sesion.caso.toLowerCase().includes(q) || sesion.grupo.toLowerCase().includes(q) || sesion.codigo.toLowerCase().includes(q));
+  }
   nombreGrupo() { return this.grupos().find((g) => g.id === Number(this.grupoId))?.nombre ?? 'Sin grupo'; }
   borrador() {
     localStorage.setItem('dilema-agenda', JSON.stringify({
@@ -747,11 +775,11 @@ export class ProgramarComponent {
   imports: [MatButtonModule, MatCardModule, MarcoComponent, RouterLink, FormsModule],
   template: `
     <app-marco [enlaces]="enlaces">
-      <section class="stack">
-        <div>
-          <h1>Reportes de participación</h1>
-          <p class="sub">Desempeño, estado de la bitácora y descarga del grupo.</p>
-        </div>
+      <section class="tablero">
+        <header class="saludo">
+          <h1>Reportes</h1>
+          <p>Desempeño, estado de la bitácora y descarga del grupo.</p>
+        </header>
         <div class="filtros">
           <label class="field"><span>Caso</span>
             <select [(ngModel)]="sesionId" (ngModelChange)="ver($event)">
@@ -781,7 +809,7 @@ export class ProgramarComponent {
               } @empty { <tr><td colspan="5">No hay estudiantes en esta convocatoria.</td></tr> }
             </tbody>
           </table>
-          <aside class="card stack">
+          <aside class="tarjeta stack">
             <h2>Ficha de cohorte</h2>
             <p class="nota">{{ promedio() }}</p>
             <p class="sub">Promedio sobre 5,0</p>
@@ -798,6 +826,7 @@ export class ProgramarComponent {
 export class SeguimientoComponent {
   enlaces = enlaces;
   private http = inject(HttpClient);
+  private filtro = inject(BusquedaService);
   sesiones = signal<Sesion[]>([]);
   filas = signal<Fila[]>([]);
   sesionId = 0;
@@ -813,8 +842,8 @@ export class SeguimientoComponent {
     this.http.get<Fila[]>(`/api/docente/sesiones/${this.sesionId}/seguimiento`).subscribe((dato) => this.filas.set(dato));
   }
   visibles() {
-    const q = this.busqueda.trim().toLowerCase();
-    return this.filas().filter((f) => !q || f.estudiante.toLowerCase().includes(q) || f.email.toLowerCase().includes(q));
+    const textos = [this.busqueda, this.filtro.texto()].map((texto) => texto.trim().toLowerCase()).filter(Boolean);
+    return this.filas().filter((fila) => textos.every((q) => fila.estudiante.toLowerCase().includes(q) || fila.email.toLowerCase().includes(q)));
   }
   nivel(nota: number | null) {
     if (nota == null) return '—';
@@ -848,7 +877,7 @@ export class SeguimientoComponent {
   template: `
     <app-marco [enlaces]="enlaces">
       @if (dato(); as actual) {
-        <section class="card stack">
+        <section class="tarjeta stack">
           <p class="kicker">{{ actual.estudiante }} · {{ actual.estado }}</p>
           <h1>{{ actual.caso }}</h1>
           <p class="nota">{{ actual.nota ?? '—' }}</p>
