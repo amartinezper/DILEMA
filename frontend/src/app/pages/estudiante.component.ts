@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MarcoComponent } from '../shared/marco.component';
+import { AuthService } from '../core/auth.service';
+import { BusquedaService } from '../core/busqueda.service';
 import { Aviso, PanelEstudiante, Participacion, Sesion, mensajeError } from '../core/api.service';
 
 const enlaces = [
@@ -14,40 +16,101 @@ const enlaces = [
 
 @Component({
   selector: 'app-panel-estudiante',
-  imports: [MarcoComponent, RouterLink, FormsModule, MatButtonModule, MatCardModule],
+  imports: [MarcoComponent, RouterLink],
   template: `
     <app-marco [enlaces]="enlaces" modo="superior">
-      <section class="stack">
-        <h1>Casos asignados</h1>
-        <p class="sub">Selecciona un caso para iniciar la participación o consultar los resultados.</p>
-        @if (error()) { <p class="error">{{ error() }}</p> }
-        <div class="metricas">
-          <article class="mini"><span>Pendientes</span><strong>{{ pendientes() }}</strong></article>
-          <article class="mini"><span>En curso</span><strong>{{ enCurso() }}</strong></article>
-          <article class="mini"><span>Finalizados</span><strong>{{ finalizados() }}</strong></article>
-          <article class="mini"><span>Promedio</span><strong>{{ promedio() }}</strong></article>
+      <section class="tablero">
+        <header class="saludo">
+          <h1>Hola, {{ nombre() }}</h1>
+          <p>Aquí tienes tus casos asignados y los avisos de la convocatoria.</p>
+        </header>
+        <div class="atajos">
+          <a class="atajo oscuro" routerLink="/estudiante">Casos asignados</a>
+          <a class="atajo" routerLink="/estudiante/avisos">Notificaciones</a>
         </div>
-        <input class="busqueda" [(ngModel)]="busqueda" placeholder="Buscar por caso o grupo" />
-        <div class="lista">
-          @for (sesion of visibles(); track sesion.id) {
-            <article class="item caso-fila">
-              <div class="stack">
-                <small>CS-{{ codigoCaso(sesion.casoId) }} · {{ sesion.grupo }}</small>
-                <h3>{{ sesion.caso }}</h3>
-                <p class="sub">{{ resumen(sesion.contexto) }}</p>
-                <div class="progreso"><div [style.width.%]="barra(sesion)"></div></div>
-                <small>{{ barra(sesion) }}% de avance</small>
+        @if (error()) { <p class="error">{{ error() }}</p> }
+        <div class="tablero-cuerpo">
+          <div class="stack">
+            <article class="tarjeta">
+              <div class="tarjeta-cabeza"><h2>Casos asignados</h2></div>
+              <div class="rejilla-casos">
+                @for (sesion of visibles(); track sesion.id; let i = $index) {
+                  <article class="curso">
+                    <div class="franja" [attr.data-tono]="i % 3"></div>
+                    <span class="estado-pill">{{ etiqueta(sesion) }}</span>
+                    <h3>{{ sesion.caso }}</h3>
+                    <p class="sub">{{ sesion.grupo }} · {{ sesion.espacio }}</p>
+                    <div class="progreso"><div [style.width.%]="barra(sesion)"></div></div>
+                    <small class="avance">{{ barra(sesion) }}% de avance</small>
+                    <div class="curso-acciones">
+                      @if (sesion.participacionEstado === 'FINALIZADA' && sesion.participacionId) {
+                        <a class="btn-suave" [routerLink]="['/estudiante/participacion', sesion.participacionId]">Ver resultados</a>
+                        @if (sesion.repeticionAutorizada) {
+                          <a class="btn-oscuro" [routerLink]="['/estudiante/sesion', sesion.id]">Nuevo intento</a>
+                        }
+                      } @else {
+                        <a class="btn-oscuro" [routerLink]="['/estudiante/sesion', sesion.id]">Ingresar al caso</a>
+                      }
+                    </div>
+                  </article>
+                } @empty { <p class="sub">No tienes casos asignados.</p> }
               </div>
-              @if (sesion.participacionEstado === 'FINALIZADA' && sesion.participacionId) {
-                <a mat-stroked-button [routerLink]="['/estudiante/participacion', sesion.participacionId]">Ver resultados</a>
-                @if (sesion.repeticionAutorizada) {
-                  <a mat-flat-button color="primary" [routerLink]="['/estudiante/sesion', sesion.id]">Nuevo intento</a>
-                }
-              } @else {
-                <a mat-flat-button color="primary" [routerLink]="['/estudiante/sesion', sesion.id]">Ingresar al caso</a>
-              }
             </article>
-          } @empty { <p class="sub">No tienes casos asignados.</p> }
+            <div class="tablero-abajo">
+              <article class="tarjeta">
+                <h2>Tu rendimiento</h2>
+                <p class="nota-grande">{{ promedio() }} <small>/ 5.0</small></p>
+                <p class="sub">{{ finalizados() }} finalizados · {{ enCurso() }} en curso · {{ pendientes() }} pendientes</p>
+              </article>
+              <article class="tarjeta">
+                <h2>Próximos casos</h2>
+                <div class="stack">
+                  @for (sesion of proximos(); track sesion.id) {
+                    <div class="fila-lista">
+                      <span class="punto"></span>
+                      <div>
+                        <strong>{{ sesion.caso }}</strong>
+                        <p class="sub">{{ sesion.grupo }} · {{ cuando(sesion.inicio) }}</p>
+                      </div>
+                    </div>
+                  } @empty { <p class="sub">No tienes casos pendientes.</p> }
+                </div>
+              </article>
+            </div>
+          </div>
+          <aside class="stack">
+            <article class="tarjeta">
+              <h2>Tu horario de hoy</h2>
+              <div class="stack">
+                @for (sesion of hoy(); track sesion.id; let i = $index) {
+                  <div class="fila-lista">
+                    <span class="punto" [attr.data-tono]="i % 3"></span>
+                    <div>
+                      <strong>{{ sesion.caso }}</strong>
+                      <p class="sub">{{ cuando(sesion.inicio) }} · {{ sesion.lugar || sesion.espacio }}</p>
+                    </div>
+                  </div>
+                } @empty { <p class="sub">Hoy no tienes sesiones.</p> }
+              </div>
+            </article>
+            <article class="tarjeta">
+              <div class="tarjeta-cabeza">
+                <h2>Avisos</h2>
+                <a class="ver-todos" routerLink="/estudiante/avisos">Ver todos</a>
+              </div>
+              <div class="stack">
+                @for (aviso of avisos(); track aviso.id; let i = $index) {
+                  <div class="fila-lista">
+                    <span class="punto" [attr.data-tono]="i % 3"></span>
+                    <div>
+                      <strong>{{ aviso.titulo }}</strong>
+                      <p class="sub">{{ aviso.cuerpo }}</p>
+                    </div>
+                  </div>
+                } @empty { <p class="sub">No tienes avisos.</p> }
+              </div>
+            </article>
+          </aside>
         </div>
       </section>
     </app-marco>
@@ -56,9 +119,10 @@ const enlaces = [
 export class PanelEstudianteComponent {
   enlaces = enlaces;
   private http = inject(HttpClient);
+  private auth = inject(AuthService);
+  private busqueda = inject(BusquedaService);
   panel = signal<PanelEstudiante | null>(null);
   error = signal('');
-  busqueda = '';
   constructor() {
     this.http.get<PanelEstudiante>('/api/estudiante/panel').subscribe({
       next: (dato) => this.panel.set(dato),
@@ -73,9 +137,33 @@ export class PanelEstudianteComponent {
     if (!notas.length) return '—';
     return (notas.reduce((a, b) => a + b, 0) / notas.length).toFixed(1);
   }
+  nombre() {
+    const completo = this.auth.usuario()?.nombre ?? '';
+    return completo.trim().split(/\s+/)[0] || 'estudiante';
+  }
   visibles() {
-    const q = this.busqueda.trim().toLowerCase();
+    const q = this.busqueda.texto().trim().toLowerCase();
     return (this.panel()?.sesiones ?? []).filter((s) => !q || s.caso.toLowerCase().includes(q) || s.grupo.toLowerCase().includes(q));
+  }
+  hoy() { return (this.panel()?.sesiones ?? []).filter((s) => this.mismoDia(s.inicio)); }
+  proximos() { return (this.panel()?.sesiones ?? []).filter((s) => !s.participacionEstado || s.participacionEstado === 'EN_CURSO').slice(0, 4); }
+  avisos() { return (this.panel()?.avisos ?? []).slice(0, 4); }
+  etiqueta(sesion: Sesion) {
+    if (sesion.participacionEstado === 'FINALIZADA') return 'Finalizado';
+    if (sesion.participacionEstado === 'AUSENTE') return 'Ausente';
+    if (sesion.participacionEstado === 'EN_CURSO') return 'En curso';
+    return 'Pendiente';
+  }
+  cuando(iso: string) {
+    const fecha = new Date(iso);
+    if (Number.isNaN(fecha.getTime())) return iso;
+    return fecha.toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  }
+  private mismoDia(iso: string) {
+    const fecha = new Date(iso);
+    if (Number.isNaN(fecha.getTime())) return false;
+    const hoy = new Date();
+    return fecha.getFullYear() === hoy.getFullYear() && fecha.getMonth() === hoy.getMonth() && fecha.getDate() === hoy.getDate();
   }
   barra(sesion: Sesion) {
     if (sesion.participacionEstado === 'FINALIZADA' || sesion.participacionEstado === 'AUSENTE') return 100;
@@ -301,23 +389,29 @@ export class SimulacionComponent {
 
 @Component({
   selector: 'app-avisos',
-  imports: [MarcoComponent, MatButtonModule, MatCardModule],
+  imports: [MarcoComponent],
   template: `
     <app-marco [enlaces]="enlaces" modo="superior">
-      <section class="card stack">
-        <div class="row">
-          <div>
-            <p class="kicker">Notificaciones</p>
-            <h1>Centro de avisos</h1>
+      <section class="tablero">
+        <header class="saludo">
+          <h1>Avisos</h1>
+          <p>Mensajes de tus convocatorias.</p>
+        </header>
+        <article class="tarjeta stack">
+          <div class="tarjeta-cabeza">
+            <h2>Sin leer</h2>
+            <button class="btn-oscuro" type="button" (click)="marcar()">Marcar todo como leído</button>
           </div>
-          <button mat-flat-button color="primary" type="button" (click)="marcar()">Marcar todo como leído</button>
-        </div>
-        @for (aviso of visibles(); track aviso.id) {
-          <article class="item">
-            <h3>{{ aviso.titulo }}</h3>
-            <p class="sub">{{ aviso.cuerpo }}</p>
-          </article>
-        } @empty { <p class="sub">No hay avisos pendientes.</p> }
+          @for (aviso of visibles(); track aviso.id; let i = $index) {
+            <article class="fila-lista">
+              <span class="punto" [attr.data-tono]="i % 3"></span>
+              <div>
+                <h3>{{ aviso.titulo }}</h3>
+                <p class="sub">{{ aviso.cuerpo }}</p>
+              </div>
+            </article>
+          } @empty { <p class="sub">No hay avisos pendientes.</p> }
+        </article>
       </section>
     </app-marco>
   `
@@ -325,10 +419,15 @@ export class SimulacionComponent {
 export class AvisosComponent {
   enlaces = enlaces;
   private http = inject(HttpClient);
+  private busqueda = inject(BusquedaService);
   avisos = signal<Aviso[]>([]);
   leidos = signal<number[]>(JSON.parse(localStorage.getItem('dilema-leidos') || '[]'));
   constructor() { this.refrescar(); }
-  visibles() { return this.avisos().filter((aviso) => !this.leidos().includes(aviso.id)); }
+  visibles() {
+    const q = this.busqueda.texto().trim().toLowerCase();
+    return this.avisos().filter((aviso) => !this.leidos().includes(aviso.id)
+      && (!q || aviso.titulo.toLowerCase().includes(q) || aviso.cuerpo.toLowerCase().includes(q)));
+  }
   marcar() {
     const ids = this.avisos().map((aviso) => aviso.id);
     localStorage.setItem('dilema-leidos', JSON.stringify(ids));
