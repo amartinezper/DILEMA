@@ -1,22 +1,29 @@
 :root {
-  --bg: #eef1f6;
+  --bg: #eef1f8;
   --paper: #ffffff;
-  --ink: #1c1f2a;
+  --ink: #1b2437;
   --muted: #8b93a7;
-  --line: #e4e8f1;
-  --line-strong: #1c1f2a;
-  --soft: #f3f5f9;
-  --sombra: 0 10px 30px rgba(28, 39, 68, 0.06);
+  --line: #e6ebf5;
+  --line-strong: #1b2437;
+  --soft: #f4f6fb;
+  --sombra: 0 16px 40px rgba(40, 58, 110, 0.08);
+  --sombra-fuerte: 0 22px 50px rgba(27, 36, 55, 0.14);
   --azul: #3b6cff;
   --violeta: #7b61ff;
   --verde: #1f9d62;
-  --radio: 22px;
+  --radio: 24px;
   font-family: Inter, "Segoe UI", Arial, sans-serif;
   color: var(--ink);
   background: var(--bg);
 }
 * { box-sizing: border-box; }
-body { margin: 0; min-height: 100vh; background: var(--bg); }
+body {
+  margin: 0; min-height: 100vh;
+  background:
+    radial-gradient(900px 420px at 8% -10%, rgba(123, 97, 255, 0.16), transparent 60%),
+    radial-gradient(800px 480px at 100% 0%, rgba(59, 108, 255, 0.14), transparent 55%),
+    var(--bg);
+}
 button, input, textarea, select { font: inherit; color: inherit; }
 a { color: inherit; text-decoration: none; }
 h1, h2, h3, p { margin: 0; }
@@ -250,6 +257,66 @@ th { color: var(--muted); font-weight: 600; }
 .editor-bar button { border: 0; border-right: 1px solid var(--line); background: white; padding: 6px 10px; cursor: pointer; }
 .editor-area { min-height: 120px; padding: 10px; outline: none; }
 .editor-area:focus { outline: 1px solid var(--ink); }
+.btn, .btn-ghost, .btn-amber, .btn-oscuro, .btn-suave, .btn-demo,
+.tab, .pasos button, .opcion, .mdc-button, .mat-mdc-outlined-button, .mat-mdc-unelevated-button {
+  border-radius: 999px;
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.btn, .btn-oscuro, .mat-mdc-unelevated-button.mat-primary {
+  background: var(--ink);
+  color: white;
+  border: 0;
+  box-shadow: 0 10px 24px rgba(27, 36, 55, 0.16);
+}
+.btn-ghost, .btn-suave, .btn-amber, .btn-demo, .mat-mdc-outlined-button {
+  background: white;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: var(--sombra);
+}
+.opcion {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 8px 20px rgba(40, 58, 110, 0.05);
+}
+.opcion.elegida { border-color: var(--azul); box-shadow: 0 0 0 3px rgba(59, 108, 255, 0.16); }
+.tarjeta, .atajo, .curso, .mini, mat-card, .card, .panel, .acceso {
+  transition: transform .22s ease, box-shadow .22s ease;
+}
+.tarjeta:hover, .atajo:hover, .curso:hover, .mini:hover, .acceso:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--sombra-fuerte);
+}
+.atajo.oscuro, .btn-oscuro, .pildora.activa, .riel a.activa {
+  background: linear-gradient(180deg, #243049, var(--ink));
+}
+.progreso { height: 8px; background: #e7ecf6; border-radius: 999px; }
+.progreso > div, .curso .progreso > div {
+  background: linear-gradient(90deg, var(--azul), var(--violeta));
+  border-radius: 999px;
+}
+.main > * { animation: entrar .45s ease both; }
+.atajo, .curso, .tarjeta { animation: entrar .5s ease both; }
+.rejilla-casos .curso:nth-child(2) { animation-delay: .06s; }
+.rejilla-casos .curso:nth-child(3) { animation-delay: .12s; }
+.login-page { animation: entrar .4s ease both; }
+.login-form, .acceso { animation: entrar .55s ease both; }
+@keyframes entrar {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+button:hover, .atajo:hover, .pildora:hover, .riel a:hover { transform: translateY(-1px); }
+button:active { transform: translateY(0) scale(.98); }
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #b9c7ee;
+  box-shadow: 0 0 0 4px rgba(59, 108, 255, 0.12);
+}
+table { border-radius: 16px; overflow: hidden; }
+.escena, .escena-vacia { border: 0; border-radius: 22px; box-shadow: var(--sombra); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
 @media (max-width: 800px) {
   .cascaron, .work, .metricas, .dos, .dos-ancha, .caso-fila, .filtros, .tablero-cuerpo, .tablero-abajo, .rejilla-casos { grid-template-columns: 1fr; }
   .saludo h1 { font-size: 32px; }
