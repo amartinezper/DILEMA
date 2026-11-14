@@ -11,7 +11,7 @@ class HistorialRespuestasTest {
 
     @Test
     @DisplayName("RF-10 apila, ignora no-op y deshace en orden inverso")
-    void pila() {
+    void apilaIgnoraNoOpYDeshaceEnOrdenInverso() {
         HistorialRespuestas historial = new HistorialRespuestas();
         historial.registrar(7L, new ComandoRespuesta(1L, 2L, 2L));
         historial.registrar(7L, new ComandoRespuesta(1L, null, 3L));

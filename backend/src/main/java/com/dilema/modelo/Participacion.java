@@ -30,6 +30,9 @@ public class Participacion {
     @OneToOne(mappedBy = "participacion", cascade = CascadeType.ALL, orphanRemoval = true)
     public Evaluacion evaluacion;
 
+    @OneToMany(mappedBy = "participacion", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<PuntajePregunta> puntajes = new ArrayList<>();
+
     @OneToOne(mappedBy = "participacion", cascade = CascadeType.ALL, orphanRemoval = true)
     public RetroalimentacionDocente retroalimentacionDocente;
 
@@ -60,5 +63,25 @@ public class Participacion {
             evaluacion.participacion = this;
         }
         evaluacion.puntaje = puntaje;
+    }
+
+    /** RF-24: registra (o actualiza) el puntaje obtenido en una pregunta. */
+    public void registrarPuntaje(Pregunta pregunta, BigDecimal puntaje) {
+        PuntajePregunta registro = puntajes.stream()
+                .filter(p -> p.pregunta == pregunta || (p.pregunta.id != null && p.pregunta.id.equals(pregunta.id)))
+                .findFirst().orElse(null);
+        if (registro == null) {
+            registro = new PuntajePregunta();
+            registro.participacion = this;
+            registro.pregunta = pregunta;
+            puntajes.add(registro);
+        }
+        registro.puntaje = puntaje;
+    }
+
+    public BigDecimal puntajeDe(Pregunta pregunta) {
+        return puntajes.stream()
+                .filter(p -> p.pregunta == pregunta || (p.pregunta.id != null && p.pregunta.id.equals(pregunta.id)))
+                .map(p -> p.puntaje).findFirst().orElse(null);
     }
 }

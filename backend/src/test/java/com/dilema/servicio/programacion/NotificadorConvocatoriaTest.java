@@ -20,7 +20,7 @@ class NotificadorConvocatoriaTest {
 
     @Test
     @DisplayName("RF-21 incluye mensaje, código, URL y lugar en la convocatoria")
-    void convocado() {
+    void convocatoriaIncluyeMensajeCodigoUrlYLugar() {
         BitacoraServicio bitacora = mock(BitacoraServicio.class);
         NotificadorConvocatoria notificador = new NotificadorConvocatoria(bitacora, "http://localhost:4200");
         Usuario estudiante = new Usuario();
@@ -47,7 +47,7 @@ class NotificadorConvocatoriaTest {
 
     @Test
     @DisplayName("RF-21 avisa alta sin sesión y retiro del grupo")
-    void altaYRetiro() {
+    void avisaAltaSinSesionYRetiroDelGrupo() {
         BitacoraServicio bitacora = mock(BitacoraServicio.class);
         NotificadorConvocatoria notificador = new NotificadorConvocatoria(bitacora, "http://localhost:4200");
         Usuario estudiante = new Usuario();
@@ -62,5 +62,27 @@ class NotificadorConvocatoriaTest {
                 org.mockito.ArgumentMatchers.contains("Psicología social 3"));
         verify(bitacora).avisar(eq(estudiante), eq("CORREO"), eq("Cambio de convocatoria"),
                 org.mockito.ArgumentMatchers.contains("Fuiste retirado"));
+    }
+
+    @Test
+    @DisplayName("RF-21 avisa inicio y cierre de la sesión")
+    void avisaInicioYCierreDeLaSesion() {
+        BitacoraServicio bitacora = mock(BitacoraServicio.class);
+        NotificadorConvocatoria notificador = new NotificadorConvocatoria(bitacora, "http://localhost:4200");
+        Usuario estudiante = new Usuario();
+        estudiante.email = "ana@psicosim.edu";
+        Caso caso = new Caso();
+        caso.nombre = "Crisis en urgencias";
+        SesionCaso sesion = new SesionCaso();
+        sesion.caso = caso;
+        sesion.codigo = "DL-AB12";
+
+        notificador.sesionIniciada(estudiante, sesion);
+        notificador.sesionCerrada(estudiante, sesion);
+
+        verify(bitacora).avisar(eq(estudiante), eq("CORREO"), eq("La sesión inició: Crisis en urgencias"),
+                org.mockito.ArgumentMatchers.contains("DL-AB12"));
+        verify(bitacora).avisar(eq(estudiante), eq("CORREO"), eq("La sesión finalizó: Crisis en urgencias"),
+                org.mockito.ArgumentMatchers.contains("ya cerró"));
     }
 }

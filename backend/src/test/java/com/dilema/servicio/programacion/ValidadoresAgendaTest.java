@@ -17,23 +17,42 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class ValidadoresAgendaTest {
 
     @Test
-    @DisplayName("cada paso de RF-18 rechaza su propia regla")
-    void cadaValidador() {
-        ContextoAgenda ok = valido();
-        assertDoesNotThrow(() -> new ValidadorCasoPublicado().validar(ok));
+    @DisplayName("INV-17: el validador acepta un caso publicado")
+    void aceptaCasoPublicado() {
+        assertDoesNotThrow(() -> new ValidadorCasoPublicado().validar(valido()));
+    }
+
+    @Test
+    @DisplayName("INV-17: el validador rechaza un caso archivado")
+    void rechazaCasoArchivado() {
         assertEquals("INV-17: el caso debe estar publicado para agendarlo.",
                 assertThrows(ReglaNegocio.class, () -> new ValidadorCasoPublicado().validar(conCaso(Catalogo.EstadoCaso.ARCHIVADO))).getMessage());
+    }
 
+    @Test
+    @DisplayName("INV-17: el validador rechaza un grupo que no es del docente")
+    void rechazaGrupoDeOtroDocente() {
         Usuario otro = new Usuario();
         otro.id = 99L;
+        ContextoAgenda ok = valido();
         ContextoAgenda ajeno = new ContextoAgenda(otro, ok.caso(), ok.grupo(), ok.inicio(), ok.fin(), 30, 5);
         assertEquals("INV-17: el grupo debe estar a cargo del docente.",
                 assertThrows(ReglaNegocio.class, () -> new ValidadorGrupoDelProfesor().validar(ajeno)).getMessage());
+    }
 
+    @Test
+    @DisplayName("INV-18: el validador rechaza tiempo máximo igual a cero")
+    void rechazaTiempoMaximoCero() {
+        ContextoAgenda ok = valido();
         assertEquals("INV-18: el tiempo máximo debe ser mayor que cero.",
                 assertThrows(ReglaNegocio.class, () -> new ValidadorTiempoMaximo().validar(
                         new ContextoAgenda(ok.docente(), ok.caso(), ok.grupo(), ok.inicio(), ok.fin(), 0, 5))).getMessage());
-        assertDoesNotThrow(() -> new ValidadorTolerancia().validar(ok));
+    }
+
+    @Test
+    @DisplayName("INV-18: el validador acepta tolerancia no negativa")
+    void aceptaToleranciaNoNegativa() {
+        assertDoesNotThrow(() -> new ValidadorTolerancia().validar(valido()));
     }
 
     private ContextoAgenda conCaso(Catalogo.EstadoCaso estado) {

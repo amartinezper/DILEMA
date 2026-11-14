@@ -7,6 +7,7 @@ import com.dilema.repo.SesionRepo;
 import com.dilema.servicio.evaluacion.EstadoDeParticipacion;
 import com.dilema.servicio.evaluacion.EstrategiaCalificacion;
 import com.dilema.servicio.evaluacion.ExplicacionReal;
+import com.dilema.servicio.evaluacion.ResumenIntento;
 import com.dilema.servicio.evaluacion.RetroalimentacionProxy;
 import com.dilema.servicio.seguimiento.ExportadorCSV;
 import com.dilema.servicio.seguimiento.GeneradorReporte;
@@ -51,7 +52,11 @@ public class ParticipacionServicio {
         this.bitacora = bitacora;
     }
 
-    @Transactional(readOnly = true)
+    /**
+     * RF-27: los avisos del panel son notificaciones guardadas. "Caso asignado" y
+     * "Recordatorio de vencimiento" se registran una sola vez por sesión para tener id real.
+     */
+    @Transactional
     public Contratos.PanelEstudiante panel(Usuario estudiante) {
         proxy.participar(estudiante);
         List<SesionCaso> propias = sesiones.delEstudiante(estudiante.id);
@@ -60,26 +65,28 @@ public class ParticipacionServicio {
                     .max(Comparator.comparing(p -> p.id)).orElse(null);
             return mapeador.sesion(sesion, ultima);
         }).toList();
-        List<Contratos.Aviso> avisos = new ArrayList<>();
         for (SesionCaso sesion : propias) {
-            avisos.add(new Contratos.Aviso(sesion.id, "CORREO", "Caso asignado",
-                    sesion.caso.nombre + ". " + (sesion.mensaje == null ? "" : sesion.mensaje),
-                    false, sesion.inicio.toString()));
+            bitacora.registrarUnaVez(estudiante, "sesion:" + sesion.id + ":asignado", "CORREO", "Caso asignado",
+                    sesion.caso.nombre + ". " + (sesion.mensaje == null ? "" : sesion.mensaje), sesion.inicio);
             if (sesion.estado() == Catalogo.EstadoSesion.EN_CURSO) {
-                avisos.add(new Contratos.Aviso(sesion.id + 10000, "SISTEMA", "Recordatorio de vencimiento",
+                bitacora.registrarUnaVez(estudiante, "sesion:" + sesion.id + ":recordatorio", "SISTEMA",
+                        "Recordatorio de vencimiento",
                         "La convocatoria sigue en curso. Tiempo máximo: " + sesion.tiempoMaxMin + " minutos.",
-                        false, sesion.inicioReal == null ? sesion.inicio.toString() : sesion.inicioReal.toString()));
+                        sesion.inicioReal == null ? sesion.inicio : sesion.inicioReal);
             }
         }
-        for (Participacion participacion : participaciones.findByEstudianteIdOrderByIdDesc(estudiante.id)) {
-            new SujetoParticipacion().notificar(participacion, avisos);
-        }
-        return new Contratos.PanelEstudiante(sesionesVista, avisos, avisos.size());
+        List<Contratos.Aviso> avisos = bitacora.avisosDe(estudiante).stream()
+                .map(n -> new Contratos.Aviso(n.id, n.canal, n.titulo, n.cuerpo, n.leida,
+                        n.fecha == null ? "" : n.fecha.toString()))
+                .toList();
+        int sinLeer = (int) avisos.stream().filter(a -> !a.leida()).count();
+        return new Contratos.PanelEstudiante(sesionesVista, avisos, sinLeer);
     }
 
     @Transactional
     public void leerAviso(Usuario estudiante, Long id) {
         proxy.participar(estudiante);
+        bitacora.marcarLeido(estudiante, id);
     }
 
     @Transactional
@@ -277,51 +284,31 @@ public class ParticipacionServicio {
                                 RetroalimentacionProxy.visible(participacion) && o.retroalimentacion != null ? o.retroalimentacion.fundamento : null))
                         .toList();
                 String criterio = pregunta.criterio == null ? "" : pregunta.criterio.criterio;
+                BigDecimal puntaje = RetroalimentacionProxy.visible(participacion) ? participacion.puntajeDe(pregunta) : null;
                 preguntas.add(new Contratos.PreguntaJuego(pregunta.id, escenario.titulo, escenario.contexto,
-                        pregunta.enunciado, pregunta.pista, criterio, seleccion, opciones));
+                        pregunta.enunciado, pregunta.pista, criterio, seleccion, opciones,
+                        puntaje == null ? null : puntaje.doubleValue()));
             }
         }
         LocalDateTime hasta = participacion.fin == null ? LocalDateTime.now() : participacion.fin;
         long usados = participacion.inicio == null ? 0 : Math.max(0, Duration.between(participacion.inicio, hasta).getSeconds());
         int total = preguntas.size();
         int progreso = ProgresoParticipacion.porcentaje(participacion, total);
+        ResumenIntento resumen = ResumenIntento.de(participacion);
         return new Contratos.ParticipacionVista(participacion.id, participacion.sesion.id, participacion.estadoNombre(),
                 participacion.sesion.caso.nombre, progreso, total,
                 participacion.sesion.tiempoMaxMin * 60, usados, participacion.nota(),
                 participacion.comentarioDocente(), participacion.estudiante.nombre, preguntas,
-                participacion.autorizacion != null);
+                participacion.autorizacion != null,
+                resumen == null ? null : resumen.aciertos(),
+                resumen == null ? null : resumen.errores(),
+                resumen == null ? null : resumen.sinResponder());
     }
 
     /** RF-14: delega en el Proxy de protección la decisión de revelar el resultado al estudiante. */
     class ProxyResultado {
         boolean revelar(Usuario usuario, Participacion participacion) {
             return usuario.rol != Catalogo.Rol.ESTUDIANTE || RetroalimentacionProxy.visible(participacion);
-        }
-    }
-
-    interface ObservadorAviso { void actualizar(Participacion participacion, List<Contratos.Aviso> destino); }
-
-    class SujetoParticipacion {
-        private final List<ObservadorAviso> observadores = List.of(new ObservadorNota(), new ObservadorFeedback());
-        void notificar(Participacion participacion, List<Contratos.Aviso> destino) {
-            for (ObservadorAviso observador : observadores) observador.actualizar(participacion, destino);
-        }
-    }
-
-    class ObservadorNota implements ObservadorAviso {
-        public void actualizar(Participacion participacion, List<Contratos.Aviso> destino) {
-            if (participacion.nota() == null) return;
-            destino.add(new Contratos.Aviso(participacion.id + 20000, "SISTEMA", "Nota del caso",
-                    participacion.sesion.caso.nombre + ": " + participacion.nota() + " / 5,0.",
-                    false, participacion.fin == null ? "" : participacion.fin.toString()));
-        }
-    }
-
-    class ObservadorFeedback implements ObservadorAviso {
-        public void actualizar(Participacion participacion, List<Contratos.Aviso> destino) {
-            if (participacion.comentarioDocente() == null) return;
-            destino.add(new Contratos.Aviso(participacion.id + 30000, "DOCENTE", "Feedback del docente",
-                    participacion.comentarioDocente(), false, ""));
         }
     }
 

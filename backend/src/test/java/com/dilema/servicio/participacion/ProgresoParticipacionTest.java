@@ -11,7 +11,7 @@ class ProgresoParticipacionTest {
 
     @Test
     @DisplayName("RF-11 calcula el avance con las respuestas registradas")
-    void porcentaje() {
+    void calculaAvanceConLasRespuestasRegistradas() {
         Participacion participacion = new Participacion();
         assertEquals(0, ProgresoParticipacion.porcentaje(participacion, 0));
         assertEquals(0, ProgresoParticipacion.porcentaje(participacion, 4));

@@ -29,7 +29,7 @@ class PadronConvocatoriaTest {
 
     @Test
     @DisplayName("RF-20 no duplica el padrón y registra al estudiante de la sesión")
-    void incluir() {
+    void registraEstudianteSinDuplicarPadron() {
         SesionCaso sesion = sesion();
         Usuario estudiante = estudiante();
         when(repo.existsBySesionIdAndEstudianteId(4L, 9L)).thenReturn(false);
@@ -49,7 +49,7 @@ class PadronConvocatoriaTest {
 
     @Test
     @DisplayName("RF-21 excluye al estudiante retirado y consulta si está autorizado")
-    void excluirYConsultar() {
+    void excluyeEstudianteRetiradoYConsultaAutorizacion() {
         when(repo.existsBySesionIdAndEstudianteId(4L, 9L)).thenReturn(true);
         assertTrue(padron.esta(sesion(), estudiante()));
         padron.excluir(sesion(), estudiante());

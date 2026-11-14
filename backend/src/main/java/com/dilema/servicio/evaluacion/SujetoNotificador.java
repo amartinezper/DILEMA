@@ -1,5 +1,8 @@
 package com.dilema.servicio.evaluacion;
 
+import com.dilema.modelo.Participacion;
+import com.dilema.servicio.BitacoraServicio;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,5 +21,18 @@ public class SujetoNotificador {
 
     public void notificar(String tipo, String mensaje, String canal) {
         for (ObservadorNotificacion observador : observadores) observador.actualizar(tipo, mensaje, canal);
+    }
+
+    /**
+     * RF-27: publica la nota de un intento (finalizado o ausente) al estudiante,
+     * por correo y como aviso dentro del sistema.
+     */
+    public static void publicarNota(Participacion participacion, BitacoraServicio bitacora) {
+        if (participacion.nota() == null) return;
+        SujetoNotificador sujeto = new SujetoNotificador();
+        sujeto.agregar(new ObservadorEstudiante(participacion.estudiante, bitacora));
+        String mensaje = participacion.sesion.caso.nombre + ": " + participacion.nota() + " / 5,0.";
+        sujeto.notificar("NOTA_PUBLICADA", mensaje, "CORREO");
+        sujeto.notificar("NOTA_PUBLICADA", mensaje, "SISTEMA");
     }
 }

@@ -14,7 +14,7 @@ class ComandoRespuestaTest {
 
     @Test
     @DisplayName("RF-10 registra, cambia y deshace sin duplicar la pregunta")
-    void registrarCambiarYDeshacer() {
+    void registraCambiaYDeshaceSinDuplicarPregunta() {
         Participacion participacion = new Participacion();
         participacion.casoId = 1L;
         Pregunta pregunta = new Pregunta();
@@ -44,7 +44,7 @@ class ComandoRespuestaTest {
 
     @Test
     @DisplayName("RF-10 ignora elegir de nuevo la misma opción")
-    void noOp() {
+    void ignoraElegirLaMismaOpcion() {
         assertTrue(new ComandoRespuesta(1L, 4L, 4L).esNoOp());
     }
 

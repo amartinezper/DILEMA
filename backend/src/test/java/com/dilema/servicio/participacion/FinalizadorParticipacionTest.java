@@ -24,7 +24,7 @@ class FinalizadorParticipacionTest {
 
     @Test
     @DisplayName("RF-12 cierra el intento, calcula la nota y avisa por correo")
-    void porEstudiante() {
+    void cierraIntentoCalculaNotaYAvisaPorCorreo() {
         BitacoraServicio bitacora = mock(BitacoraServicio.class);
         Participacion participacion = enCurso();
         new FinalizadorParticipacion.PorEstudiante(bitacora, p -> new BigDecimal("4.5")).finalizar(participacion);
@@ -36,7 +36,7 @@ class FinalizadorParticipacionTest {
 
     @Test
     @DisplayName("RF-12 no vuelve a cerrar un intento ya finalizado")
-    void ignoraFinalizada() {
+    void noVuelveACerrarIntentoYaFinalizado() {
         BitacoraServicio bitacora = mock(BitacoraServicio.class);
         Participacion participacion = enCurso();
         participacion.fin = LocalDateTime.now();
@@ -47,7 +47,7 @@ class FinalizadorParticipacionTest {
 
     @Test
     @DisplayName("RF-23 el cierre por límite no pasa del fin de la sesión")
-    void porLimiteRespetaVentana() {
+    void cierrePorLimiteNoPasaDelFinDeSesion() {
         BitacoraServicio bitacora = mock(BitacoraServicio.class);
         Participacion participacion = enCurso();
         participacion.inicio = LocalDateTime.now().minusMinutes(5);

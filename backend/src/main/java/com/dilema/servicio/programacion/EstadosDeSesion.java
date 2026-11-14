@@ -67,7 +67,10 @@ public final class EstadosDeSesion {
         }
     }
 
-    /** Cierre automático: un día después del fin previsto, aunque no se haya iniciado. */
+    /**
+     * CU-15-P04: el cierre automático vence un día después del fin previsto,
+     * aunque la sesión no se haya iniciado.
+     */
     public static boolean vencioPlazoDeCierre(SesionCaso sesion, LocalDateTime ahora) {
         return sesion.cierreReal == null
                 && sesion.fin != null

@@ -78,8 +78,8 @@ class FachadaAgendamientoTest {
     }
 
     @Test
-    @DisplayName("RF-04 agenda, emite código y notifica a cada estudiante")
-    void agendaYNotifica() {
+    @DisplayName("RF-04: agenda, emite código y notifica a cada estudiante")
+    void agendaEmiteCodigoYNotificaACadaEstudiante() {
         Contratos.SesionVista vista = fachada.agendar(docente, agenda());
 
         assertEquals("SIN_INICIAR", vista.estado());
@@ -93,11 +93,15 @@ class FachadaAgendamientoTest {
     }
 
     @Test
-    @DisplayName("no agenda un caso inexistente ni un caso en borrador")
-    void rechaza() {
+    @DisplayName("INV-17: no agenda un caso inexistente")
+    void noAgendaCasoInexistente() {
         when(casos.findById(5L)).thenReturn(Optional.empty());
         assertThrows(NoEncontrado.class, () -> fachada.agendar(docente, agenda()));
-        when(casos.findById(5L)).thenReturn(Optional.of(caso));
+    }
+
+    @Test
+    @DisplayName("INV-17: no agenda un caso en borrador")
+    void noAgendaCasoEnBorrador() {
         caso.estado = Catalogo.EstadoCaso.BORRADOR;
         assertThrows(ReglaNegocio.class, () -> fachada.agendar(docente, agenda()));
     }

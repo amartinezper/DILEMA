@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { forkJoin } from 'rxjs';
 import { MarcoComponent } from '../shared/marco.component';
 import { AuthService } from '../core/auth.service';
 import { BusquedaService } from '../core/busqueda.service';
@@ -48,6 +49,10 @@ const enlaces = [
                         @if (sesion.repeticionAutorizada) {
                           <a class="btn-oscuro" [routerLink]="['/estudiante/sesion', sesion.id]">Nuevo intento</a>
                         }
+                      } @else if (sesion.estado === 'SIN_INICIAR') {
+                        <p class="sub">Esperando a que el docente inicie la sesión.</p>
+                      } @else if (sesion.estado === 'FINALIZADO' && !sesion.participacionId) {
+                        <p class="sub">No participaste. Ausencia 0,0.</p>
                       } @else {
                         <a class="btn-oscuro" [routerLink]="['/estudiante/sesion', sesion.id]">Ingresar al caso</a>
                       }
@@ -185,6 +190,13 @@ export class PanelEstudianteComponent {
         <section class="stack">
           <p class="kicker">{{ actual.codigo }}</p>
           <h1>Bienvenido al caso: {{ actual.caso }}</h1>
+          <figure class="escena-juego">
+            <img src="/escenas/colinas-1.jpg" alt="Vista de Las Colinas al atardecer" />
+            <figcaption class="hud">
+              <span>LAS COLINAS</span>
+              <span>ESCENA 1 · LLEGADA AL BARRIO</span>
+            </figcaption>
+          </figure>
           <article class="card stack">
             <h2>Mensaje del docente</h2>
             <p>{{ actual.mensaje || 'Sigue las instrucciones del caso y responde cada escena.' }}</p>
@@ -207,8 +219,12 @@ export class PanelEstudianteComponent {
           @if (error()) { <p class="error">{{ error() }}</p> }
           <div class="row">
             <a mat-stroked-button routerLink="/estudiante">Volver al panel</a>
-            @if (actual.participacionEstado === 'FINALIZADA' && actual.participacionId && !actual.repeticionAutorizada) {
+            @if (actual.estado === 'SIN_INICIAR') {
+              <p class="sub">El docente todavía no inicia la sesión.</p>
+            } @else if (actual.participacionEstado === 'FINALIZADA' && actual.participacionId && !actual.repeticionAutorizada) {
               <button mat-flat-button color="primary" type="button" (click)="ver(actual.participacionId)">Ver resultados</button>
+            } @else if (actual.estado === 'FINALIZADO' && !actual.repeticionAutorizada) {
+              <p class="sub">La sesión ya finalizó.</p>
             } @else {
               <button mat-flat-button color="primary" type="button" [disabled]="!acepto" (click)="iniciar(actual)">{{ actual.repeticionAutorizada ? 'Iniciar nuevo intento' : 'Iniciar simulación' }}</button>
             }
@@ -254,6 +270,9 @@ export class BriefingComponent {
             <p class="sub">{{ actual.caso }}</p>
             <p class="nota">Calificación final: {{ actual.nota ?? '—' }} / 5,0</p>
             <p class="sub">Nivel: {{ nivel(actual.nota) }}</p>
+            @if (actual.aciertos !== null) {
+              <p class="sub">Acertaste {{ actual.aciertos }} de {{ actual.total }} · Fallaste {{ actual.errores }} · Sin responder {{ actual.sinResponder }}</p>
+            }
             <h2>Resumen de respuestas</h2>
             @for (pregunta of actual.preguntas; track pregunta.id) {
               <article class="item">
@@ -280,7 +299,13 @@ export class BriefingComponent {
                 <strong>Tiempo restante: {{ reloj() }}</strong>
               </div>
               <div class="progreso"><div [style.width.%]="actual.progreso"></div></div>
-              <div class="escena-vacia">Imagen de la escena</div>
+              <figure class="escena-juego">
+                <img [src]="escenaSrc()" [alt]="'Escena ' + (indice() + 1) + ': ' + item.bloque" />
+                <figcaption class="hud">
+                  <span>{{ lugar() }}</span>
+                  <span>ESCENA {{ indice() + 1 }} · {{ item.bloque }}</span>
+                </figcaption>
+              </figure>
               <article class="card">
                 <p class="kicker">Contexto de la situación</p>
                 <p>{{ item.contexto }}</p>
@@ -336,6 +361,14 @@ export class SimulacionComponent {
     inject(DestroyRef).onDestroy(() => clearInterval(this.timer));
   }
   pregunta() { return this.juego()?.preguntas[this.indice()] ?? null; }
+  lugar() {
+    const nombre = this.juego()?.caso ?? '';
+    return /colinas/i.test(nombre) ? 'LAS COLINAS' : nombre.toUpperCase();
+  }
+  escenaSrc() {
+    const n = (this.indice() % 3) + 1;
+    return `/escenas/colinas-${n}.jpg`;
+  }
   nivel(nota: number | null) {
     if (nota == null) return '—';
     if (nota >= 4.6) return 'Superior';
@@ -421,17 +454,16 @@ export class AvisosComponent {
   private http = inject(HttpClient);
   private busqueda = inject(BusquedaService);
   avisos = signal<Aviso[]>([]);
-  leidos = signal<number[]>(JSON.parse(localStorage.getItem('dilema-leidos') || '[]'));
   constructor() { this.refrescar(); }
   visibles() {
     const q = this.busqueda.texto().trim().toLowerCase();
-    return this.avisos().filter((aviso) => !this.leidos().includes(aviso.id)
+    return this.avisos().filter((aviso) => !aviso.leida
       && (!q || aviso.titulo.toLowerCase().includes(q) || aviso.cuerpo.toLowerCase().includes(q)));
   }
   marcar() {
-    const ids = this.avisos().map((aviso) => aviso.id);
-    localStorage.setItem('dilema-leidos', JSON.stringify(ids));
-    this.leidos.set(ids);
+    const pendientes = this.visibles().map((aviso) => this.http.post<void>(`/api/estudiante/avisos/${aviso.id}/leer`, {}));
+    if (!pendientes.length) return;
+    forkJoin(pendientes).subscribe({ complete: () => this.refrescar(), error: () => this.refrescar() });
   }
   private refrescar() {
     this.http.get<PanelEstudiante>('/api/estudiante/panel').subscribe((panel) => this.avisos.set(panel.avisos));
