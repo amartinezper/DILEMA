@@ -30,7 +30,7 @@ public final class ConsultaSeguimiento {
     public List<Participacion> participacionesDe(List<Participacion> deLaSesion) {
         Iterador<Participacion> iterador = new IteradorParticipaciones(deLaSesion);
         if (!iterador.haySiguiente()) {
-            throw new ReglaNegocio("RF-15: la sesión no tiene participaciones.");
+            throw new ReglaNegocio("Esta sesión todavía no tiene participaciones para revisar.");
         }
         List<Participacion> recorrido = new ArrayList<>();
         while (iterador.haySiguiente()) recorrido.add(iterador.siguiente());

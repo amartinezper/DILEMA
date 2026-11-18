@@ -24,7 +24,7 @@ public final class EstadosDeSesion {
 
         @Override
         public void finalizar(SesionCaso sesion) {
-            throw new ReglaNegocio("RF-19: solo se finaliza una sesión en curso.");
+            throw new ReglaNegocio("Solo puedes cerrar una sesión que esté en curso.");
         }
 
         @Override
@@ -36,7 +36,7 @@ public final class EstadosDeSesion {
     public static class EnCurso implements EstadoSesion {
         @Override
         public void iniciar(SesionCaso sesion) {
-            throw new ReglaNegocio("RF-19: solo se inicia una sesión sin iniciar.");
+            throw new ReglaNegocio("Solo puedes abrir una sesión que todavía no ha comenzado.");
         }
 
         @Override
@@ -53,12 +53,12 @@ public final class EstadosDeSesion {
     public static class Finalizado implements EstadoSesion {
         @Override
         public void iniciar(SesionCaso sesion) {
-            throw new ReglaNegocio("RF-19: solo se inicia una sesión sin iniciar.");
+            throw new ReglaNegocio("Solo puedes abrir una sesión que todavía no ha comenzado.");
         }
 
         @Override
         public void finalizar(SesionCaso sesion) {
-            throw new ReglaNegocio("RF-19: una sesión finalizada no admite operaciones.");
+            throw new ReglaNegocio("Esta sesión ya finalizó y no se puede volver a abrir ni a cerrar.");
         }
 
         @Override

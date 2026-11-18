@@ -17,10 +17,28 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   }));
 };
 
+/** El API antiguo anteponía el código del requisito. El cliente ve la explicación, no el código. */
+const explicaciones: Record<string, string> = {
+  'RF-23: la ventana de la sesión ya cerró.': 'Esta convocatoria ya terminó. La fecha de cierre pasó y ya no puedes entrar con este código.',
+  'RF-22: ya pasó el tiempo definido por el docente para iniciar.': 'Ya pasó el tiempo que el docente dejó para entrar. Pídele que amplíe el plazo si todavía debes participar.',
+  'RF-25: la sesión ya finalizó y no admite participación.': 'Esta sesión ya finalizó, así que ya no puedes participar.',
+  'RF-25: ya registraste una participación. Solo el docente creador puede autorizar otra.': 'Ya completaste este caso. Para intentarlo otra vez, el docente que lo creó tiene que autorizarlo.',
+  'RF-19: solo se finaliza una sesión en curso.': 'Solo puedes cerrar una sesión que esté en curso.',
+  'RF-19: solo se inicia una sesión sin iniciar.': 'Solo puedes abrir una sesión que todavía no ha comenzado.',
+  'RF-09: no se puede publicar. ': 'No se puede publicar el caso. '
+};
+
+export function paraCliente(texto: string): string {
+  const conocido = explicaciones[texto];
+  if (conocido) return conocido;
+  const limpio = texto.replace(/\b(?:RF|INV)-\d+:\s*/g, '').replace(/[ \t]{2,}/g, ' ').trim();
+  return limpio || 'No se pudo completar la operación.';
+}
+
 export function mensajeError(error: unknown): string {
   if (error instanceof HttpErrorResponse) {
     const cuerpo = error.error as { mensaje?: string } | null;
-    return cuerpo?.mensaje ?? 'No se pudo completar la operación.';
+    return paraCliente(cuerpo?.mensaje ?? 'No se pudo completar la operación.');
   }
   return 'No se pudo completar la operación.';
 }

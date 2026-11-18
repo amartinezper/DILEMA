@@ -32,7 +32,7 @@ public final class ExportadorXLSX implements FormatoReporte {
             libro.write(salida);
             return new ArchivoReporte(salida.toByteArray(), extension());
         } catch (IOException e) {
-            throw new IllegalStateException("RF-16: no se pudo escribir el Excel.", e);
+            throw new IllegalStateException("No se pudo generar el archivo de Excel. Inténtalo de nuevo.", e);
         }
     }
 

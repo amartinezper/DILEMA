@@ -49,8 +49,8 @@ class ArbolCasoTest {
         assertTrue(errores.contains("Falta el desarrollo situacional."));
         assertTrue(errores.contains("Falta el contexto."));
         assertTrue(errores.contains("El tiempo estimado debe ser mayor que cero."));
-        assertTrue(errores.contains("RF-05: registra al menos un escenario."));
-        assertTrue(errores.contains("INV-09: los pesos de la rúbrica deben sumar 5,0. Ahora suman 0.0."));
+        assertTrue(errores.contains("Agrega al menos un escenario antes de continuar."));
+        assertTrue(errores.contains("Los pesos de la rúbrica deben sumar exactamente 5,0. Ahora suman 0.0."));
         assertFalse(new ArbolCaso.NodoCaso(caso, Set.of()).esCompleto());
     }
 

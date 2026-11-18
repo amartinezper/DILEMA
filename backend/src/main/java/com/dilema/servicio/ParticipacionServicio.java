@@ -177,19 +177,19 @@ public class ParticipacionServicio {
         proxy.revisarGrupo(docente);
         Participacion participacion = participaciones.findById(id).orElseThrow(() -> new NoEncontrado("Participación no encontrada."));
         if (!participacion.sesion.caso.docente.id.equals(docente.id)) {
-            throw new AccesoDenegado("RF-25: solo el docente creador del caso autoriza la repetición.");
+            throw new AccesoDenegado("Solo el docente que creó el caso puede autorizar otro intento.");
         }
         if (participacion.sesion.estado() != Catalogo.EstadoSesion.EN_CURSO) {
-            throw new ReglaNegocio("RF-25: no se autoriza repetición si la sesión no está en curso.");
+            throw new ReglaNegocio("No se puede autorizar otro intento porque la sesión no está en curso.");
         }
         if (!participacion.finalizada()) throw new ReglaNegocio("Solo se autoriza repetir un intento ya terminado.");
         Participacion ultima = participaciones.findByEstudianteIdAndSesionId(participacion.estudiante.id, participacion.sesion.id)
                 .stream().max(Comparator.comparing(p -> p.id)).orElse(participacion);
         if (!ultima.id.equals(participacion.id)) {
-            throw new ReglaNegocio("RF-25: la autorización aplica al último intento del estudiante.");
+            throw new ReglaNegocio("La autorización solo aplica al último intento de ese estudiante.");
         }
         if (participacion.autorizacion != null) {
-            throw new ReglaNegocio("RF-25: ese intento ya tiene una repetición autorizada.");
+            throw new ReglaNegocio("Ese intento ya tiene permiso para repetirse.");
         }
         AutorizacionRepeticion permiso = new AutorizacionRepeticion();
         permiso.participacion = participacion;

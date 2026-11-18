@@ -21,7 +21,7 @@ public abstract class EstadoConPublicacion extends EstadoDeCaso {
     protected final void pasarAPublicado(Caso caso) {
         List<String> errores = uso().validar(caso);
         if (!errores.isEmpty()) {
-            throw new ReglaNegocio("RF-09: no se puede publicar. " + String.join(" ", errores));
+            throw new ReglaNegocio("No se puede publicar el caso. " + String.join(" ", errores));
         }
         caso.cambiarEstado(new Publicado(uso()));
     }

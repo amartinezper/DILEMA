@@ -85,7 +85,7 @@ class ParticipacionServicioTest {
         sesion.inicioReal = LocalDateTime.now().minusMinutes(40);
         sesion.toleranciaMin = 10;
         when(participaciones.findByEstudianteIdAndSesionId(2L, 4L)).thenReturn(List.of());
-        assertEquals("RF-22: ya pasó el tiempo definido por el docente para iniciar.",
+        assertEquals("Ya pasó el tiempo que el docente dejó para entrar. Pídele que amplíe el plazo si todavía debes participar.",
                 assertThrows(ReglaNegocio.class, () -> servicio.iniciar(estudiante, 4L)).getMessage());
     }
 

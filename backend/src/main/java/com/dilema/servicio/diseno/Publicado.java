@@ -17,13 +17,13 @@ public final class Publicado extends EstadoDeCaso {
 
     @Override
     public void publicar(Caso caso) {
-        throw new ReglaNegocio("RF-09: el caso ya está publicado.");
+        throw new ReglaNegocio("Este caso ya está publicado.");
     }
 
     @Override
     public void despublicar(Caso caso) {
         if (uso().tieneSesiones(caso) || uso().tieneParticipaciones(caso)) {
-            throw new ReglaNegocio("RF-09: no se puede despublicar porque el caso tiene sesiones o participaciones.");
+            throw new ReglaNegocio("No puedes devolver este caso a borrador porque ya tiene sesiones o participaciones.");
         }
         caso.cambiarEstado(new Borrador(uso()));
     }

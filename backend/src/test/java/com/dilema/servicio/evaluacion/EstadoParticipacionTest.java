@@ -29,7 +29,7 @@ class EstadoParticipacionTest {
         ReglaNegocio error = assertThrows(ReglaNegocio.class,
                 () -> EstadoDeParticipacion.de(enCurso, bitacora).agregarRetroalimentacionGeneral(enCurso, "Buen desempeño"));
 
-        assertEquals("RF-26: la valoración general solo se registra cuando la participación finalizó.", error.getMessage());
+        assertEquals("La valoración del docente se escribe cuando el estudiante ya terminó el intento.", error.getMessage());
         verifyNoInteractions(bitacora);
     }
 

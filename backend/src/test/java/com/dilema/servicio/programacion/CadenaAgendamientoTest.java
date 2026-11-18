@@ -28,7 +28,7 @@ class CadenaAgendamientoTest {
     void rechazaCasoNoPublicado() {
         ContextoAgenda contexto = valido();
         contexto.caso().estado = Catalogo.EstadoCaso.BORRADOR;
-        assertEquals("INV-17: el caso debe estar publicado para agendarlo.",
+        assertEquals("Solo puedes programar un caso que ya esté publicado.",
                 assertThrows(ReglaNegocio.class, () -> cadena.validar(contexto)).getMessage());
     }
 
@@ -37,7 +37,7 @@ class CadenaAgendamientoTest {
     void rechazaGrupoSinEstudiantes() {
         ContextoAgenda contexto = valido();
         contexto.grupo().estudiantes.clear();
-        assertEquals("RF-04: asocia al menos un estudiante autorizado.",
+        assertEquals("Agrega al menos un estudiante al grupo antes de programar la sesión.",
                 assertThrows(ReglaNegocio.class, () -> cadena.validar(contexto)).getMessage());
     }
 
@@ -47,7 +47,7 @@ class CadenaAgendamientoTest {
         ContextoAgenda contexto = new ContextoAgenda(valido().docente(), valido().caso(), valido().grupo(),
                 valido().inicio(), valido().fin(), 90, 10);
         contexto.caso().tiempoEstimadoMin = 45;
-        assertEquals("RF-18: el tiempo máximo no puede superar el estimado del caso.",
+        assertEquals("El tiempo de la sesión no puede ser mayor que el tiempo estimado del caso.",
                 assertThrows(ReglaNegocio.class, () -> cadena.validar(contexto)).getMessage());
     }
 
@@ -56,7 +56,7 @@ class CadenaAgendamientoTest {
     void rechazaFinAnteriorAlInicio() {
         ContextoAgenda fechas = new ContextoAgenda(valido().docente(), valido().caso(), valido().grupo(),
                 LocalDateTime.of(2026, 6, 2, 10, 0), LocalDateTime.of(2026, 6, 2, 9, 0), 30, 5);
-        assertEquals("INV-18: el fin debe ser posterior al inicio.",
+        assertEquals("La hora de cierre tiene que ser posterior a la hora de inicio.",
                 assertThrows(ReglaNegocio.class, () -> cadena.validar(fechas)).getMessage());
     }
 
@@ -65,7 +65,7 @@ class CadenaAgendamientoTest {
     void rechazaToleranciaNegativa() {
         ContextoAgenda tolerancia = new ContextoAgenda(valido().docente(), valido().caso(), valido().grupo(),
                 valido().inicio(), valido().fin(), 30, -1);
-        assertEquals("INV-18: la tolerancia no puede ser negativa.",
+        assertEquals("El tiempo extra para entrar no puede ser un número negativo.",
                 assertThrows(ReglaNegocio.class, () -> cadena.validar(tolerancia)).getMessage());
     }
 

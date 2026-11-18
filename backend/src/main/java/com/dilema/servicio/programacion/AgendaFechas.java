@@ -10,13 +10,13 @@ public final class AgendaFechas {
     private AgendaFechas() {}
 
     public static LocalDateTime parse(String valor) {
-        if (valor == null || valor.isBlank()) throw new ReglaNegocio("INV-18: indica inicio y fin.");
+        if (valor == null || valor.isBlank()) throw new ReglaNegocio("Indica la fecha y hora de inicio y de cierre.");
         String texto = valor.trim();
         if (texto.length() == 16) texto = texto + ":00";
         try {
             return LocalDateTime.parse(texto, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         } catch (DateTimeParseException error) {
-            throw new ReglaNegocio("INV-18: la fecha y hora no tienen un formato válido.");
+            throw new ReglaNegocio("La fecha o la hora no se entendieron. Revísalas e inténtalo de nuevo.");
         }
     }
 }

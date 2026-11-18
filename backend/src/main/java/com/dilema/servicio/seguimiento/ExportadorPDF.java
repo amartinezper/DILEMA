@@ -35,7 +35,7 @@ public final class ExportadorPDF implements FormatoReporte {
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {
-            throw new IllegalStateException("RF-16: no se pudo escribir el PDF.", e);
+            throw new IllegalStateException("No se pudo generar el PDF. Inténtalo de nuevo.", e);
         }
     }
 

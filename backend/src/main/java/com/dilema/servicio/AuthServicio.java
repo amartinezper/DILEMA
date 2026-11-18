@@ -95,10 +95,10 @@ public class AuthServicio {
             LocalDateTime ahora = LocalDateTime.now();
             if (sesion.estado() == Catalogo.EstadoSesion.EN_CURSO && !yaParticipa) {
                 if (!sesion.ventanaAbierta(ahora)) {
-                    throw new ReglaNegocio("RF-23: la ventana de la sesión ya cerró.");
+                    throw new ReglaNegocio("Esta convocatoria ya terminó. La fecha de cierre pasó y ya no puedes entrar con este código.");
                 }
                 if (!sesion.permiteIngreso(ahora)) {
-                    throw new ReglaNegocio("RF-22: ya pasó el tiempo definido por el docente para iniciar.");
+                    throw new ReglaNegocio("Ya pasó el tiempo que el docente dejó para entrar. Pídele que amplíe el plazo si todavía debes participar.");
                 }
             }
             return new Resultado(usuario, sesion);

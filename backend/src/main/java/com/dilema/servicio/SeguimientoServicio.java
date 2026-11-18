@@ -72,7 +72,7 @@ public class SeguimientoServicio {
                 .orElseThrow(() -> new NoEncontrado("Participación no encontrada."));
         if (participacion.sesion == null || participacion.sesion.grupo == null
                 || !participacion.sesion.grupo.esDirigidoPor(docente)) {
-            throw new AccesoDenegado("RF-15: la sesión es de un grupo que no diriges.");
+            throw new AccesoDenegado("Esta sesión pertenece a un grupo que no está a tu cargo.");
         }
         return consulta.verParticipacion(participacion);
     }
@@ -91,7 +91,7 @@ public class SeguimientoServicio {
         proxy.revisarGrupo(docente);
         SesionCaso sesion = sesiones.findById(sesionId).orElseThrow(() -> new NoEncontrado("Sesión no encontrada."));
         if (sesion.grupo == null || !sesion.grupo.esDirigidoPor(docente)) {
-            throw new AccesoDenegado("RF-15: la sesión es de un grupo que no diriges.");
+            throw new AccesoDenegado("Esta sesión pertenece a un grupo que no está a tu cargo.");
         }
         return sesion;
     }
@@ -102,7 +102,7 @@ public class SeguimientoServicio {
             case "pdf" -> new ExportadorPDF();
             case "xlsx", "excel" -> new ExportadorXLSX();
             case "csv" -> new ExportadorCSV();
-            default -> throw new ReglaNegocio("RF-16: el formato debe ser pdf, xlsx o csv.");
+            default -> throw new ReglaNegocio("El reporte solo se puede descargar en PDF, Excel o CSV.");
         };
     }
 }

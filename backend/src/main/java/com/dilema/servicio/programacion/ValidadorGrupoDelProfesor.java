@@ -6,10 +6,10 @@ public class ValidadorGrupoDelProfesor extends PasoAgenda {
     @Override
     protected void comprobar(ContextoAgenda c) {
         if (c.grupo() == null || !c.grupo().esDirigidoPor(c.docente())) {
-            throw new ReglaNegocio("INV-17: el grupo debe estar a cargo del docente.");
+            throw new ReglaNegocio("Solo puedes programar una sesión en un grupo que esté a tu cargo.");
         }
         if (c.grupo().estudiantes.isEmpty()) {
-            throw new ReglaNegocio("RF-04: asocia al menos un estudiante autorizado.");
+            throw new ReglaNegocio("Agrega al menos un estudiante al grupo antes de programar la sesión.");
         }
     }
 }

@@ -12,25 +12,25 @@ import java.time.LocalDateTime;
 public class ProxyParticipacion {
     public void sesionAbierta(SesionCaso sesion, LocalDateTime ahora) {
         if (sesion.estado() == Catalogo.EstadoSesion.FINALIZADO) {
-            throw new ReglaNegocio("RF-25: la sesión ya finalizó y no admite participación.");
+            throw new ReglaNegocio("Esta sesión ya finalizó, así que ya no puedes participar.");
         }
         if (!EstadosDeSesion.de(sesion).permiteParticipar()) {
             throw new ReglaNegocio("La sesión todavía no está en curso.");
         }
         if (!sesion.ventanaAbierta(ahora)) {
-            throw new ReglaNegocio("RF-23: la ventana de la sesión ya cerró.");
+            throw new ReglaNegocio("Esta convocatoria ya terminó. La fecha de cierre pasó y ya no puedes entrar con este código.");
         }
     }
 
     public void ingresoTardio(SesionCaso sesion, LocalDateTime ahora) {
         if (!sesion.permiteIngreso(ahora)) {
-            throw new ReglaNegocio("RF-22: ya pasó el tiempo definido por el docente para iniciar.");
+            throw new ReglaNegocio("Ya pasó el tiempo que el docente dejó para entrar. Pídele que amplíe el plazo si todavía debes participar.");
         }
     }
 
     public void puedeRepetir(Participacion previa) {
         if (previa != null && previa.autorizacion == null) {
-            throw new ReglaNegocio("RF-25: ya registraste una participación. Solo el docente creador puede autorizar otra.");
+            throw new ReglaNegocio("Ya completaste este caso. Para intentarlo otra vez, el docente que lo creó tiene que autorizarlo.");
         }
     }
 }

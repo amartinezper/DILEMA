@@ -9,7 +9,8 @@ import { mensajeError } from '../core/api.service';
  * el estudiante entra con correo y código de convocatoria; docente y
  * administración entran con correo y contraseña. No hay registro, redes
  * sociales ni recuperación de clave porque el API no ofrece esas operaciones.
- * Los textos y los campos salen de esa diferencia. Nada se rellena solo.
+ * Los textos y los campos salen de esa diferencia. Los botones de
+ * demostración solo rellenan las cuentas de práctica para entrar más rápido.
  */
 @Component({
   selector: 'app-ingreso',
@@ -79,6 +80,13 @@ import { mensajeError } from '../core/api.service';
               <button class="btn-entrar" type="submit" [disabled]="enviando()">{{ enviando() ? 'Entrando…' : 'Iniciar sesión' }}</button>
             </form>
           }
+
+          <div class="rellenos">
+            <span>Demostración</span>
+            <button type="button" class="btn-demo" (click)="rellenarEstudiante()">Estudiante</button>
+            <button type="button" class="btn-demo" (click)="rellenarDocente()">Docente</button>
+            <button type="button" class="btn-demo" (click)="rellenarAdmin()">Administración</button>
+          </div>
         </section>
         <span class="brillo" aria-hidden="true"></span>
       </main>
@@ -259,6 +267,16 @@ import { mensajeError } from '../core/api.service';
     .btn-entrar:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 14px 28px rgba(37, 99, 235, 0.34); }
     .btn-entrar:disabled { background: #93c5fd; box-shadow: none; cursor: wait; }
     .error { margin: 0; color: #9b1c1c; font-size: 14px; }
+    .rellenos {
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center;
+      margin-top: 18px; padding-top: 16px; border-top: 1px solid #e2e8f0;
+    }
+    .rellenos > span { color: #64748b; font-size: 13px; }
+    .btn-demo {
+      border: 1px solid #e2e8f0; background: white; color: #0f172a; border-radius: 999px;
+      padding: 8px 12px; cursor: pointer; font-weight: 650; font-size: 13px;
+    }
+    .btn-demo:hover { border-color: #2563eb; color: #2563eb; }
     .brillo {
       position: absolute;
       right: 28px;
@@ -316,6 +334,27 @@ export class IngresoComponent {
     this.errorCuenta.set('');
     this.enviando.set(false);
     this.modo.set(modo);
+  }
+
+  /** Rellena la cuenta de práctica del estudiante y abre su formulario. */
+  rellenarEstudiante() {
+    this.elegir('estudiante');
+    this.correoEstudiante = 'estudiante@psicosim.edu';
+    this.codigo = 'DILEMA-2026';
+  }
+
+  /** Rellena la cuenta de práctica del docente y abre el formulario de contraseña. */
+  rellenarDocente() {
+    this.elegir('cuenta');
+    this.correoCuenta = 'docente@psicosim.edu';
+    this.clave = 'docente123';
+  }
+
+  /** Rellena la cuenta de práctica de administración. Entra por el mismo formulario que el docente. */
+  rellenarAdmin() {
+    this.elegir('cuenta');
+    this.correoCuenta = 'admin@psicosim.edu';
+    this.clave = 'admin123';
   }
 
   /**

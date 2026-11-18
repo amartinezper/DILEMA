@@ -7,6 +7,6 @@ import com.dilema.servicio.ReglaNegocio;
 public class ParticipacionEnCurso implements EstadoDeParticipacion {
     @Override
     public void agregarRetroalimentacionGeneral(Participacion participacion, String texto) {
-        throw new ReglaNegocio("RF-26: la valoración general solo se registra cuando la participación finalizó.");
+        throw new ReglaNegocio("La valoración del docente se escribe cuando el estudiante ya terminó el intento.");
     }
 }

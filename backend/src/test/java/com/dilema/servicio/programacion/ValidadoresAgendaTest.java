@@ -25,7 +25,7 @@ class ValidadoresAgendaTest {
     @Test
     @DisplayName("INV-17: el validador rechaza un caso archivado")
     void rechazaCasoArchivado() {
-        assertEquals("INV-17: el caso debe estar publicado para agendarlo.",
+        assertEquals("Solo puedes programar un caso que ya esté publicado.",
                 assertThrows(ReglaNegocio.class, () -> new ValidadorCasoPublicado().validar(conCaso(Catalogo.EstadoCaso.ARCHIVADO))).getMessage());
     }
 
@@ -36,7 +36,7 @@ class ValidadoresAgendaTest {
         otro.id = 99L;
         ContextoAgenda ok = valido();
         ContextoAgenda ajeno = new ContextoAgenda(otro, ok.caso(), ok.grupo(), ok.inicio(), ok.fin(), 30, 5);
-        assertEquals("INV-17: el grupo debe estar a cargo del docente.",
+        assertEquals("Solo puedes programar una sesión en un grupo que esté a tu cargo.",
                 assertThrows(ReglaNegocio.class, () -> new ValidadorGrupoDelProfesor().validar(ajeno)).getMessage());
     }
 
@@ -44,7 +44,7 @@ class ValidadoresAgendaTest {
     @DisplayName("INV-18: el validador rechaza tiempo máximo igual a cero")
     void rechazaTiempoMaximoCero() {
         ContextoAgenda ok = valido();
-        assertEquals("INV-18: el tiempo máximo debe ser mayor que cero.",
+        assertEquals("El tiempo máximo de la sesión tiene que ser mayor que cero.",
                 assertThrows(ReglaNegocio.class, () -> new ValidadorTiempoMaximo().validar(
                         new ContextoAgenda(ok.docente(), ok.caso(), ok.grupo(), ok.inicio(), ok.fin(), 0, 5))).getMessage());
     }

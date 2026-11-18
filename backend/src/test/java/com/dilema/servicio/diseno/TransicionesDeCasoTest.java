@@ -46,7 +46,7 @@ class TransicionesDeCasoTest {
 
         assertEquals(Catalogo.EstadoCaso.BORRADOR, caso.estado);
         assertTrue(caso.permiteEdicion());
-        assertEquals("RF-09: no se puede publicar. Falta la rúbrica.", error.getMessage());
+        assertEquals("No se puede publicar el caso. Falta la rúbrica.", error.getMessage());
         assertEquals(1, uso.llamadasAValidar());
     }
 
@@ -60,8 +60,8 @@ class TransicionesDeCasoTest {
         ReglaNegocio archivar = assertThrows(ReglaNegocio.class, caso::archivar);
 
         assertEquals(Catalogo.EstadoCaso.BORRADOR, caso.estado);
-        assertEquals("RF-09: un borrador no se despublica.", despublicar.getMessage());
-        assertEquals("RF-09: un borrador no se archiva. Primero se publica.", archivar.getMessage());
+        assertEquals("Este caso todavía es un borrador, así que no está publicado.", despublicar.getMessage());
+        assertEquals("Para archivar el caso, primero publícalo.", archivar.getMessage());
     }
 
     @Test
@@ -74,7 +74,7 @@ class TransicionesDeCasoTest {
 
         assertEquals(Catalogo.EstadoCaso.PUBLICADO, caso.estado);
         assertFalse(caso.permiteEdicion());
-        assertEquals("RF-09: el caso ya está publicado.", error.getMessage());
+        assertEquals("Este caso ya está publicado.", error.getMessage());
         assertEquals(0, uso.llamadasAValidar());
     }
 
@@ -111,7 +111,7 @@ class TransicionesDeCasoTest {
         ReglaNegocio error = assertThrows(ReglaNegocio.class, caso::despublicar);
 
         assertEquals(Catalogo.EstadoCaso.PUBLICADO, caso.estado);
-        assertEquals("RF-09: no se puede despublicar porque el caso tiene sesiones o participaciones.", error.getMessage());
+        assertEquals("No puedes devolver este caso a borrador porque ya tiene sesiones o participaciones.", error.getMessage());
     }
 
     @Test
@@ -137,7 +137,7 @@ class TransicionesDeCasoTest {
 
         assertEquals(Catalogo.EstadoCaso.ARCHIVADO, caso.estado);
         assertFalse(caso.permiteEdicion());
-        assertEquals("RF-09: no se puede publicar. Falta la rúbrica.", error.getMessage());
+        assertEquals("No se puede publicar el caso. Falta la rúbrica.", error.getMessage());
         assertEquals(1, uso.llamadasAValidar());
     }
 
@@ -151,8 +151,8 @@ class TransicionesDeCasoTest {
         ReglaNegocio archivar = assertThrows(ReglaNegocio.class, caso::archivar);
 
         assertEquals(Catalogo.EstadoCaso.ARCHIVADO, caso.estado);
-        assertEquals("RF-09: un caso archivado no vuelve a borrador. Se publica de nuevo.", despublicar.getMessage());
-        assertEquals("RF-09: el caso ya está archivado.", archivar.getMessage());
+        assertEquals("Un caso archivado no vuelve a borrador. Si quieres usarlo, publícalo de nuevo.", despublicar.getMessage());
+        assertEquals("Este caso ya está archivado.", archivar.getMessage());
     }
 
     @Test
@@ -171,7 +171,7 @@ class TransicionesDeCasoTest {
         assertEquals(Catalogo.EstadoCaso.ARCHIVADO, archivado.estado);
         assertEquals(1, usoBorrador.llamadasAValidar());
         assertEquals(1, usoArchivado.llamadasAValidar());
-        assertEquals("RF-09: no se puede publicar. Falta el nombre. Falta la rúbrica.", desdeBorrador.getMessage());
+        assertEquals("No se puede publicar el caso. Falta el nombre. Falta la rúbrica.", desdeBorrador.getMessage());
         assertEquals(desdeBorrador.getMessage(), desdeArchivado.getMessage());
     }
 

@@ -63,7 +63,7 @@ class ConstructorRubricaTest {
         ReglaNegocio error = assertThrows(ReglaNegocio.class,
                 () -> new ConstructorRubricaEquitativa().construir(caso, entrada));
 
-        assertEquals("RF-17: la rúbrica solo se construye en borrador.", error.getMessage());
+        assertEquals("La rúbrica solo se puede modificar mientras el caso está en borrador.", error.getMessage());
         assertEquals(Catalogo.EstadoCaso.PUBLICADO, caso.estado);
         assertTrue(caso.escenarios.isEmpty());
     }
@@ -78,7 +78,7 @@ class ConstructorRubricaTest {
         new ArbolCaso.NodoCaso(caso, Set.of()).validar(errores);
 
         assertEquals(Catalogo.EstadoCaso.BORRADOR, caso.estado);
-        assertTrue(errores.stream().anyMatch(error -> error.startsWith("INV-09")));
+        assertTrue(errores.stream().anyMatch(error -> error.startsWith("Los pesos de la rúbrica")));
     }
 
     private static Usuario docente() {

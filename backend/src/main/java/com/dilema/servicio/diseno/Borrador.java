@@ -21,12 +21,12 @@ public final class Borrador extends EstadoConPublicacion {
 
     @Override
     public void despublicar(Caso caso) {
-        throw new ReglaNegocio("RF-09: un borrador no se despublica.");
+        throw new ReglaNegocio("Este caso todavía es un borrador, así que no está publicado.");
     }
 
     @Override
     public void archivar(Caso caso) {
-        throw new ReglaNegocio("RF-09: un borrador no se archiva. Primero se publica.");
+        throw new ReglaNegocio("Para archivar el caso, primero publícalo.");
     }
 
     @Override

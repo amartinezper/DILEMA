@@ -6,7 +6,7 @@ public class ValidadorTolerancia extends PasoAgenda {
     @Override
     protected void comprobar(ContextoAgenda c) {
         if (c.toleranciaMin() < 0) {
-            throw new ReglaNegocio("INV-18: la tolerancia no puede ser negativa.");
+            throw new ReglaNegocio("El tiempo extra para entrar no puede ser un número negativo.");
         }
     }
 }

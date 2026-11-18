@@ -14,7 +14,7 @@ public final class EstadosDelCaso {
 
     public static EstadoDelCaso de(Catalogo.EstadoCaso estado, UsoDelCaso uso) {
         if (estado == null || uso == null) {
-            throw new ReglaNegocio("RF-09: no se puede resolver el estado del caso.");
+            throw new ReglaNegocio("No se pudo reconocer el estado de este caso. Recarga la página.");
         }
         return switch (estado) {
             case BORRADOR -> new Borrador(uso);

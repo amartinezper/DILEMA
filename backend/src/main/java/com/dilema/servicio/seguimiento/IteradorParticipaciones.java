@@ -36,7 +36,7 @@ public final class IteradorParticipaciones implements Iterador<Participacion> {
     @Override
     public Participacion siguiente() {
         if (!haySiguiente()) {
-            throw new NoSuchElementException("RF-15: no hay más participaciones en el recorrido.");
+            throw new NoSuchElementException("No hay más participaciones en este recorrido.");
         }
         return participaciones.get(posicion++);
     }

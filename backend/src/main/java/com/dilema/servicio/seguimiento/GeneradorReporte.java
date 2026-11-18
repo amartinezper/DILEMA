@@ -29,11 +29,11 @@ public final class GeneradorReporte {
 
     public ArchivoReporte generar(Usuario profesor, SesionCaso sesion, List<Participacion> participaciones) {
         if (formato == null) {
-            throw new ReglaNegocio("RF-16: elige el formato del reporte.");
+            throw new ReglaNegocio("Elige si el reporte va en PDF, Excel o CSV.");
         }
         verificarGrupoDelProfesor(profesor, sesion);
         if (sesion.grupo.estudiantes == null || sesion.grupo.estudiantes.isEmpty()) {
-            throw new ReglaNegocio("RF-16: la sesión no tiene convocados.");
+            throw new ReglaNegocio("Esta sesión no tiene estudiantes convocados, así que no hay un reporte para descargar.");
         }
         return formato.exportar(recolectarDatos(sesion, participaciones));
     }
@@ -41,7 +41,7 @@ public final class GeneradorReporte {
     /** INV-22: solo reporta los grupos que dirige. */
     void verificarGrupoDelProfesor(Usuario profesor, SesionCaso sesion) {
         if (sesion == null || sesion.grupo == null || !sesion.grupo.esDirigidoPor(profesor)) {
-            throw new AccesoDenegado("RF-16: no puedes descargar el reporte de un grupo que no diriges.");
+            throw new AccesoDenegado("No puedes descargar el reporte de un grupo que no está a tu cargo.");
         }
     }
 
