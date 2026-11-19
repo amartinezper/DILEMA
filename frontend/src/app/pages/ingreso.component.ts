@@ -93,9 +93,17 @@ import { mensajeError } from '../core/api.service';
     </div>
   `,
   styles: [`
-    :host { display: block; }
+    :host {
+      display: block;
+      height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    :host::-webkit-scrollbar { display: none; width: 0; height: 0; }
     .dilema-ingreso {
-      min-height: 100vh;
+      min-height: 100%;
       display: grid;
       grid-template-columns: 1fr 1fr;
       background: #eef3fb;
@@ -301,10 +309,11 @@ import { mensajeError } from '../core/api.service';
       to { opacity: 1; transform: none; }
     }
     @media (max-width: 900px) {
-      .dilema-ingreso { grid-template-columns: 1fr; }
+      .dilema-ingreso { grid-template-columns: 1fr; min-height: 100%; }
       .dilema-marca { min-height: 360px; padding: 32px 20px; }
       .dilema-marca h1 { font-size: 52px; }
       .cerebro { width: min(280px, 70%); }
+      .dilema-lado { padding: 32px 24px 40px; }
     }
     @media (prefers-reduced-motion: reduce) {
       .cerebro, .chispa, .brillo, .dilema-caja, form { animation: none; }
@@ -394,7 +403,7 @@ export class IngresoComponent {
   /** El API dice el rol. Esta pantalla solo abre la ruta que ya existe para ese rol. */
   private destino(rol: string) {
     if (rol === 'ESTUDIANTE') return '/estudiante';
-    if (rol === 'PROFESOR') return '/docente/casos';
-    return '/admin/usuarios';
+    if (rol === 'PROFESOR') return '/docente';
+    return '/admin';
   }
 }

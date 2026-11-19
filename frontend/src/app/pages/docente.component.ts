@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { MarcoComponent } from '../shared/marco.component';
+import { MarcoDocenteComponent } from '../shared/marco-docente.component';
 import { EditorTextoComponent } from '../shared/editor-texto.component';
 import { Bloque, Caso, CasoResumen, Fila, Grupo, Participacion, Sesion, mensajeError } from '../core/api.service';
 import { MatButtonModule } from '@angular/material/button';
@@ -36,80 +36,94 @@ function casoVacio(): Caso {
 
 @Component({
   selector: 'app-panel-docente',
-  imports: [MarcoComponent, RouterLink],
+  imports: [MarcoDocenteComponent, RouterLink],
   template: `
-    <app-marco [enlaces]="enlaces">
-      <section class="tablero">
-        <header class="saludo">
-          <h1>Hola, {{ nombre() }}</h1>
-          <p>Tus casos, grupos y sesiones.</p>
-        </header>
-        <div class="atajos">
-          <a class="atajo oscuro" routerLink="/docente/casos">Mis casos</a>
-          <a class="atajo" routerLink="/docente/grupos">Grupos</a>
-          <a class="atajo" routerLink="/docente/programar">Programar</a>
-          <a class="atajo" routerLink="/docente/seguimiento">Reportes</a>
-        </div>
-        <div class="tablero-cuerpo">
-          <div class="stack">
-            <article class="tarjeta">
-              <div class="tarjeta-cabeza">
-                <h2>Mis casos</h2>
-                <a class="ver-todos" routerLink="/docente/casos">Ver todos</a>
-              </div>
-              <div class="rejilla-casos">
-                @for (caso of casosVisibles(); track caso.id; let i = $index) {
-                  <a class="curso" [routerLink]="['/docente/casos', caso.id]">
-                    <div class="franja" [attr.data-tono]="i % 3"></div>
-                    <span class="estado-pill">{{ caso.estado }}</span>
-                    <h3>{{ caso.nombre }}</h3>
-                    <p class="sub">{{ caso.bloques }} escenarios · {{ caso.preguntas }} preguntas</p>
-                  </a>
-                } @empty { <p class="sub">{{ casos().length ? 'Ningún caso coincide con la búsqueda.' : 'Todavía no tienes casos.' }}</p> }
-              </div>
-            </article>
-            <article class="tarjeta">
-              <h2>Grupos</h2>
-              <p class="nota-grande">{{ grupos().length }}</p>
-              <p class="sub">Espacios a tu cargo. La matrícula se hace en Grupos.</p>
-            </article>
-          </div>
-          <aside class="stack">
-            <article class="tarjeta">
-              <div class="tarjeta-cabeza">
-                <h2>Tu horario de hoy</h2>
-                <a class="ver-todos" routerLink="/docente/programar">Ver todas</a>
-              </div>
-              <div class="stack">
-                @for (sesion of hoy(); track sesion.id; let i = $index) {
-                  <div class="fila-lista">
-                    <span class="punto" [attr.data-tono]="i % 3"></span>
-                    <div>
-                      <strong>{{ sesion.caso }}</strong>
-                      <p class="sub">{{ cuando(sesion.inicio) }} · {{ sesion.grupo }}</p>
-                    </div>
+    <app-marco-docente [enlaces]="enlaces">
+      <div class="dash dash-admin">
+        <section class="dash-kpis">
+          <article class="dash-kpi">
+            <small>Casos</small>
+            <strong>{{ casos().length }}</strong>
+            <span>{{ publicados() }} publicados</span>
+          </article>
+          <article class="dash-kpi">
+            <small>Grupos</small>
+            <strong>{{ grupos().length }}</strong>
+            <span>espacios a tu cargo</span>
+          </article>
+          <article class="dash-kpi">
+            <small>Hoy</small>
+            <strong>{{ hoy().length }}</strong>
+            <span>{{ enCurso().length }} en curso</span>
+          </article>
+        </section>
+
+        <section class="dash-cuerpo dash-cuerpo-admin dash-cuerpo-docente">
+          <article class="dash-panel dash-panel-alto">
+            <div class="tarjeta-cabeza">
+              <h3>Agenda de hoy</h3>
+              <a class="ver-todos" routerLink="/docente/programar">Programar →</a>
+            </div>
+            <ol class="dash-linea">
+              @for (sesion of hoy(); track sesion.id) {
+                <li>
+                  <em>{{ hora(sesion.inicio) }}</em>
+                  <div>
+                    <strong>{{ sesion.caso }}</strong>
+                    <p class="sub">{{ sesion.grupo }} · {{ sesion.estado }} · código {{ sesion.codigo }}</p>
                   </div>
-                } @empty { <p class="sub">Hoy no tienes sesiones.</p> }
-              </div>
-            </article>
-            <article class="tarjeta">
-              <h2>Próximas sesiones</h2>
-              <div class="stack">
-                @for (sesion of proximas(); track sesion.id) {
-                  <div class="fila-lista">
-                    <span class="punto"></span>
-                    <div>
-                      <strong>{{ sesion.caso }}</strong>
-                      <p class="sub">{{ sesion.estado }} · {{ cuando(sesion.inicio) }}</p>
-                    </div>
+                </li>
+              } @empty {
+                <li class="vacia">No hay sesiones hoy. Convoca un grupo cuando el caso esté listo.</li>
+              }
+            </ol>
+          </article>
+
+          <article class="dash-panel dash-panel-alto">
+            <div class="tarjeta-cabeza">
+              <h3>Próximas</h3>
+              <a class="ver-todos" routerLink="/docente/programar">Ver todas →</a>
+            </div>
+            <ol class="dash-linea dash-linea-fecha">
+              @for (sesion of proximas(); track sesion.id) {
+                <li>
+                  <div>
+                    <strong>{{ sesion.caso }}</strong>
+                    <p class="sub">{{ cuando(sesion.inicio) }} · {{ sesion.grupo }}</p>
                   </div>
-                } @empty { <p class="sub">No hay sesiones por delante.</p> }
-              </div>
-            </article>
-          </aside>
-        </div>
-      </section>
-    </app-marco>
+                </li>
+              } @empty {
+                <li class="vacia">No hay sesiones por delante.</li>
+              }
+            </ol>
+          </article>
+
+          <section class="inicio-cats dash-cats">
+            <div class="tarjeta-cabeza">
+              <h3>Flujo de trabajo</h3>
+            </div>
+            <div class="cats cuatro">
+              <a class="cat etica" routerLink="/docente/casos/nuevo">
+                <svg viewBox="0 0 24 24"><path d="M5 5.5h9.5A2.5 2.5 0 0 1 17 8v11H8.5A2.5 2.5 0 0 1 6 16.5V6.5A1 1 0 0 0 5 5.5z"/></svg>
+                <span>Diseñar</span><i>→</i>
+              </a>
+              <a class="cat social" routerLink="/docente/grupos">
+                <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="16.2" cy="9" r="2.4"/><path d="M4 19c.7-3.2 2.8-5.2 5-5.2s4.3 2 5 5.2M13.4 19c.4-2.2 1.7-3.6 3.2-3.6 1.6 0 3 1.5 3.4 3.6"/></svg>
+                <span>Agrupar</span><i>→</i>
+              </a>
+              <a class="cat psico" routerLink="/docente/programar">
+                <svg viewBox="0 0 24 24"><path d="M7 4v3M17 4v3M5 8h14M6 5h12a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg>
+                <span>Convocar</span><i>→</i>
+              </a>
+              <a class="cat tec" routerLink="/docente/seguimiento">
+                <svg viewBox="0 0 24 24"><path d="M5 19V10M10 19V5M15 19v-7M20 19V8"/></svg>
+                <span>Seguir</span><i>→</i>
+              </a>
+            </div>
+          </section>
+        </section>
+      </div>
+    </app-marco-docente>
   `
 })
 export class PanelDocenteComponent {
@@ -133,8 +147,21 @@ export class PanelDocenteComponent {
     const q = this.busqueda.texto().trim().toLowerCase();
     return this.casos().filter((caso) => !q || caso.nombre.toLowerCase().includes(q)).slice(0, 6);
   }
+  publicados() {
+    return this.casos().filter((caso) => caso.estado === 'PUBLICADO').length;
+  }
+  enCurso() {
+    return this.sesiones().filter((sesion) => sesion.estado === 'EN_CURSO');
+  }
   hoy() { return this.sesiones().filter((sesion) => this.mismoDia(sesion.inicio)); }
-  proximas() { return this.sesiones().filter((sesion) => sesion.estado !== 'FINALIZADO').slice(0, 4); }
+  proximas() { return this.sesiones().filter((sesion) => sesion.estado !== 'FINALIZADO' && !this.mismoDia(sesion.inicio)).slice(0, 4); }
+  hora(iso: string) {
+    const fecha = new Date(iso);
+    if (Number.isNaN(fecha.getTime())) return '';
+    return fecha.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+      .replace(/\s*p\.\s*m\./i, '\u00a0p.m.')
+      .replace(/\s*a\.\s*m\./i, '\u00a0a.m.');
+  }
   cuando(iso: string) {
     const fecha = new Date(iso);
     if (Number.isNaN(fecha.getTime())) return iso;
@@ -150,9 +177,9 @@ export class PanelDocenteComponent {
 
 @Component({
   selector: 'app-casos',
-  imports: [MarcoComponent, RouterLink],
+  imports: [MarcoDocenteComponent, RouterLink],
   template: `
-    <app-marco [enlaces]="enlaces">
+    <app-marco-docente [enlaces]="enlaces">
       <section class="tablero">
         <header class="saludo">
           <h1>Mis casos</h1>
@@ -175,7 +202,7 @@ export class PanelDocenteComponent {
           </div>
         </article>
       </section>
-    </app-marco>
+    </app-marco-docente>
   `
 })
 export class CasosComponent {
@@ -196,9 +223,9 @@ interface PersonaEscena { id: string; nombre: string; color: string; x: number; 
 
 @Component({
   selector: 'app-editor-caso',
-  imports: [MatButtonModule, MatCardModule, MarcoComponent, FormsModule, RouterLink, EditorTextoComponent],
+  imports: [MatButtonModule, MatCardModule, MarcoDocenteComponent, FormsModule, RouterLink, EditorTextoComponent],
   template: `
-    <app-marco [enlaces]="enlaces" ancho="ancho">
+    <app-marco-docente [enlaces]="enlaces">
       <section class="stack">
         <div class="row">
           <div>
@@ -356,7 +383,7 @@ interface PersonaEscena { id: string; nombre: string; color: string; x: number; 
           <button mat-stroked-button type="button" (click)="vistaPrevia.set(!vistaPrevia())">Previsualizar</button>
         </div>
       </section>
-    </app-marco>
+    </app-marco-docente>
   `
 })
 export class EditorCasoComponent {
@@ -515,9 +542,9 @@ export class EditorCasoComponent {
 
 @Component({
   selector: 'app-grupos',
-  imports: [MatButtonModule, MatCardModule, MarcoComponent, FormsModule, RouterLink],
+  imports: [MatButtonModule, MatCardModule, MarcoDocenteComponent, FormsModule, RouterLink],
   template: `
-    <app-marco [enlaces]="enlaces">
+    <app-marco-docente [enlaces]="enlaces">
       <section class="tablero">
         <header class="saludo">
           <h1>Grupos</h1>
@@ -552,29 +579,29 @@ export class EditorCasoComponent {
                 <input [(ngModel)]="nombres[grupo.id]" placeholder="Nombre completo" />
               </label>
               <label class="field"><span>Correo institucional</span>
-                <div class="row">
-                  <input [(ngModel)]="correos[grupo.id]" placeholder="estudiante@universidad.edu" />
-                  <button mat-stroked-button type="button" (click)="agregar(grupo.id)">Matricular</button>
-                </div>
+                <input [(ngModel)]="correos[grupo.id]" placeholder="estudiante@universidad.edu" />
               </label>
+              <button class="btn-matricula" mat-stroked-button type="button" (click)="agregar(grupo.id)">Matricular</button>
               <p class="sub">El estudiante no recibe contraseña. El código llega al agendar la sesión.</p>
-              <table>
-                <thead><tr><th>Nombre</th><th>Correo</th><th></th></tr></thead>
-                <tbody>
-                  @for (estudiante of grupo.estudiantes; track estudiante.id) {
-                    <tr>
-                      <td>{{ estudiante.nombre }}</td>
-                      <td>{{ estudiante.email }}</td>
-                      <td><button mat-stroked-button type="button" (click)="retirar(grupo.id, estudiante.id)">Eliminar</button></td>
-                    </tr>
-                  } @empty { <tr><td colspan="3">Este grupo no tiene estudiantes.</td></tr> }
-                </tbody>
-              </table>
+              <div class="tabla-grupo-scroll">
+                <table class="tabla-grupo">
+                  <thead><tr><th>Nombre</th><th>Correo</th><th></th></tr></thead>
+                  <tbody>
+                    @for (estudiante of grupo.estudiantes; track estudiante.id) {
+                      <tr>
+                        <td>{{ estudiante.nombre }}</td>
+                        <td>{{ estudiante.email }}</td>
+                        <td><button mat-stroked-button type="button" (click)="retirar(grupo.id, estudiante.id)">Eliminar</button></td>
+                      </tr>
+                    } @empty { <tr><td colspan="3">Este grupo no tiene estudiantes.</td></tr> }
+                  </tbody>
+                </table>
+              </div>
             </section>
           }
         </div>
       </section>
-    </app-marco>
+    </app-marco-docente>
   `
 })
 export class GruposComponent {
@@ -623,9 +650,9 @@ export class GruposComponent {
 
 @Component({
   selector: 'app-programar',
-  imports: [MatButtonModule, MatCardModule, MarcoComponent, FormsModule, RouterLink],
+  imports: [MatButtonModule, MatCardModule, MarcoDocenteComponent, FormsModule, RouterLink],
   template: `
-    <app-marco [enlaces]="enlaces">
+    <app-marco-docente [enlaces]="enlaces">
       <section class="tablero">
         <header class="saludo">
           <h1>Programar</h1>
@@ -657,10 +684,12 @@ export class GruposComponent {
             <label class="field"><span>Mensaje para los estudiantes</span><textarea [(ngModel)]="mensaje"></textarea></label>
             @if (error()) { <p class="error">{{ error() }}</p> }
             @if (ok()) { <p class="ok">{{ ok() }}</p> }
-            <div class="row">
+            <div class="row row-programar">
+              <div class="row-acciones">
+                <button mat-stroked-button type="button" (click)="borrador()">Guardar borrador</button>
+                <button mat-flat-button color="primary" type="button" (click)="agendar()">Guardar y notificar</button>
+              </div>
               <a mat-stroked-button routerLink="/docente/grupos">Cancelar</a>
-              <button mat-stroked-button type="button" (click)="borrador()">Guardar borrador</button>
-              <button mat-flat-button color="primary" type="button" (click)="agendar()">Guardar y notificar</button>
             </div>
           </section>
           <aside class="tarjeta stack">
@@ -687,7 +716,7 @@ export class GruposComponent {
           </article>
         }
       </section>
-    </app-marco>
+    </app-marco-docente>
   `
 })
 export class ProgramarComponent {
@@ -772,27 +801,27 @@ export class ProgramarComponent {
 
 @Component({
   selector: 'app-seguimiento',
-  imports: [MatButtonModule, MatCardModule, MarcoComponent, RouterLink, FormsModule],
+  imports: [MatButtonModule, MatCardModule, MarcoDocenteComponent, RouterLink, FormsModule],
   template: `
-    <app-marco [enlaces]="enlaces">
+    <app-marco-docente [enlaces]="enlaces">
       <section class="tablero">
         <header class="saludo">
           <h1>Reportes</h1>
           <p>Desempeño, estado de la bitácora y descarga del grupo.</p>
         </header>
-        <div class="filtros">
-          <label class="field"><span>Caso</span>
-            <select [(ngModel)]="sesionId" (ngModelChange)="ver($event)">
-              @for (sesion of sesiones(); track sesion.id) {
-                <option [ngValue]="sesion.id">{{ sesion.caso }} · {{ sesion.grupo }}</option>
-              }
-            </select>
-          </label>
-          <label class="field"><span>Estudiante</span>
-            <input [(ngModel)]="busqueda" placeholder="Filtrar por estudiante" />
-          </label>
-        </div>
-        <div class="dos-ancha">
+        <div class="dos-ancha reportes-grid">
+          <div class="filtros">
+            <label class="field"><span>Caso</span>
+              <select [(ngModel)]="sesionId" (ngModelChange)="ver($event)">
+                @for (sesion of sesiones(); track sesion.id) {
+                  <option [ngValue]="sesion.id">{{ sesion.caso }} · {{ sesion.grupo }}</option>
+                }
+              </select>
+            </label>
+            <label class="field"><span>Estudiante</span>
+              <input [(ngModel)]="busqueda" placeholder="Filtrar por estudiante" />
+            </label>
+          </div>
           <table>
             <thead><tr><th>Estudiante</th><th>Estado</th><th>Puntaje</th><th>Nivel</th><th></th></tr></thead>
             <tbody>
@@ -809,7 +838,7 @@ export class ProgramarComponent {
               } @empty { <tr><td colspan="5">No hay estudiantes en esta convocatoria.</td></tr> }
             </tbody>
           </table>
-          <aside class="tarjeta stack">
+          <aside class="tarjeta stack ficha-cohorte">
             <h2>Ficha de cohorte</h2>
             <p class="nota">{{ promedio() }}</p>
             <p class="sub">Promedio sobre 5,0</p>
@@ -820,7 +849,7 @@ export class ProgramarComponent {
           </aside>
         </div>
       </section>
-    </app-marco>
+    </app-marco-docente>
   `
 })
 export class SeguimientoComponent {
@@ -873,9 +902,9 @@ export class SeguimientoComponent {
 
 @Component({
   selector: 'app-detalle-participacion',
-  imports: [MatButtonModule, MatCardModule, MarcoComponent, FormsModule],
+  imports: [MatButtonModule, MatCardModule, MarcoDocenteComponent, FormsModule],
   template: `
-    <app-marco [enlaces]="enlaces">
+    <app-marco-docente [enlaces]="enlaces">
       @if (dato(); as actual) {
         <section class="tarjeta stack">
           <p class="kicker">{{ actual.estudiante }} · {{ actual.estado }}</p>
@@ -903,7 +932,7 @@ export class SeguimientoComponent {
           }
         </section>
       }
-    </app-marco>
+    </app-marco-docente>
   `
 })
 export class DetalleParticipacionComponent {

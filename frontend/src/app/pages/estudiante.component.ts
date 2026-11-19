@@ -17,117 +17,237 @@ const enlaces = [
 
 @Component({
   selector: 'app-panel-estudiante',
-  imports: [MarcoComponent, RouterLink],
+  imports: [RouterLink],
   template: `
-    <app-marco [enlaces]="enlaces" modo="superior">
-      <section class="tablero">
-        <header class="saludo">
-          <h1>Hola, {{ nombre() }}</h1>
-          <p>Aquí tienes tus casos asignados y los avisos de la convocatoria.</p>
-        </header>
-        <div class="atajos">
-          <a class="atajo oscuro" routerLink="/estudiante">Casos asignados</a>
-          <a class="atajo" routerLink="/estudiante/avisos">Notificaciones</a>
+    <div class="inicio-est" [class.menu-abierto]="menuAbierto()">
+      <button class="inicio-menu-btn" type="button" (click)="alternarMenu()" [attr.aria-expanded]="menuAbierto()" aria-label="Menú">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg>
+      </button>
+      <div class="inicio-menu-fondo" (click)="cerrarMenu()" aria-hidden="true"></div>
+      <aside class="inicio-menu">
+        <a class="inicio-logo" routerLink="/estudiante" (click)="seccion.set('inicio')">
+          <img class="inicio-logo-icono" src="/dilema-cerebro.jpg" alt="" />
+          <span>Dilema</span>
+        </a>
+        <nav (click)="cerrarMenu()">
+          <button type="button" [class.activa]="seccion() === 'inicio'" (click)="seccion.set('inicio')">
+            <svg viewBox="0 0 24 24"><path d="M4 11.5 12 5l8 6.5V20H4z"/></svg>
+            Inicio
+          </button>
+          <button type="button" [class.activa]="seccion() === 'dilemas'" (click)="seccion.set('dilemas')">
+            <svg viewBox="0 0 24 24"><path d="M5 5.5h9.5A2.5 2.5 0 0 1 17 8v11H8.5A2.5 2.5 0 0 1 6 16.5V6.5A1 1 0 0 0 5 5.5z"/></svg>
+            Mis Dilemas
+          </button>
+          <button type="button" [class.activa]="seccion() === 'resultados'" (click)="seccion.set('resultados')">
+            <svg viewBox="0 0 24 24"><path d="M5 19V10M10 19V5M15 19v-7M20 19V8"/></svg>
+            Resultados
+          </button>
+          <button type="button" [class.activa]="seccion() === 'perfil'" (click)="seccion.set('perfil')">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 19c.8-3.2 3.4-5 7-5s6.2 1.8 7 5"/></svg>
+            Perfil
+          </button>
+        </nav>
+        <p class="inicio-lema">
+          <svg class="inicio-lema-onda" viewBox="0 0 210 120" preserveAspectRatio="none" aria-hidden="true">
+            <path fill="#091830" d="M0,120 V48 C52,8 158,72 210,38 V120 Z"/>
+            <ellipse cx="105" cy="58" rx="96" ry="34" fill="none" stroke="#16345c" stroke-width="6" opacity=".55" transform="rotate(12 105 58)"/>
+            <ellipse cx="105" cy="58" rx="80" ry="26" fill="none" stroke="#1d4a7a" stroke-width="1.6" opacity=".35" transform="rotate(12 105 58)"/>
+          </svg>
+          <span>Piensa. Decide. Aprende.</span>
+          <span class="lema-cierre">A decidir.</span>
+        </p>
+        <button class="inicio-salir" type="button" (click)="auth.salir()">
+          <svg viewBox="0 0 24 24"><path d="M10 7V5H5v14h5v-2M10 12h10M16 8l4 4-4 4"/></svg>
+          Cerrar Sesión
+        </button>
+      </aside>
+
+      <main class="inicio-cuerpo">
+        <div class="inicio-fondo" aria-hidden="true">
+          <div class="inicio-cielo"></div>
+          <div class="inicio-marca-hero">
+            <img class="inicio-cerebro" src="/dilema-cerebro.jpg" alt="" />
+          </div>
+          <svg class="inicio-deco" viewBox="0 0 1440 900" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="anillo" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#dbeafe" stop-opacity=".15"/>
+                <stop offset=".45" stop-color="#93c5fd"/>
+                <stop offset="1" stop-color="#3b82f6" stop-opacity=".2"/>
+              </linearGradient>
+              </defs>
+            <g fill="#fff">
+              <polygon points="860,18 864,32 880,36 864,40 860,54 856,40 840,36 856,32"/>
+              <polygon points="1088,10 1092,24 1108,28 1092,32 1088,46 1084,32 1068,28 1084,24"/>
+              <polygon points="1260,42 1264,54 1278,58 1264,62 1260,74 1256,62 1242,58 1256,54"/>
+              <circle cx="940" cy="28" r="1.8"/>
+              <circle cx="1188" cy="16" r="1.5"/>
+              <circle cx="1336" cy="70" r="1.6"/>
+              <circle cx="1012" cy="54" r="1.2"/>
+            </g>
+            <ellipse cx="1148" cy="110" rx="270" ry="110" fill="none" stroke="url(#anillo)" stroke-width="10" transform="rotate(-16 1148 110)"/>
+            <ellipse cx="1148" cy="110" rx="228" ry="88" fill="none" stroke="#e0f2fe" stroke-width="2.2" transform="rotate(-16 1148 110)" opacity=".8"/>
+            <path fill="#1e3a8a" d="M460,0 C660,28 800,128 970,250 C1130,368 1288,420 1460,360 L1460,278 C1288,338 1130,286 970,168 C800,46 660,-36 460,-48 Z"/>
+            <path fill="#3b82f6" d="M460,0 C660,28 800,128 970,250 C1130,368 1288,420 1460,360 L1460,318 C1288,378 1130,326 970,208 C800,86 660,-12 460,-24 Z"/>
+            <path fill="#ffffff" d="M460,0 C660,28 800,128 970,250 C1130,368 1288,420 1460,360 L1460,342 C1288,402 1130,350 970,230 C800,108 660,8 460,-10 Z"/>
+            <path fill="#eef2ff" d="M0,0 H460 C660,28 800,128 970,250 C1130,368 1288,420 1440,360 L1440,900 L0,900 Z"/>
+          </svg>
         </div>
-        @if (error()) { <p class="error">{{ error() }}</p> }
-        <div class="tablero-cuerpo">
-          <div class="stack">
-            <article class="tarjeta">
-              <div class="tarjeta-cabeza"><h2>Casos asignados</h2></div>
-              <div class="rejilla-casos">
-                @for (sesion of visibles(); track sesion.id; let i = $index) {
-                  <article class="curso">
-                    <div class="franja" [attr.data-tono]="i % 3"></div>
-                    <span class="estado-pill">{{ etiqueta(sesion) }}</span>
-                    <h3>{{ sesion.caso }}</h3>
-                    <p class="sub">{{ sesion.grupo }} · {{ sesion.espacio }}</p>
-                    <div class="progreso"><div [style.width.%]="barra(sesion)"></div></div>
-                    <small class="avance">{{ barra(sesion) }}% de avance</small>
-                    <div class="curso-acciones">
-                      @if (sesion.participacionEstado === 'FINALIZADA' && sesion.participacionId) {
-                        <a class="btn-suave" [routerLink]="['/estudiante/participacion', sesion.participacionId]">Ver resultados</a>
-                        @if (sesion.repeticionAutorizada) {
-                          <a class="btn-oscuro" [routerLink]="['/estudiante/sesion', sesion.id]">Nuevo intento</a>
-                        }
-                      } @else if (sesion.estado === 'SIN_INICIAR') {
-                        <p class="sub">Esperando a que el docente inicie la sesión.</p>
-                      } @else if (sesion.estado === 'FINALIZADO' && !sesion.participacionId) {
-                        <p class="sub">No participaste. Ausencia 0,0.</p>
-                      } @else {
-                        <a class="btn-oscuro" [routerLink]="['/estudiante/sesion', sesion.id]">Ingresar al caso</a>
-                      }
-                    </div>
-                  </article>
-                } @empty { <p class="sub">No tienes casos asignados.</p> }
-              </div>
-            </article>
-            <div class="tablero-abajo">
-              <article class="tarjeta">
-                <h2>Tu rendimiento</h2>
-                <p class="nota-grande">{{ promedio() }} <small>/ 5.0</small></p>
-                <p class="sub">{{ finalizados() }} finalizados · {{ enCurso() }} en curso · {{ pendientes() }} pendientes</p>
-              </article>
-              <article class="tarjeta">
-                <h2>Próximos casos</h2>
-                <div class="stack">
-                  @for (sesion of proximos(); track sesion.id) {
-                    <div class="fila-lista">
-                      <span class="punto"></span>
-                      <div>
-                        <strong>{{ sesion.caso }}</strong>
-                        <p class="sub">{{ sesion.grupo }} · {{ cuando(sesion.inicio) }}</p>
-                      </div>
-                    </div>
-                  } @empty { <p class="sub">No tienes casos pendientes.</p> }
-                </div>
-              </article>
+        <header class="inicio-hero">
+          <div class="inicio-user">
+            <span class="inicio-avatar">{{ iniciales() }}</span>
+            <span>{{ nombreCompleto() }}</span>
+          </div>
+          <div class="inicio-hero-copy">
+            <div class="inicio-saludo">
+              <h1>¡Hola, {{ nombre() }}! <span aria-hidden="true">👋</span></h1>
+              <p>Bienvenido a <strong>Dilema</strong>, donde cada decisión cuenta.</p>
             </div>
           </div>
-          <aside class="stack">
-            <article class="tarjeta">
-              <h2>Tu horario de hoy</h2>
-              <div class="stack">
-                @for (sesion of hoy(); track sesion.id; let i = $index) {
-                  <div class="fila-lista">
-                    <span class="punto" [attr.data-tono]="i % 3"></span>
-                    <div>
-                      <strong>{{ sesion.caso }}</strong>
-                      <p class="sub">{{ cuando(sesion.inicio) }} · {{ sesion.lugar || sesion.espacio }}</p>
-                    </div>
-                  </div>
-                } @empty { <p class="sub">Hoy no tienes sesiones.</p> }
+        </header>
+        @if (seccion() === 'inicio') {
+          <section class="inicio-stats">
+            <article>
+              <span class="stat-icono juego">
+                <svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="10" rx="4"/><path d="M8 13h4M10 11v4M16.2 12h.01M18.2 14h.01"/></svg>
+              </span>
+              <div>
+                <small>Dilemas Resueltos</small>
+                <strong>{{ finalizados() }}</strong>
               </div>
             </article>
-            <article class="tarjeta">
-              <div class="tarjeta-cabeza">
-                <h2>Avisos</h2>
-                <a class="ver-todos" routerLink="/estudiante/avisos">Ver todos</a>
-              </div>
-              <div class="stack">
-                @for (aviso of avisos(); track aviso.id; let i = $index) {
-                  <div class="fila-lista">
-                    <span class="punto" [attr.data-tono]="i % 3"></span>
-                    <div>
-                      <strong>{{ aviso.titulo }}</strong>
-                      <p class="sub">{{ aviso.cuerpo }}</p>
-                    </div>
-                  </div>
-                } @empty { <p class="sub">No tienes avisos.</p> }
+            <article>
+              <span class="stat-icono copa">
+                <svg viewBox="0 0 24 24"><path d="M8 5h8v4a4 4 0 0 1-8 0V5z"/><path d="M8 7H5.5A2.5 2.5 0 0 0 8 11M16 7h2.5A2.5 2.5 0 0 1 16 11"/><path d="M12 13v3M9 20h6M10 17h4"/></svg>
+              </span>
+              <div>
+                <small>Tu Puntaje</small>
+                <strong>{{ promedio() }} <em>/ 5,0</em></strong>
               </div>
             </article>
-          </aside>
-        </div>
-      </section>
-    </app-marco>
+          </section>
+        }
+
+        @if (error()) { <p class="error">{{ error() }}</p> }
+
+        @if (seccion() === 'inicio') {
+          <div class="inicio-home">
+          <section class="inicio-fila">
+            <article class="inicio-destacado">
+              <div class="destacado-texto">
+                <p class="chip-estrella">★ Dilema Destacado</p>
+                <h2>{{ tituloDestacado() }}</h2>
+                <p>{{ textoDestacado() }}</p>
+                @if (destacado(); as caso) {
+                  @if (caso.participacionEstado === 'FINALIZADA' && caso.participacionId) {
+                    <a class="btn-resolver" [routerLink]="['/estudiante/participacion', caso.participacionId]">Ver resultados</a>
+                  } @else if (caso.estado === 'SIN_INICIAR') {
+                    <p class="sub claro">Esperando a que el docente inicie la sesión.</p>
+                  } @else if (caso.estado === 'FINALIZADO' && !caso.participacionId) {
+                    <p class="sub claro">No participaste. Ausencia 0,0.</p>
+                  } @else {
+                    <a class="btn-resolver" [routerLink]="['/estudiante/sesion', caso.id]">▶ Resolver Dilema</a>
+                  }
+                }
+              </div>
+              <figure>
+                <img src="/escenas/colinas-1.jpg" alt="Barrio Las Colinas al atardecer, llegada al caso" />
+              </figure>
+            </article>
+
+            <article class="inicio-progreso">
+              <h3><span class="progreso-ico">📊</span> Tu Progreso</h3>
+              <div class="aro" [style.--p]="progresoGeneral()">
+                <span>{{ progresoGeneral() }}%</span>
+              </div>
+              <p class="nivel">★ {{ nivel() }}</p>
+              <p class="progreso-tip">{{ mensajeProgreso() }}</p>
+            </article>
+          </section>
+
+          <section class="inicio-cats">
+            <div class="tarjeta-cabeza">
+              <h3>★ Categorías</h3>
+              <button type="button" class="ver-todos" (click)="seccion.set('dilemas')">Ver todas →</button>
+            </div>
+            <div class="cats">
+              <button type="button" class="cat etica" (click)="abrirCategoria('Ética')">
+                <svg viewBox="0 0 24 24"><path d="M12 3v18M7 21h10M12 6h.01"/><path d="M12 7 7 16h10L12 7z"/><path d="M7 16c-1.4 0-2.5.9-2.5 2s1.1 2 2.5 2 2.5-.9 2.5-2M17 16c-1.4 0-2.5.9-2.5 2s1.1 2 2.5 2 2.5-.9 2.5-2"/></svg>
+                <span>Ética</span><i>→</i>
+              </button>
+              <button type="button" class="cat social" (click)="abrirCategoria('Social')">
+                <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="16.2" cy="9" r="2.4"/><path d="M4 19c.7-3.2 2.8-5.2 5-5.2s4.3 2 5 5.2M13.4 19c.4-2.2 1.7-3.6 3.2-3.6 1.6 0 3 1.5 3.4 3.6"/></svg>
+                <span>Social</span><i>→</i>
+              </button>
+              <button type="button" class="cat psico" (click)="abrirCategoria('Psicológico')">
+                <svg viewBox="0 0 24 24"><path d="M12 4c-3.8 0-6.5 2.6-6.5 6.2 0 2.2 1 3.6 1.6 4.6C6.4 16.6 7.6 18.2 9.5 19.2h5c1.9-1 3.1-2.6 2.4-4.4.6-1 1.6-2.4 1.6-4.6C18.5 6.6 15.8 4 12 4z"/><path d="M12 4.2v15"/></svg>
+                <span>Psicológico</span><i>→</i>
+              </button>
+              <button type="button" class="cat tec" (click)="abrirCategoria('Tecnología')">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3.2 3.2 4.6 6.2 4.6 9S15.2 17.8 12 21M12 3C8.8 6.2 7.4 9.2 7.4 12S8.8 17.8 12 21"/></svg>
+                <span>Tecnología</span><i>→</i>
+              </button>
+              <button type="button" class="cat vida" (click)="abrirCategoria('Vida Personal')">
+                <svg viewBox="0 0 24 24"><path d="M12 20.6S5 16 5 10.6A3.8 3.8 0 0 1 12 8a3.8 3.8 0 0 1 7 2.6c0 5.4-7 10-7 10z"/></svg>
+                <span>Vida Personal</span><i>→</i>
+              </button>
+            </div>
+          </section>
+          </div>
+        }
+
+        @if (seccion() === 'dilemas' || seccion() === 'resultados') {
+          <section class="inicio-lista">
+            <h2>{{ seccion() === 'resultados' ? 'Resultados' : 'Mis Dilemas' }}</h2>
+            <div class="rejilla-casos">
+              @for (sesion of listaSeccion(); track sesion.id; let i = $index) {
+                <article class="curso">
+                  <div class="franja" [attr.data-tono]="i % 3"></div>
+                  <span class="estado-pill">{{ etiqueta(sesion) }}</span>
+                  <h3>{{ sesion.caso }}</h3>
+                  <p class="sub">{{ sesion.grupo }} · {{ sesion.espacio }}</p>
+                  <div class="progreso"><div [style.width.%]="barra(sesion)"></div></div>
+                  <small class="avance">{{ barra(sesion) }}% de avance</small>
+                  <div class="curso-acciones">
+                    @if (sesion.participacionEstado === 'FINALIZADA' && sesion.participacionId) {
+                      <a class="btn-suave" [routerLink]="['/estudiante/participacion', sesion.participacionId]">Ver resultados</a>
+                    } @else if (sesion.estado === 'SIN_INICIAR') {
+                      <p class="sub">Esperando a que el docente inicie la sesión.</p>
+                    } @else if (sesion.estado === 'FINALIZADO' && !sesion.participacionId) {
+                      <p class="sub">No participaste. Ausencia 0,0.</p>
+                    } @else {
+                      <a class="btn-oscuro" [routerLink]="['/estudiante/sesion', sesion.id]">Ingresar al caso</a>
+                    }
+                  </div>
+                </article>
+              } @empty { <p class="sub">No hay casos en esta vista.</p> }
+            </div>
+          </section>
+        }
+
+        @if (seccion() === 'perfil') {
+          <section class="inicio-perfil">
+            <h2>Perfil</h2>
+            <p><strong>{{ nombreCompleto() }}</strong></p>
+            <p class="sub">{{ auth.usuario()?.email }}</p>
+            <p class="sub">Estudiante · {{ finalizados() }} dilemas resueltos · puntaje {{ promedio() }} / 5,0</p>
+          </section>
+        }
+      </main>
+    </div>
   `
 })
 export class PanelEstudianteComponent {
   enlaces = enlaces;
   private http = inject(HttpClient);
-  private auth = inject(AuthService);
+  auth = inject(AuthService);
   private busqueda = inject(BusquedaService);
   panel = signal<PanelEstudiante | null>(null);
   error = signal('');
+  seccion = signal<'inicio' | 'dilemas' | 'resultados' | 'perfil'>('inicio');
+  menuAbierto = signal(false);
+  alternarMenu() { this.menuAbierto.update((abierto) => !abierto); }
+  cerrarMenu() { this.menuAbierto.set(false); }
   constructor() {
     this.http.get<PanelEstudiante>('/api/estudiante/panel').subscribe({
       next: (dato) => this.panel.set(dato),
@@ -145,6 +265,48 @@ export class PanelEstudianteComponent {
   nombre() {
     const completo = this.auth.usuario()?.nombre ?? '';
     return completo.trim().split(/\s+/)[0] || 'estudiante';
+  }
+  nombreCompleto() { return this.auth.usuario()?.nombre ?? 'Estudiante'; }
+  iniciales() {
+    const partes = this.nombreCompleto().trim().split(/\s+/).filter(Boolean);
+    return ((partes[0]?.[0] ?? '') + (partes[1]?.[0] ?? '')).toUpperCase() || 'D';
+  }
+  destacado(): Sesion | null {
+    const lista = this.panel()?.sesiones ?? [];
+    return lista.find((s) => /colinas|feminicidio/i.test(s.caso)) ?? lista[0] ?? null;
+  }
+  tituloDestacado() {
+    const caso = this.destacado();
+    if (caso && /colinas|feminicidio/i.test(caso.caso)) return 'Feminicidio en Las Colinas';
+    return caso?.caso ?? 'Feminicidio en Las Colinas';
+  }
+  textoDestacado() {
+    return 'En el barrio Las Colinas debes reconstruir lo ocurrido con la comunidad y decidir cómo intervenir. El caso es académico: no hay escenas gráficas.';
+  }
+  progresoGeneral() {
+    const lista = this.panel()?.sesiones ?? [];
+    if (!lista.length) return 0;
+    const total = lista.reduce((acc, s) => acc + this.barra(s), 0);
+    return Math.round(total / lista.length);
+  }
+  nivel() {
+    const p = this.progresoGeneral();
+    if (p >= 80) return 'Nivel Avanzado';
+    if (p >= 40) return 'Nivel Explorador';
+    return 'Nivel Inicial';
+  }
+  mensajeProgreso() {
+    if (this.progresoGeneral() >= 70) return 'Vas muy bien. Sigue resolviendo dilemas para alcanzar el siguiente nivel.';
+    if (this.finalizados()) return 'Sigue con el caso destacado para subir tu progreso.';
+    return 'Empieza el dilema destacado para registrar tu primer avance.';
+  }
+  abrirCategoria(_nombre: string) { this.seccion.set('dilemas'); }
+  listaSeccion() {
+    const lista = this.visibles();
+    if (this.seccion() === 'resultados') {
+      return lista.filter((s) => s.participacionEstado === 'FINALIZADA' || s.participacionEstado === 'AUSENTE');
+    }
+    return lista;
   }
   visibles() {
     const q = this.busqueda.texto().trim().toLowerCase();

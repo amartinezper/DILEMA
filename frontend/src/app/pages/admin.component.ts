@@ -8,7 +8,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MarcoComponent } from '../shared/marco.component';
+import { MarcoDocenteComponent } from '../shared/marco-docente.component';
 import { AuthService } from '../core/auth.service';
 import { BusquedaService } from '../core/busqueda.service';
 import { Usuario, mensajeError } from '../core/api.service';
@@ -24,45 +24,68 @@ const material = [MatCardModule, MatButtonModule, MatFormFieldModule, MatInputMo
 
 @Component({
   selector: 'app-panel-admin',
-  imports: [MarcoComponent, RouterLink],
+  imports: [MarcoDocenteComponent, RouterLink],
   template: `
-    <app-marco [enlaces]="enlaces">
-      <section class="tablero">
-        <header class="saludo">
-          <h1>Hola, {{ nombre() }}</h1>
-          <p>Docentes del sistema y sus permisos.</p>
-        </header>
-        <div class="atajos">
-          <a class="atajo oscuro" routerLink="/admin/usuarios">Docentes</a>
-          <a class="atajo" routerLink="/admin/usuarios/nuevo">Nuevo docente</a>
-          <a class="atajo" routerLink="/admin/configuracion">Configuración</a>
-        </div>
-        <div class="tablero-abajo">
-          <article class="tarjeta">
-            <h2>Docentes</h2>
-            <p class="nota-grande">{{ docentes().length }}</p>
-            <p class="sub">Cuentas con rol docente. Nacen solo con Visualizar.</p>
+    <app-marco-docente [enlaces]="enlaces" inicio="/admin" lema="Gestiona docentes, permisos y la configuración del sistema.">
+      <div class="dash dash-admin">
+        <section class="dash-kpis">
+          <article class="dash-kpi">
+            <small>Docentes</small>
+            <strong>{{ docentes().length }}</strong>
+            <span>cuentas con rol docente</span>
           </article>
-          <article class="tarjeta">
+          <article class="dash-kpi">
+            <small>Pueden editar</small>
+            <strong>{{ conEditar() }}</strong>
+            <span>crean y publican casos</span>
+          </article>
+          <article class="dash-kpi">
+            <small>Gestionan espacios</small>
+            <strong>{{ conEspacios() }}</strong>
+            <span>pueden abrir grupos</span>
+          </article>
+        </section>
+
+        <section class="dash-cuerpo dash-cuerpo-admin">
+          <article class="dash-panel dash-panel-alto">
             <div class="tarjeta-cabeza">
-              <h2>Recientes</h2>
-              <a class="ver-todos" routerLink="/admin/usuarios">Ver todos</a>
+              <h3>Directorio docente</h3>
+              <a class="ver-todos" routerLink="/admin/usuarios">Ver todos →</a>
             </div>
-            <div class="stack">
-              @for (usuario of docentes().slice(0, 4); track usuario.id) {
-                <a class="fila-lista" [routerLink]="['/admin/usuarios', usuario.id]">
-                  <span class="punto"></span>
-                  <div>
-                    <strong>{{ usuario.nombre }}</strong>
-                    <p class="sub">{{ usuario.permisos.join(', ') || 'Sin permisos' }}</p>
-                  </div>
-                </a>
-              } @empty { <p class="sub">Todavía no hay docentes.</p> }
-            </div>
+            @for (usuario of docentes().slice(0, 8); track usuario.id) {
+              <a class="dash-persona" [routerLink]="['/admin/usuarios', usuario.id]">
+                <span class="inicio-avatar">{{ iniciales(usuario.nombre) }}</span>
+                <div>
+                  <strong>{{ usuario.nombre }}</strong>
+                  <p class="sub">{{ usuario.email }}</p>
+                </div>
+                <em>{{ etiquetaPermisos(usuario.permisos) }}</em>
+              </a>
+            } @empty { <p class="sub">Todavía no hay docentes. Crea la primera cuenta.</p> }
           </article>
-        </div>
-      </section>
-    </app-marco>
+
+          <section class="inicio-cats dash-cats">
+            <div class="tarjeta-cabeza">
+              <h3>Tareas de administración</h3>
+            </div>
+            <div class="cats tres">
+              <a class="cat etica" routerLink="/admin/usuarios/nuevo">
+                <svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg>
+                <span>Crear docente</span><i>→</i>
+              </a>
+              <a class="cat social" routerLink="/admin/usuarios">
+                <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="16.2" cy="9" r="2.4"/><path d="M4 19c.7-3.2 2.8-5.2 5-5.2s4.3 2 5 5.2M13.4 19c.4-2.2 1.7-3.6 3.2-3.6 1.6 0 3 1.5 3.4 3.6"/></svg>
+                <span>Asignar permisos</span><i>→</i>
+              </a>
+              <a class="cat psico" routerLink="/admin/configuracion">
+                <svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM12 3.5v2M12 18.5v2M4.8 6.2l1.5 1.5M17.7 16.3l1.5 1.5M3.5 12h2M18.5 12h2M4.8 17.8l1.5-1.5M17.7 7.7l1.5-1.5"/></svg>
+                <span>Configurar</span><i>→</i>
+              </a>
+            </div>
+          </section>
+        </section>
+      </div>
+    </app-marco-docente>
   `
 })
 export class PanelAdminComponent {
@@ -76,13 +99,26 @@ export class PanelAdminComponent {
     return completo.trim().split(/\s+/)[0] || 'administración';
   }
   docentes() { return this.usuarios().filter((usuario) => usuario.rol === 'PROFESOR'); }
+  admins() { return this.usuarios().filter((usuario) => usuario.rol === 'ADMIN'); }
+  conEditar() { return this.docentes().filter((usuario) => usuario.permisos.includes('EDITAR')).length; }
+  conEspacios() { return this.docentes().filter((usuario) => usuario.permisos.includes('GESTIONAR_ESPACIOS_ACADEMICOS')).length; }
+  iniciales(nombre: string) {
+    const partes = nombre.trim().split(/\s+/).filter(Boolean);
+    return ((partes[0]?.[0] ?? '') + (partes[1]?.[0] ?? '')).toUpperCase() || 'D';
+  }
+  etiquetaPermisos(permisos: string[]) {
+    if (permisos.includes('EDITAR') && permisos.includes('GESTIONAR_ESPACIOS_ACADEMICOS')) return 'Editar y espacios';
+    if (permisos.includes('EDITAR')) return 'Puede editar';
+    if (permisos.includes('GESTIONAR_ESPACIOS_ACADEMICOS')) return 'Gestiona espacios';
+    return 'Solo visualizar';
+  }
 }
 
 @Component({
   selector: 'app-usuarios',
-  imports: [MarcoComponent, RouterLink, ...material],
+  imports: [MarcoDocenteComponent, RouterLink, ...material],
   template: `
-    <app-marco [enlaces]="enlaces">
+    <app-marco-docente [enlaces]="enlaces" inicio="/admin">
       <section class="tablero">
         <header class="saludo">
           <h1>Docentes</h1>
@@ -101,7 +137,7 @@ export class PanelAdminComponent {
           } @empty { <p class="sub">No hay cuentas para mostrar.</p> }
       </article>
       </section>
-    </app-marco>
+    </app-marco-docente>
   `
 })
 export class UsuariosComponent {
@@ -120,43 +156,41 @@ export class UsuariosComponent {
 
 @Component({
   selector: 'app-crear-usuario',
-  imports: [MarcoComponent, FormsModule, ...material],
+  imports: [MarcoDocenteComponent, FormsModule],
   template: `
-    <app-marco [enlaces]="enlaces">
-      <header class="saludo"><h1>Nuevo docente</h1><p>Nace con el rol docente y solo el permiso Visualizar.</p></header>
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>Nuevo docente</mat-card-title>
-          <mat-card-subtitle>Nace con el rol docente y solo el permiso Visualizar.</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content class="stack">
-          <mat-form-field appearance="outline">
-            <mat-label>Nombre completo</mat-label>
-            <input matInput [(ngModel)]="nombre" />
-          </mat-form-field>
-          <mat-form-field appearance="outline">
-            <mat-label>Correo electrónico</mat-label>
-            <input matInput [(ngModel)]="email" />
-          </mat-form-field>
-          <mat-form-field appearance="outline">
-            <mat-label>Rol</mat-label>
-            <mat-select [(ngModel)]="rol">
-              <mat-option value="PROFESOR">Docente</mat-option>
-              <mat-option value="ADMIN">Administración</mat-option>
-            </mat-select>
-          </mat-form-field>
-          <mat-checkbox disabled [checked]="true">Visualizar</mat-checkbox>
-          <mat-form-field appearance="outline">
-            <mat-label>Contraseña</mat-label>
-            <input matInput [(ngModel)]="clave" type="password" autocomplete="new-password" />
-          </mat-form-field>
+    <app-marco-docente [enlaces]="enlaces" inicio="/admin">
+      <section class="tablero ficha-tablero">
+        <header class="saludo">
+          <h1>Nuevo docente</h1>
+          <p>Nace con el rol docente y solo el permiso Visualizar.</p>
+        </header>
+        <article class="dash-panel ficha-form">
+          <div class="ficha-campos">
+            <div class="grid-2">
+              <label class="field"><span>Nombre completo</span><input [(ngModel)]="nombre" placeholder="Nombre y apellido" /></label>
+              <label class="field"><span>Correo electrónico</span><input [(ngModel)]="email" placeholder="docente@institucion.edu" /></label>
+            </div>
+            <div class="grid-2">
+              <label class="field"><span>Rol</span>
+                <select [(ngModel)]="rol">
+                  <option value="PROFESOR">Docente</option>
+                  <option value="ADMIN">Administración</option>
+                </select>
+              </label>
+              <label class="field"><span>Contraseña</span><input [(ngModel)]="clave" type="password" autocomplete="new-password" /></label>
+            </div>
+            <label class="ficha-check">
+              <input type="checkbox" disabled [checked]="true" />
+              <span>Visualizar queda activo desde el primer ingreso.</span>
+            </label>
+          </div>
           @if (error()) { <p class="error">{{ error() }}</p> }
-        </mat-card-content>
-        <mat-card-actions>
-          <button mat-flat-button color="primary" type="button" (click)="crear()">Guardar</button>
-        </mat-card-actions>
-      </mat-card>
-    </app-marco>
+          <div class="ficha-pie">
+            <button class="btn-oscuro" type="button" (click)="crear()">Guardar</button>
+          </div>
+        </article>
+      </section>
+    </app-marco-docente>
   `
 })
 export class CrearUsuarioComponent {
@@ -178,9 +212,9 @@ export class CrearUsuarioComponent {
 
 @Component({
   selector: 'app-permisos-docente',
-  imports: [MarcoComponent, FormsModule, ...material],
+  imports: [MarcoDocenteComponent, FormsModule, ...material],
   template: `
-    <app-marco [enlaces]="enlaces">
+    <app-marco-docente [enlaces]="enlaces" inicio="/admin">
       <header class="saludo"><h1>Permisos</h1><p>Visualizar permanece. Editar y gestionar espacios se asignan aquí.</p></header>
       <mat-card>
         <mat-card-header>
@@ -197,7 +231,7 @@ export class CrearUsuarioComponent {
           <button mat-flat-button color="primary" type="button" (click)="guardar()">Guardar permisos</button>
         </mat-card-actions>
       </mat-card>
-    </app-marco>
+    </app-marco-docente>
   `
 })
 export class PermisosDocenteComponent {
@@ -236,29 +270,40 @@ export class PermisosDocenteComponent {
 
 @Component({
   selector: 'app-configuracion',
-  imports: [MarcoComponent, FormsModule, ...material],
+  imports: [MarcoDocenteComponent, FormsModule],
   template: `
-    <app-marco [enlaces]="enlaces">
-      <header class="saludo"><h1>Configuración</h1><p>Estos valores se guardan en este navegador.</p></header>
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>Parámetros generales</mat-card-title>
-          <mat-card-subtitle>Configuración de este navegador</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content class="stack">
-          <mat-form-field appearance="outline"><mat-label>Nombre del sistema</mat-label><input matInput [(ngModel)]="config.nombre" /></mat-form-field>
-          <mat-form-field appearance="outline"><mat-label>Correo de soporte</mat-label><input matInput [(ngModel)]="config.soporte" /></mat-form-field>
-          <mat-form-field appearance="outline"><mat-label>Zona horaria</mat-label><input matInput [(ngModel)]="config.zona" /></mat-form-field>
-          <mat-form-field appearance="outline"><mat-label>Inactividad máxima (minutos)</mat-label><input matInput type="number" [(ngModel)]="config.inactividad" /></mat-form-field>
-          <mat-checkbox [(ngModel)]="config.notificar">Habilitar notificaciones por correo</mat-checkbox>
-          <mat-checkbox [(ngModel)]="config.docentePublica">Permitir que el docente publique sin aprobación previa</mat-checkbox>
+    <app-marco-docente [enlaces]="enlaces" inicio="/admin">
+      <section class="tablero ficha-tablero">
+        <header class="saludo">
+          <h1>Configuración global</h1>
+          <p>Estos valores se guardan en este navegador.</p>
+        </header>
+        <article class="dash-panel ficha-form">
+          <div class="ficha-campos">
+            <div class="grid-2">
+              <label class="field"><span>Nombre del sistema</span><input [(ngModel)]="config.nombre" /></label>
+              <label class="field"><span>Correo de soporte</span><input [(ngModel)]="config.soporte" /></label>
+            </div>
+            <div class="grid-2">
+              <label class="field"><span>Zona horaria</span><input [(ngModel)]="config.zona" /></label>
+              <label class="field"><span>Inactividad máxima (min)</span><input type="number" [(ngModel)]="config.inactividad" /></label>
+            </div>
+            <label class="ficha-check">
+              <input type="checkbox" name="notificar" [(ngModel)]="config.notificar" />
+              <span>Avisos por correo</span>
+            </label>
+            <label class="ficha-check">
+              <input type="checkbox" name="docentePublica" [(ngModel)]="config.docentePublica" />
+              <span>El docente puede publicar sin aprobación previa</span>
+            </label>
+          </div>
           @if (ok()) { <p class="ok">{{ ok() }}</p> }
-        </mat-card-content>
-        <mat-card-actions>
-          <button mat-flat-button color="primary" type="button" (click)="guardar()">Guardar configuración</button>
-        </mat-card-actions>
-      </mat-card>
-    </app-marco>
+          <div class="ficha-pie">
+            <button class="btn-oscuro" type="button" (click)="guardar()">Guardar configuración</button>
+          </div>
+        </article>
+      </section>
+    </app-marco-docente>
   `
 })
 export class ConfiguracionComponent {
