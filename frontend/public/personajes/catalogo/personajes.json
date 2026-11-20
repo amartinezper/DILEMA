@@ -1,0 +1,3838 @@
+{
+  "generado": "2026-11-19",
+  "receta": "texturas <=1024 px WebP q85 (EXT_texture_webp), morph targets dispersos (sparse); VRM sin cambios",
+  "personajes": [
+    {
+      "archivo": "H01-01.vrm",
+      "id_elenco": "H01",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "8-10",
+      "rol": "Niño 8",
+      "vroid_hub_id": "7118307285003104680",
+      "nombre": "Kevin",
+      "autor": "№-23's",
+      "pide_credito": true,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: necessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 14.5,
+      "peso_ligero_mb": 2.6,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 13,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_004_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "N00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_004_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.111,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Kevin. Niño de 8 a 10 años, cabello negro corto, camiseta gris."
+    },
+    {
+      "archivo": "H01-02.vrm",
+      "id_elenco": "H01",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "8-12",
+      "rol": "Niño 8",
+      "vroid_hub_id": "8291620414211158197",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 16.2,
+      "peso_ligero_mb": 2.0,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 13,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "M00_000_00_Face_00_SKIN",
+          "M00_001_01_Body_00_SKIN"
+        ],
+        "cabello": [
+          "F00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "M00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "M00_006_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [],
+        "zapatos": [
+          "M00_001_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "M00_000_00_FaceBrow_00_FACE",
+          "M00_000_00_FaceMouth_00_FACE",
+          "M00_000_00_EyeHighlight_00_EYE",
+          "M00_000_00_EyeWhite_00_EYE",
+          "M00_000_00_FaceEyelash_00_FACE",
+          "M00_000_00_FaceEyeline_00_FACE",
+          "M00_000_00_EyeExtra_01_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.11,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Niño (cabeza a 1,01 m, talla infantil como Kevin), cabello rojo oscuro, saco con capucha pastel. Cambiar el cabello a castaño o negro y redondear la cara. Antes estaba en H02."
+    },
+    {
+      "archivo": "H02-01.vrm",
+      "id_elenco": "H02",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "14-17",
+      "rol": "Adolescente hombre 16",
+      "vroid_hub_id": "5678675938007162159",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 18.4,
+      "peso_ligero_mb": 2.7,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 14,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "M00_000_00_Face_00_SKIN",
+          "M00_001_01_Body_00_SKIN"
+        ],
+        "cabello": [
+          "F00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "M00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "M00_006_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "M00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "M00_001_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "M00_000_00_FaceBrow_00_FACE",
+          "M00_000_00_FaceMouth_00_FACE",
+          "M00_000_00_EyeHighlight_00_EYE",
+          "M00_000_00_EyeWhite_00_EYE",
+          "M00_000_00_FaceEyelash_00_FACE",
+          "M00_000_00_FaceEyeline_00_FACE",
+          "M00_000_00_EyeExtra_01_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.007,
+      "materiales_fusionados": false,
+      "no_juntar_con": [
+        "H02-03.vrm",
+        "H02-05.vrm"
+      ],
+      "notas": "Chico, cabello negro, saco con capucha blanco y pantalón negro."
+    },
+    {
+      "archivo": "H02-02.vrm",
+      "id_elenco": "H02",
+      "extra": true,
+      "genero": "hombre",
+      "edad_aparente": "16-20",
+      "rol": "Adolescente hombre 16",
+      "vroid_hub_id": "608323607310517415",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: disallow; redistribuir: disallow; crédito: unnecessary",
+      "permite_redistribuir": false,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 18.9,
+      "peso_ligero_mb": 2.0,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 14,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "M00_000_00_Face_00_SKIN",
+          "M00_001_01_Body_00_SKIN"
+        ],
+        "cabello": [
+          "F00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "M00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "M00_001_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "M00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "M00_001_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "M00_000_00_FaceBrow_00_FACE",
+          "M00_000_00_FaceMouth_00_FACE",
+          "M00_000_00_EyeHighlight_00_EYE",
+          "M00_000_00_EyeWhite_00_EYE",
+          "M00_000_00_FaceEyelash_00_FACE",
+          "M00_000_00_FaceEyeline_00_FACE",
+          "M00_000_00_EyeExtra_01_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.09,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Chico de 16 a 20 años, cabello azul verdoso, chaleco de punto azul marino."
+    },
+    {
+      "archivo": "H02-03.vrm",
+      "id_elenco": "H02",
+      "extra": true,
+      "genero": "hombre",
+      "edad_aparente": "15-18",
+      "rol": "Adolescente hombre 16",
+      "vroid_hub_id": "6056633268567222512",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: nonprofit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 9.4,
+      "peso_ligero_mb": 2.0,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 14,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "M00_000_00_Face_00_SKIN",
+          "M00_001_01_Body_00_SKIN"
+        ],
+        "cabello": [
+          "F00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "M00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "M00_006_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "M00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "M00_006_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "M00_000_00_FaceBrow_00_FACE",
+          "M00_000_00_FaceMouth_00_FACE",
+          "M00_000_00_EyeHighlight_00_EYE",
+          "M00_000_00_EyeWhite_00_EYE",
+          "M00_000_00_FaceEyelash_00_FACE",
+          "M00_000_00_FaceEyeline_00_FACE",
+          "M00_000_00_EyeExtra_01_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.12,
+      "materiales_fusionados": false,
+      "no_juntar_con": [
+        "H02-01.vrm",
+        "H02-05.vrm"
+      ],
+      "notas": "Chico de 15 a 18 años, cabello azul oscuro, capucha roja. Parecido a 5678 y 6977. 9,4 MB."
+    },
+    {
+      "archivo": "H02-04.vrm",
+      "id_elenco": "H02",
+      "extra": true,
+      "genero": "hombre",
+      "edad_aparente": "15-18",
+      "rol": "Adolescente hombre 16",
+      "vroid_hub_id": "6165145336509501080",
+      "nombre": "Silas",
+      "autor": "Doby8724",
+      "pide_credito": true,
+      "licencia": "avatar: everyone; uso comercial: personalNonProfit; modificar: allowModificationRedistribution; redistribuir: sí; crédito: required",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "1.0",
+      "peso_original_mb": 19.3,
+      "peso_ligero_mb": 3.4,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": true,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 15,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_005_01_Tops_01_CLOTH",
+          "N00_010_01_Onepiece_00_CLOTH"
+        ],
+        "ropa_inferior": [
+          "N00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_004_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [
+          "Accessory_BaseballCap_01_CLOTH"
+        ],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.302,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Silas (Doby8724). Chico de 15 a 18 años, cabello castaño desordenado, ojos violeta, gorra negra, capucha y pantalón de cuero negros con tachas, tenis blancos. Logo 'GEARHEAD ROBOTICS' con calavera en capucha, gorra y pantalón (parece inventado, pero hay que borrarlo o taparlo). Pide crédito. Permite redistribuir modificado."
+    },
+    {
+      "archivo": "H02-05.vrm",
+      "id_elenco": "H02",
+      "extra": true,
+      "genero": "hombre",
+      "edad_aparente": "14-16",
+      "rol": "Adolescente hombre 16",
+      "vroid_hub_id": "6977922305568299588",
+      "nombre": "男の子",
+      "autor": "アコモン",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: disallow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 14.5,
+      "peso_ligero_mb": 2.3,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 14,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_005_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "N00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_006_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.079,
+      "materiales_fusionados": false,
+      "no_juntar_con": [
+        "H02-01.vrm",
+        "H02-03.vrm"
+      ],
+      "notas": "男の子. Chico de 14 a 16 años, cabello negro, capucha gris. Muy parecido a 5678."
+    },
+    {
+      "archivo": "H03-01.vrm",
+      "id_elenco": "H03",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "18-23",
+      "rol": "Hombre joven 21",
+      "vroid_hub_id": "2705665963485579330",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 19.7,
+      "peso_ligero_mb": 3.1,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 16,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "M00_000_00_Face_00_SKIN",
+          "M00_001_01_Body_00_SKIN"
+        ],
+        "cabello": [
+          "M00_000_HairBack_00_HAIR",
+          "F00_000_Hair_00_HAIR_01",
+          "F00_000_Hair_00_HAIR_02"
+        ],
+        "iris": [
+          "M00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "M00_001_02_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "M00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "M00_005_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "M00_000_00_FaceBrow_00_FACE",
+          "M00_000_00_FaceMouth_00_FACE",
+          "M00_000_00_EyeHighlight_00_EYE",
+          "M00_000_00_EyeWhite_00_EYE",
+          "M00_000_00_FaceEyelash_00_FACE",
+          "M00_000_00_FaceEyeline_00_FACE",
+          "M00_000_00_EyeExtra_01_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.401,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Hombre joven, cabello salmón, camisa blanca y chaleco oscuro. Cambiar color de cabello."
+    },
+    {
+      "archivo": "H03-02.vrm",
+      "id_elenco": "H03",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "18-23",
+      "rol": "Hombre joven 21",
+      "vroid_hub_id": "4260608305469757611",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: nonprofit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 15.8,
+      "peso_ligero_mb": 1.9,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 2,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "M00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [],
+        "iris": [],
+        "ropa_superior": [],
+        "ropa_inferior": [],
+        "zapatos": [],
+        "accesorios": [],
+        "otros": [
+          "M00_000_00_FaceBrow_00_FACE"
+        ]
+      },
+      "luminancia_cabello": null,
+      "materiales_fusionados": true,
+      "no_juntar_con": [],
+      "notas": "Hombre joven, cabello negro desordenado, chaqueta negra de cuello alto. Materiales fusionados (2)."
+    },
+    {
+      "archivo": "H03-03.vrm",
+      "id_elenco": "H03",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "18-23",
+      "rol": "Hombre joven 21",
+      "vroid_hub_id": "4746755001017872944",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 16.4,
+      "peso_ligero_mb": 2.3,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 14,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "M00_000_00_Face_00_SKIN",
+          "M00_001_01_Body_00_SKIN"
+        ],
+        "cabello": [
+          "F00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "M00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "M00_005_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "M00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "M00_001_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "M00_000_00_FaceBrow_00_FACE",
+          "M00_000_00_FaceMouth_00_FACE",
+          "M00_000_00_EyeHighlight_00_EYE",
+          "M00_000_00_EyeWhite_00_EYE",
+          "M00_000_00_FaceEyelash_00_FACE",
+          "M00_000_00_FaceEyeline_00_FACE",
+          "M00_000_00_EyeExtra_01_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.12,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Hombre joven, cabello negro en puntas, camisa blanca abierta sobre camiseta negra."
+    },
+    {
+      "archivo": "H03-04.vrm",
+      "id_elenco": "H03",
+      "extra": true,
+      "genero": "hombre",
+      "edad_aparente": "18-22",
+      "rol": "Hombre joven 21",
+      "vroid_hub_id": "5728628125082522478",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: nonprofit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 18.3,
+      "peso_ligero_mb": 2.4,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 16,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "M00_000_Face_00_SKIN",
+          "M00_001_Body_00_SKIN"
+        ],
+        "cabello": [
+          "M00_000_HairBack_00_HAIR",
+          "F00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "M00_000_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "M00_001_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "M00_001_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "M00_001_Shoes_01_CLOTH"
+        ],
+        "accesorios": [
+          "M00_001_Accessory_01_CLOTH"
+        ],
+        "otros": [
+          "M00_000_EyeExtra_01_EYE",
+          "M00_000_FaceBrow_00_FACE",
+          "M00_000_FaceMouth_00_FACE",
+          "M00_000_EyeHighlight_00_EYE",
+          "M00_000_EyeWhite_00_EYE",
+          "M00_000_FaceEyelash_00_FACE",
+          "M00_000_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.018,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Hombre de 18 a 22 años, cabello negro que tapa un ojo, chaqueta oscura."
+    },
+    {
+      "archivo": "H04-01.vrm",
+      "id_elenco": "H04",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "25-30",
+      "rol": "Hombre joven 27",
+      "vroid_hub_id": "178299437743975939",
+      "nombre": "Ellis O'Donnelly (Pre-Crash ver.)",
+      "autor": "NorthrnPoakr/Poakrvxx",
+      "pide_credito": true,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: necessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 16.9,
+      "peso_ligero_mb": 3.0,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 17,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR_01",
+          "N00_000_Hair_00_HAIR_02",
+          "N00_000_Hair_00_HAIR_05"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_005_01_Tops_01_CLOTH",
+          "N00_010_01_Onepiece_00_CLOTH"
+        ],
+        "ropa_inferior": [
+          "N00_001_02_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_006_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyelash_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.188,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Ellis O'Donnelly. Hombre de 25 a 30 años, chaqueta azul marino, pantalón deportivo de tres franjas (sin logo)."
+    },
+    {
+      "archivo": "H04-02.vrm",
+      "id_elenco": "H04",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "22-27",
+      "rol": "Hombre joven 27",
+      "vroid_hub_id": "340860444786907840",
+      "nombre": "kiritaroOC_Fritz",
+      "autor": "霧太郎",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 14.0,
+      "peso_ligero_mb": 2.3,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 14,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_007_02_Tops_01_CLOTH_01",
+          "N00_007_02_Tops_01_CLOTH_02"
+        ],
+        "ropa_inferior": [
+          "N00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_002_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.273,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Fritz (霧太郎). Hombre de 22 a 27 años, cabello negro, camisa blanca y pantalón café."
+    },
+    {
+      "archivo": "H04-03.vrm",
+      "id_elenco": "H04",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "22-27",
+      "rol": "Hombre joven 27",
+      "vroid_hub_id": "5265854791577408922",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": true,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: disallow; redistribuir: disallow; crédito: necessary",
+      "permite_redistribuir": false,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 17.0,
+      "peso_ligero_mb": 1.9,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 16,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "M00_000_00_Face_00_SKIN",
+          "M00_001_01_Body_00_SKIN"
+        ],
+        "cabello": [
+          "M00_000_HairBack_00_HAIR",
+          "F00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "M00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "M00_001_02_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "M00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "M00_001_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [
+          "M00_001_01_Accessory_Tie_01_CLOTH"
+        ],
+        "otros": [
+          "M00_000_00_FaceBrow_00_FACE",
+          "M00_000_00_FaceMouth_00_FACE",
+          "M00_000_00_EyeHighlight_00_EYE",
+          "M00_000_00_EyeWhite_00_EYE",
+          "M00_000_00_FaceEyelash_00_FACE",
+          "M00_000_00_FaceEyeline_00_FACE",
+          "M00_000_00_EyeExtra_01_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.269,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Hombre joven, cabello gris, traje oscuro con corbata a rayas. Pide crédito sin nombre de autor."
+    },
+    {
+      "archivo": "H05-01.vrm",
+      "id_elenco": "H05",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "40-45",
+      "rol": "Padre 40",
+      "vroid_hub_id": "6710634284033463478",
+      "nombre": "father",
+      "autor": "FDYA",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 12.8,
+      "peso_ligero_mb": 1.8,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 11,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_007_02_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "N00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_002_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": null,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "father (FDYA). Hombre de 40 a 45 años, calvo con barba, camisa blanca."
+    },
+    {
+      "archivo": "H05-02.vrm",
+      "id_elenco": "H05",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "32-40",
+      "rol": "Padre 40",
+      "vroid_hub_id": "6797633304401841959",
+      "nombre": "鷲夫",
+      "autor": "LIN",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 15.3,
+      "peso_ligero_mb": 2.8,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 15,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_010_01_Onepiece_00_CLOTH",
+          "N00_007_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [],
+        "zapatos": [
+          "N00_008_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [
+          "Accessory_GlassesHiFrame_01_MATCAP",
+          "Accessory_GlassesHiLens_01_MATCAP"
+        ],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.688,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "鷲夫. Hombre de 32 a 40 años, rubio, gafas, abrigo blanco tipo bata y chaleco con hebillas."
+    },
+    {
+      "archivo": "H05-03.vrm",
+      "id_elenco": "H05",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "25-30",
+      "rol": "Padre 40",
+      "vroid_hub_id": "6967063174306568747",
+      "nombre": "エプロン男子エプロン抜き",
+      "autor": "灯坂",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 15.7,
+      "peso_ligero_mb": 2.6,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 17,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR_01"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_010_01_Onepiece_00_CLOTH",
+          "N00_007_02_Tops_01_CLOTH_01",
+          "N00_007_02_Tops_01_CLOTH_02"
+        ],
+        "ropa_inferior": [
+          "N00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_001_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [
+          "N00_007_01_Accessory_Tie_01_CLOTH"
+        ],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyelash_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.295,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Hombre de 25 a 30 años, cabello castaño grisáceo, camisa blanca y corbata. Envejecer la cara."
+    },
+    {
+      "archivo": "H05-04.vrm",
+      "id_elenco": "H05",
+      "extra": true,
+      "genero": "hombre",
+      "edad_aparente": "25-35",
+      "rol": "Padre 40",
+      "vroid_hub_id": "3696820596927486396",
+      "nombre": "silver_aldric",
+      "autor": "Emma",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 10.0,
+      "peso_ligero_mb": 1.9,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 8,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [],
+        "ropa_inferior": [
+          "N00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.569,
+      "materiales_fusionados": true,
+      "no_juntar_con": [],
+      "notas": "silver_aldric. Hombre de 25 a 35 años, cabello rapado, camiseta negra. Materiales fusionados (8)."
+    },
+    {
+      "archivo": "H06-01.vrm",
+      "id_elenco": "H06",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "25-35",
+      "rol": "Profesional hombre 45 (juez)",
+      "vroid_hub_id": "1610687958138132094",
+      "nombre": "異世界に召喚されてしまった黒服お兄さん",
+      "autor": "Maiky",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: disallow; crédito: unnecessary",
+      "permite_redistribuir": false,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 10.3,
+      "peso_ligero_mb": 2.2,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 2,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [],
+        "iris": [],
+        "ropa_superior": [],
+        "ropa_inferior": [],
+        "zapatos": [],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE"
+        ]
+      },
+      "luminancia_cabello": null,
+      "materiales_fusionados": true,
+      "no_juntar_con": [],
+      "notas": "Hombre de 25 a 35 años, cabello negro rizado, traje negro. Materiales fusionados (2)."
+    },
+    {
+      "archivo": "H06-02.vrm",
+      "id_elenco": "H06",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "50-60",
+      "rol": "Profesional hombre 45 (juez)",
+      "vroid_hub_id": "3877179030975082588",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: disallow; crédito: unnecessary",
+      "permite_redistribuir": false,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 8.8,
+      "peso_ligero_mb": 1.9,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 17,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "M00_000_00_Face_00_SKIN",
+          "M00_008_01_Body_00_SKIN"
+        ],
+        "cabello": [
+          "F00_000_Hair_00_HAIR_01",
+          "F00_000_Hair_00_HAIR_02",
+          "F00_000_Hair_00_HAIR_03"
+        ],
+        "iris": [
+          "M00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "M00_008_02_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "M00_008_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "M00_001_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [
+          "M00_001_01_AccessoryNeck_01_CLOTH"
+        ],
+        "otros": [
+          "M00_000_00_FaceBrow_00_FACE",
+          "M00_000_00_FaceMouth_00_FACE",
+          "M00_000_00_EyeHighlight_00_EYE",
+          "M00_000_00_EyeWhite_00_EYE",
+          "M00_000_00_FaceEyelash_00_FACE",
+          "M00_000_00_FaceEyeline_00_FACE",
+          "M00_000_00_EyeExtra_01_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.37,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Hombre de unos 55 años, cabello gris, gafas, bigote, traje negro."
+    },
+    {
+      "archivo": "H06-03.vrm",
+      "id_elenco": "H06",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "30-40",
+      "rol": "Profesional hombre 45 (juez)",
+      "vroid_hub_id": "7911164810680359787",
+      "nombre": "tanpatu_suit",
+      "autor": "nanasi_brand",
+      "pide_credito": true,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: disallow; crédito: necessary",
+      "permite_redistribuir": false,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 14.6,
+      "peso_ligero_mb": 5.0,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 17,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_007_01_Tops_01_CLOTH_01",
+          "N00_007_01_Tops_01_CLOTH_02",
+          "N00_007_02_Tops_01_CLOTH",
+          "N00_007_02_Tops_02_CLOTH_02"
+        ],
+        "ropa_inferior": [
+          "N00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_001_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [
+          "N00_007_01_Accessory_Tie_01_CLOTH"
+        ],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.157,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "tanpatu_suit. Hombre de 30 a 40 años, saco beige y corbata a rayas."
+    },
+    {
+      "archivo": "H06-04.vrm",
+      "id_elenco": "H06",
+      "extra": true,
+      "genero": "hombre",
+      "edad_aparente": "40-50",
+      "rol": "Profesional hombre 45 (juez)",
+      "vroid_hub_id": "2868960598556593456",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: disallow; crédito: unnecessary",
+      "permite_redistribuir": false,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 17.8,
+      "peso_ligero_mb": 2.0,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 20,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "M00_000_00_Face_00_SKIN",
+          "M00_001_01_Body_00_SKIN"
+        ],
+        "cabello": [
+          "M00_000_HairBack_00_HAIR",
+          "F00_000_Hair_00_HAIR_01",
+          "F00_000_Hair_00_HAIR_02",
+          "F00_000_Hair_00_HAIR_03",
+          "F00_000_Hair_00_HAIR_04",
+          "F00_000_Hair_00_HAIR_05"
+        ],
+        "iris": [
+          "M00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "M00_001_02_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "M00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "M00_001_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [
+          "M00_001_01_AccessoryNeck_01_CLOTH"
+        ],
+        "otros": [
+          "M00_000_00_FaceBrow_00_FACE",
+          "M00_000_00_FaceMouth_00_FACE",
+          "M00_000_00_EyeHighlight_00_EYE",
+          "M00_000_00_EyeWhite_00_EYE",
+          "M00_000_00_FaceEyelash_00_FACE",
+          "M00_000_00_FaceEyeline_00_FACE",
+          "M00_000_00_EyeExtra_01_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.417,
+      "materiales_fusionados": false,
+      "no_juntar_con": [
+        "H09-01.vrm"
+      ],
+      "notas": "Hombre de 40 a 50 años, gafas de aviador, traje azul marino. Casi idéntico a 6081 (mismas texturas)."
+    },
+    {
+      "archivo": "H06-05.vrm",
+      "id_elenco": "H06",
+      "extra": true,
+      "genero": "hombre",
+      "edad_aparente": "25-32",
+      "rol": "Profesional hombre 45 (juez)",
+      "vroid_hub_id": "3916861091887700785",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: disallow; crédito: unnecessary",
+      "permite_redistribuir": false,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 16.7,
+      "peso_ligero_mb": 2.8,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 16,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "M00_000_00_Face_00_SKIN",
+          "M00_001_01_Body_00_SKIN"
+        ],
+        "cabello": [
+          "M00_000_HairBack_00_HAIR",
+          "F00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "M00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "M00_001_02_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "M00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "M00_001_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [
+          "M00_001_01_Accessory_01_CLOTH"
+        ],
+        "otros": [
+          "M00_000_00_FaceBrow_00_FACE",
+          "M00_000_00_FaceMouth_00_FACE",
+          "M00_000_00_EyeHighlight_00_EYE",
+          "M00_000_00_EyeWhite_00_EYE",
+          "M00_000_00_FaceEyelash_00_FACE",
+          "M00_000_00_FaceEyeline_00_FACE",
+          "M00_000_00_EyeExtra_01_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.225,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Hombre de 25 a 32 años, chaleco de traje negro y corbata."
+    },
+    {
+      "archivo": "H07-01.vrm",
+      "id_elenco": "H07",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "35-45",
+      "rol": "Médico o psicólogo 38",
+      "vroid_hub_id": "1506531138757394280",
+      "nombre": "アバターサンプルC改変オリジナルメガネおじさん",
+      "autor": "Leonard Ruin",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: nonprofit; empresas: disallow; redistribuir: disallow; crédito: unnecessary",
+      "permite_redistribuir": false,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 15.1,
+      "peso_ligero_mb": 2.6,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 15,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_005_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "N00_001_02_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_008_01_Shoes_01_CLOTH_01",
+          "N00_008_01_Shoes_01_CLOTH_02"
+        ],
+        "accesorios": [
+          "Accessory_GlassesLowFrame_01_MATCAP",
+          "Accessory_GlassesLowLens_01_MATCAP"
+        ],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.123,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Señor de gafas (Leonard Ruin). Hombre de unos 40 años, cabello negro, capucha oscura."
+    },
+    {
+      "archivo": "H07-02.vrm",
+      "id_elenco": "H07",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "25-30",
+      "rol": "Médico o psicólogo 38",
+      "vroid_hub_id": "5298444106399367485",
+      "nombre": "DR Iridium",
+      "autor": "WhiskeeDev",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 17.6,
+      "peso_ligero_mb": 2.1,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 15,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "M00_000_00_Face_00_SKIN",
+          "M00_008_01_Body_00_SKIN"
+        ],
+        "cabello": [
+          "F00_000_Hair_00_HAIR_01",
+          "F00_000_Hair_00_HAIR_02"
+        ],
+        "iris": [
+          "M00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "M00_008_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "M00_008_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "M00_001_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "M00_000_00_FaceBrow_00_FACE",
+          "M00_000_00_FaceMouth_00_FACE",
+          "M00_000_00_EyeHighlight_00_EYE",
+          "M00_000_00_EyeWhite_00_EYE",
+          "M00_000_00_FaceEyelash_00_FACE",
+          "M00_000_00_FaceEyeline_00_FACE",
+          "M00_000_00_EyeExtra_01_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.15,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "DR Iridium (WhiskeeDev). Hombre de 25 a 30 años, cabello naranja, bata blanca. Duda: posible avatar de streamer."
+    },
+    {
+      "archivo": "H08-01.vrm",
+      "id_elenco": "H08",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "45-55",
+      "rol": "Trabajador 50",
+      "vroid_hub_id": "3731640620759451044",
+      "nombre": "Chunen_v05",
+      "autor": "yomox9",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 15.7,
+      "peso_ligero_mb": 2.7,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 16,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "M00_000_00_Face_00_SKIN",
+          "M00_001_01_Body_00_SKIN"
+        ],
+        "cabello": [
+          "M00_000_HairBack_00_HAIR",
+          "F00_000_Hair_00_HAIR_01",
+          "F00_000_Hair_00_HAIR_02"
+        ],
+        "iris": [
+          "M00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "M00_003_02_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "M00_008_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "M00_005_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "M00_000_00_FaceBrow_00_FACE",
+          "M00_000_00_FaceMouth_00_FACE",
+          "M00_000_00_EyeHighlight_00_EYE",
+          "M00_000_00_EyeWhite_00_EYE",
+          "M00_000_00_FaceEyelash_00_FACE",
+          "M00_000_00_FaceEyeline_00_FACE",
+          "M00_000_00_EyeExtra_01_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.083,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Chunen (yomox9). Hombre de unos 50 años, cabello negro largo, camisa blanca."
+    },
+    {
+      "archivo": "H08-02.vrm",
+      "id_elenco": "H08",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "30-40",
+      "rol": "Trabajador 50",
+      "vroid_hub_id": "5489551812862156210",
+      "nombre": "Tom Wachowski (v2)",
+      "autor": "Creator",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 15.0,
+      "peso_ligero_mb": 2.2,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 14,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_007_02_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "N00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_006_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.302,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Tom Wachowski. Hombre de 30 a 40 años, chaqueta de trabajo café y jeans."
+    },
+    {
+      "archivo": "H08-03.vrm",
+      "id_elenco": "H08",
+      "extra": true,
+      "genero": "hombre",
+      "edad_aparente": "45-55",
+      "rol": "Trabajador 50",
+      "vroid_hub_id": "7122791886834244869",
+      "nombre": "DTM2203",
+      "autor": "AtsukoMMX",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: nonprofit; empresas: disallow; redistribuir: disallow; crédito: unnecessary",
+      "permite_redistribuir": false,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 20.3,
+      "peso_ligero_mb": 2.8,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 2,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [],
+        "iris": [],
+        "ropa_superior": [],
+        "ropa_inferior": [],
+        "zapatos": [],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE"
+        ]
+      },
+      "luminancia_cabello": null,
+      "materiales_fusionados": true,
+      "no_juntar_con": [],
+      "notas": "DTM2203 (AtsukoMMX). Hombre de 45 a 55 años, cabello gris largo, gafas oscuras, estilo rockero. 20,3 MB. Materiales fusionados (2)."
+    },
+    {
+      "archivo": "H09-01.vrm",
+      "id_elenco": "H09",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "40-50",
+      "rol": "Hombre mayor 67",
+      "vroid_hub_id": "6081123482579224685",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: disallow; crédito: unnecessary",
+      "permite_redistribuir": false,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 15.7,
+      "peso_ligero_mb": 2.1,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 16,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "M00_000_00_Face_00_SKIN",
+          "M00_001_01_Body_00_SKIN"
+        ],
+        "cabello": [
+          "M00_000_HairBack_00_HAIR",
+          "F00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "M00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "M00_001_02_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "M00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "M00_001_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [
+          "M00_001_01_Accessory_01_CLOTH"
+        ],
+        "otros": [
+          "M00_000_00_FaceBrow_00_FACE",
+          "M00_000_00_FaceMouth_00_FACE",
+          "M00_000_00_EyeHighlight_00_EYE",
+          "M00_000_00_EyeWhite_00_EYE",
+          "M00_000_00_FaceEyelash_00_FACE",
+          "M00_000_00_FaceEyeline_00_FACE",
+          "M00_000_00_EyeExtra_01_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.047,
+      "materiales_fusionados": false,
+      "no_juntar_con": [
+        "H06-04.vrm"
+      ],
+      "notas": "Hombre de 40 a 50 años, traje azul marino y corbata. Necesita canas."
+    },
+    {
+      "archivo": "H09-02.vrm",
+      "id_elenco": "H09",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "65-75",
+      "rol": "Hombre mayor 67",
+      "vroid_hub_id": "8366925206339721821",
+      "nombre": "Albert_v01",
+      "autor": "yomox9",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 16.4,
+      "peso_ligero_mb": 1.8,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 14,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "M00_000_00_Face_00_SKIN",
+          "M00_001_01_Body_00_SKIN"
+        ],
+        "cabello": [
+          "F00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "M00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "M00_001_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "M00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "M00_001_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "M00_000_00_FaceBrow_00_FACE",
+          "M00_000_00_FaceMouth_00_FACE",
+          "M00_000_00_EyeHighlight_00_EYE",
+          "M00_000_00_EyeWhite_00_EYE",
+          "M00_000_00_FaceEyelash_00_FACE",
+          "M00_000_00_FaceEyeline_00_FACE",
+          "M00_000_00_EyeExtra_01_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.531,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Albert (yomox9). Hombre de unos 70 años, canas, chaleco de punto azul marino."
+    },
+    {
+      "archivo": "H10-01.vrm",
+      "id_elenco": "H10",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "70-80",
+      "rol": "Hombre mayor 80",
+      "vroid_hub_id": "7564841051120285228",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: disallow; crédito: unnecessary",
+      "permite_redistribuir": false,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 14.9,
+      "peso_ligero_mb": 1.8,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 14,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "M00_000_00_Face_00_SKIN",
+          "M00_001_01_Body_00_SKIN"
+        ],
+        "cabello": [
+          "F00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "M00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "M00_001_02_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "M00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "M00_001_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "M00_000_00_FaceBrow_00_FACE",
+          "M00_000_00_FaceMouth_00_FACE",
+          "M00_000_00_EyeHighlight_00_EYE",
+          "M00_000_00_EyeWhite_00_EYE",
+          "M00_000_00_FaceEyelash_00_FACE",
+          "M00_000_00_FaceEyeline_00_FACE",
+          "M00_000_00_EyeExtra_01_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.684,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Hombre de 70 a 80 años, canas, arrugas, traje oscuro. Cara realista sin nombre ni autor: confirmar que no sea persona real."
+    },
+    {
+      "archivo": "H11-01.vrm",
+      "id_elenco": "H11",
+      "extra": false,
+      "genero": "hombre",
+      "edad_aparente": "25-32",
+      "rol": "Policía hombre 32",
+      "vroid_hub_id": "8163763284193467487",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 19.1,
+      "peso_ligero_mb": 2.0,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 16,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "M00_000_00_Face_00_SKIN",
+          "M00_001_01_Body_00_SKIN"
+        ],
+        "cabello": [
+          "M00_000_HairBack_00_HAIR",
+          "F00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "M00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "M00_001_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "M00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "M00_006_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [
+          "M00_001_01_Accessory_Tie_01_CLOTH"
+        ],
+        "otros": [
+          "M00_000_00_FaceBrow_00_FACE",
+          "M00_000_00_FaceMouth_00_FACE",
+          "M00_000_00_EyeHighlight_00_EYE",
+          "M00_000_00_EyeWhite_00_EYE",
+          "M00_000_00_FaceEyelash_00_FACE",
+          "M00_000_00_FaceEyeline_00_FACE",
+          "M00_000_00_EyeExtra_01_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.015,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Hombre de 25 a 32 años, cabello negro con mechones magenta, chaleco y corbata. Ponerle uniforme."
+    },
+    {
+      "archivo": "M01-01.vrm",
+      "id_elenco": "M01",
+      "extra": false,
+      "genero": "mujer",
+      "edad_aparente": "8-10",
+      "rol": "Niña 8",
+      "vroid_hub_id": "5693712892985744131",
+      "nombre": "Little Girl",
+      "autor": "Little Girl",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: nonprofit; empresas: allow; redistribuir: disallow; crédito: unnecessary",
+      "permite_redistribuir": false,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 10.9,
+      "peso_ligero_mb": 2.7,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 15,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_010_01_Onepiece_00_CLOTH_01",
+          "N00_004_01_Tops_01_CLOTH",
+          "N00_010_01_Onepiece_00_CLOTH_02"
+        ],
+        "ropa_inferior": [
+          "N00_001_02_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_004_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyelash_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.591,
+      "materiales_fusionados": false,
+      "no_juntar_con": [
+        "M01-02.vrm"
+      ],
+      "notas": "Niña de 8 a 10 años, coletas castaño claro, camiseta rosada y jeans. Casi lista."
+    },
+    {
+      "archivo": "M01-02.vrm",
+      "id_elenco": "M01",
+      "extra": false,
+      "genero": "mujer",
+      "edad_aparente": "8-10",
+      "rol": "Niña 8",
+      "vroid_hub_id": "5919976917176841907",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 16.1,
+      "peso_ligero_mb": 2.6,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 13,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_004_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "N00_001_02_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_004_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyelash_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.495,
+      "materiales_fusionados": false,
+      "no_juntar_con": [
+        "M01-01.vrm"
+      ],
+      "notas": "Niña de 8 a 10 años, coletas castaño claro, camiseta rosada y jeans. Muy parecida a 5693 (misma ropa base)."
+    },
+    {
+      "archivo": "M02-01.vrm",
+      "id_elenco": "M02",
+      "extra": false,
+      "genero": "mujer",
+      "edad_aparente": "14-18",
+      "rol": "Adolescente mujer 15",
+      "vroid_hub_id": "3976710034451525179",
+      "nombre": "Cecil",
+      "autor": "№-23's",
+      "pide_credito": true,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: necessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 15.1,
+      "peso_ligero_mb": 2.7,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 14,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_004_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "N00_001_02_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_005_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyelash_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.556,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Cecil. Chica joven, cabello rosado corto, camiseta blanca y short rojo. Cambiar color de cabello."
+    },
+    {
+      "archivo": "M02-02.vrm",
+      "id_elenco": "M02",
+      "extra": false,
+      "genero": "mujer",
+      "edad_aparente": "16-20",
+      "rol": "Adolescente mujer 15",
+      "vroid_hub_id": "7379823763080786071",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: nonprofit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 17.4,
+      "peso_ligero_mb": 1.9,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 15,
+      "materiales_total": 15,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "F00_000_00_Face_00_SKIN",
+          "F00_001_01_Body_00_SKIN"
+        ],
+        "cabello": [
+          "F00_000_HairBack_00_HAIR",
+          "F00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "F00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "F00_006_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "F00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "F00_007_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "F00_000_00_FaceMouth_00_FACE",
+          "F00_000_00_EyeWhite_00_EYE",
+          "F00_000_00_FaceEyeline_00_FACE",
+          "F00_000_00_FaceEyelash_00_FACE",
+          "F00_000_00_FaceBrow_00_FACE",
+          "F00_000_00_EyeHighlight_00_EYE",
+          "F00_000_00_EyeExtra_01_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.04,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Chica de 16 a 20 años, cabello largo castaño violáceo, saco con capucha blanco y falda negra. Mismo saco que 5678."
+    },
+    {
+      "archivo": "M02-03.vrm",
+      "id_elenco": "M02",
+      "extra": true,
+      "genero": "mujer",
+      "edad_aparente": "15-17",
+      "rol": "Adolescente mujer 15",
+      "vroid_hub_id": "2343542119649989448",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 21.6,
+      "peso_ligero_mb": 3.2,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 16,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR_01",
+          "N00_000_Hair_00_HAIR_02"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_001_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "N00_001_03_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_001_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [
+          "N00_001_02_Accessory_Tie_01_CLOTH"
+        ],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyelash_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.153,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Chica de 15 a 17 años, cabello negro largo, uniforme escolar azul marino. 21,6 MB."
+    },
+    {
+      "archivo": "M02-04.vrm",
+      "id_elenco": "M02",
+      "extra": true,
+      "genero": "mujer",
+      "edad_aparente": "13-16",
+      "rol": "Adolescente mujer 15",
+      "vroid_hub_id": "6711556864964286505",
+      "nombre": "Eliza Torland",
+      "autor": "Yunzo",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; uso comercial: corporation; modificar: allowModificationRedistribution; redistribuir: sí; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "1.0",
+      "peso_original_mb": 14.4,
+      "peso_ligero_mb": 3.6,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": true,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 9,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR_01",
+          "N00_000_Hair_00_HAIR_03"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_007_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [],
+        "zapatos": [],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.734,
+      "materiales_fusionados": true,
+      "no_juntar_con": [],
+      "notas": "Eliza Torland. Chica de 13 a 16 años, cabello negro, ropa rosada; adorno tipo orejas de oso. Texturas de 4096. Materiales fusionados (9)."
+    },
+    {
+      "archivo": "M02-05.vrm",
+      "id_elenco": "M02",
+      "extra": true,
+      "genero": "mujer",
+      "edad_aparente": "14-16",
+      "rol": "Adolescente mujer 15",
+      "vroid_hub_id": "7057403092053516903",
+      "nombre": "ビビ_WSU",
+      "autor": "VRoidプロジェクト",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 19.6,
+      "peso_ligero_mb": 2.4,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 15,
+      "materiales_total": 18,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "F00_000_00_Face_00_SKIN",
+          "F00_001_01_Body_00_SKIN"
+        ],
+        "cabello": [
+          "F00_000_HairBack_00_HAIR",
+          "F00_000_Hair_00_HAIR_01",
+          "F00_000_Hair_00_HAIR_02",
+          "F00_000_Hair_00_HAIR_03"
+        ],
+        "iris": [
+          "F00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "F00_001_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "F00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "F00_001_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [
+          "F00_001_01_Accessory_01_CLOTH"
+        ],
+        "otros": [
+          "F00_000_00_FaceMouth_00_FACE",
+          "F00_000_00_EyeWhite_00_EYE",
+          "F00_000_00_FaceEyeline_00_FACE",
+          "F00_000_00_FaceEyelash_00_FACE",
+          "F00_000_00_FaceBrow_00_FACE",
+          "F00_000_00_EyeHighlight_00_EYE",
+          "F00_000_00_EyeExtra_01_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.354,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "ビビ, muestra oficial de VRoid (aprobada por la usuaria). Chica con uniforme escolar."
+    },
+    {
+      "archivo": "M03-01.vrm",
+      "id_elenco": "M03",
+      "extra": false,
+      "genero": "mujer",
+      "edad_aparente": "20-25",
+      "rol": "Mujer joven 22",
+      "vroid_hub_id": "1095566045637127064",
+      "nombre": "Mai",
+      "autor": "Mai",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: nonprofit; empresas: allow; redistribuir: disallow; crédito: unnecessary",
+      "permite_redistribuir": false,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 10.9,
+      "peso_ligero_mb": 2.5,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 14,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_004_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "N00_001_02_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_004_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyelash_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.567,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Mai. Mujer joven, melena castaño claro, camiseta blanca y jeans."
+    },
+    {
+      "archivo": "M03-02.vrm",
+      "id_elenco": "M03",
+      "extra": false,
+      "genero": "mujer",
+      "edad_aparente": "20-28",
+      "rol": "Mujer joven 22",
+      "vroid_hub_id": "2872500525954576043",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 10.3,
+      "peso_ligero_mb": 1.6,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 2,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [],
+        "iris": [],
+        "ropa_superior": [],
+        "ropa_inferior": [],
+        "zapatos": [],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE"
+        ]
+      },
+      "luminancia_cabello": null,
+      "materiales_fusionados": true,
+      "no_juntar_con": [],
+      "notas": "Mujer joven, cabello castaño claro, cuello alto negro y abrigo café. Materiales fusionados (2)."
+    },
+    {
+      "archivo": "M03-03.vrm",
+      "id_elenco": "M03",
+      "extra": false,
+      "genero": "mujer",
+      "edad_aparente": "20-25",
+      "rol": "Mujer joven 22",
+      "vroid_hub_id": "5403965150878681237",
+      "nombre": "Free Model オレンジグラデヘアーあまあまお姉さん",
+      "autor": "水銀メイド",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; uso comercial: corporation; modificar: allowModification; redistribuir: sí; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "1.0",
+      "peso_original_mb": 17.3,
+      "peso_ligero_mb": 3.8,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": true,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 16,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_002_01_Tops_01_CLOTH_01",
+          "N00_002_01_Tops_01_CLOTH_02",
+          "N00_002_01_Tops_01_CLOTH_03",
+          "N00_007_02_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [],
+        "zapatos": [
+          "N00_008_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyelash_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.34,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Mujer joven, cabello degradado naranja-rojo, abrigo y falda. Cambiar a color natural."
+    },
+    {
+      "archivo": "M04-01.vrm",
+      "id_elenco": "M04",
+      "extra": false,
+      "genero": "mujer",
+      "edad_aparente": "20-25",
+      "rol": "Universitaria 22",
+      "vroid_hub_id": "10575525746729287",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 14.2,
+      "peso_ligero_mb": 1.9,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 15,
+      "materiales_total": 15,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "F00_000_00_Face_00_SKIN",
+          "F00_002_02_Body_00_SKIN"
+        ],
+        "cabello": [
+          "F00_000_HairBack_00_HAIR",
+          "F00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "F00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "F00_002_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "F00_004_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "F00_002_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "F00_000_00_FaceMouth_00_FACE",
+          "F00_000_00_EyeWhite_00_EYE",
+          "F00_000_00_FaceEyeline_00_FACE",
+          "F00_000_00_FaceEyelash_00_FACE",
+          "F00_000_00_FaceBrow_00_FACE",
+          "F00_000_00_EyeHighlight_00_EYE",
+          "F00_000_00_EyeExtra_01_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.066,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Mujer de 20 a 25 años, cabello negro corto, gafas, chaqueta blanca, blusa azul y falda blanca."
+    },
+    {
+      "archivo": "M04-02.vrm",
+      "id_elenco": "M04",
+      "extra": false,
+      "genero": "mujer",
+      "edad_aparente": "20-25",
+      "rol": "Universitaria 22",
+      "vroid_hub_id": "2952184614904072712",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 16.8,
+      "peso_ligero_mb": 2.1,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 15,
+      "materiales_total": 16,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "F00_000_00_Face_00_SKIN",
+          "F00_001_01_Body_00_SKIN"
+        ],
+        "cabello": [
+          "F00_000_HairBack_00_HAIR",
+          "F00_000_Hair_00_HAIR_01",
+          "F00_000_Hair_00_HAIR_02"
+        ],
+        "iris": [
+          "F00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "F00_002_02_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "F00_008_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "F00_002_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "F00_000_00_FaceMouth_00_FACE",
+          "F00_000_00_EyeWhite_00_EYE",
+          "F00_000_00_FaceEyeline_00_FACE",
+          "F00_000_00_FaceEyelash_00_FACE",
+          "F00_000_00_FaceBrow_00_FACE",
+          "F00_000_00_EyeHighlight_00_EYE",
+          "F00_000_00_EyeExtra_01_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.057,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Mujer joven, cabello castaño, blusa verde y pantalón beige. La piel trae textura © NicorinSHOP (BOOTH): revisar términos."
+    },
+    {
+      "archivo": "M05-01.vrm",
+      "id_elenco": "M05",
+      "extra": false,
+      "genero": "mujer",
+      "edad_aparente": "30-38",
+      "rol": "Madre 38",
+      "vroid_hub_id": "162260551173402114",
+      "nombre": "Seta",
+      "autor": "Robotnik",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; uso comercial: personalProfit; modificar: allowModificationRedistribution; redistribuir: sí; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "1.0",
+      "peso_original_mb": 20.5,
+      "peso_ligero_mb": 3.7,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": true,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 17,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_010_01_Onepiece_00_CLOTH",
+          "N00_007_03_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "N00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_008_01_Shoes_01_CLOTH_01",
+          "N00_008_01_Shoes_01_CLOTH_02"
+        ],
+        "accesorios": [
+          "Accessory_GlassesLowFrame_01_MATCAP",
+          "Accessory_GlassesLowLens_01_MATCAP"
+        ],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.171,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Seta. Mujer de 30 a 38 años, cabello castaño largo ondulado, gafas, suéter café y jeans. Suéter con textura de kurosakiworks (BOOTH): revisar términos."
+    },
+    {
+      "archivo": "M05-02.vrm",
+      "id_elenco": "M05",
+      "extra": false,
+      "genero": "mujer",
+      "edad_aparente": "25-35",
+      "rol": "Madre 38",
+      "vroid_hub_id": "1252838404115252038",
+      "nombre": "Yukako",
+      "autor": "キャラクター紹介サイト管理人",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 13.8,
+      "peso_ligero_mb": 2.2,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 2,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [],
+        "iris": [],
+        "ropa_superior": [],
+        "ropa_inferior": [],
+        "zapatos": [],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE"
+        ]
+      },
+      "luminancia_cabello": null,
+      "materiales_fusionados": true,
+      "no_juntar_con": [],
+      "notas": "Yukako (キャラクター紹介サイト管理人). Mujer adulta de cara juvenil (25 a 35), melena castaña con flequillo, ojos cafés, blusa rosada y abrigo beige largo. Texturas de 4096 (atlas). Materiales fusionados (2)."
+    },
+    {
+      "archivo": "M05-03.vrm",
+      "id_elenco": "M05",
+      "extra": false,
+      "genero": "mujer",
+      "edad_aparente": "30-40",
+      "rol": "Madre 38",
+      "vroid_hub_id": "7001670167815341416",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 10.3,
+      "peso_ligero_mb": 2.0,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 2,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [],
+        "iris": [],
+        "ropa_superior": [],
+        "ropa_inferior": [],
+        "zapatos": [],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE"
+        ]
+      },
+      "luminancia_cabello": null,
+      "materiales_fusionados": true,
+      "no_juntar_con": [],
+      "notas": "Mujer de 30 a 40 años, cabello castaño rizado recogido, blusa roja a cuadros. Materiales fusionados (2)."
+    },
+    {
+      "archivo": "M06-01.vrm",
+      "id_elenco": "M06",
+      "extra": false,
+      "genero": "mujer",
+      "edad_aparente": "25-30",
+      "rol": "Profesional mujer 42",
+      "vroid_hub_id": "1305218592422249728",
+      "nombre": "下田可澄",
+      "autor": "変質者",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 16.5,
+      "peso_ligero_mb": 3.2,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 16,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_002_03_Tops_01_CLOTH",
+          "N00_007_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [],
+        "zapatos": [
+          "N00_002_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [
+          "Accessory_GlassesHiFrame_01_MATCAP",
+          "Accessory_GlassesHiLens_01_MATCAP"
+        ],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyelash_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.379,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "下田可澄. Mujer de 25 a 30 años, cabello rosado largo, gafas, blusa blanca y falda azul marino. El autor firma 変質者."
+    },
+    {
+      "archivo": "M06-02.vrm",
+      "id_elenco": "M06",
+      "extra": false,
+      "genero": "mujer",
+      "edad_aparente": "25-32",
+      "rol": "Profesional mujer 42",
+      "vroid_hub_id": "2290888234298164700",
+      "nombre": "ユズキ",
+      "autor": "Tovie",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 20.8,
+      "peso_ligero_mb": 2.9,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 17,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR_01",
+          "N00_000_Hair_00_HAIR_02"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_007_02_Tops_01_CLOTH",
+          "N00_010_01_Onepiece_00_CLOTH_01",
+          "N00_010_01_Onepiece_00_CLOTH_02"
+        ],
+        "ropa_inferior": [
+          "N00_003_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_001_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyelash_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.123,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Yuzuki. Mujer de 25 a 32 años, cabello azul marino corto, traje negro y pantalón."
+    },
+    {
+      "archivo": "M06-03.vrm",
+      "id_elenco": "M06",
+      "extra": false,
+      "genero": "mujer",
+      "edad_aparente": "25-35",
+      "rol": "Profesional mujer 42",
+      "vroid_hub_id": "6907289742214477700",
+      "nombre": "てるはさん（ボレロ・ペンシル）",
+      "autor": "kurosakiworks",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 17.1,
+      "peso_ligero_mb": 3.0,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 16,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_010_01_Onepiece_00_CLOTH_01",
+          "N00_010_01_Onepiece_00_CLOTH_02",
+          "N00_010_01_Onepiece_00_CLOTH_03",
+          "N00_010_01_Onepiece_00_CLOTH_04"
+        ],
+        "ropa_inferior": [
+          "N00_003_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_001_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.287,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Teruha (kurosakiworks). Mujer de 25 a 35 años, melena azul marino, bolero y falda lápiz."
+    },
+    {
+      "archivo": "M07-01.vrm",
+      "id_elenco": "M07",
+      "extra": false,
+      "genero": "mujer",
+      "edad_aparente": "25-35",
+      "rol": "Médica o psicóloga 35",
+      "vroid_hub_id": "21280177758786328",
+      "nombre": "クスノキ",
+      "autor": "ますじ",
+      "pide_credito": true,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: disallow; empresas: disallow; redistribuir: disallow; crédito: necessary",
+      "permite_redistribuir": false,
+      "excepcion_licencia": true,
+      "version_vrm": "0.0",
+      "peso_original_mb": 16.9,
+      "peso_ligero_mb": 3.3,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 17,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR_01",
+          "N00_000_Hair_00_HAIR_02"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_007_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "N00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_004_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [
+          "Accessory_GlassesLowFrame_01_MATCAP",
+          "Accessory_GlassesLowLens_01_MATCAP"
+        ],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyelash_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.756,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "クスノキ (ますじ). Doctora de 25 a 35 años, cabello largo gris plateado, gafas redondas, ojos verdes, bata blanca larga, cuello alto negro y pantalón oscuro. Pide crédito a ますじ."
+    },
+    {
+      "archivo": "M07-02.vrm",
+      "id_elenco": "M07",
+      "extra": false,
+      "genero": "mujer",
+      "edad_aparente": "25-30",
+      "rol": "Médica o psicóloga 35",
+      "vroid_hub_id": "2060342718675092670",
+      "nombre": "Helen (Older, Lab Coat)",
+      "autor": "Creator",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 15.3,
+      "peso_ligero_mb": 2.4,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 14,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_007_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "N00_003_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_001_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.58,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Helen (Older, Lab Coat). Mujer de cara joven, trenzas rubias, bata blanca."
+    },
+    {
+      "archivo": "M08-01.vrm",
+      "id_elenco": "M08",
+      "extra": false,
+      "genero": "mujer",
+      "edad_aparente": "55-65",
+      "rol": "Mujer madura 52",
+      "vroid_hub_id": "6061658851332729757",
+      "nombre": "OKAN_OKAMOTO",
+      "autor": "BUDOMARI",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: disallow; crédito: unnecessary",
+      "permite_redistribuir": false,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 18.7,
+      "peso_ligero_mb": 2.4,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 13,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR_01",
+          "N00_000_Hair_00_HAIR_02"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_010_01_Onepiece_00_CLOTH"
+        ],
+        "ropa_inferior": [],
+        "zapatos": [
+          "N00_004_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyelash_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.391,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "OKAN_OKAMOTO (BUDOMARI). Señora de 55 a 65 años, estereotipo de 'señora de Osaka': permanente castaña rizada, sombra violeta, aretes, suéter de leopardo con cara de tigre y pantalón morado. Cara caricaturesca (dibujada, no foto), distinta al estilo anime del resto. Con canas también sirve para M09-M10."
+    },
+    {
+      "archivo": "M08-02.vrm",
+      "id_elenco": "M08",
+      "extra": false,
+      "genero": "mujer",
+      "edad_aparente": "30-40",
+      "rol": "Mujer madura 52",
+      "vroid_hub_id": "6295857748080121255",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: disallow; crédito: unnecessary",
+      "permite_redistribuir": false,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 13.4,
+      "peso_ligero_mb": 2.4,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 15,
+      "materiales_total": 15,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "F00_000_00_Face_00_SKIN",
+          "F00_001_01_Body_00_SKIN"
+        ],
+        "cabello": [
+          "F00_000_HairBack_00_HAIR",
+          "F00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "F00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "F00_003_02_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "F00_003_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "F00_003_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "F00_000_00_FaceMouth_00_FACE",
+          "F00_000_00_EyeWhite_00_EYE",
+          "F00_000_00_FaceEyeline_00_FACE",
+          "F00_000_00_FaceEyelash_00_FACE",
+          "F00_000_00_FaceBrow_00_FACE",
+          "F00_000_00_EyeHighlight_00_EYE",
+          "F00_000_00_EyeExtra_01_EYE"
+        ]
+      },
+      "luminancia_cabello": 0.232,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Mujer de 30 a 40 años, cabello largo gris oscuro, saco y falda negros. Para 52 años: aclarar cabello."
+    },
+    {
+      "archivo": "M09-M10-01.vrm",
+      "id_elenco": "M09-M10",
+      "extra": false,
+      "genero": "mujer",
+      "edad_aparente": "40-50",
+      "rol": "Mujer mayor 60 a 80",
+      "vroid_hub_id": "6827109784341593109",
+      "nombre": "玉枝",
+      "autor": "曠野　洋一",
+      "pide_credito": false,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: unnecessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 18.3,
+      "peso_ligero_mb": 3.1,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 13,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_Hair_00_HAIR"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_007_01_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "N00_003_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_002_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyelash_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.289,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Tamae. Mujer de 40 a 50 años, cabello castaño por los hombros, chaleco crema y falda a cuadros. Necesita canas y envejecer la cara para 60 a 80 años."
+    },
+    {
+      "archivo": "M11-01.vrm",
+      "id_elenco": "M11",
+      "extra": false,
+      "genero": "mujer",
+      "edad_aparente": "28-35",
+      "rol": "Policía mujer 30",
+      "vroid_hub_id": "9027447138796778074",
+      "nombre": null,
+      "autor": null,
+      "pide_credito": true,
+      "licencia": "avatar: everyone; modificar: allow; uso comercial individual: profit; empresas: allow; redistribuir: allow; crédito: necessary",
+      "permite_redistribuir": true,
+      "excepcion_licencia": false,
+      "version_vrm": "0.0",
+      "peso_original_mb": 15.1,
+      "peso_ligero_mb": 2.5,
+      "expresiones": {
+        "alegria": true,
+        "enojo": true,
+        "tristeza": true,
+        "relajado": true,
+        "sorpresa": false,
+        "parpadeo": true,
+        "aa": true,
+        "ih": true,
+        "ou": true,
+        "ee": true,
+        "oh": true
+      },
+      "expresiones_originales": 14,
+      "materiales_total": 15,
+      "huesos_humanoides": 54,
+      "materiales": {
+        "piel": [
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Face_00_SKIN",
+          "N00_000_00_Body_00_SKIN"
+        ],
+        "cabello": [
+          "N00_000_00_HairBack_00_HAIR",
+          "N00_000_Hair_00_HAIR_01",
+          "N00_000_Hair_00_HAIR_02"
+        ],
+        "iris": [
+          "N00_000_00_EyeIris_00_EYE"
+        ],
+        "ropa_superior": [
+          "N00_007_02_Tops_01_CLOTH"
+        ],
+        "ropa_inferior": [
+          "N00_001_01_Bottoms_01_CLOTH"
+        ],
+        "zapatos": [
+          "N00_003_01_Shoes_01_CLOTH"
+        ],
+        "accesorios": [],
+        "otros": [
+          "N00_000_00_FaceMouth_00_FACE",
+          "N00_000_00_EyeHighlight_00_EYE",
+          "N00_000_00_EyeWhite_00_EYE",
+          "N00_000_00_FaceBrow_00_FACE",
+          "N00_000_00_FaceEyeline_00_FACE"
+        ]
+      },
+      "luminancia_cabello": 0.0,
+      "materiales_fusionados": false,
+      "no_juntar_con": [],
+      "notas": "Mujer de 28 a 35 años, cabello negro, blusa blanca y pantalón gris. Ponerle uniforme. Pide crédito sin nombre de autor."
+    }
+  ],
+  "fallidos": []
+}

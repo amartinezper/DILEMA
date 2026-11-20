@@ -9,3 +9,9 @@ node_modules/
 dist/
 .angular/
 backend/target/
+frontend/escenas-originales/
+# Versiones de M03 solo para comparar en /demo-personaje (no se suben; M03-ligero.vrm sí)
+frontend/public/personajes/M03-original.vrm
+frontend/public/personajes/M03-optimizado.vrm
+# Modelos descargados de VRoid Hub/BOOTH (licencias de terceros, no se suben)
+frontend/vroid-hub/

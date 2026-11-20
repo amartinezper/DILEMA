@@ -1,0 +1,12 @@
+{
+  "name": "medir-carga-personajes",
+  "private": true,
+  "description": "Mide en Chrome el tiempo de carga de cada modelo de /demo-personaje (herramienta aparte del frontend).",
+  "type": "module",
+  "scripts": {
+    "medir": "node medir.mjs"
+  },
+  "dependencies": {
+    "puppeteer-core": "^24.43.1"
+  }
+}

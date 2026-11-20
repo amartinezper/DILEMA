@@ -3,6 +3,7 @@ import { rolGuard } from './core/guards';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'ingreso' },
+  { path: 'demo-personaje', loadComponent: () => import('./pages/demo-personaje.component').then(m => m.DemoPersonajeComponent) },
   { path: 'ingreso', loadComponent: () => import('./pages/ingreso.component').then(m => m.IngresoComponent) },
   { path: 'estudiante', canActivate: [rolGuard('ESTUDIANTE')], loadComponent: () => import('./pages/estudiante.component').then(m => m.PanelEstudianteComponent) },
   { path: 'estudiante/sesion/:id', canActivate: [rolGuard('ESTUDIANTE')], loadComponent: () => import('./pages/estudiante.component').then(m => m.BriefingComponent) },
