@@ -2,12 +2,6 @@ import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { MarcoDocenteComponent } from '../shared/marco-docente.component';
 import { AuthService } from '../core/auth.service';
 import { BusquedaService } from '../core/busqueda.service';
@@ -17,10 +11,10 @@ const enlaces = [
   { href: '/admin', texto: 'Inicio', exacto: true },
   { href: '/admin/usuarios', texto: 'Docentes', exacto: true },
   { href: '/admin/usuarios/nuevo', texto: 'Nuevo docente', exacto: true },
+  { href: '/admin/grupos', texto: 'Grupos', exacto: true },
+  { href: '/admin/auditoria', texto: 'Auditoría', exacto: true },
   { href: '/admin/configuracion', texto: 'Configuración global', exacto: true }
 ];
-
-const material = [MatCardModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatCheckboxModule];
 
 @Component({
   selector: 'app-panel-admin',
@@ -68,7 +62,7 @@ const material = [MatCardModule, MatButtonModule, MatFormFieldModule, MatInputMo
             <div class="tarjeta-cabeza">
               <h3>Tareas de administración</h3>
             </div>
-            <div class="cats tres">
+            <div class="cats">
               <a class="cat etica" routerLink="/admin/usuarios/nuevo">
                 <svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg>
                 <span>Crear docente</span><i>→</i>
@@ -76,6 +70,14 @@ const material = [MatCardModule, MatButtonModule, MatFormFieldModule, MatInputMo
               <a class="cat social" routerLink="/admin/usuarios">
                 <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="16.2" cy="9" r="2.4"/><path d="M4 19c.7-3.2 2.8-5.2 5-5.2s4.3 2 5 5.2M13.4 19c.4-2.2 1.7-3.6 3.2-3.6 1.6 0 3 1.5 3.4 3.6"/></svg>
                 <span>Asignar permisos</span><i>→</i>
+              </a>
+              <a class="cat psico" routerLink="/admin/grupos">
+                <svg viewBox="0 0 24 24"><path d="M5 5.5h9.5A2.5 2.5 0 0 1 17 8v11H8.5A2.5 2.5 0 0 1 6 16.5V6.5A1 1 0 0 0 5 5.5z"/></svg>
+                <span>Grupos</span><i>→</i>
+              </a>
+              <a class="cat etica" routerLink="/admin/auditoria">
+                <svg viewBox="0 0 24 24"><path d="M5 19V10M10 19V5M15 19v-7M20 19V8"/></svg>
+                <span>Auditoría</span><i>→</i>
               </a>
               <a class="cat psico" routerLink="/admin/configuracion">
                 <svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM12 3.5v2M12 18.5v2M4.8 6.2l1.5 1.5M17.7 16.3l1.5 1.5M3.5 12h2M18.5 12h2M4.8 17.8l1.5-1.5M17.7 7.7l1.5-1.5"/></svg>
@@ -116,7 +118,7 @@ export class PanelAdminComponent {
 
 @Component({
   selector: 'app-usuarios',
-  imports: [MarcoDocenteComponent, RouterLink, ...material],
+  imports: [MarcoDocenteComponent, RouterLink],
   template: `
     <app-marco-docente [enlaces]="enlaces" inicio="/admin">
       <section class="tablero">
@@ -131,7 +133,7 @@ export class PanelAdminComponent {
               <p class="sub">{{ usuario.email }} · {{ usuario.rol === 'PROFESOR' ? 'Docente' : 'Administración' }}</p>
               <p class="sub">{{ usuario.permisos.join(', ') || 'Sin permisos' }}</p>
               @if (usuario.rol === 'PROFESOR') {
-                <a mat-stroked-button [routerLink]="['/admin/usuarios', usuario.id]">Permisos</a>
+                <a class="btn-suave" [routerLink]="['/admin/usuarios', usuario.id]">Permisos</a>
               }
             </article>
           } @empty { <p class="sub">No hay cuentas para mostrar.</p> }
@@ -212,25 +214,35 @@ export class CrearUsuarioComponent {
 
 @Component({
   selector: 'app-permisos-docente',
-  imports: [MarcoDocenteComponent, FormsModule, ...material],
+  imports: [MarcoDocenteComponent, FormsModule],
   template: `
     <app-marco-docente [enlaces]="enlaces" inicio="/admin">
-      <header class="saludo"><h1>Permisos</h1><p>Visualizar permanece. Editar y gestionar espacios se asignan aquí.</p></header>
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>Permisos de {{ nombre() }}</mat-card-title>
-          <mat-card-subtitle>Visualizar permanece. Editar permite crear casos. Gestionar espacios permite crear grupos.</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content class="stack">
-          <mat-checkbox disabled [checked]="true">Visualizar</mat-checkbox>
-          <mat-checkbox [(ngModel)]="editar">Editar casos</mat-checkbox>
-          <mat-checkbox [(ngModel)]="gestionar">Gestionar espacios académicos</mat-checkbox>
+      <section class="tablero ficha-tablero">
+        <header class="saludo">
+          <h1>Permisos de {{ nombre() }}</h1>
+          <p>Visualizar permanece. Editar permite crear casos. Gestionar espacios permite crear grupos.</p>
+        </header>
+        <article class="dash-panel ficha-form">
+          <div class="ficha-campos">
+            <label class="ficha-check">
+              <input type="checkbox" disabled [checked]="true" />
+              <span>Visualizar queda activo desde el primer ingreso.</span>
+            </label>
+            <label class="ficha-check">
+              <input type="checkbox" name="editar" [(ngModel)]="editar" />
+              <span>Editar casos</span>
+            </label>
+            <label class="ficha-check">
+              <input type="checkbox" name="gestionar" [(ngModel)]="gestionar" />
+              <span>Gestionar espacios académicos</span>
+            </label>
+          </div>
           @if (error()) { <p class="error">{{ error() }}</p> }
-        </mat-card-content>
-        <mat-card-actions>
-          <button mat-flat-button color="primary" type="button" (click)="guardar()">Guardar permisos</button>
-        </mat-card-actions>
-      </mat-card>
+          <div class="ficha-pie">
+            <button class="btn-oscuro" type="button" (click)="guardar()">Guardar permisos</button>
+          </div>
+        </article>
+      </section>
     </app-marco-docente>
   `
 })
@@ -265,6 +277,74 @@ export class PermisosDocenteComponent {
       next: () => this.router.navigateByUrl('/admin/usuarios'),
       error: (falla) => this.error.set(mensajeError(falla))
     });
+  }
+}
+
+interface PersonaAdmin { id: number; nombre: string; email: string; }
+interface GrupoAdmin { id: number; nombre: string; espacioAcademico: string; docente: PersonaAdmin; estudiantes: PersonaAdmin[]; }
+interface Auditoria { id: number; fecha: string; accion: string; detalle: string; usuario: string; }
+
+@Component({
+  selector: 'app-grupos-admin',
+  imports: [MarcoDocenteComponent],
+  template: `
+    <app-marco-docente [enlaces]="enlaces" inicio="/admin">
+      <section class="tablero">
+        <header class="saludo">
+          <h1>Grupos</h1>
+          <p>Espacios académicos de todos los docentes y los estudiantes matriculados.</p>
+        </header>
+        <article class="tarjeta stack">
+          @for (grupo of grupos(); track grupo.id) {
+            <article class="item">
+              <h3>{{ grupo.nombre }}</h3>
+              <p class="sub">{{ grupo.espacioAcademico }} · {{ grupo.docente.nombre }}</p>
+              <p class="sub">{{ grupo.estudiantes.length }} estudiantes</p>
+            </article>
+          } @empty { <p class="sub">Todavía no hay grupos.</p> }
+        </article>
+      </section>
+    </app-marco-docente>
+  `
+})
+export class GruposAdminComponent {
+  enlaces = enlaces;
+  private http = inject(HttpClient);
+  grupos = signal<GrupoAdmin[]>([]);
+  constructor() {
+    this.http.get<GrupoAdmin[]>('/api/admin/grupos').subscribe((dato) => this.grupos.set(dato));
+  }
+}
+
+@Component({
+  selector: 'app-auditoria',
+  imports: [MarcoDocenteComponent],
+  template: `
+    <app-marco-docente [enlaces]="enlaces" inicio="/admin">
+      <section class="tablero">
+        <header class="saludo">
+          <h1>Auditoría</h1>
+          <p>Acciones registradas en el sistema.</p>
+        </header>
+        <article class="tarjeta stack">
+          @for (fila of filas(); track fila.id) {
+            <article class="item">
+              <h3>{{ fila.accion }}</h3>
+              <p class="sub">{{ fila.usuario || 'Sistema' }} · {{ fila.fecha }}</p>
+              <p class="sub">{{ fila.detalle }}</p>
+            </article>
+          } @empty { <p class="sub">Todavía no hay registros de auditoría.</p> }
+        </article>
+      </section>
+    </app-marco-docente>
+  `
+})
+export class AuditoriaComponent {
+  enlaces = enlaces;
+  private http = inject(HttpClient);
+  filas = signal<Auditoria[]>([]);
+  constructor() {
+    this.http.get<Auditoria[]>('/api/admin/auditoria').subscribe((dato) => this.filas.set(dato));
   }
 }
 

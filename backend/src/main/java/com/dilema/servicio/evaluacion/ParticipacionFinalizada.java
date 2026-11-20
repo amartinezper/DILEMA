@@ -28,6 +28,8 @@ public class ParticipacionFinalizada implements EstadoDeParticipacion {
 
         SujetoNotificador sujeto = new SujetoNotificador();
         sujeto.agregar(new ObservadorEstudiante(participacion.estudiante, bitacora));
-        sujeto.notificar("RETROALIMENTACION_AGREGADA", participacion.retroalimentacionDocente.comentario, "SISTEMA");
+        String comentario = participacion.retroalimentacionDocente.comentario;
+        sujeto.notificar("RETROALIMENTACION_AGREGADA", comentario, "SISTEMA");
+        sujeto.notificar("RETROALIMENTACION_AGREGADA", comentario, "CORREO");
     }
 }
