@@ -1,0 +1,1865 @@
+{
+  "version": 1,
+  "respaldo": "neutro",
+  "escenas": [
+    {
+      "id": "hospital-urgencias",
+      "nombre": "Urgencias de un hospital",
+      "grupo": "salud",
+      "palabras": [
+        "urgencias",
+        "emergencia",
+        "hospital",
+        "clínica",
+        "ambulancia"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "hospital-urgencias/1-dia.webp"
+          },
+          "calidad": "provisional",
+          "credito": {
+            "autor": "Gutari Nyanko",
+            "paquete": "Hospital Backgrounds",
+            "url": "https://neeka.itch.io/hospital-backgrounds",
+            "licencia": "Uso gratuito en proyectos libres y comerciales con crédito obligatorio a \"Gutari Nyanko\". Términos: http://guttari8.sakura.ne.jp/kiyaku2.html"
+          },
+          "nota": "Estación de enfermería en un pasillo de hospital; los letreros están en japonés."
+        }
+      ]
+    },
+    {
+      "id": "hospital-habitacion",
+      "nombre": "Habitación de hospital",
+      "grupo": "salud",
+      "palabras": [
+        "habitación de hospital",
+        "hospitalizado",
+        "hospitalizada",
+        "cama",
+        "internado",
+        "internada"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "hospital-habitacion/1-dia.webp",
+            "tarde": "hospital-habitacion/1-tarde.webp",
+            "noche": "hospital-habitacion/1-noche.webp"
+          },
+          "calidad": "provisional",
+          "credito": {
+            "autor": "Gutari Nyanko",
+            "paquete": "Hospital Backgrounds",
+            "url": "https://neeka.itch.io/hospital-backgrounds",
+            "licencia": "Uso gratuito en proyectos libres y comerciales con crédito obligatorio a \"Gutari Nyanko\". Términos: http://guttari8.sakura.ne.jp/kiyaku2.html"
+          },
+          "nota": "Hay una etiqueta en japonés en la nevera junto a la cama."
+        }
+      ]
+    },
+    {
+      "id": "hospital-pasillo",
+      "nombre": "Pasillo o sala de espera de hospital",
+      "grupo": "salud",
+      "palabras": [
+        "pasillo",
+        "sala de espera",
+        "recepción"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "hospital-pasillo/1-dia.webp"
+          },
+          "calidad": "provisional",
+          "credito": {
+            "autor": "Gutari Nyanko",
+            "paquete": "Hospital Backgrounds",
+            "url": "https://neeka.itch.io/hospital-backgrounds",
+            "licencia": "Uso gratuito en proyectos libres y comerciales con crédito obligatorio a \"Gutari Nyanko\". Términos: http://guttari8.sakura.ne.jp/kiyaku2.html"
+          },
+          "nota": "Puerta de habitación en pasillo de hospital."
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "dia": "hospital-pasillo/2-dia.webp"
+          },
+          "calidad": "provisional",
+          "credito": {
+            "autor": "Gutari Nyanko",
+            "paquete": "Hospital Backgrounds",
+            "url": "https://neeka.itch.io/hospital-backgrounds",
+            "licencia": "Uso gratuito en proyectos libres y comerciales con crédito obligatorio a \"Gutari Nyanko\". Términos: http://guttari8.sakura.ne.jp/kiyaku2.html"
+          },
+          "nota": "Pasillo de hospital con pasamanos."
+        },
+        {
+          "id": "3",
+          "variantes": {
+            "dia": "hospital-pasillo/3-dia.webp",
+            "noche": "hospital-pasillo/3-noche.webp"
+          },
+          "calidad": "provisional",
+          "credito": {
+            "autor": "Gutari Nyanko",
+            "paquete": "Hospital Backgrounds",
+            "url": "https://neeka.itch.io/hospital-backgrounds",
+            "licencia": "Uso gratuito en proyectos libres y comerciales con crédito obligatorio a \"Gutari Nyanko\". Términos: http://guttari8.sakura.ne.jp/kiyaku2.html"
+          },
+          "nota": "Escaleras de hospital; el letrero de la pared está en japonés."
+        }
+      ]
+    },
+    {
+      "id": "consultorio",
+      "nombre": "Consultorio",
+      "grupo": "salud",
+      "palabras": [
+        "consultorio",
+        "psicólogo",
+        "psicóloga",
+        "terapia",
+        "sesión",
+        "consulta",
+        "centro de salud",
+        "eps"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "consultorio/1-dia.webp",
+            "tarde": "consultorio/1-tarde.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          },
+          "nota": "Salón de club (mesa, portátil, sillas) usado como sala de consulta."
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "dia": "consultorio/2-dia.webp"
+          },
+          "calidad": "provisional",
+          "credito": {
+            "autor": "Gutari Nyanko",
+            "paquete": "Hospital Backgrounds",
+            "url": "https://neeka.itch.io/hospital-backgrounds",
+            "licencia": "Uso gratuito en proyectos libres y comerciales con crédito obligatorio a \"Gutari Nyanko\". Términos: http://guttari8.sakura.ne.jp/kiyaku2.html"
+          },
+          "nota": "Consultorio médico: escritorio, negatoscopio con radiografías, calendario, archivador y banquito; el calendario tiene texto en japonés."
+        }
+      ]
+    },
+    {
+      "id": "comisaria",
+      "nombre": "Comisaría de familia",
+      "grupo": "proteccion",
+      "palabras": [
+        "comisaría",
+        "comisario",
+        "comisaria",
+        "medidas de protección",
+        "restablecimiento de derechos",
+        "icbf",
+        "defensoría"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "comisaria/1-dia.webp",
+            "tarde": "comisaria/1-tarde.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (School Mini Pack 1)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-school-mini-pack-1",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          },
+          "nota": "Salón sencillo con mesa, sillas y estantería usado como oficina de comisaría."
+        }
+      ]
+    },
+    {
+      "id": "oficina-institucional",
+      "nombre": "Oficina institucional",
+      "grupo": "proteccion",
+      "palabras": [
+        "oficina",
+        "alcaldía",
+        "fiscalía",
+        "juzgado",
+        "audiencia",
+        "entidad",
+        "funcionario",
+        "funcionaria"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "oficina-institucional/1-dia.webp",
+            "tarde": "oficina-institucional/1-tarde.webp",
+            "noche": "oficina-institucional/1-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Oficina y estación de policía (generado con IA, Gemini)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA (Gemini). Uso libre dentro del proyecto."
+          },
+          "nota": "Oficina pública con escritorio, computador, archivadores y bandera de Colombia. Tiene un retrato de un hombre con banda presidencial y escudo de Colombia, el logo de Dell en el monitor y un mapa de Colombia."
+        }
+      ]
+    },
+    {
+      "id": "estacion-policia",
+      "nombre": "Estación de policía",
+      "grupo": "proteccion",
+      "palabras": [
+        "policía",
+        "estación",
+        "denuncia",
+        "cai"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "estacion-policia/1-dia.webp",
+            "tarde": "estacion-policia/1-tarde.webp",
+            "noche": "estacion-policia/1-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Oficina y estación de policía (generado con IA, Gemini)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA (Gemini). Uso libre dentro del proyecto."
+          },
+          "nota": "Recepción con mostrador, computador, teléfono, cartelera y sillas de espera.",
+          "ambiente_por_variante": {
+            "noche": [
+              "tenso"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "casa-sala",
+      "nombre": "Sala de una casa",
+      "grupo": "hogar",
+      "palabras": [
+        "casa",
+        "hogar",
+        "sala",
+        "vivienda",
+        "familia"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "casa-sala/1-dia.webp",
+            "noche": "casa-sala/1-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Noraneko Games",
+            "paquete": "Noraneko Backgrounds Pack 2",
+            "url": "https://noranekogames.itch.io/yumebackground",
+            "licencia": "Licencia propia del autor (ReadMe.txt): uso en juegos, incluso comercial, con crédito a \"Noraneko Games\"; se permiten modificaciones; no se pueden vender los recursos tal cual."
+          }
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "dia": "casa-sala/2-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          }
+        },
+        {
+          "id": "3",
+          "variantes": {
+            "tarde": "casa-sala/3-tarde.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          }
+        },
+        {
+          "id": "4",
+          "variantes": {
+            "dia": "casa-sala/4-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Los cuadros de la pared tienen figuras humanas."
+        },
+        {
+          "id": "5",
+          "variantes": {
+            "dia": "casa-sala/5-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Sala de estilo japonés."
+        },
+        {
+          "id": "6",
+          "variantes": {
+            "dia": "casa-sala/6-dia.webp",
+            "noche": "casa-sala/6-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          },
+          "nota": "Sala japonesa con kotatsu."
+        }
+      ]
+    },
+    {
+      "id": "casa-cocina",
+      "nombre": "Cocina de una casa",
+      "grupo": "hogar",
+      "palabras": [
+        "cocina",
+        "comedor",
+        "almuerzo",
+        "cena"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "casa-cocina/1-dia.webp",
+            "noche": "casa-cocina/1-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Noraneko Games",
+            "paquete": "Noraneko Backgrounds Pack 2",
+            "url": "https://noranekogames.itch.io/yumebackground",
+            "licencia": "Licencia propia del autor (ReadMe.txt): uso en juegos, incluso comercial, con crédito a \"Noraneko Games\"; se permiten modificaciones; no se pueden vender los recursos tal cual."
+          }
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "dia": "casa-cocina/2-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          }
+        },
+        {
+          "id": "3",
+          "variantes": {
+            "dia": "casa-cocina/3-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          }
+        },
+        {
+          "id": "4",
+          "variantes": {
+            "dia": "casa-cocina/4-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Cocina de estilo japonés."
+        },
+        {
+          "id": "5",
+          "variantes": {
+            "dia": "casa-cocina/5-dia.webp",
+            "tarde": "casa-cocina/5-tarde.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          },
+          "nota": "Cocina abierta con comedor."
+        },
+        {
+          "id": "6",
+          "variantes": {
+            "dia": "casa-cocina/6-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          },
+          "nota": "Sala-comedor japonesa con kotatsu y cocina al fondo."
+        }
+      ]
+    },
+    {
+      "id": "casa-habitacion",
+      "nombre": "Habitación de una casa",
+      "grupo": "hogar",
+      "palabras": [
+        "habitación",
+        "cuarto",
+        "dormitorio"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "casa-habitacion/1-dia.webp",
+            "tarde": "casa-habitacion/1-tarde.webp",
+            "noche": "casa-habitacion/1-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Noraneko Games",
+            "paquete": "Noraneko Backgrounds Pack 2",
+            "url": "https://noranekogames.itch.io/yumebackground",
+            "licencia": "Licencia propia del autor (ReadMe.txt): uso en juegos, incluso comercial, con crédito a \"Noraneko Games\"; se permiten modificaciones; no se pueden vender los recursos tal cual."
+          }
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "dia": "casa-habitacion/2-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          }
+        },
+        {
+          "id": "3",
+          "variantes": {
+            "tarde": "casa-habitacion/3-tarde.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          }
+        },
+        {
+          "id": "4",
+          "variantes": {
+            "dia": "casa-habitacion/4-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Las notas de la pared tienen garabatos que parecen texto."
+        },
+        {
+          "id": "5",
+          "variantes": {
+            "dia": "casa-habitacion/5-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Hay un afiche con un personaje dibujado."
+        },
+        {
+          "id": "6",
+          "variantes": {
+            "dia": "casa-habitacion/6-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Habitación de estilo japonés."
+        }
+      ]
+    },
+    {
+      "id": "casa-fachada",
+      "nombre": "Fachada de una casa",
+      "grupo": "hogar",
+      "palabras": [
+        "fachada",
+        "frente de la casa",
+        "entrada",
+        "puerta",
+        "visita domiciliaria"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "casa-fachada/1-dia.webp",
+            "tarde": "casa-fachada/1-tarde.webp",
+            "noche": "casa-fachada/1-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          }
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "dia": "casa-fachada/2-dia.webp",
+            "tarde": "casa-fachada/2-tarde.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          }
+        },
+        {
+          "id": "3",
+          "variantes": {
+            "noche": "casa-fachada/3-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          }
+        },
+        {
+          "id": "4",
+          "variantes": {
+            "dia": "casa-fachada/4-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Casa de estilo japonés."
+        },
+        {
+          "id": "5",
+          "variantes": {
+            "dia": "casa-fachada/5-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Casa de estilo japonés con cerezos."
+        },
+        {
+          "id": "6",
+          "variantes": {
+            "dia": "casa-fachada/6-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Casa de estilo japonés con cerezos."
+        }
+      ]
+    },
+    {
+      "id": "colegio-salon",
+      "nombre": "Salón de clase",
+      "grupo": "educacion",
+      "palabras": [
+        "colegio",
+        "salón",
+        "clase",
+        "aula",
+        "docente",
+        "estudiantes"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "colegio-salon/1-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Noraneko Games",
+            "paquete": "Noraneko Backgrounds Pack 2",
+            "url": "https://noranekogames.itch.io/yumebackground",
+            "licencia": "Licencia propia del autor (ReadMe.txt): uso en juegos, incluso comercial, con crédito a \"Noraneko Games\"; se permiten modificaciones; no se pueden vender los recursos tal cual."
+          }
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "dia": "colegio-salon/2-dia.webp",
+            "tarde": "colegio-salon/2-tarde.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (School Mini Pack 1)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-school-mini-pack-1",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          }
+        },
+        {
+          "id": "3",
+          "variantes": {
+            "dia": "colegio-salon/3-dia.webp",
+            "tarde": "colegio-salon/3-tarde.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          }
+        }
+      ]
+    },
+    {
+      "id": "colegio-pasillo",
+      "nombre": "Pasillo o patio del colegio",
+      "grupo": "educacion",
+      "palabras": [
+        "pasillo del colegio",
+        "recreo",
+        "descanso"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "colegio-pasillo/1-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Noraneko Games",
+            "paquete": "Noraneko Backgrounds Pack 2",
+            "url": "https://noranekogames.itch.io/yumebackground",
+            "licencia": "Licencia propia del autor (ReadMe.txt): uso en juegos, incluso comercial, con crédito a \"Noraneko Games\"; se permiten modificaciones; no se pueden vender los recursos tal cual."
+          }
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "dia": "colegio-pasillo/2-dia.webp",
+            "tarde": "colegio-pasillo/2-tarde.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (School Mini Pack 1)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-school-mini-pack-1",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          }
+        },
+        {
+          "id": "3",
+          "variantes": {
+            "dia": "colegio-pasillo/3-dia.webp",
+            "tarde": "colegio-pasillo/3-tarde.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          }
+        }
+      ]
+    },
+    {
+      "id": "colegio-orientacion",
+      "nombre": "Oficina de orientación escolar",
+      "grupo": "educacion",
+      "palabras": [
+        "orientación",
+        "orientador",
+        "orientadora",
+        "coordinación",
+        "rectoría"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "colegio-orientacion/1-dia.webp",
+            "tarde": "colegio-orientacion/1-tarde.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (School Mini Pack 1)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-school-mini-pack-1",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          },
+          "nota": "Salón de club escolar usado como oficina de orientación."
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "tarde": "colegio-orientacion/2-tarde.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          },
+          "nota": "Sala del consejo estudiantil usada como oficina de orientación o coordinación."
+        }
+      ]
+    },
+    {
+      "id": "universidad",
+      "nombre": "Universidad",
+      "grupo": "educacion",
+      "palabras": [
+        "universidad",
+        "facultad",
+        "campus"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "universidad/1-dia.webp",
+            "tarde": "universidad/1-tarde.webp",
+            "noche": "universidad/1-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          },
+          "nota": "Edificio escolar usado como edificio de campus."
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "dia": "universidad/2-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          },
+          "nota": "Auditorio escolar usado como auditorio universitario."
+        }
+      ]
+    },
+    {
+      "id": "cafeteria",
+      "nombre": "Cafetería",
+      "grupo": "educacion",
+      "palabras": [
+        "cafetería",
+        "cafetín",
+        "tienda escolar"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "cafeteria/1-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Noraneko Games",
+            "paquete": "Noraneko Backgrounds Pack 2",
+            "url": "https://noranekogames.itch.io/yumebackground",
+            "licencia": "Licencia propia del autor (ReadMe.txt): uso en juegos, incluso comercial, con crédito a \"Noraneko Games\"; se permiten modificaciones; no se pueden vender los recursos tal cual."
+          }
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "dia": "cafeteria/2-dia.webp",
+            "tarde": "cafeteria/2-tarde.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Mini Pack 1)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-mini-pack-1",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          }
+        }
+      ]
+    },
+    {
+      "id": "calle-barrio",
+      "nombre": "Calle de barrio",
+      "grupo": "comunidad",
+      "palabras": [
+        "calle",
+        "barrio",
+        "vecindario",
+        "cuadra"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "calle-barrio/1-dia.webp",
+            "tarde": "calle-barrio/1-tarde.webp",
+            "noche": "calle-barrio/1-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "City (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          }
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "dia": "calle-barrio/2-dia.webp",
+            "tarde": "calle-barrio/2-tarde.webp",
+            "noche": "calle-barrio/2-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "City (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          }
+        },
+        {
+          "id": "3",
+          "variantes": {
+            "dia": "calle-barrio/3-dia.webp",
+            "tarde": "calle-barrio/3-tarde.webp",
+            "noche": "calle-barrio/3-noche.webp",
+            "lluvia": "calle-barrio/3-lluvia.webp",
+            "noche-estrellada": "calle-barrio/3-noche-estrellada.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Noraneko Games",
+            "paquete": "Noraneko Backgrounds Pack 2",
+            "url": "https://noranekogames.itch.io/yumebackground",
+            "licencia": "Licencia propia del autor (ReadMe.txt): uso en juegos, incluso comercial, con crédito a \"Noraneko Games\"; se permiten modificaciones; no se pueden vender los recursos tal cual."
+          },
+          "ambiente": [
+            "triste",
+            "melancolico"
+          ]
+        },
+        {
+          "id": "4",
+          "variantes": {
+            "dia": "calle-barrio/4-dia.webp",
+            "tarde": "calle-barrio/4-tarde.webp",
+            "noche": "calle-barrio/4-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "City (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Tiene una firma garabateada en la esquina inferior izquierda."
+        },
+        {
+          "id": "5",
+          "variantes": {
+            "dia": "calle-barrio/5-dia.webp",
+            "noche": "calle-barrio/5-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          },
+          "nota": "Letrero luminoso con texto en inglés."
+        },
+        {
+          "id": "6",
+          "variantes": {
+            "dia": "calle-barrio/6-dia.webp",
+            "tarde": "calle-barrio/6-tarde.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          },
+          "nota": "Letrero con texto en inglés (Ai Means Love)."
+        }
+      ]
+    },
+    {
+      "id": "parque",
+      "nombre": "Parque",
+      "grupo": "comunidad",
+      "palabras": [
+        "parque",
+        "plaza",
+        "cancha"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "parque/1-dia.webp",
+            "tarde": "parque/1-tarde.webp",
+            "noche": "parque/1-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "City (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          }
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "dia": "parque/2-dia.webp",
+            "tarde": "parque/2-tarde.webp",
+            "noche": "parque/2-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "City (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          }
+        },
+        {
+          "id": "3",
+          "variantes": {
+            "dia": "parque/3-dia.webp",
+            "tarde": "parque/3-tarde.webp",
+            "noche": "parque/3-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          }
+        },
+        {
+          "id": "4",
+          "variantes": {
+            "dia": "parque/4-dia.webp",
+            "tarde": "parque/4-tarde.webp",
+            "noche": "parque/4-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "City (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Hay una persona caminando al fondo."
+        }
+      ]
+    },
+    {
+      "id": "paradero",
+      "nombre": "Paradero de bus",
+      "grupo": "comunidad",
+      "palabras": [
+        "paradero",
+        "bus",
+        "transporte"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "paradero/1-dia.webp",
+            "tarde": "paradero/1-tarde.webp",
+            "noche": "paradero/1-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Mini Pack 1)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-mini-pack-1",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          },
+          "nota": "El letrero del poste está en japonés."
+        }
+      ]
+    },
+    {
+      "id": "zona-rural",
+      "nombre": "Zona rural",
+      "grupo": "comunidad",
+      "palabras": [
+        "vereda",
+        "campo",
+        "finca",
+        "zona rural",
+        "carretera"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "zona-rural/1-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          },
+          "nota": "Carretera de las afueras."
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "dia": "zona-rural/2-dia.webp",
+            "tarde": "zona-rural/2-tarde.webp",
+            "noche": "zona-rural/2-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Mini Pack 1)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-mini-pack-1",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          },
+          "nota": "Sendero con puente de madera en el campo."
+        },
+        {
+          "id": "3",
+          "variantes": {
+            "noche": "zona-rural/3-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          },
+          "nota": "Quebrada en el bosque, de noche.",
+          "ambiente": [
+            "tenso",
+            "misterioso"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "oficina-empresa",
+      "nombre": "Oficina de una empresa",
+      "grupo": "comunidad",
+      "palabras": [
+        "empresa",
+        "trabajo",
+        "oficina laboral",
+        "jefe"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "oficina-empresa/1-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Escritorio con computador usado como oficina."
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "dia": "oficina-empresa/2-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Estudio con escritorio y computador usado como oficina."
+        },
+        {
+          "id": "3",
+          "variantes": {
+            "tarde": "oficina-empresa/3-tarde.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Hay un afiche con una persona dibujada."
+        }
+      ]
+    },
+    {
+      "id": "casa-bano",
+      "nombre": "Baño de una casa",
+      "grupo": "hogar",
+      "palabras": [
+        "baño",
+        "ducha",
+        "lavamanos"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "casa-bano/1-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Baño de estilo japonés."
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "dia": "casa-bano/2-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          }
+        },
+        {
+          "id": "3",
+          "variantes": {
+            "dia": "casa-bano/3-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          }
+        },
+        {
+          "id": "4",
+          "variantes": {
+            "dia": "casa-bano/4-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          }
+        },
+        {
+          "id": "5",
+          "variantes": {
+            "dia": "casa-bano/5-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          }
+        },
+        {
+          "id": "6",
+          "variantes": {
+            "dia": "casa-bano/6-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          }
+        }
+      ]
+    },
+    {
+      "id": "casa-pasillo",
+      "nombre": "Pasillo o escaleras de una casa",
+      "grupo": "hogar",
+      "palabras": [
+        "pasillo de la casa",
+        "escaleras",
+        "corredor",
+        "segundo piso"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "casa-pasillo/1-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Hay un dibujo de una cara en la pared."
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "tarde": "casa-pasillo/2-tarde.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Escalera de estilo japonés."
+        },
+        {
+          "id": "3",
+          "variantes": {
+            "dia": "casa-pasillo/3-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          }
+        },
+        {
+          "id": "4",
+          "variantes": {
+            "dia": "casa-pasillo/4-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          }
+        }
+      ]
+    },
+    {
+      "id": "casa-entrada",
+      "nombre": "Entrada o porche de una casa",
+      "grupo": "hogar",
+      "palabras": [
+        "porche",
+        "recibidor",
+        "llegar a casa",
+        "tocar la puerta",
+        "antejardín"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "casa-entrada/1-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          },
+          "nota": "Entrada japonesa (genkan) con pantuflas."
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "tarde": "casa-entrada/2-tarde.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Porche de estilo japonés."
+        },
+        {
+          "id": "3",
+          "variantes": {
+            "dia": "casa-entrada/3-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Entrada de estilo japonés."
+        },
+        {
+          "id": "4",
+          "variantes": {
+            "dia": "casa-entrada/4-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Corredor de estilo japonés con vista al jardín."
+        },
+        {
+          "id": "5",
+          "variantes": {
+            "dia": "casa-entrada/5-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          }
+        },
+        {
+          "id": "6",
+          "variantes": {
+            "dia": "casa-entrada/6-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          }
+        }
+      ]
+    },
+    {
+      "id": "casa-campo",
+      "nombre": "Casa de campo",
+      "grupo": "hogar",
+      "palabras": [
+        "casa de campo",
+        "casa rural",
+        "cabaña",
+        "casa de la abuela",
+        "casa en el pueblo"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "noche": "casa-campo/1-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Casa japonesa en el bosque, de noche.",
+          "ambiente": [
+            "tenso",
+            "misterioso"
+          ]
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "noche": "casa-campo/2-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Casa japonesa entre árboles, de noche.",
+          "ambiente": [
+            "tenso",
+            "misterioso"
+          ]
+        },
+        {
+          "id": "3",
+          "variantes": {
+            "dia": "casa-campo/3-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Casa japonesa con nieve."
+        },
+        {
+          "id": "4",
+          "variantes": {
+            "dia": "casa-campo/4-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Casa japonesa con nieve."
+        },
+        {
+          "id": "5",
+          "variantes": {
+            "tarde": "casa-campo/5-tarde.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Casa japonesa en otoño."
+        },
+        {
+          "id": "6",
+          "variantes": {
+            "dia": "casa-campo/6-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "Homes (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Habitación japonesa con vista al bosque, usada como interior de casa de campo."
+        }
+      ]
+    },
+    {
+      "id": "parque-infantil",
+      "nombre": "Parque infantil",
+      "grupo": "comunidad",
+      "palabras": [
+        "parque infantil",
+        "columpios",
+        "rodadero",
+        "juegos infantiles",
+        "niños jugando"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "parque-infantil/1-dia.webp",
+            "tarde": "parque-infantil/1-tarde.webp",
+            "noche": "parque-infantil/1-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "City (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Hay niños dibujados."
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "dia": "parque-infantil/2-dia.webp",
+            "tarde": "parque-infantil/2-tarde.webp",
+            "noche": "parque-infantil/2-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "City (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Hay niños dibujados."
+        },
+        {
+          "id": "3",
+          "variantes": {
+            "dia": "parque-infantil/3-dia.webp",
+            "tarde": "parque-infantil/3-tarde.webp",
+            "noche": "parque-infantil/3-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "City (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Hay niños dibujados."
+        },
+        {
+          "id": "4",
+          "variantes": {
+            "dia": "parque-infantil/4-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          },
+          "nota": "Columpios y rodadero en arena."
+        },
+        {
+          "id": "5",
+          "variantes": {
+            "dia": "parque-infantil/5-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          },
+          "nota": "Juegos infantiles en arena."
+        }
+      ]
+    },
+    {
+      "id": "centro-ciudad",
+      "nombre": "Centro de la ciudad",
+      "grupo": "comunidad",
+      "palabras": [
+        "centro",
+        "avenida",
+        "ciudad",
+        "edificios",
+        "comercio",
+        "debajo del puente"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "centro-ciudad/1-dia.webp",
+            "tarde": "centro-ciudad/1-tarde.webp",
+            "noche": "centro-ciudad/1-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "City (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Tiene letreros."
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "dia": "centro-ciudad/2-dia.webp",
+            "tarde": "centro-ciudad/2-tarde.webp",
+            "noche": "centro-ciudad/2-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "City (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Hay letras inventadas en los vidrios."
+        },
+        {
+          "id": "3",
+          "variantes": {
+            "dia": "centro-ciudad/3-dia.webp",
+            "tarde": "centro-ciudad/3-tarde.webp",
+            "noche": "centro-ciudad/3-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "City (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Tiene marcas en la calle y letreros."
+        },
+        {
+          "id": "4",
+          "variantes": {
+            "dia": "centro-ciudad/4-dia.webp",
+            "noche": "centro-ciudad/4-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          },
+          "nota": "Debajo de un puente, con cajas y una caneca.",
+          "ambiente": [
+            "tenso",
+            "misterioso"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "playa",
+      "nombre": "Playa",
+      "grupo": "comunidad",
+      "palabras": [
+        "playa",
+        "mar",
+        "costa",
+        "vacaciones"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "playa/1-dia.webp",
+            "tarde": "playa/1-tarde.webp",
+            "noche": "playa/1-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "City (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          }
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "dia": "playa/2-dia.webp",
+            "tarde": "playa/2-tarde.webp",
+            "noche": "playa/2-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "City (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          }
+        },
+        {
+          "id": "3",
+          "variantes": {
+            "dia": "playa/3-dia.webp",
+            "tarde": "playa/3-tarde.webp",
+            "noche": "playa/3-noche.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Equipo DILEMA",
+            "paquete": "City (generado con IA)",
+            "url": "",
+            "licencia": "Imágenes propias del Equipo DILEMA, generadas con IA. Uso libre dentro del proyecto."
+          },
+          "nota": "Hay personas en la playa."
+        },
+        {
+          "id": "4",
+          "variantes": {
+            "dia": "playa/4-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          },
+          "nota": "Playa con casa y palmeras."
+        }
+      ]
+    },
+    {
+      "id": "estacion-tren",
+      "nombre": "Estación o vía del tren",
+      "grupo": "comunidad",
+      "palabras": [
+        "tren",
+        "metro",
+        "estación",
+        "vía férrea",
+        "paso a nivel"
+      ],
+      "alternativas": [
+        {
+          "id": "1",
+          "variantes": {
+            "dia": "estacion-tren/1-dia.webp",
+            "tarde": "estacion-tren/1-tarde.webp",
+            "noche": "estacion-tren/1-noche.webp",
+            "lluvia": "estacion-tren/1-lluvia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Noraneko Games",
+            "paquete": "Noraneko Backgrounds Pack 2",
+            "url": "https://noranekogames.itch.io/yumebackground",
+            "licencia": "Licencia propia del autor (ReadMe.txt): uso en juegos, incluso comercial, con crédito a \"Noraneko Games\"; se permiten modificaciones; no se pueden vender los recursos tal cual."
+          },
+          "nota": "Paso a nivel japonés; el mapa tiene texto en japonés.",
+          "ambiente": [
+            "triste",
+            "melancolico"
+          ]
+        },
+        {
+          "id": "2",
+          "variantes": {
+            "dia": "estacion-tren/2-dia.webp"
+          },
+          "calidad": "final",
+          "credito": {
+            "autor": "Potat0Master",
+            "paquete": "Free Visual Novel Backgrounds (Starter Pack 2)",
+            "url": "https://potat0master.itch.io/free-visual-novel-backgrounds-starter-pack-2",
+            "licencia": "Licencia libre de regalías (página del paquete): uso personal y comercial; se permite editar y modificar; prohibido revender o redistribuir las imágenes, ni originales ni modificadas. Crédito no obligatorio."
+          },
+          "nota": "Paso a nivel con tren de estilo japonés."
+        }
+      ]
+    }
+  ]
+}
