@@ -24,7 +24,7 @@ try {
   await p.goto(`${APP}/ingreso`, { waitUntil: 'networkidle0' });
   await p.evaluate((t, u) => { localStorage.setItem('dilema-token', t); localStorage.setItem('dilema-usuario', JSON.stringify(u)); }, ingreso.token, ingreso.usuario);
   await p.goto(`${APP}/docente/casos/${caso.id}`, { waitUntil: 'domcontentloaded', timeout: 120000 });
-  await p.waitForFunction(n => [...document.querySelectorAll('h1')].some(h => h.textContent.includes(n)), { timeout: 120000 }, caso.nombre);
+  await p.waitForSelector('xpath/.//button[normalize-space(.)="Vista previa"]', { timeout: 120000 }); // el h1 ahora es el saludo del marco docente
 
   registrar = true;
   await (await p.waitForSelector('xpath/.//button[normalize-space(.)="Vista previa"]')).click();
