@@ -11,9 +11,22 @@ export class AuthService {
   usuario = signal<Usuario | null>(this.leer());
   token = signal<string | null>(localStorage.getItem('dilema-token'));
 
+  constructor() { this.refrescarPermisos(); }
+
   rol() { return this.usuario()?.rol ?? null; }
 
   puede(permiso: string) { return this.usuario()?.permisos?.includes(permiso) ?? false; }
+
+  /** El token viejo puede traer permisos desactualizados; el backend es la fuente. */
+  refrescarPermisos() {
+    if (!this.token()) return;
+    this.http.get<Usuario>('/api/auth/yo').subscribe({
+      next: (usuario) => {
+        localStorage.setItem('dilema-usuario', JSON.stringify(usuario));
+        this.usuario.set(usuario);
+      }
+    });
+  }
 
   ingresarEstudiante(email: string, codigo: string) {
     return this.http.post<SesionAuth>('/api/auth/ingresar', {

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MarcoDocenteComponent } from '../shared/marco-docente.component';
 import { EditorTextoComponent } from '../shared/editor-texto.component';
-import { Bloque, Caso, CasoResumen, Fila, Grupo, Participacion, Sesion, mensajeError } from '../core/api.service';
+import { Bloque, Caso, CasoResumen, Fila, Grupo, IntentoConsultado, OpcionJuego, Participacion, ParticipacionConsultada, PreguntaJuego, Sesion, SesionRealizada, mensajeError } from '../core/api.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { AuthService } from '../core/auth.service';
@@ -22,7 +22,8 @@ const enlaces = [
   { href: '/docente/casos', texto: 'Mis Casos', exacto: true },
   { href: '/docente/grupos', texto: 'Grupos', exacto: true },
   { href: '/docente/programar', texto: 'Programar', exacto: true },
-  { href: '/docente/seguimiento', texto: 'Reportes' }
+  { href: '/docente/seguimiento', texto: 'Reportes' },
+  { href: '/docente/perfil', texto: 'Perfil' }
 ];
 
 function opcionVacia(correcta = false) {
@@ -30,6 +31,12 @@ function opcionVacia(correcta = false) {
 }
 function preguntaVacia() {
   return { enunciado: '', pista: '', criterio: '', peso: 0, opciones: [opcionVacia(true), opcionVacia(false)] };
+}
+function horaCorta(valor: string | null | undefined) {
+  if (!valor) return '—';
+  const fecha = new Date(valor);
+  if (Number.isNaN(fecha.getTime())) return valor;
+  return fecha.toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
 function casoVacio(): Caso {
   return {
@@ -71,6 +78,7 @@ function casoVacio(): Caso {
               <h3>Agenda de hoy</h3>
               <a class="ver-todos" routerLink="/docente/programar">Programar →</a>
             </div>
+            @if (aviso()) { <p class="error">{{ aviso() }}</p> }
             <ol class="dash-linea">
               @for (sesion of hoy(); track sesion.id) {
                 <li>
@@ -78,6 +86,18 @@ function casoVacio(): Caso {
                   <div>
                     <strong>{{ sesion.caso }}</strong>
                     <p class="sub">{{ sesion.grupo }} · {{ sesion.estado }} · código {{ sesion.codigo }}</p>
+                    <div class="caso-acciones agenda-acciones">
+                      @if (sesion.estado === 'SIN_INICIAR') {
+                        <button class="btn-oscuro" type="button" (click)="moverSesion(sesion.id, 'iniciar')">Iniciar</button>
+                      }
+                      @if (sesion.estado === 'EN_CURSO') {
+                        <button class="btn-suave" type="button" (click)="moverSesion(sesion.id, 'finalizar')">Finalizar</button>
+                        <a class="btn-suave" routerLink="/docente/seguimiento">Ver bitácora</a>
+                      }
+                      @if (sesion.estado === 'FINALIZADO') {
+                        <a class="btn-suave" routerLink="/docente/seguimiento">Ver reporte</a>
+                      }
+                    </div>
                   </div>
                 </li>
               } @empty {
@@ -141,10 +161,19 @@ export class PanelDocenteComponent {
   casos = signal<CasoResumen[]>([]);
   sesiones = signal<Sesion[]>([]);
   grupos = signal<Grupo[]>([]);
-  constructor() {
+  aviso = signal('');
+  constructor() { this.refrescar(); }
+  refrescar() {
     this.http.get<CasoResumen[]>('/api/docente/casos').subscribe((dato) => this.casos.set(dato));
     this.http.get<Sesion[]>('/api/docente/sesiones').subscribe((dato) => this.sesiones.set(dato));
     this.http.get<Grupo[]>('/api/docente/grupos').subscribe((dato) => this.grupos.set(dato));
+  }
+  moverSesion(id: number, verbo: 'iniciar' | 'finalizar') {
+    this.aviso.set('');
+    this.http.post(`/api/docente/sesiones/${id}/${verbo}`, {}).subscribe({
+      next: () => this.refrescar(),
+      error: (falla) => this.aviso.set(mensajeError(falla))
+    });
   }
   nombre() {
     const completo = this.auth.usuario()?.nombre ?? '';
@@ -190,12 +219,15 @@ export class PanelDocenteComponent {
       <section class="tablero">
         <header class="saludo">
           <h1>Mis casos</h1>
-          <p>El listado abre el editor que ya existe. Crear un caso sigue en la misma pantalla de siempre.</p>
+          <p>Diseña, publica y reabre el editor de cada caso.</p>
+          <a class="btn-oscuro" routerLink="/docente/casos/nuevo">Crear caso</a>
         </header>
+        @if (!puedeEditar()) {
+          <p class="error">La administración debe asignarte el permiso Editar para guardar o publicar casos.</p>
+        }
         <article class="tarjeta">
           <div class="tarjeta-cabeza">
             <h2>Listado</h2>
-            @if (puedeEditar()) { <a class="btn-oscuro" routerLink="/docente/casos/nuevo">Crear caso</a> }
           </div>
           <div class="rejilla-casos">
             @for (caso of visibles(); track caso.id; let i = $index) {
@@ -203,7 +235,7 @@ export class PanelDocenteComponent {
                 <div class="franja" [attr.data-tono]="i % 3"></div>
                 <span class="estado-pill">{{ caso.estado }}</span>
                 <h3>{{ caso.nombre }}</h3>
-                <p class="sub">{{ caso.bloques }} escenarios · {{ caso.preguntas }} preguntas</p>
+                <p class="sub">{{ caso.bloques }} escenarios · {{ caso.preguntas }} preguntas · {{ caso.tiempoEstimadoMin }} min</p>
               </a>
             } @empty { <p class="sub">No hay casos para mostrar.</p> }
           </div>
@@ -247,60 +279,91 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
   imports: [MatButtonModule, MatCardModule, MarcoDocenteComponent, FormsModule, RouterLink, EditorTextoComponent, EscenaNovelaComponent,
     NovelaReproductorComponent, NgTemplateOutlet],
   styles: [`
-    .personaje-fila { display: grid; gap: 6px; padding-bottom: 10px; border-bottom: 1px solid var(--line, #e5e7eb); }
-    .ayudas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-    .ayudas select { flex: 1 1 110px; min-width: 0; padding: 5px 6px; font: inherit; font-size: .85rem; border: 1px solid var(--line, #d1d5db); border-radius: 6px; background: white; }
-    .personaje-pie { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 12px; }
+    .personaje-fila { display: grid; gap: 12px; }
+    .ayudas { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+    .ayudas select { flex: 1 1 110px; min-width: 0; padding: 8px 10px; font: inherit; font-size: .85rem; border: 1px solid var(--line, #e6ebf5); border-radius: 12px; background: white; }
+    .personaje-pie { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 12px; }
     .aparece { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: .85rem; }
-    .aparece .chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border: 1px solid var(--line, #d1d5db); border-radius: 999px; cursor: pointer; }
-    .entendido { font-size: .8rem; color: #2f6f68; font-weight: 600; }
-    .entendido.falta { color: #6b7280; font-weight: 400; }
+    .aparece .chip { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border: 1px solid var(--navy-line, #cfd8ee); background: #fff; color: #0a1733; border-radius: 999px; cursor: pointer; font-weight: 650; }
+    .entendido { font-size: .8rem; color: #5b6b8c; font-weight: 600; }
+    .entendido.falta { color: #8b93a7; font-weight: 400; }
     .escena-controles { flex-wrap: wrap; gap: 8px; align-items: flex-start; }
-    .acciones-editor { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .acciones-editor { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
     .campo-cabeza { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-    .insertar { padding: 3px 10px; font: inherit; font-size: .8rem; border: 1px solid var(--line, #d1d5db); border-radius: 999px; background: white; cursor: pointer; }
-    .form-dialogo { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; padding: 8px; border-radius: 8px; background: #f3f6f5; }
-    .form-dialogo select, .form-dialogo input { padding: 6px 8px; font: inherit; border: 1px solid var(--line, #d1d5db); border-radius: 6px; }
+    .insertar { padding: 0 16px; height: 36px; font: inherit; font-size: 13px; border: 1px solid #c5ccd6; border-radius: 12px; background: #0a1733; color: #fff; cursor: pointer; font-weight: 650; display: inline-flex; align-items: center; box-shadow: 0 0 8px rgba(27, 36, 55, .035); }
+    .form-dialogo { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 6px 0; padding: 12px; border-radius: 16px; background: #fff; border: 1px solid var(--line, #e6ebf5); }
+    .form-dialogo select, .form-dialogo input { padding: 8px 10px; font: inherit; border: 1px solid var(--line, #e6ebf5); border-radius: 12px; }
     .form-dialogo input { flex: 1 1 220px; min-width: 0; }
-    .form-dialogo button { padding: 6px 12px; font: inherit; border: 1px solid var(--line, #d1d5db); border-radius: 6px; background: white; cursor: pointer; }
+    .form-dialogo button { padding: 0 16px; height: 36px; font: inherit; font-size: 13px; border: 1px solid #c5ccd6; border-radius: 12px; background: #0a1733; color: #fff; cursor: pointer; font-weight: 650; box-shadow: 0 0 8px rgba(27, 36, 55, .035); }
+    .form-dialogo button:last-child { background: #0a1733; color: #fff; border: 1px solid #c5ccd6; }
     .ayuda-dialogo { display: block; margin-top: 4px; font-size: .78rem; color: #6b7280; }
     .modal-vista { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; background: #0f141c; color: #f3f3f3; }
-    .modal-cabeza { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 10px 16px; background: #1b2430; }
-    .modal-cabeza .cerrar, .modal-cabeza .musica { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
-      border-radius: 8px; border: 0; background: #fff; color: #1d2430; font: inherit; line-height: 1.5; cursor: pointer; }
+    .modal-cabeza { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 10px 16px; background: #0a1733; }
+    .modal-cabeza .cerrar, .modal-cabeza .musica { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
+      border-radius: 999px; border: 1px solid #cfd8ee; background: #fff; color: #0a1733; font: inherit; font-weight: 650; line-height: 1.5; cursor: pointer; }
     /* "Música" va a la izquierda de "Cerrar", los dos pegados a la derecha. */
     .modal-cabeza .musica + .cerrar { margin-left: 0; }
     .modal-cabeza .musica svg { width: 1.15em; height: 1.15em; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
     .modal-cabeza .musica .parlante { fill: currentColor; }
     .modal-cabeza .cerrar:focus-visible, .modal-cabeza .musica:focus-visible { outline: 2px solid #9fe3d9; outline-offset: 2px; }
     .modal-cuerpo { flex: 1; overflow: auto; padding: 12px 16px; }
+    @media (max-width: 768px) {
+      .pasos { display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .pasos button { flex: 0 0 auto; }
+      .modal-cuerpo { padding: 8px; }
+    }
   `],
   template: `
     <app-marco-docente [enlaces]="enlaces">
-      <section class="stack">
-        <div class="row">
-          <div>
-            <p class="kicker">Creación / edición de caso</p>
-            <h1>{{ caso.nombre || 'Crear caso de estudio clínico' }}</h1>
-          </div>
+      <section class="tablero tablero-caso">
+        <header class="saludo">
+          <h1>{{ caso.nombre || 'Crear caso de estudio clínico' }}</h1>
+          <p>Diseña la historia, las escenas y las decisiones del caso.</p>
           <div class="acciones-editor">
-            <button mat-flat-button color="primary" type="button" (click)="abrirVistaPrevia($any($event.currentTarget))">Vista previa</button>
-            <a mat-stroked-button routerLink="/docente/casos">Volver</a>
+            <button class="btn-oscuro" type="button" (click)="abrirVistaPrevia($any($event.currentTarget))">Vista previa</button>
+            <a class="btn-oscuro" routerLink="/docente/casos">Volver</a>
           </div>
-        </div>
+        </header>
         <div class="pasos">
           @for (paso of pasos; track paso.id) {
             <button type="button" [class.activa]="activo() === paso.id" (click)="irA(paso.id)">{{ paso.texto }}</button>
           }
         </div>
+        @if (!puedeEditar()) {
+          <p class="error">La administración debe asignarte el permiso Editar para guardar o publicar este caso.</p>
+        }
         @if (error()) { <p class="error">{{ error() }}</p> }
         @if (ok()) { <p class="ok">{{ ok() }}</p> }
 
         @if (activo() === 'estructura') {
-          <section class="card stack">
-            <label class="field"><span>NOMBRE</span><input [(ngModel)]="caso.nombre" [disabled]="bloqueado()" /></label>
-            <div class="field">
-              <div class="campo-cabeza"><span>DESARROLLO SITUACIONAL</span>
+          <div class="caso-vista">
+            <header class="caso-titulo">
+              <h2>Información general</h2>
+              <p class="sub">Nombre, desarrollo y contexto del caso.</p>
+            </header>
+            <section class="caso-casilla">
+              <h3>Datos del caso</h3>
+              <label class="caso-campo">
+                <span class="caso-etiqueta">Nombre</span>
+                <input [(ngModel)]="caso.nombre" [disabled]="bloqueado()" />
+              </label>
+              <label class="caso-campo">
+                <span class="caso-etiqueta">Tiempo estimado (min)</span>
+                <input type="number" [(ngModel)]="caso.tiempoEstimadoMin" [disabled]="bloqueado()" />
+              </label>
+              <div class="caso-casilla-check">
+                <label class="check"><input type="checkbox" [(ngModel)]="caso.sensible" [disabled]="bloqueado()" /> <span>Contenido sensible (el estudiante verá una advertencia)</span></label>
+              </div>
+              @if (caso.sensible) {
+                <label class="caso-campo">
+                  <span class="caso-etiqueta">Advertencia</span>
+                  <textarea [(ngModel)]="caso.advertencia" [disabled]="bloqueado()" placeholder="Texto que verá el estudiante antes de entrar"></textarea>
+                </label>
+              }
+            </section>
+            <section class="caso-casilla">
+              <div class="campo-cabeza">
+                <h3>Desarrollo situacional</h3>
                 @if (!bloqueado()) { <button type="button" class="insertar" (click)="abrirInsertar('desarrollo')">Insertar diálogo</button> }
               </div>
               @if (insertando() === 'desarrollo') {
@@ -308,23 +371,30 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
               }
               <app-editor #editorDesarrollo [(valor)]="caso.desarrolloSituacional" [bloqueado]="bloqueado()" />
               <small class="ayuda-dialogo">{{ ayudaDialogo }}</small>
-            </div>
-            <label class="field"><span>CONTEXTO</span>
+            </section>
+            <section class="caso-casilla">
+              <h3>Contexto</h3>
               <app-editor [(valor)]="caso.contexto" [bloqueado]="bloqueado()" />
-            </label>
-            <label class="field"><span>TIEMPO ESTIMADO (MIN)</span><input type="number" [(ngModel)]="caso.tiempoEstimadoMin" [disabled]="bloqueado()" /></label>
-          </section>
+            </section>
+          </div>
         }
 
         @if (activo() === 'escenas') {
-          <section class="card stack">
-            <h2>Escenas y contexto</h2>
-            <p class="sub">Cada escena lleva su contexto. Las decisiones se arman en el siguiente paso.</p>
+          <div class="caso-vista">
+            <header class="caso-titulo">
+              <h2>Escenas y contexto</h2>
+              <p class="sub">Cada escena lleva su contexto. Las decisiones se arman en el siguiente paso.</p>
+            </header>
             @for (bloque of caso.bloques; track $index) {
-              <article class="item stack">
-                <label class="field"><span>NOMBRE DEL ESCENARIO</span><input [(ngModel)]="bloque.nombre" [disabled]="bloqueado()" /></label>
-                <div class="field">
-                  <div class="campo-cabeza"><span>CONTEXTO SITUACIONAL</span>
+              <section class="caso-casilla">
+                <h3>Escenario {{ $index + 1 }}</h3>
+                <label class="caso-campo">
+                  <span class="caso-etiqueta">Nombre del escenario</span>
+                  <input [(ngModel)]="bloque.nombre" [disabled]="bloqueado()" />
+                </label>
+                <div class="caso-campo">
+                  <div class="campo-cabeza">
+                    <span class="caso-etiqueta">Contexto situacional</span>
                     @if (!bloqueado()) { <button type="button" class="insertar" (click)="abrirInsertar('bloque-' + $index)">Insertar diálogo</button> }
                   </div>
                   @if (insertando() === 'bloque-' + $index) {
@@ -334,159 +404,227 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
                     [attr.aria-label]="'Contexto situacional del escenario ' + ($index + 1)"></textarea>
                   <small class="ayuda-dialogo">{{ ayudaDialogo }}</small>
                 </div>
-                @if (!bloqueado()) { <button mat-stroked-button type="button" (click)="caso.bloques.splice($index, 1)">Quitar escenario</button> }
-              </article>
+                @if (!bloqueado()) {
+                  <div class="caso-acciones">
+                    <button class="btn-oscuro" type="button" (click)="caso.bloques.splice($index, 1)">Quitar escenario</button>
+                  </div>
+                }
+              </section>
             }
-            @if (!bloqueado()) { <button mat-stroked-button type="button" (click)="agregarBloque()">Agregar escenario académico</button> }
-          </section>
+            @if (!bloqueado()) {
+              <div class="caso-acciones">
+                <button class="btn-oscuro" type="button" (click)="agregarBloque()">Agregar escenario académico</button>
+              </div>
+            }
+          </div>
         }
 
         @if (activo() === 'preguntas') {
-          <section class="card stack">
+          <div class="caso-vista">
             @for (bloque of caso.bloques; track $index) {
-              <article class="item stack">
-                <h3>{{ bloque.nombre || 'Escenario' }}</h3>
+              <header class="caso-titulo">
+                <h2>{{ bloque.nombre || 'Escenario' }}</h2>
                 <p class="sub">{{ bloque.contexto }}</p>
-                @for (pregunta of bloque.preguntas; track $index) {
-                  <div class="stack">
-                    <label class="field"><span>ENUNCIADO</span>
-                      <app-editor [(valor)]="pregunta.enunciado" [bloqueado]="bloqueado()" />
-                    </label>
-                    <label class="field"><span>HERRAMIENTA (PISTA, OPCIONAL)</span><input [(ngModel)]="pregunta.pista" [disabled]="bloqueado()" /></label>
-                    <div class="grid-2">
-                      <label class="field"><span>CRITERIO</span><input [(ngModel)]="pregunta.criterio" [disabled]="bloqueado()" /></label>
-                      <label class="field"><span>PESO</span><input type="number" step="0.1" [(ngModel)]="pregunta.peso" [disabled]="bloqueado()" /></label>
-                    </div>
-                    @for (opcion of pregunta.opciones; track $index) {
-                      <div class="item stack">
-                        <label class="field"><span>OPCIÓN</span><input [(ngModel)]="opcion.texto" [disabled]="bloqueado()" /></label>
-                        <label class="check"><input type="checkbox" [checked]="opcion.correcta" [disabled]="bloqueado()" (change)="marcar(pregunta, $index)" /> <span>Correcta</span></label>
-                        <label class="field"><span>POR QUÉ</span><input [(ngModel)]="opcion.explicacion" [disabled]="bloqueado()" /></label>
-                        <label class="field"><span>FUNDAMENTO</span><input [(ngModel)]="opcion.fundamento" [disabled]="bloqueado()" /></label>
-                      </div>
-                    }
-                    @if (!bloqueado()) {
-                      <button mat-stroked-button type="button" (click)="pregunta.opciones.push(opcionVacia())">Agregar opción</button>
-                      <button mat-stroked-button type="button" (click)="quitarPregunta(bloque, $index)">Quitar pregunta</button>
-                    }
+              </header>
+              @for (pregunta of bloque.preguntas; track $index; let p = $index) {
+                <section class="caso-casilla">
+                  <h3>Pregunta {{ p + 1 }}</h3>
+                  <div class="caso-campo">
+                    <span class="caso-etiqueta">Enunciado</span>
+                    <app-editor [(valor)]="pregunta.enunciado" [bloqueado]="bloqueado()" />
                   </div>
-                }
-                @if (!bloqueado()) { <button mat-flat-button color="primary" type="button" (click)="agregarPregunta(bloque)">Agregar pregunta</button> }
-              </article>
-            }
-          </section>
-        }
-
-        @if (activo() === 'rubrica') {
-          <section class="card stack">
-            <p class="sub">Cada pregunta tiene su criterio. Los pesos van de 0,0 a 5,0 y deben sumar 5,0.</p>
-            <div class="row">
-              <button mat-stroked-button type="button" [disabled]="bloqueado()" (click)="elegirReparto('PONDERADA')">Ponderada</button>
-              <button mat-stroked-button type="button" [disabled]="bloqueado()" (click)="elegirReparto('EQUITATIVA')">Equitativa</button>
-              <span class="sub">{{ caso.repartoRubrica === 'EQUITATIVA' ? 'El sistema reparte 5,0.' : 'Tú fijas cada peso.' }}</span>
-            </div>
-            @for (bloque of caso.bloques; track $index) {
-              @for (pregunta of bloque.preguntas; track $index) {
-                <div class="row">
-                  <span>{{ bloque.nombre }} · {{ pregunta.criterio || 'Sin criterio' }}</span>
-                  @if (caso.repartoRubrica === 'EQUITATIVA') {
-                    <strong>{{ pregunta.peso || 0 }}</strong>
-                  } @else {
-                    <input type="number" min="0" max="5" step="0.1" [(ngModel)]="pregunta.peso" [disabled]="bloqueado()" />
+                  <label class="caso-campo">
+                    <span class="caso-etiqueta">Herramienta (pista, opcional)</span>
+                    <input [(ngModel)]="pregunta.pista" [disabled]="bloqueado()" />
+                  </label>
+                  <div class="grid-2">
+                    <label class="caso-campo">
+                      <span class="caso-etiqueta">Criterio</span>
+                      <input [(ngModel)]="pregunta.criterio" [disabled]="bloqueado()" />
+                    </label>
+                    <label class="caso-campo">
+                      <span class="caso-etiqueta">Peso</span>
+                      <input type="number" step="0.1" [(ngModel)]="pregunta.peso" [disabled]="bloqueado()" />
+                    </label>
+                  </div>
+                  @for (opcion of pregunta.opciones; track $index; let o = $index) {
+                    <div class="caso-subgrupo">
+                      <h3>Opción {{ o + 1 }}</h3>
+                      <label class="caso-campo">
+                        <span class="caso-etiqueta">Texto</span>
+                        <input [(ngModel)]="opcion.texto" [disabled]="bloqueado()" />
+                      </label>
+                      <label class="check"><input type="checkbox" [checked]="opcion.correcta" [disabled]="bloqueado()" (change)="marcar(pregunta, o)" /> <span>Correcta</span></label>
+                      <label class="caso-campo">
+                        <span class="caso-etiqueta">Por qué</span>
+                        <input [(ngModel)]="opcion.explicacion" [disabled]="bloqueado()" />
+                      </label>
+                      <label class="caso-campo">
+                        <span class="caso-etiqueta">Fundamento</span>
+                        <input [(ngModel)]="opcion.fundamento" [disabled]="bloqueado()" />
+                      </label>
+                    </div>
                   }
+                  @if (!bloqueado()) {
+                    <div class="caso-acciones">
+                      <button class="btn-oscuro" type="button" (click)="pregunta.opciones.push(opcionVacia())">Agregar opción</button>
+                      <button class="btn-oscuro" type="button" (click)="quitarPregunta(bloque, p)">Quitar pregunta</button>
+                    </div>
+                  }
+                </section>
+              }
+              @if (!bloqueado()) {
+                <div class="caso-acciones">
+                  <button class="btn-oscuro" type="button" (click)="agregarPregunta(bloque)">Agregar pregunta</button>
                 </div>
               }
             }
-            <p>Suma actual: {{ suma() }}</p>
-          </section>
+          </div>
+        }
+
+        @if (activo() === 'rubrica') {
+          <div class="caso-vista">
+            <header class="caso-titulo">
+              <h2>Rúbrica</h2>
+              <p class="sub">Cada pregunta tiene su criterio. Los pesos van de 0,0 a 5,0 y deben sumar 5,0.</p>
+            </header>
+            <section class="caso-casilla">
+              <h3>Reparto</h3>
+              <div class="caso-acciones">
+                <button class="btn-oscuro" type="button" [disabled]="bloqueado()" (click)="elegirReparto('PONDERADA')">Ponderada</button>
+                <button class="btn-oscuro" type="button" [disabled]="bloqueado()" (click)="elegirReparto('EQUITATIVA')">Equitativa</button>
+                <span class="sub">{{ caso.repartoRubrica === 'EQUITATIVA' ? 'El sistema reparte 5,0.' : 'Tú fijas cada peso.' }}</span>
+              </div>
+              @for (bloque of caso.bloques; track $index) {
+                @for (pregunta of bloque.preguntas; track $index) {
+                  <label class="caso-campo">
+                    <span class="caso-etiqueta">{{ bloque.nombre }} · {{ pregunta.criterio || 'Sin criterio' }}</span>
+                    @if (caso.repartoRubrica === 'EQUITATIVA') {
+                      <strong>{{ pregunta.peso || 0 }}</strong>
+                    } @else {
+                      <input type="number" min="0" max="5" step="0.1" [(ngModel)]="pregunta.peso" [disabled]="bloqueado()" />
+                    }
+                  </label>
+                }
+              }
+              <p>Suma actual: {{ suma() }}</p>
+            </section>
+          </div>
         }
 
         @if (activo() === 'escena') {
-          <section class="card stack">
-            <h2>Diseño de escena</h2>
-            <p class="sub">Describe a cada personaje (por ejemplo «madre de 38 años») y el sistema elige un personaje 3D que encaje. Marca en qué escenarios aparece y arrástralo en la escena: a los lados, o hacia arriba y abajo para alejarlo o acercarlo. La posición es solo el boceto de tu vista.</p>
+          <div class="caso-vista">
+            <header class="caso-titulo">
+              <h2>Diseño de escena</h2>
+              <p class="sub">Describe a cada personaje (por ejemplo «madre de 38 años») y el sistema elige un personaje 3D que encaje. Marca en qué escenarios aparece y arrástralo en la escena: a los lados, o hacia arriba y abajo para alejarlo o acercarlo. La posición es solo el boceto de tu vista.</p>
+            </header>
             @for (personaje of caso.personajes; track $index; let i = $index) {
-              <div class="personaje-fila">
-                <div class="grid-2">
-                  <label class="field"><span>NOMBRE</span><input [(ngModel)]="personaje.nombre" [disabled]="bloqueado()" (ngModelChange)="cambioPersonaje(i)" /></label>
-                  <div class="field">
-                    <span>DESCRIPCIÓN</span>
-                    <input [(ngModel)]="personaje.descripcion" [disabled]="bloqueado()" (ngModelChange)="cambioPersonaje(i)"
-                      placeholder="Ej.: madre de 38 años, trabaja en una panadería" [attr.aria-label]="'Descripción de ' + (personaje.nombre || 'Persona ' + (i + 1))" />
-                    <div class="ayudas" role="group" [attr.aria-label]="'Ayudas para describir a ' + (personaje.nombre || 'Persona ' + (i + 1))">
-                      <select [disabled]="bloqueado()" [value]="ayuda(i).genero" (change)="escribirAyuda(i, 'genero', $any($event.target).value)" aria-label="Género">
-                        <option value="">Género…</option>
-                        <option value="mujer">Mujer</option>
-                        <option value="hombre">Hombre</option>
-                      </select>
-                      <select [disabled]="bloqueado()" [value]="ayuda(i).edad" (change)="escribirAyuda(i, 'edad', $any($event.target).value)" aria-label="Edad">
-                        <option value="">Edad…</option>
-                        @for (e of edades; track e) { <option [value]="e">{{ e }} años</option> }
-                      </select>
-                      <select [disabled]="bloqueado()" [value]="ayuda(i).rol" (change)="escribirAyuda(i, 'rol', $any($event.target).value)" aria-label="Rol">
-                        <option value="">Rol…</option>
-                        @for (r of roles; track r.id) { <option [value]="r.id">{{ ayuda(i).genero === 'hombre' ? r.m : r.f }}</option> }
-                      </select>
+              <section class="caso-casilla personaje-fila">
+                <h3>{{ personaje.nombre || ('Persona ' + (i + 1)) }}</h3>
+                <label class="caso-campo">
+                  <span class="caso-etiqueta">Nombre</span>
+                  <input [(ngModel)]="personaje.nombre" [disabled]="bloqueado()" (ngModelChange)="cambioPersonaje(i)" />
+                </label>
+                <div class="caso-campo">
+                  <span class="caso-etiqueta">Descripción</span>
+                  <input [(ngModel)]="personaje.descripcion" [disabled]="bloqueado()" (ngModelChange)="cambioPersonaje(i)"
+                    placeholder="Ej.: madre de 38 años, trabaja en una panadería" [attr.aria-label]="'Descripción de ' + (personaje.nombre || 'Persona ' + (i + 1))" />
+                  <div class="ayudas" role="group" [attr.aria-label]="'Ayudas para describir a ' + (personaje.nombre || 'Persona ' + (i + 1))">
+                    <select [disabled]="bloqueado()" [value]="ayuda(i).genero" (change)="escribirAyuda(i, 'genero', $any($event.target).value)" aria-label="Género">
+                      <option value="">Género…</option>
+                      <option value="mujer">Mujer</option>
+                      <option value="hombre">Hombre</option>
+                    </select>
+                    <select [disabled]="bloqueado()" [value]="ayuda(i).edad" (change)="escribirAyuda(i, 'edad', $any($event.target).value)" aria-label="Edad">
+                      <option value="">Edad…</option>
+                      @for (e of edades; track e) { <option [value]="e">{{ e }} años</option> }
+                    </select>
+                    <select [disabled]="bloqueado()" [value]="ayuda(i).rol" (change)="escribirAyuda(i, 'rol', $any($event.target).value)" aria-label="Rol">
+                      <option value="">Rol…</option>
+                      @for (r of roles; track r.id) { <option [value]="r.id">{{ ayuda(i).genero === 'hombre' ? r.m : r.f }}</option> }
+                    </select>
+                  </div>
+                </div>
+                <div class="caso-campo">
+                  <span class="caso-etiqueta">Aparece en</span>
+                  <div class="personaje-pie">
+                    <div class="aparece" role="group" [attr.aria-label]="'Escenarios donde aparece ' + (personaje.nombre || 'Persona ' + (i + 1))">
+                      @for (bloque of caso.bloques; track $index; let b = $index) {
+                        <label class="chip"><input type="checkbox" [checked]="personaje.escenarios.includes(b)" [disabled]="bloqueado()"
+                          (change)="alternarEscenario(i, b)" />{{ b + 1 }}</label>
+                      }
                     </div>
+                    <small class="entendido" [class.falta]="!etiquetas()[i]">{{ etiquetas()[i] || 'Sin descripción: no aparece en la escena' }}</small>
                   </div>
                 </div>
-                <div class="personaje-pie">
-                  <div class="aparece" role="group" [attr.aria-label]="'Escenarios donde aparece ' + (personaje.nombre || 'Persona ' + (i + 1))">
-                    <span>Aparece en:</span>
-                    @for (bloque of caso.bloques; track $index; let b = $index) {
-                      <label class="chip"><input type="checkbox" [checked]="personaje.escenarios.includes(b)" [disabled]="bloqueado()"
-                        (change)="alternarEscenario(i, b)" />{{ b + 1 }}</label>
-                    }
-                  </div>
-                  <small class="entendido" [class.falta]="!etiquetas()[i]">{{ etiquetas()[i] || 'Sin descripción: no aparece en la escena' }}</small>
-                </div>
-              </div>
+              </section>
             }
-            <div class="row escena-controles">
-              <div class="fondos" role="group" aria-label="Escenario">
-                @for (bloque of casoEscena().bloques; track $index; let b = $index) {
-                  <button type="button" [class.activa]="escenarioActivo() === b" (click)="escenarioActivo.set(b)">Escenario {{ b + 1 }}</button>
-                }
+            <section class="caso-casilla">
+              <h3>Escenario y fondo</h3>
+              <div class="row escena-controles">
+                <div class="fondos" role="group" aria-label="Escenario">
+                  @for (bloque of casoEscena().bloques; track $index; let b = $index) {
+                    <button type="button" [class.activa]="escenarioActivo() === b" (click)="escenarioActivo.set(b)">Escenario {{ b + 1 }}</button>
+                  }
+                </div>
+                <div class="fondos" role="group" aria-label="Fondo (solo en tu vista)">
+                  <button type="button" [class.activa]="!fondoManual()" (click)="elegirFondo(null)">Fondo automático</button>
+                  @for (fondo of fondos; track fondo.id) {
+                    <button type="button" [class.activa]="fondoManual() === fondo.id" (click)="elegirFondo(fondo.id)">{{ fondo.nombre }}</button>
+                  }
+                </div>
               </div>
-              <div class="fondos" role="group" aria-label="Fondo (solo en tu vista)">
-                <button type="button" [class.activa]="!fondoManual()" (click)="elegirFondo(null)">Fondo automático</button>
-                @for (fondo of fondos; track fondo.id) {
-                  <button type="button" [class.activa]="fondoManual() === fondo.id" (click)="elegirFondo(fondo.id)">{{ fondo.nombre }}</button>
-                }
-              </div>
-            </div>
-            <app-escena-novela
-              [caso]="casoEscena()" [bloque]="bloqueEscena()" [personajes]="personajesEscena()"
-              [modoEditor]="true" [bloqueado]="bloqueado()" [fondoManual]="fondoManual()" [posiciones]="posicionesEscena()"
-              (elenco)="recibirElenco($event)" (mover)="moverPersona($event)" />
-            @if (detectados()) { <p class="sub">{{ detectados() }}</p> }
-          </section>
+            </section>
+            <section class="caso-casilla">
+              <h3>Boceto de escena</h3>
+              <app-escena-novela
+                [caso]="casoEscena()" [bloque]="bloqueEscena()" [personajes]="personajesEscena()"
+                [modoEditor]="true" [bloqueado]="bloqueado()" [fondoManual]="fondoManual()" [posiciones]="posicionesEscena()"
+                (elenco)="recibirElenco($event)" (mover)="moverPersona($event)" />
+              @if (detectados()) { <p class="sub">{{ detectados() }}</p> }
+            </section>
+          </div>
         }
 
         @if (activo() === 'estado') {
-          <section class="card stack">
-            <p class="kicker">{{ caso.estado || 'SIN GUARDAR' }}</p>
-            @if (!bloqueado()) { <button class="btn-oscuro" type="button" (click)="guardar()">Guardar borrador</button> }
-            @if (caso.id) { <button class="btn-suave" type="button" (click)="duplicar()">Duplicar</button> }
-            @if (puedePublicar()) { <button class="btn-oscuro" type="button" (click)="transicion('publicar')">Publicar</button> }
-            @if (puedeVolverBorrador()) { <button class="btn-suave" type="button" (click)="transicion('despublicar')">Volver a borrador</button> }
-            @if (puedeArchivar()) { <button class="btn-suave" type="button" (click)="transicion('archivar')">Archivar</button> }
-          </section>
+          <div class="caso-vista">
+            <header class="caso-titulo">
+              <h2>Estado del caso</h2>
+              <p class="sub">Los cambios de estado (guardar, publicar, archivar) están en la barra de abajo, a la derecha.</p>
+            </header>
+            <section class="caso-casilla ficha-estado">
+              <div class="ficha-estado-cabeza">
+                <span class="ficha-estado-pill" [attr.data-estado]="caso.estado || 'NUEVO'">{{ etiquetaEstado() }}</span>
+                <h3>{{ caso.nombre || 'Sin nombre' }}</h3>
+              </div>
+              <p class="sub">{{ textoEstado() }}</p>
+              <div class="resumen-cifras">
+                <article><small>Escenarios</small><strong>{{ caso.bloques.length }}</strong></article>
+                <article><small>Decisiones</small><strong>{{ totalPreguntas() }}</strong></article>
+                <article><small>Tiempo</small><strong>{{ caso.tiempoEstimadoMin }} min</strong></article>
+              </div>
+            </section>
+          </div>
         }
         @if (vistaPrevia()) {
-          <section class="card stack">
-            <p class="kicker">Previsualización</p>
-            <h2>{{ caso.nombre || 'Caso sin nombre' }}</h2>
-            <div [innerHTML]="caso.desarrolloSituacional"></div>
-            <div class="sub" [innerHTML]="caso.contexto"></div>
-          </section>
+          <div class="caso-vista">
+            <header class="caso-titulo">
+              <p class="kicker">Previsualización</p>
+              <h2>{{ caso.nombre || 'Caso sin nombre' }}</h2>
+            </header>
+            <section class="caso-casilla">
+              <div [innerHTML]="caso.desarrolloSituacional"></div>
+              <div class="sub" [innerHTML]="caso.contexto"></div>
+            </section>
+          </div>
         }
-        <div class="row">
-          @if (!bloqueado()) { <button class="btn-suave" type="button" (click)="guardar()">Guardar borrador</button> }
-          <button class="btn-suave" type="button" (click)="vistaPrevia.set(!vistaPrevia())">Previsualizar</button>
+        <div class="row acciones-caso">
+          @if (!bloqueado()) { <button class="btn-oscuro" type="button" (click)="guardar()">Guardar borrador</button> }
+          <button class="btn-oscuro" type="button" (click)="vistaPrevia.set(!vistaPrevia())">Previsualizar</button>
+          @if (caso.id) { <button class="btn-oscuro" type="button" (click)="duplicar()">Duplicar</button> }
           @if (puedePublicar()) { <button class="btn-oscuro" type="button" (click)="transicion('publicar')">Publicar</button> }
-          @if (puedeVolverBorrador()) { <button class="btn-suave" type="button" (click)="transicion('despublicar')">Volver a borrador</button> }
-          @if (puedeArchivar()) { <button class="btn-suave" type="button" (click)="transicion('archivar')">Archivar</button> }
+          @if (puedeVolverBorrador()) { <button class="btn-oscuro" type="button" (click)="transicion('despublicar')">Volver a borrador</button> }
+          @if (puedeArchivar()) { <button class="btn-oscuro" type="button" (click)="transicion('archivar')">Archivar</button> }
         </div>
       </section>
 
@@ -610,10 +748,6 @@ export class EditorCasoComponent {
 
   constructor() {
     const id = this.route.snapshot.paramMap.get('id');
-    if (!id && !this.auth.puede('EDITAR')) {
-      this.router.navigateByUrl('/docente/casos');
-      return;
-    }
     this.claveBoceto = `dilema-boceto-${id ?? 'nuevo'}`;
     const guardado = localStorage.getItem(this.claveBoceto);
     if (guardado) {
@@ -757,11 +891,33 @@ export class EditorCasoComponent {
   bloqueado() {
     return !this.auth.puede('EDITAR') || this.caso.estado === 'PUBLICADO' || this.caso.estado === 'ARCHIVADO';
   }
+  puedeEditar() { return this.auth.puede('EDITAR'); }
   puedePublicar() {
     return !!this.caso.id && this.auth.puede('EDITAR') && (this.caso.estado === 'BORRADOR' || this.caso.estado === 'ARCHIVADO');
   }
   puedeVolverBorrador() { return !!this.caso.id && this.auth.puede('EDITAR') && this.caso.estado === 'PUBLICADO'; }
   puedeArchivar() { return !!this.caso.id && this.auth.puede('EDITAR') && this.caso.estado === 'PUBLICADO'; }
+  totalPreguntas() {
+    return this.caso.bloques.reduce((n, bloque) => n + (bloque.preguntas?.length || 0), 0);
+  }
+  etiquetaEstado() {
+    if (this.caso.estado === 'PUBLICADO') return 'Publicado';
+    if (this.caso.estado === 'ARCHIVADO') return 'Archivado';
+    if (this.caso.estado === 'BORRADOR') return 'Borrador';
+    return 'Sin guardar';
+  }
+  textoEstado() {
+    if (this.caso.estado === 'PUBLICADO') {
+      return 'El caso ya se puede asignar a grupos. Para editarlo, vuelve a borrador con el botón de abajo.';
+    }
+    if (this.caso.estado === 'ARCHIVADO') {
+      return 'Está archivado y no se programa en grupos nuevos. Puedes publicarlo de nuevo cuando lo necesites.';
+    }
+    if (this.caso.estado === 'BORRADOR') {
+      return 'Sigue siendo un borrador. Cuando esté listo, publícalo con los botones de la derecha, abajo.';
+    }
+    return 'Aún no se ha guardado. Usa Guardar borrador en la barra inferior.';
+  }
   sincronizarPersona(indice: number) {
     const nombre = this.caso.personajes[indice]?.nombre;
     if (!nombre) return;
@@ -805,6 +961,11 @@ export class EditorCasoComponent {
   elegirFondo(id: string | null) { this.fondoManual.set(id); this.guardarBoceto(); }
   guardar() {
     this.error.set('');
+    this.caso.rubrica = this.caso.bloques.flatMap((bloque) => bloque.preguntas.map((pregunta) => ({
+      nombre: pregunta.criterio || bloque.nombre,
+      peso: Number(pregunta.peso || 0),
+      descripcion: pregunta.enunciado
+    })));
     const pedido = this.caso.id
       ? this.http.put<Caso>(`/api/docente/casos/${this.caso.id}`, this.caso)
       : this.http.post<Caso>('/api/docente/casos', this.caso);
@@ -845,38 +1006,64 @@ export class EditorCasoComponent {
 
 @Component({
   selector: 'app-grupos',
-  imports: [MatButtonModule, MatCardModule, MarcoDocenteComponent, FormsModule, RouterLink],
+  imports: [MatButtonModule, MatCardModule, MarcoDocenteComponent, FormsModule],
   template: `
     <app-marco-docente [enlaces]="enlaces">
       <section class="tablero">
         <header class="saludo">
           <h1>Grupos</h1>
-          <p>Cohortes, matrícula y asignación de casos.</p>
+          <p>Crea tus grupos a la izquierda. A la derecha matriculas a los estudiantes del grupo elegido.</p>
+          <button class="btn-oscuro" type="button" (click)="nuevo.set(!nuevo())">Nuevo grupo</button>
         </header>
+        @if (!puedeGestionar()) {
+          <p class="error">La administración debe asignarte el permiso de gestionar espacios académicos para crear grupos.</p>
+        }
         @if (error()) { <p class="error">{{ error() }}</p> }
         <div class="dos">
           <section class="tarjeta stack">
-            <div class="row"><h2>Mis grupos</h2>@if (puedeGestionar()) { <button class="btn-oscuro" type="button" (click)="nuevo.set(!nuevo())">Nuevo grupo</button> }</div>
+            <h2>Mis grupos</h2>
+            <p class="sub">Elige un grupo para matricular estudiantes. El caso se asigna al grupo en Programar.</p>
             @if (nuevo()) {
-              <label class="field"><span>Nombre</span><input [(ngModel)]="nombre" /></label>
-              <label class="field"><span>Semestre</span><input [(ngModel)]="espacio" placeholder="2026-I" /></label>
-              <button class="btn-oscuro" type="button" (click)="crear()">Crear grupo</button>
+              <div class="grupo-crear">
+                <h3>Crear grupo</h3>
+                <label class="field"><span>Nombre</span><input [(ngModel)]="nombre" /></label>
+                <label class="field"><span>Semestre</span><input [(ngModel)]="espacio" placeholder="2026-I" /></label>
+                <button class="btn-oscuro" type="button" (click)="crear()">Crear grupo</button>
+              </div>
             }
             @for (grupo of gruposVisibles(); track grupo.id) {
-              <button class="item grupo-item" type="button" [class.activa]="seleccionado() === grupo.id" (click)="elegir(grupo.id)">
-                <strong>{{ grupo.nombre }}</strong>
-                <p class="sub">{{ grupo.espacioAcademico }} · {{ grupo.estudiantes.length }} estudiantes</p>
-              </button>
+              <article class="item grupo-item" [class.activa]="seleccionado() === grupo.id" [class.editando]="editando() === grupo.id" (click)="elegir(grupo.id)">
+                <div>
+                  <strong>{{ grupo.nombre }}</strong>
+                  <p class="sub">{{ grupo.espacioAcademico }} · {{ grupo.estudiantes.length }} estudiantes</p>
+                </div>
+                <div class="grupo-opciones" (click)="$event.stopPropagation()">
+                  @if (confirmarBorrar() !== grupo.id && editando() !== grupo.id) {
+                    <button class="btn-suave" type="button" (click)="confirmarBorrar.set(grupo.id)">Eliminar</button>
+                    <button class="btn-suave" type="button" (click)="empezarEdicion(grupo)">Editar</button>
+                  } @else if (confirmarBorrar() === grupo.id) {
+                    <button class="btn-oscuro" type="button" (click)="borrarGrupo(grupo.id)">Confirmar</button>
+                    <button class="btn-suave" type="button" (click)="confirmarBorrar.set(null)">No</button>
+                  }
+                </div>
+                @if (editando() === grupo.id) {
+                  <div class="grupo-crear grupo-editar" (click)="$event.stopPropagation()">
+                    <label class="field"><span>Nombre</span><input [(ngModel)]="nombreEdicion" /></label>
+                    <label class="field"><span>Semestre</span><input [(ngModel)]="espacioEdicion" /></label>
+                    <div class="grupo-opciones">
+                      <button class="btn-oscuro" type="button" (click)="guardarEdicion(grupo.id)">Guardar</button>
+                      <button class="btn-suave" type="button" (click)="cancelarEdicion()">Cancelar</button>
+                    </div>
+                  </div>
+                }
+              </article>
             }
           </section>
           @if (actual(); as grupo) {
             <section class="tarjeta stack">
-              <div class="row">
-                <div>
-                  <h2>{{ grupo.nombre }}</h2>
-                  <p class="sub">{{ grupo.espacioAcademico }}</p>
-                </div>
-                <a mat-flat-button color="primary" [routerLink]="['/docente/programar']" [queryParams]="{ grupo: grupo.id }">Asignar caso a grupo</a>
+              <div>
+                <h2>Matricular estudiantes</h2>
+                <p class="sub">Inscribe personas en {{ grupo.nombre }}.</p>
               </div>
               <label class="field"><span>Nombre del estudiante</span>
                 <input [(ngModel)]="nombres[grupo.id]" placeholder="Nombre completo" />
@@ -884,7 +1071,7 @@ export class EditorCasoComponent {
               <label class="field"><span>Correo institucional</span>
                 <input [(ngModel)]="correos[grupo.id]" placeholder="estudiante@universidad.edu" />
               </label>
-              <button class="btn-matricula" mat-stroked-button type="button" (click)="agregar(grupo.id)">Matricular</button>
+              <button class="btn-matricula btn-oscuro" type="button" (click)="agregar(grupo.id)">Matricular estudiante</button>
               <p class="sub">El estudiante no recibe contraseña. El código llega al agendar la sesión.</p>
               <div class="tabla-grupo-scroll">
                 <table class="tabla-grupo">
@@ -894,9 +1081,9 @@ export class EditorCasoComponent {
                       <tr>
                         <td>{{ estudiante.nombre }}</td>
                         <td>{{ estudiante.email }}</td>
-                        <td><button mat-stroked-button type="button" (click)="retirar(grupo.id, estudiante.id)">Eliminar</button></td>
+                        <td><button class="btn-oscuro" type="button" (click)="retirar(grupo.id, estudiante.id)">Quitar</button></td>
                       </tr>
-                    } @empty { <tr><td colspan="3">Este grupo no tiene estudiantes.</td></tr> }
+                    } @empty { <tr><td colspan="3">Este grupo no tiene estudiantes matriculados.</td></tr> }
                   </tbody>
                 </table>
               </div>
@@ -916,6 +1103,10 @@ export class GruposComponent {
   actual = computed(() => this.grupos().find((g) => g.id === this.seleccionado()) ?? null);
   nombre = '';
   espacio = '';
+  confirmarBorrar = signal<number | null>(null);
+  editando = signal<number | null>(null);
+  nombreEdicion = '';
+  espacioEdicion = '';
   correos: Record<number, string> = {};
   nombres: Record<number, string> = {};
   private auth = inject(AuthService);
@@ -929,20 +1120,42 @@ export class GruposComponent {
   constructor() { this.cargar(); }
   crear() {
     this.http.post<Grupo>('/api/docente/grupos', { nombre: this.nombre, espacioAcademico: this.espacio }).subscribe({
-      next: () => { this.nombre = ''; this.espacio = ''; this.cargar(); },
+      next: () => { this.nombre = ''; this.espacio = ''; this.nuevo.set(false); this.cargar(); },
+      error: (falla) => this.error.set(mensajeError(falla))
+    });
+  }
+  empezarEdicion(grupo: Grupo) {
+    this.confirmarBorrar.set(null);
+    this.editando.set(grupo.id);
+    this.nombreEdicion = grupo.nombre;
+    this.espacioEdicion = grupo.espacioAcademico;
+    this.elegir(grupo.id);
+  }
+  cancelarEdicion() { this.editando.set(null); }
+  guardarEdicion(id: number) {
+    this.http.put<Grupo>(`/api/docente/grupos/${id}`, { nombre: this.nombreEdicion, espacioAcademico: this.espacioEdicion }).subscribe({
+      next: () => { this.editando.set(null); this.cargar(); },
+      error: (falla) => this.error.set(mensajeError(falla))
+    });
+  }
+  borrarGrupo(id: number) {
+    this.http.delete(`/api/docente/grupos/${id}`).subscribe({
+      next: () => { this.confirmarBorrar.set(null); this.editando.set(null); this.seleccionado.set(null); this.cargar(); },
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
   agregar(id: number) {
     this.http.post(`/api/docente/grupos/${id}/estudiantes`, { nombre: this.nombres[id] ?? '', email: this.correos[id] ?? '' }).subscribe({
-      next: () => this.cargar(),
+      next: () => { this.nombres[id] = ''; this.correos[id] = ''; this.cargar(); },
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
   retirar(grupoId: number, estudianteId: number) {
     this.http.delete(`/api/docente/grupos/${grupoId}/estudiantes/${estudianteId}`).subscribe({ next: () => this.cargar() });
   }
-  elegir(id: number) { this.seleccionado.set(id); }
+  elegir(id: number) {
+    this.seleccionado.set(id);
+  }
   private cargar() {
     this.http.get<Grupo[]>('/api/docente/grupos').subscribe((dato) => {
       this.grupos.set(dato);
@@ -989,35 +1202,68 @@ export class GruposComponent {
             @if (ok()) { <p class="ok">{{ ok() }}</p> }
             <div class="row row-programar">
               <div class="row-acciones">
-                <button mat-stroked-button type="button" (click)="borrador()">Guardar borrador</button>
-                <button mat-flat-button color="primary" type="button" (click)="agendar()">Guardar y notificar</button>
+                <button class="btn-suave" type="button" (click)="borrador()">Guardar borrador</button>
+                @if (editandoId()) {
+                  <button class="btn-oscuro" type="button" (click)="guardarEdicion()">Guardar cambios</button>
+                  <button class="btn-suave" type="button" (click)="cancelarEdicion()">Cancelar edición</button>
+                } @else {
+                  <button class="btn-oscuro" type="button" (click)="agendar()">Guardar y notificar</button>
+                }
               </div>
-              <a mat-stroked-button routerLink="/docente/grupos">Cancelar</a>
+              <a class="btn-suave" routerLink="/docente/grupos">Cancelar</a>
             </div>
           </section>
-          <aside class="tarjeta stack">
-            <h2>Resumen</h2>
-            <p><strong>Caso.</strong> {{ nombreCaso() }}</p>
-            <p><strong>Grupo.</strong> {{ nombreGrupo() }}</p>
-            <p><strong>Ventana.</strong> {{ inicio || '—' }} → {{ fin || '—' }}</p>
-            <p><strong>Tiempo.</strong> {{ tiempoMax }} minutos · tolerancia {{ tolerancia }}</p>
-            <p><strong>Lugar.</strong> {{ lugar || 'Sin lugar físico' }}</p>
-            <p class="sub">Al notificar, cada estudiante recibe el mensaje, la URL y el código. La sesión nace sin iniciar hasta que el docente la abra.</p>
-          </aside>
+          <div class="programar-lado">
+            <section class="stack resumen-col">
+              <h2>Resumen</h2>
+              <aside class="tarjeta stack convoca-item resumen-agenda">
+                <div class="convoca-meta">
+                  <span class="aviso-canal" data-estado="SIN_INICIAR">Por agendar</span>
+                </div>
+                <h3>{{ nombreCaso() }}</h3>
+                <dl class="resumen-lista">
+                  <div><dt>Grupo</dt><dd>{{ nombreGrupo() }}</dd></div>
+                  <div><dt>Lugar</dt><dd>{{ lugar || 'Virtual' }}</dd></div>
+                  <div><dt>Inicio</dt><dd>{{ horaCorta(inicio) }}</dd></div>
+                  <div><dt>Fin</dt><dd>{{ horaCorta(fin) }}</dd></div>
+                </dl>
+                <div class="resumen-cifras">
+                  <article><small>Máx.</small><strong>{{ tiempoMax }} min</strong></article>
+                  <article><small>Ingreso</small><strong>{{ tolerancia }} min</strong></article>
+                  <article><small>Estimado</small><strong>{{ tiempoCaso() }} min</strong></article>
+                </div>
+                <p class="resumen-nota">Al notificar se envía URL y código. La sesión queda sin iniciar hasta que la abras.</p>
+              </aside>
+            </section>
+            <section class="stack convoca-col">
+              <h2>Convocatorias</h2>
+              @for (sesion of sesionesVisibles(); track sesion.id) {
+                <article class="tarjeta stack convoca-item">
+                  <div class="convoca-meta">
+                    <span class="aviso-canal" [attr.data-estado]="sesion.estado">{{ etiquetaEstadoSesion(sesion.estado) }}</span>
+                    <small>{{ sesion.codigo }}</small>
+                  </div>
+                  <h3>{{ sesion.caso }}</h3>
+                  <dl class="resumen-lista">
+                    <div><dt>Grupo</dt><dd>{{ sesion.grupo }}</dd></div>
+                    <div><dt>Lugar</dt><dd>{{ sesion.lugar || 'Virtual' }}</dd></div>
+                    <div><dt>Inicio</dt><dd>{{ horaCorta(sesion.inicio) }}</dd></div>
+                    <div><dt>Fin</dt><dd>{{ horaCorta(sesion.fin) }}</dd></div>
+                    <div class="convoca-dato-ancho"><dt>Ingreso</dt><dd>{{ sesion.toleranciaMin }} min de tolerancia</dd></div>
+                  </dl>
+                  <div class="convoca-acciones">
+                    @if (sesion.estado === 'SIN_INICIAR') {
+                      <button class="btn-suave" type="button" (click)="cargarEdicion(sesion)">Editar</button>
+                      <button class="btn-oscuro" type="button" (click)="accion(sesion.id, 'iniciar')">Iniciar</button>
+                    }
+                    @if (sesion.estado === 'EN_CURSO') { <button class="btn-suave" type="button" (click)="accion(sesion.id, 'finalizar')">Finalizar</button> }
+                    <a class="btn-oscuro" [routerLink]="['/docente/seguimiento']">Bitácora y reportes</a>
+                  </div>
+                </article>
+              }
+            </section>
+          </div>
         </div>
-        <h2>Convocatorias</h2>
-        @for (sesion of sesionesVisibles(); track sesion.id) {
-          <article class="tarjeta stack">
-            <small>{{ sesion.estado }} · código {{ sesion.codigo }}</small>
-            <h3>{{ sesion.caso }}</h3>
-            <p class="sub">{{ sesion.grupo }} · {{ sesion.inicio }} → {{ sesion.fin }}</p>
-            <p class="sub">{{ sesion.lugar || 'Sin lugar físico' }} · tolerancia {{ sesion.toleranciaMin }} min</p>
-            <div class="row">
-              @if (sesion.estado === 'SIN_INICIAR') { <button mat-flat-button color="primary" type="button" (click)="accion(sesion.id, 'iniciar')">Iniciar</button> }
-              @if (sesion.estado === 'EN_CURSO') { <button mat-stroked-button type="button" (click)="accion(sesion.id, 'finalizar')">Finalizar</button> }
-            </div>
-          </article>
-        }
       </section>
     </app-marco-docente>
   `
@@ -1040,6 +1286,7 @@ export class ProgramarComponent {
   mensaje = '';
   error = signal('');
   ok = signal('');
+  editandoId = signal<number | null>(null);
   constructor() {
     const guardado = localStorage.getItem('dilema-agenda');
     if (guardado) {
@@ -1060,6 +1307,14 @@ export class ProgramarComponent {
     this.cargar();
   }
   nombreCaso() { return this.casos().find((c) => c.id === Number(this.casoId))?.nombre ?? 'Sin caso'; }
+  tiempoCaso() { return this.casos().find((c) => c.id === Number(this.casoId))?.tiempoEstimadoMin ?? '—'; }
+  horaCorta(valor: string) { return horaCorta(valor); }
+  etiquetaEstadoSesion(estado: string) {
+    if (estado === 'EN_CURSO') return 'En curso';
+    if (estado === 'SIN_INICIAR') return 'Sin iniciar';
+    if (estado === 'FINALIZADO') return 'Finalizado';
+    return estado;
+  }
   sesionesVisibles() {
     const q = this.filtro.texto().trim().toLowerCase();
     return this.sesiones().filter((sesion) => !q || sesion.caso.toLowerCase().includes(q) || sesion.grupo.toLowerCase().includes(q) || sesion.codigo.toLowerCase().includes(q));
@@ -1074,10 +1329,7 @@ export class ProgramarComponent {
     this.error.set('');
   }
   agendar() {
-    this.http.post<Sesion>('/api/docente/sesiones', {
-      casoId: Number(this.casoId), grupoId: Number(this.grupoId), inicio: this.inicio, fin: this.fin,
-      tiempoMaxMin: Number(this.tiempoMax), toleranciaMin: Number(this.tolerancia), lugar: this.lugar, mensaje: this.mensaje
-    }).subscribe({
+    this.http.post<Sesion>('/api/docente/sesiones', this.cuerpoAgenda()).subscribe({
       next: () => {
         this.ok.set('Convocatoria registrada. Los estudiantes reciben el aviso sin que el código quede visible.');
         localStorage.removeItem('dilema-agenda');
@@ -1085,6 +1337,45 @@ export class ProgramarComponent {
       },
       error: (falla) => this.error.set(mensajeError(falla))
     });
+  }
+  cargarEdicion(sesion: Sesion) {
+    this.editandoId.set(sesion.id);
+    this.casoId = sesion.casoId;
+    this.grupoId = sesion.grupoId;
+    this.inicio = this.paraCampoFecha(sesion.inicio);
+    this.fin = this.paraCampoFecha(sesion.fin);
+    this.tiempoMax = sesion.tiempoMaxMin;
+    this.tolerancia = sesion.toleranciaMin;
+    this.lugar = sesion.lugar || '';
+    this.mensaje = sesion.mensaje || '';
+    this.ok.set('Estás editando la convocatoria ' + sesion.codigo + '.');
+    this.error.set('');
+  }
+  guardarEdicion() {
+    const id = this.editandoId();
+    if (!id) return;
+    this.http.put<Sesion>(`/api/docente/sesiones/${id}`, this.cuerpoAgenda()).subscribe({
+      next: () => {
+        this.ok.set('Convocatoria actualizada. Los estudiantes reciben el aviso del cambio.');
+        this.editandoId.set(null);
+        this.cargar();
+      },
+      error: (falla) => this.error.set(mensajeError(falla))
+    });
+  }
+  cancelarEdicion() {
+    this.editandoId.set(null);
+    this.ok.set('');
+  }
+  private cuerpoAgenda() {
+    return {
+      casoId: Number(this.casoId), grupoId: Number(this.grupoId), inicio: this.inicio, fin: this.fin,
+      tiempoMaxMin: Number(this.tiempoMax), toleranciaMin: Number(this.tolerancia), lugar: this.lugar, mensaje: this.mensaje
+    };
+  }
+  private paraCampoFecha(valor: string) {
+    if (!valor) return '';
+    return valor.length >= 16 ? valor.slice(0, 16) : valor;
   }
   accion(id: number, verbo: string) {
     this.http.post(`/api/docente/sesiones/${id}/${verbo}`, {}).subscribe({ next: () => this.cargar(), error: (falla) => this.error.set(mensajeError(falla)) });
@@ -1110,13 +1401,19 @@ export class ProgramarComponent {
       <section class="tablero">
         <header class="saludo">
           <h1>Reportes</h1>
-          <p>Desempeño, estado de la bitácora y descarga del grupo.</p>
+          <p>Bitácora en vivo y consulta de sesiones ya realizadas.</p>
         </header>
         <div class="dos-ancha reportes-grid">
           <div class="filtros">
+            <label class="field"><span>Vista</span>
+              <select [(ngModel)]="vista" (ngModelChange)="cambiarVista()">
+                <option value="todas">Todas las convocatorias</option>
+                <option value="realizadas">Solo realizadas</option>
+              </select>
+            </label>
             <label class="field"><span>Caso</span>
               <select [(ngModel)]="sesionId" (ngModelChange)="ver($event)">
-                @for (sesion of sesiones(); track sesion.id) {
+                @for (sesion of sesionesVista(); track sesion.id) {
                   <option [ngValue]="sesion.id">{{ sesion.caso }} · {{ sesion.grupo }}</option>
                 }
               </select>
@@ -1125,33 +1422,61 @@ export class ProgramarComponent {
               <input [(ngModel)]="busqueda" placeholder="Filtrar por estudiante" />
             </label>
           </div>
+          <div class="tabla-desborde">
           <table>
-            <thead><tr><th>Estudiante</th><th>Estado</th><th>Puntaje</th><th>Nivel</th><th></th></tr></thead>
+            <thead><tr><th>Estudiante</th><th>Estado</th><th>Puntaje</th><th>Nivel</th><th>Consulta</th></tr></thead>
             <tbody>
               @for (fila of visibles(); track fila.email) {
                 <tr>
                   <td>{{ fila.estudiante }}<br><small>{{ fila.email }}</small></td>
-                  <td>{{ fila.estado }}</td>
+                  <td><span class="aviso-canal" [attr.data-estado]="fila.estado">{{ etiquetaFila(fila.estado) }}</span></td>
                   <td>{{ fila.nota ?? '—' }} / 5,0</td>
                   <td>{{ nivel(fila.nota) }}</td>
-                  <td>
-                    @if (fila.participacionId) { <a mat-stroked-button [routerLink]="['/docente/seguimiento', fila.participacionId]">Ver respuestas</a> }
+                  <td class="consulta-cel">
+                    @if (fila.repeticionAutorizada) { <small>Repetición autorizada</small> }
+                    @if (fila.retroalimentacion) { <small>{{ fila.retroalimentacion }}</small> }
+                    @if (intentosDe(fila); as lista) {
+                      @if (lista.length) {
+                        <div class="intentos-fila">
+                          @if (lista.length > 1) {
+                            <select class="intento-menu" (change)="abrirIntento($event)" [attr.aria-label]="'Otros intentos de ' + fila.estudiante">
+                              <option value="" selected disabled>{{ lista.length }} intentos</option>
+                              @for (intento of lista; track intento.id) {
+                                <option [value]="intento.id">Intento {{ intento.numeroIntento }} · {{ etiquetaFila(intento.estado) }}</option>
+                              }
+                            </select>
+                          }
+                          <a class="btn-suave" [routerLink]="['/docente/seguimiento', lista[lista.length - 1].id]">Último intento</a>
+                        </div>
+                      } @else if (fila.participacionId) {
+                        <a class="btn-suave" [routerLink]="['/docente/seguimiento', fila.participacionId]">Ver respuestas</a>
+                      }
+                    }
                   </td>
                 </tr>
               } @empty { <tr><td colspan="5">No hay estudiantes en esta convocatoria.</td></tr> }
             </tbody>
           </table>
-          <aside class="tarjeta stack ficha-cohorte">
+          </div>
+          <aside class="tarjeta stack ficha-cohorte resumen-agenda convoca-item">
             <h2>Ficha de cohorte</h2>
-            <p class="nota">{{ promedio() }}</p>
-            <p class="sub">Promedio sobre 5,0</p>
-            <p>Finalizados: {{ finalizados() }} / {{ filas().length }}</p>
-            <p>Pendientes: {{ filas().length - finalizados() }}</p>
-            <p>Superior {{ conteo('Superior') }} · Alto {{ conteo('Alto') }} · Básico {{ conteo('Básico') }} · Bajo {{ conteo('Bajo') }}</p>
-            <div class="row">
+            @if (aviso()) { <p class="resumen-nota">{{ aviso() }}</p> }
+            <div class="resumen-cifras">
+              <article><small>Promedio</small><strong>{{ promedio() }}</strong></article>
+              <article><small>Hechos</small><strong>{{ finalizados() }}/{{ filas().length }}</strong></article>
+              <article><small>Pendientes</small><strong>{{ filas().length - finalizados() }}</strong></article>
+            </div>
+            <div class="ficha-niveles">
+              <span><small>Superior</small>{{ conteo('Superior') }}</span>
+              <span><small>Alto</small>{{ conteo('Alto') }}</span>
+              <span><small>Básico</small>{{ conteo('Básico') }}</span>
+              <span><small>Bajo</small>{{ conteo('Bajo') }}</span>
+            </div>
+            <div class="row ficha-exporta">
               <button class="btn-oscuro" type="button" (click)="descargar('csv')">CSV</button>
-              <button class="btn-suave" type="button" (click)="descargar('pdf')">PDF</button>
-              <button class="btn-suave" type="button" (click)="descargar('xlsx')">Excel</button>
+              <button class="btn-oscuro btn-csv-directo" type="button" (click)="descargarCsvDirecto()">CSV directo</button>
+              <button class="btn-oscuro" type="button" (click)="descargar('pdf')">PDF</button>
+              <button class="btn-oscuro" type="button" (click)="descargar('xlsx')">Excel</button>
             </div>
           </aside>
         </div>
@@ -1162,24 +1487,64 @@ export class ProgramarComponent {
 export class SeguimientoComponent {
   enlaces = enlaces;
   private http = inject(HttpClient);
+  private router = inject(Router);
   private filtro = inject(BusquedaService);
   sesiones = signal<Sesion[]>([]);
+  realizadas = signal<SesionRealizada[]>([]);
   filas = signal<Fila[]>([]);
+  intentos = signal<IntentoConsultado[]>([]);
   sesionId = 0;
+  vista: 'todas' | 'realizadas' = 'todas';
   busqueda = '';
+  aviso = signal('');
   constructor() {
     this.http.get<Sesion[]>('/api/docente/sesiones').subscribe((dato) => {
       this.sesiones.set(dato);
-      if (dato[0]) this.ver(dato[0].id);
+      if (dato[0] && this.vista === 'todas') this.ver(dato[0].id);
     });
+    this.http.get<SesionRealizada[]>('/api/docente/seguimiento/sesiones').subscribe((dato) => this.realizadas.set(dato));
+  }
+  sesionesVista() {
+    if (this.vista === 'realizadas') return this.realizadas();
+    return this.sesiones();
+  }
+  cambiarVista() {
+    const lista = this.sesionesVista();
+    if (lista[0]) this.ver(lista[0].id);
+    else { this.sesionId = 0; this.filas.set([]); this.intentos.set([]); }
   }
   ver(id: number) {
     this.sesionId = Number(id);
+    this.aviso.set('');
     this.http.get<Fila[]>(`/api/docente/sesiones/${this.sesionId}/seguimiento`).subscribe((dato) => this.filas.set(dato));
+    this.http.get<IntentoConsultado[]>(`/api/docente/seguimiento/sesiones/${this.sesionId}/participaciones`).subscribe({
+      next: (dato) => this.intentos.set(dato),
+      error: (falla) => {
+        this.intentos.set([]);
+        const texto = mensajeError(falla);
+        if (!/no tiene participaciones/i.test(texto)) this.aviso.set(texto);
+      }
+    });
+  }
+  intentosDe(fila: Fila) {
+    return this.intentos()
+      .filter((intento) => intento.estudiante === fila.estudiante)
+      .sort((a, b) => a.numeroIntento - b.numeroIntento);
+  }
+  abrirIntento(evento: Event) {
+    const valor = Number((evento.target as HTMLSelectElement).value);
+    if (valor) this.router.navigate(['/docente/seguimiento', valor]);
   }
   visibles() {
     const textos = [this.busqueda, this.filtro.texto()].map((texto) => texto.trim().toLowerCase()).filter(Boolean);
     return this.filas().filter((fila) => textos.every((q) => fila.estudiante.toLowerCase().includes(q) || fila.email.toLowerCase().includes(q)));
+  }
+  etiquetaFila(estado: string) {
+    if (estado === 'FINALIZADA') return 'Finalizado';
+    if (estado === 'AUSENTE') return 'Ausente';
+    if (estado === 'EN_CURSO') return 'En curso';
+    if (estado === 'SIN_INICIAR') return 'Sin iniciar';
+    return estado;
   }
   nivel(nota: number | null) {
     if (nota == null) return '—';
@@ -1196,47 +1561,86 @@ export class SeguimientoComponent {
   }
   conteo(nivel: string) { return this.filas().filter((f) => this.nivel(f.nota) === nivel).length; }
   descargar(formato: 'csv' | 'pdf' | 'xlsx') {
-    this.http.get(`/api/docente/sesiones/${this.sesionId}/reporte`, { params: { formato }, responseType: 'blob' }).subscribe((archivo) => {
-      const url = URL.createObjectURL(archivo);
+    this.bajar(`/api/docente/sesiones/${this.sesionId}/reporte`, `reporte-${this.sesionId}.${formato}`, { formato });
+  }
+  descargarCsvDirecto() {
+    this.bajar(`/api/docente/sesiones/${this.sesionId}/reporte.csv`, `reporte-sesion-${this.sesionId}.csv`);
+  }
+  private bajar(url: string, nombre: string, params?: Record<string, string>) {
+    this.http.get(url, { params, responseType: 'blob' }).subscribe((archivo) => {
+      const href = URL.createObjectURL(archivo);
       const enlace = document.createElement('a');
-      enlace.href = url;
-      enlace.download = `reporte-${this.sesionId}.${formato}`;
+      enlace.href = href;
+      enlace.download = nombre;
       enlace.click();
-      URL.revokeObjectURL(url);
+      URL.revokeObjectURL(href);
     });
   }
 }
 
 @Component({
   selector: 'app-detalle-participacion',
-  imports: [MatButtonModule, MatCardModule, MarcoDocenteComponent, FormsModule],
+  imports: [MatButtonModule, MatCardModule, MarcoDocenteComponent, FormsModule, RouterLink],
   template: `
     <app-marco-docente [enlaces]="enlaces">
       @if (dato(); as actual) {
-        <section class="tarjeta stack">
-          <p class="kicker">{{ actual.estudiante }} · {{ actual.estado }}</p>
-          <h1>{{ actual.caso }}</h1>
-          <p class="nota">{{ actual.nota ?? '—' }}</p>
-          @for (pregunta of actual.preguntas; track pregunta.id) {
-            <article class="item">
-              <small>{{ pregunta.bloque }} · {{ pregunta.criterio }}</small>
-              <h3>{{ pregunta.enunciado }}</h3>
-              @for (opcion of pregunta.opciones; track opcion.id) {
-                <p [class.ok]="opcion.correcta" [class.error]="pregunta.seleccionId === opcion.id && !opcion.correcta">
-                  {{ pregunta.seleccionId === opcion.id ? 'Elegida: ' : '' }}{{ opcion.texto }}
-                </p>
+        <section class="informe-caso">
+          <article class="tarjeta stack informe-ficha">
+            <div class="informe-ficha-cabeza">
+              <div>
+                <span class="aviso-canal" [attr.data-estado]="actual.estado">{{ etiquetaEstado(actual.estado) }}</span>
+                @if (consulta(); as extra) { <small class="informe-intento">Intento {{ extra.numeroIntento }}</small> }
+                <h1>{{ actual.caso }}</h1>
+                <p class="sub">{{ actual.estudiante }}</p>
+              </div>
+              <a class="btn-suave" routerLink="/docente/seguimiento">Volver a reportes</a>
+            </div>
+            <div class="resumen-cifras informe-cifras">
+              <article><small>Calificación</small><strong>{{ actual.nota ?? '—' }} <em>/ 5,0</em></strong></article>
+              <article><small>Nivel</small><strong>{{ nivel(actual.nota) }}</strong></article>
+              @if (actual.aciertos !== null) {
+                <article><small>Aciertos</small><strong>{{ actual.aciertos }} <em>/ {{ actual.total }}</em></strong></article>
+                <article><small>Fallos</small><strong>{{ actual.errores }}</strong></article>
               }
+            </div>
+          </article>
+          <h2>Respuestas del intento</h2>
+          @for (pregunta of actual.preguntas; track pregunta.id) {
+            <article class="tarjeta stack informe-pregunta">
+              <div class="convoca-meta">
+                <span class="aviso-canal">{{ pregunta.bloque }}</span>
+                <small>{{ pregunta.criterio }}@if (pregunta.puntaje != null) { · {{ pregunta.puntaje }} pts }</small>
+              </div>
+              <h3>{{ pregunta.enunciado }}</h3>
+              <div class="informe-opciones">
+                @for (opcion of pregunta.opciones; track opcion.id) {
+                  @if (pregunta.seleccionId === opcion.id || opcion.correcta) {
+                    <div class="informe-opcion" [class.bien]="opcion.correcta" [class.mal]="pregunta.seleccionId === opcion.id && opcion.correcta === false">
+                      <strong>{{ etiquetaOpcion(pregunta, opcion) }}</strong>
+                      <p>{{ opcion.texto }}</p>
+                      @if (opcion.explicacion) { <p class="sub">{{ opcion.explicacion }}</p> }
+                      @if (opcion.fundamento) { <p class="sub">{{ opcion.fundamento }}</p> }
+                    </div>
+                  }
+                }
+              </div>
             </article>
           }
-          <label class="field"><span>VALORACIÓN GENERAL</span><textarea [(ngModel)]="texto" [disabled]="actual.estado !== 'FINALIZADA'"></textarea></label>
-          @if (error()) { <p class="error">{{ error() }}</p> }
-          @if (ok()) { <p class="ok">{{ ok() }}</p> }
-          <button mat-flat-button color="primary" type="button" [disabled]="actual.estado !== 'FINALIZADA'" (click)="valorar(actual.id)">Guardar valoración</button>
-          @if (actual.repeticionAutorizada) {
-            <p class="ok">Ya hay un intento adicional autorizado.</p>
-          } @else {
-            <button mat-stroked-button type="button" [disabled]="actual.estado !== 'FINALIZADA'" (click)="repetir(actual.id)">Autorizar repetición</button>
-          }
+          <article class="tarjeta stack informe-valoracion">
+            <h2>Valoración del docente</h2>
+            <label class="field"><span>Comentario para el estudiante</span>
+              <textarea [(ngModel)]="texto" [disabled]="actual.estado !== 'FINALIZADA'" rows="4"></textarea>
+            </label>
+            @if (error()) { <p class="error">{{ error() }}</p> }
+            @if (ok()) { <p class="ok">{{ ok() }}</p> }
+            @if (actual.repeticionAutorizada) { <p class="ok">Ya hay un intento adicional autorizado.</p> }
+            <div class="caso-acciones">
+              <button class="btn-oscuro" type="button" [disabled]="actual.estado !== 'FINALIZADA'" (click)="valorar(actual.id)">Guardar valoración</button>
+              @if (!actual.repeticionAutorizada) {
+                <button class="btn-suave" type="button" [disabled]="actual.estado !== 'FINALIZADA'" (click)="repetir(actual.id)">Autorizar repetición</button>
+              }
+            </div>
+          </article>
         </section>
       }
     </app-marco-docente>
@@ -1247,26 +1651,50 @@ export class DetalleParticipacionComponent {
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
   dato = signal<Participacion | null>(null);
+  consulta = signal<ParticipacionConsultada | null>(null);
   texto = '';
   error = signal('');
   ok = signal('');
-  constructor() {
-    const id = this.route.snapshot.paramMap.get('id');
-    this.http.get<Participacion>(`/api/participaciones/${id}`).subscribe({
-      next: (dato) => { this.dato.set(dato); this.texto = dato.retroalimentacion ?? ''; },
-      error: (falla) => this.error.set(mensajeError(falla))
-    });
+  constructor() { this.cargar(); }
+  etiquetaEstado(estado: string) {
+    if (estado === 'FINALIZADA') return 'Finalizado';
+    if (estado === 'AUSENTE') return 'Ausente';
+    if (estado === 'EN_CURSO') return 'En curso';
+    return estado;
+  }
+  nivel(nota: number | null) {
+    if (nota == null) return '—';
+    if (nota >= 4.6) return 'Superior';
+    if (nota >= 4) return 'Alto';
+    if (nota >= 3) return 'Básico';
+    return 'Bajo';
+  }
+  etiquetaOpcion(pregunta: PreguntaJuego, opcion: OpcionJuego) {
+    if (opcion.correcta) return 'Respuesta adecuada';
+    if (pregunta.seleccionId === opcion.id) return 'Elección del estudiante';
+    return 'Opción';
   }
   valorar(id: number) {
     this.http.post(`/api/docente/participaciones/${id}/retroalimentacion`, { texto: this.texto }).subscribe({
-      next: () => this.ok.set('Valoración registrada. El estudiante recibe el aviso.'),
+      next: () => { this.ok.set('Valoración registrada. El estudiante recibe el aviso.'); this.cargar(); },
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
   repetir(id: number) {
     this.http.post(`/api/docente/participaciones/${id}/repeticion`, {}).subscribe({
-      next: () => this.ok.set('Repetición autorizada para un intento adicional.'),
+      next: () => { this.ok.set('Repetición autorizada para un intento adicional.'); this.cargar(); },
       error: (falla) => this.error.set(mensajeError(falla))
+    });
+  }
+  private cargar() {
+    const id = this.route.snapshot.paramMap.get('id');
+    this.http.get<Participacion>(`/api/participaciones/${id}`).subscribe({
+      next: (dato) => { this.dato.set(dato); this.texto = dato.retroalimentacion ?? ''; },
+      error: (falla) => this.error.set(mensajeError(falla))
+    });
+    this.http.get<ParticipacionConsultada>(`/api/docente/seguimiento/participaciones/${id}`).subscribe({
+      next: (dato) => this.consulta.set(dato),
+      error: () => this.consulta.set(null)
     });
   }
 }

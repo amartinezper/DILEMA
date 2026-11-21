@@ -12,7 +12,7 @@ import java.util.List;
 public class Mapeador {
     public Contratos.UsuarioVista usuario(Usuario u) {
         List<String> permisos = u.permisos.stream().map(permiso -> permiso.tipo).sorted().toList();
-        return new Contratos.UsuarioVista(u.id, u.nombre, u.email, u.rol.name(), permisos);
+        return new Contratos.UsuarioVista(u.id, u.nombre, u.email, u.rol.name(), permisos, u.activo);
     }
 
     public Contratos.PersonaVista persona(Usuario u) {

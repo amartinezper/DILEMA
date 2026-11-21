@@ -309,14 +309,21 @@ public class ParticipacionServicio {
         int total = preguntas.size();
         int progreso = ProgresoParticipacion.porcentaje(participacion, total);
         ResumenIntento resumen = ResumenIntento.de(participacion);
+        Caso caso = participacion.sesion.caso;
+        List<Integer> escenarios = new ArrayList<>();
+        for (int i = 0; i < caso.escenarios.size(); i++) escenarios.add(i);
+        List<Contratos.PersonajeIn> personajes = caso.personajes == null ? List.of() : caso.personajes.stream()
+                .map(p -> new Contratos.PersonajeIn(p.id, p.nombre, p.descripcion, escenarios))
+                .toList();
         return new Contratos.ParticipacionVista(participacion.id, participacion.sesion.id, participacion.estadoNombre(),
-                participacion.sesion.caso.nombre, progreso, total,
+                caso.nombre, progreso, total,
                 participacion.sesion.tiempoMaxMin * 60, usados, participacion.nota(),
                 participacion.comentarioDocente(), participacion.estudiante.nombre, preguntas,
                 participacion.autorizacion != null,
                 resumen == null ? null : resumen.aciertos(),
                 resumen == null ? null : resumen.errores(),
-                resumen == null ? null : resumen.sinResponder());
+                resumen == null ? null : resumen.sinResponder(),
+                caso.id, caso.desarrolloSituacional, caso.contexto, personajes);
     }
 
     /** RF-14: delega en el Proxy de protección la decisión de revelar el resultado al estudiante. */

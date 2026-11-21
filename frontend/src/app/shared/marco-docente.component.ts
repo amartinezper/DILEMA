@@ -28,6 +28,7 @@ import { AuthService } from '../core/auth.service';
                   @case ('reporte') { <path d="M5 19V10M10 19V5M15 19v-7M20 19V8"/> }
                   @case ('mas') { <path d="M12 6v12M6 12h12"/> }
                   @case ('ajuste') { <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM12 3.5v2M12 18.5v2M4.8 6.2l1.5 1.5M17.7 16.3l1.5 1.5M3.5 12h2M18.5 12h2M4.8 17.8l1.5-1.5M17.7 7.7l1.5-1.5"/> }
+                  @case ('aviso') { <path d="M6 16V10a6 6 0 1 1 12 0v6l1.5 2H4.5L6 16zM10 19a2 2 0 0 0 4 0"/> }
                   @default { <path d="M4 11.5 12 5l8 6.5V20H4z"/> }
                 }
               </svg>
@@ -56,7 +57,7 @@ import { AuthService } from '../core/auth.service';
           <div class="inicio-marca-hero">
             <img class="inicio-cerebro" src="/dilema-cerebro.jpg" alt="" />
           </div>
-          <svg class="inicio-deco" viewBox="0 0 1440 900" preserveAspectRatio="none">
+          <svg class="inicio-deco" viewBox="0 0 1440 420" preserveAspectRatio="none">
             <defs>
               <linearGradient id="anillo-doc" x1="0" y1="0" x2="1" y2="1">
                 <stop offset="0" stop-color="#dbeafe" stop-opacity=".15"/>
@@ -73,12 +74,12 @@ import { AuthService } from '../core/auth.service';
               <circle cx="1336" cy="70" r="1.6"/>
               <circle cx="1012" cy="54" r="1.2"/>
             </g>
-            <ellipse cx="1148" cy="110" rx="270" ry="110" fill="none" stroke="url(#anillo-doc)" stroke-width="10" transform="rotate(-16 1148 110)"/>
-            <ellipse cx="1148" cy="110" rx="228" ry="88" fill="none" stroke="#e0f2fe" stroke-width="2.2" transform="rotate(-16 1148 110)" opacity=".8"/>
-            <path fill="#1e3a8a" d="M460,0 C660,28 800,128 970,250 C1130,368 1288,420 1460,360 L1460,278 C1288,338 1130,286 970,168 C800,46 660,-36 460,-48 Z"/>
-            <path fill="#3b82f6" d="M460,0 C660,28 800,128 970,250 C1130,368 1288,420 1460,360 L1460,318 C1288,378 1130,326 970,208 C800,86 660,-12 460,-24 Z"/>
-            <path fill="#ffffff" d="M460,0 C660,28 800,128 970,250 C1130,368 1288,420 1460,360 L1460,342 C1288,402 1130,350 970,230 C800,108 660,8 460,-10 Z"/>
-            <path fill="#eef2ff" d="M0,0 H460 C660,28 800,128 970,250 C1130,368 1288,420 1440,360 L1440,900 L0,900 Z"/>
+            <ellipse cx="1188" cy="128" rx="250" ry="118" fill="none" stroke="url(#anillo-doc)" stroke-width="10" transform="rotate(-18 1188 128)"/>
+            <ellipse cx="1188" cy="128" rx="210" ry="96" fill="none" stroke="#e0f2fe" stroke-width="2.2" transform="rotate(-18 1188 128)" opacity=".8"/>
+            <path fill="#1e3a8a" d="M430,0 C650,22 800,118 980,250 C1148,368 1290,400 1460,355 L1460,273 C1290,318 1148,286 980,168 C800,36 650,-38 430,-48 Z"/>
+            <path fill="#3b82f6" d="M430,0 C650,22 800,118 980,250 C1148,368 1290,400 1460,355 L1460,313 C1290,358 1148,326 980,208 C800,76 650,-14 430,-24 Z"/>
+            <path fill="#ffffff" d="M430,0 C650,22 800,118 980,250 C1148,368 1290,400 1460,355 L1460,337 C1290,382 1148,350 980,232 C800,100 650,8 430,-10 Z"/>
+            <path fill="#eef2ff" d="M0,0 H430 C650,22 800,118 980,250 C1148,368 1290,400 1440,355 L1440,420 L0,420 Z"/>
           </svg>
         </div>
         <header class="inicio-hero">
@@ -113,7 +114,9 @@ export class MarcoDocenteComponent {
   primerNombre() {
     const primero = this.nombre().trim().split(/\s+/)[0];
     if (primero) return primero;
-    return this.auth.rol() === 'ADMIN' ? 'administración' : 'docente';
+    if (this.auth.rol() === 'ADMIN') return 'administración';
+    if (this.auth.rol() === 'ESTUDIANTE') return 'estudiante';
+    return 'docente';
   }
 
   iniciales() {
@@ -122,12 +125,13 @@ export class MarcoDocenteComponent {
   }
 
   icono(href: string) {
+    if (href.includes('/avisos')) return 'aviso';
     if (href.includes('/nuevo')) return 'mas';
     if (href.includes('/casos')) return 'casos';
     if (href.includes('/grupos') || href.includes('/usuarios')) return 'grupos';
     if (href.includes('/programar')) return 'calendario';
     if (href.includes('/seguimiento') || href.includes('/auditoria')) return 'reporte';
-    if (href.includes('/configuracion')) return 'ajuste';
+    if (href.includes('/configuracion') || href.includes('/perfil')) return 'ajuste';
     return 'inicio';
   }
 }

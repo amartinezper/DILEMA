@@ -135,8 +135,12 @@ function webglDisponible(): boolean {
   `,
   styles: [`
     :host { display: block; width: 100%; }
+    :host-context(.pantalla-completa) { height: 100%; min-height: 0; }
     .novela { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 14px;
       background: linear-gradient(180deg, #d8e4ea, #b7c7cf); container-type: inline-size; }
+    :host-context(.pantalla-completa) .novela {
+      aspect-ratio: auto; height: 100%; min-height: 0; border-radius: 12px;
+    }
     .fondo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
     .fondo.entra { animation: aparecer .4s ease both; }
     @keyframes aparecer { from { opacity: 0; } }

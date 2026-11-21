@@ -5,10 +5,13 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { forkJoin } from 'rxjs';
-import { MarcoComponent } from '../shared/marco.component';
+import { MarcoDocenteComponent } from '../shared/marco-docente.component';
+import { MarcoEstudianteComponent } from '../shared/marco-estudiante.component';
 import { AuthService } from '../core/auth.service';
 import { BusquedaService } from '../core/busqueda.service';
-import { Aviso, PanelEstudiante, Participacion, Sesion, mensajeError } from '../core/api.service';
+import { Aviso, OpcionJuego, PanelEstudiante, Participacion, PersonajeCaso, PreguntaJuego, Sesion, mensajeError } from '../core/api.service';
+import { NovelaReproductorComponent, CasoReproductor, OpcionElegida } from '../shared/novela/novela-reproductor.component';
+import { MusicaNovelaService } from '../shared/novela/musica-novela.service';
 
 const enlaces = [
   { href: '/estudiante', texto: 'Casos asignados', exacto: true },
@@ -17,94 +20,9 @@ const enlaces = [
 
 @Component({
   selector: 'app-panel-estudiante',
-  imports: [RouterLink],
+  imports: [RouterLink, MarcoEstudianteComponent],
   template: `
-    <div class="inicio-est" [class.menu-abierto]="menuAbierto()">
-      <button class="inicio-menu-btn" type="button" (click)="alternarMenu()" [attr.aria-expanded]="menuAbierto()" aria-label="Menú">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg>
-      </button>
-      <div class="inicio-menu-fondo" (click)="cerrarMenu()" aria-hidden="true"></div>
-      <aside class="inicio-menu">
-        <a class="inicio-logo" routerLink="/estudiante" (click)="seccion.set('inicio')">
-          <img class="inicio-logo-icono" src="/dilema-cerebro.jpg" alt="" />
-          <span>Dilema</span>
-        </a>
-        <nav (click)="cerrarMenu()">
-          <button type="button" [class.activa]="seccion() === 'inicio'" (click)="seccion.set('inicio')">
-            <svg viewBox="0 0 24 24"><path d="M4 11.5 12 5l8 6.5V20H4z"/></svg>
-            Inicio
-          </button>
-          <button type="button" [class.activa]="seccion() === 'dilemas'" (click)="seccion.set('dilemas')">
-            <svg viewBox="0 0 24 24"><path d="M5 5.5h9.5A2.5 2.5 0 0 1 17 8v11H8.5A2.5 2.5 0 0 1 6 16.5V6.5A1 1 0 0 0 5 5.5z"/></svg>
-            Mis Dilemas
-          </button>
-          <button type="button" [class.activa]="seccion() === 'resultados'" (click)="seccion.set('resultados')">
-            <svg viewBox="0 0 24 24"><path d="M5 19V10M10 19V5M15 19v-7M20 19V8"/></svg>
-            Resultados
-          </button>
-          <button type="button" [class.activa]="seccion() === 'perfil'" (click)="seccion.set('perfil')">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 19c.8-3.2 3.4-5 7-5s6.2 1.8 7 5"/></svg>
-            Perfil
-          </button>
-        </nav>
-        <p class="inicio-lema">
-          <svg class="inicio-lema-onda" viewBox="0 0 210 120" preserveAspectRatio="none" aria-hidden="true">
-            <path fill="#091830" d="M0,120 V48 C52,8 158,72 210,38 V120 Z"/>
-            <ellipse cx="105" cy="58" rx="96" ry="34" fill="none" stroke="#16345c" stroke-width="6" opacity=".55" transform="rotate(12 105 58)"/>
-            <ellipse cx="105" cy="58" rx="80" ry="26" fill="none" stroke="#1d4a7a" stroke-width="1.6" opacity=".35" transform="rotate(12 105 58)"/>
-          </svg>
-          <span>Piensa. Decide. Aprende.</span>
-          <span class="lema-cierre">A decidir.</span>
-        </p>
-        <button class="inicio-salir" type="button" (click)="auth.salir()">
-          <svg viewBox="0 0 24 24"><path d="M10 7V5H5v14h5v-2M10 12h10M16 8l4 4-4 4"/></svg>
-          Cerrar Sesión
-        </button>
-      </aside>
-
-      <main class="inicio-cuerpo">
-        <div class="inicio-fondo" aria-hidden="true">
-          <div class="inicio-cielo"></div>
-          <div class="inicio-marca-hero">
-            <img class="inicio-cerebro" src="/dilema-cerebro.jpg" alt="" />
-          </div>
-          <svg class="inicio-deco" viewBox="0 0 1440 900" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="anillo" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stop-color="#dbeafe" stop-opacity=".15"/>
-                <stop offset=".45" stop-color="#93c5fd"/>
-                <stop offset="1" stop-color="#3b82f6" stop-opacity=".2"/>
-              </linearGradient>
-              </defs>
-            <g fill="#fff">
-              <polygon points="860,18 864,32 880,36 864,40 860,54 856,40 840,36 856,32"/>
-              <polygon points="1088,10 1092,24 1108,28 1092,32 1088,46 1084,32 1068,28 1084,24"/>
-              <polygon points="1260,42 1264,54 1278,58 1264,62 1260,74 1256,62 1242,58 1256,54"/>
-              <circle cx="940" cy="28" r="1.8"/>
-              <circle cx="1188" cy="16" r="1.5"/>
-              <circle cx="1336" cy="70" r="1.6"/>
-              <circle cx="1012" cy="54" r="1.2"/>
-            </g>
-            <ellipse cx="1148" cy="110" rx="270" ry="110" fill="none" stroke="url(#anillo)" stroke-width="10" transform="rotate(-16 1148 110)"/>
-            <ellipse cx="1148" cy="110" rx="228" ry="88" fill="none" stroke="#e0f2fe" stroke-width="2.2" transform="rotate(-16 1148 110)" opacity=".8"/>
-            <path fill="#1e3a8a" d="M460,0 C660,28 800,128 970,250 C1130,368 1288,420 1460,360 L1460,278 C1288,338 1130,286 970,168 C800,46 660,-36 460,-48 Z"/>
-            <path fill="#3b82f6" d="M460,0 C660,28 800,128 970,250 C1130,368 1288,420 1460,360 L1460,318 C1288,378 1130,326 970,208 C800,86 660,-12 460,-24 Z"/>
-            <path fill="#ffffff" d="M460,0 C660,28 800,128 970,250 C1130,368 1288,420 1460,360 L1460,342 C1288,402 1130,350 970,230 C800,108 660,8 460,-10 Z"/>
-            <path fill="#eef2ff" d="M0,0 H460 C660,28 800,128 970,250 C1130,368 1288,420 1440,360 L1440,900 L0,900 Z"/>
-          </svg>
-        </div>
-        <header class="inicio-hero">
-          <div class="inicio-user">
-            <span class="inicio-avatar">{{ iniciales() }}</span>
-            <span>{{ nombreCompleto() }}</span>
-          </div>
-          <div class="inicio-hero-copy">
-            <div class="inicio-saludo">
-              <h1>¡Hola, {{ nombre() }}! <span aria-hidden="true">👋</span></h1>
-              <p>Bienvenido a <strong>Dilema</strong>, donde cada decisión cuenta.</p>
-            </div>
-          </div>
-        </header>
+    <app-marco-estudiante [activa]="seccion()" [sinLeer]="sinLeer()">
         @if (seccion() === 'inicio') {
           <section class="inicio-stats">
             <article>
@@ -139,14 +57,16 @@ const enlaces = [
                 <h2>{{ tituloDestacado() }}</h2>
                 <p>{{ textoDestacado() }}</p>
                 @if (destacado(); as caso) {
-                  @if (caso.participacionEstado === 'FINALIZADA' && caso.participacionId) {
+                  @if (caso.repeticionAutorizada || caso.participacionEstado === 'EN_CURSO' || !caso.participacionEstado) {
+                    <button class="btn-resolver" type="button" (click)="iniciarCaso(caso)">▶ Resolver Dilema</button>
+                  } @else if (caso.participacionEstado === 'FINALIZADA' && caso.participacionId) {
                     <a class="btn-resolver" [routerLink]="['/estudiante/participacion', caso.participacionId]">Ver resultados</a>
                   } @else if (caso.estado === 'SIN_INICIAR') {
                     <p class="sub claro">Esperando a que el docente inicie la sesión.</p>
                   } @else if (caso.estado === 'FINALIZADO' && !caso.participacionId) {
                     <p class="sub claro">No participaste. Ausencia 0,0.</p>
                   } @else {
-                    <a class="btn-resolver" [routerLink]="['/estudiante/sesion', caso.id]">▶ Resolver Dilema</a>
+                    <button class="btn-resolver" type="button" (click)="iniciarCaso(caso)">▶ Resolver Dilema</button>
                   }
                 }
               </div>
@@ -157,7 +77,7 @@ const enlaces = [
 
             <article class="inicio-progreso">
               <h3><span class="progreso-ico">📊</span> Tu Progreso</h3>
-              <div class="aro" [style.--p]="progresoGeneral()">
+              <div class="aro" [style.--p]="'' + progresoGeneral()">
                 <span>{{ progresoGeneral() }}%</span>
               </div>
               <p class="nivel">★ {{ nivel() }}</p>
@@ -168,7 +88,7 @@ const enlaces = [
           <section class="inicio-cats">
             <div class="tarjeta-cabeza">
               <h3>★ Categorías</h3>
-              <button type="button" class="ver-todos" (click)="seccion.set('dilemas')">Ver todas →</button>
+              <button type="button" class="ver-todos" (click)="verDilemas()">Ver todas →</button>
             </div>
             <div class="cats">
               <button type="button" class="cat etica" (click)="abrirCategoria('Ética')">
@@ -196,9 +116,9 @@ const enlaces = [
           </div>
         }
 
-        @if (seccion() === 'dilemas' || seccion() === 'resultados') {
+        @if (seccion() === 'dilemas') {
           <section class="inicio-lista">
-            <h2>{{ seccion() === 'resultados' ? 'Resultados' : 'Mis Dilemas' }}</h2>
+            <h2>{{ categoria() ? 'Categoría: ' + categoria() : 'Mis Dilemas' }}</h2>
             <div class="rejilla-casos">
               @for (sesion of listaSeccion(); track sesion.id; let i = $index) {
                 <article class="curso">
@@ -206,17 +126,21 @@ const enlaces = [
                   <span class="estado-pill">{{ etiqueta(sesion) }}</span>
                   <h3>{{ sesion.caso }}</h3>
                   <p class="sub">{{ sesion.grupo }} · {{ sesion.espacio }}</p>
+                  @if (sesion.nota != null) { <p class="sub">Puntaje {{ sesion.nota }} / 5,0</p> }
+                  @if (sesion.repeticionAutorizada) { <p class="sub">El docente autorizó un nuevo intento.</p> }
                   <div class="progreso"><div [style.width.%]="barra(sesion)"></div></div>
                   <small class="avance">{{ barra(sesion) }}% de avance</small>
                   <div class="curso-acciones">
-                    @if (sesion.participacionEstado === 'FINALIZADA' && sesion.participacionId) {
+                    @if (sesion.repeticionAutorizada || sesion.participacionEstado === 'EN_CURSO' || !sesion.participacionEstado) {
+                      <button class="btn-oscuro" type="button" (click)="iniciarCaso(sesion)">Ingresar al caso</button>
+                    } @else if (sesion.participacionEstado === 'FINALIZADA' && sesion.participacionId) {
                       <a class="btn-suave" [routerLink]="['/estudiante/participacion', sesion.participacionId]">Ver resultados</a>
                     } @else if (sesion.estado === 'SIN_INICIAR') {
                       <p class="sub">Esperando a que el docente inicie la sesión.</p>
                     } @else if (sesion.estado === 'FINALIZADO' && !sesion.participacionId) {
                       <p class="sub">No participaste. Ausencia 0,0.</p>
                     } @else {
-                      <a class="btn-oscuro" [routerLink]="['/estudiante/sesion', sesion.id]">Ingresar al caso</a>
+                      <button class="btn-oscuro" type="button" (click)="iniciarCaso(sesion)">Ingresar al caso</button>
                     }
                   </div>
                 </article>
@@ -225,32 +149,90 @@ const enlaces = [
           </section>
         }
 
-        @if (seccion() === 'perfil') {
-          <section class="inicio-perfil">
-            <h2>Perfil</h2>
-            <p><strong>{{ nombreCompleto() }}</strong></p>
-            <p class="sub">{{ auth.usuario()?.email }}</p>
-            <p class="sub">Estudiante · {{ finalizados() }} dilemas resueltos · puntaje {{ promedio() }} / 5,0</p>
+        @if (seccion() === 'avisos') {
+          <section class="inicio-lista">
+            <div class="tarjeta-cabeza">
+              <h2>Avisos</h2>
+              @if (sinLeer()) {
+                <button class="btn-oscuro" type="button" (click)="marcarAvisos()">Marcar como leídos</button>
+              }
+            </div>
+            @for (aviso of avisos(); track aviso.id; let i = $index) {
+              <article class="aviso-card" [class.sin-leer]="!aviso.leida">
+                <span class="punto" [attr.data-tono]="i % 3"></span>
+                <div>
+                  <div class="aviso-meta">
+                    <span class="aviso-canal">{{ aviso.canal }}</span>
+                    <span>{{ fechaAviso(aviso.fecha) }}</span>
+                    @if (!aviso.leida) { <em class="aviso-pill">Sin leer</em> }
+                  </div>
+                  <h3>{{ aviso.titulo }}</h3>
+                  <p class="sub">{{ aviso.cuerpo }}</p>
+                </div>
+              </article>
+            } @empty { <p class="sub">No hay avisos todavía.</p> }
           </section>
         }
-      </main>
-    </div>
+
+        @if (seccion() === 'perfil') {
+          <section class="inicio-perfil">
+            <div class="perfil-cabeza">
+              <span class="inicio-avatar">{{ iniciales() }}</span>
+              <div>
+                <h2>{{ nombreCompleto() }}</h2>
+                <p class="sub">{{ auth.usuario()?.email }}</p>
+                <p class="sub">Estudiante</p>
+              </div>
+            </div>
+            <div class="perfil-kpis">
+              <article><small>Resueltos</small><strong>{{ finalizados() }}</strong></article>
+              <article><small>Puntaje</small><strong>{{ promedio() }}</strong><span class="sub">sobre 5,0</span></article>
+              <article><small>Avisos</small><strong>{{ sinLeer() }}</strong><span class="sub">sin leer</span></article>
+            </div>
+            <h3>Convocatorias</h3>
+            @for (sesion of (panel()?.sesiones ?? []).slice(0, 5); track sesion.id) {
+              <article class="perfil-caso">
+                <strong>{{ sesion.caso }}</strong>
+                <p class="sub">{{ etiqueta(sesion) }} · {{ sesion.grupo }}@if (sesion.nota != null) { · {{ sesion.nota }} / 5,0 }</p>
+              </article>
+            } @empty { <p class="sub">Aún no tienes convocatorias.</p> }
+          </section>
+        }
+    </app-marco-estudiante>
   `
 })
 export class PanelEstudianteComponent {
   enlaces = enlaces;
   private http = inject(HttpClient);
+  private router = inject(Router);
   auth = inject(AuthService);
   private busqueda = inject(BusquedaService);
   panel = signal<PanelEstudiante | null>(null);
   error = signal('');
-  seccion = signal<'inicio' | 'dilemas' | 'resultados' | 'perfil'>('inicio');
-  menuAbierto = signal(false);
-  alternarMenu() { this.menuAbierto.update((abierto) => !abierto); }
-  cerrarMenu() { this.menuAbierto.set(false); }
+  seccion = signal<'inicio' | 'dilemas' | 'avisos' | 'perfil'>('inicio');
+  categoria = signal('');
   constructor() {
+    inject(ActivatedRoute).queryParamMap.subscribe((params) => {
+      const vista = params.get('vista');
+      if (vista === 'dilemas' || vista === 'avisos' || vista === 'perfil') {
+        if (vista === 'dilemas') this.categoria.set('');
+        this.seccion.set(vista);
+      } else {
+        this.seccion.set('inicio');
+      }
+    });
     this.http.get<PanelEstudiante>('/api/estudiante/panel').subscribe({
       next: (dato) => this.panel.set(dato),
+      error: (falla) => this.error.set(mensajeError(falla))
+    });
+  }
+  iniciarCaso(sesion: Sesion) {
+    if (sesion.participacionId && sesion.participacionEstado === 'EN_CURSO') {
+      this.router.navigate(['/estudiante/participacion', sesion.participacionId]);
+      return;
+    }
+    this.http.post<Participacion>(`/api/estudiante/sesiones/${sesion.id}/participaciones`, {}).subscribe({
+      next: (participacion) => this.router.navigate(['/estudiante/participacion', participacion.id]),
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
@@ -300,21 +282,49 @@ export class PanelEstudianteComponent {
     if (this.finalizados()) return 'Sigue con el caso destacado para subir tu progreso.';
     return 'Empieza el dilema destacado para registrar tu primer avance.';
   }
-  abrirCategoria(_nombre: string) { this.seccion.set('dilemas'); }
-  listaSeccion() {
-    const lista = this.visibles();
-    if (this.seccion() === 'resultados') {
-      return lista.filter((s) => s.participacionEstado === 'FINALIZADA' || s.participacionEstado === 'AUSENTE');
-    }
-    return lista;
+  verDilemas() {
+    this.categoria.set('');
+    this.router.navigate(['/estudiante'], { queryParams: { vista: 'dilemas' } });
   }
+  abrirCategoria(nombre: string) {
+    this.categoria.set(nombre);
+    this.seccion.set('dilemas');
+  }
+  listaSeccion() { return this.visibles(); }
   visibles() {
     const q = this.busqueda.texto().trim().toLowerCase();
-    return (this.panel()?.sesiones ?? []).filter((s) => !q || s.caso.toLowerCase().includes(q) || s.grupo.toLowerCase().includes(q));
+    const clave = this.clavesCategoria(this.categoria());
+    return (this.panel()?.sesiones ?? []).filter((s) => {
+      const texto = `${s.caso} ${s.grupo} ${s.espacio} ${s.contexto} ${s.desarrollo}`.toLowerCase();
+      const busca = !q || texto.includes(q);
+      const categoria = !clave.length || this.seccion() !== 'dilemas' || clave.some((palabra) => texto.includes(palabra));
+      return busca && categoria;
+    });
+  }
+  private clavesCategoria(nombre: string) {
+    if (nombre === 'Ética') return ['étic', 'etic', 'valor', 'dilema'];
+    if (nombre === 'Social') return ['social', 'comunidad', 'barrio', 'colinas', 'feminicidio'];
+    if (nombre === 'Psicológico') return ['psico'];
+    if (nombre === 'Tecnología') return ['tecno', 'digital', 'red'];
+    if (nombre === 'Vida Personal') return ['vida', 'familia', 'personal'];
+    return [];
   }
   hoy() { return (this.panel()?.sesiones ?? []).filter((s) => this.mismoDia(s.inicio)); }
   proximos() { return (this.panel()?.sesiones ?? []).filter((s) => !s.participacionEstado || s.participacionEstado === 'EN_CURSO').slice(0, 4); }
-  avisos() { return (this.panel()?.avisos ?? []).slice(0, 4); }
+  avisos() { return this.panel()?.avisos ?? []; }
+  sinLeer() { return this.panel()?.sinLeer ?? this.avisos().filter((a) => !a.leida).length; }
+  fechaAviso(iso: string) {
+    const fecha = new Date(iso);
+    if (Number.isNaN(fecha.getTime())) return iso;
+    return fecha.toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' });
+  }
+  marcarAvisos() {
+    const pendientes = this.avisos().filter((a) => !a.leida).map((aviso) => this.http.post<void>(`/api/estudiante/avisos/${aviso.id}/leer`, {}));
+    if (!pendientes.length) return;
+    forkJoin(pendientes).subscribe({
+      complete: () => this.http.get<PanelEstudiante>('/api/estudiante/panel').subscribe((dato) => this.panel.set(dato))
+    });
+  }
   etiqueta(sesion: Sesion) {
     if (sesion.participacionEstado === 'FINALIZADA') return 'Finalizado';
     if (sesion.participacionEstado === 'AUSENTE') return 'Ausente';
@@ -345,13 +355,15 @@ export class PanelEstudianteComponent {
 
 @Component({
   selector: 'app-briefing',
-  imports: [MarcoComponent, RouterLink, FormsModule, MatButtonModule, MatCardModule],
+  imports: [MarcoDocenteComponent, RouterLink, FormsModule, MatButtonModule, MatCardModule],
   template: `
-    <app-marco [enlaces]="enlaces" modo="superior">
+    <app-marco-docente [enlaces]="enlaces" inicio="/estudiante" lema="Lee, decide y responde tus dilemas.">
       @if (sesion(); as actual) {
-        <section class="stack">
-          <p class="kicker">{{ actual.codigo }}</p>
-          <h1>Bienvenido al caso: {{ actual.caso }}</h1>
+        <section class="tablero">
+          <header class="saludo">
+            <p class="kicker">{{ actual.codigo }}</p>
+            <h1>Bienvenido al caso: {{ actual.caso }}</h1>
+          </header>
           <figure class="escena-juego">
             <img src="/escenas/colinas-1.jpg" alt="Vista de Las Colinas al atardecer" />
             <figcaption class="hud">
@@ -359,41 +371,55 @@ export class PanelEstudianteComponent {
               <span>ESCENA 1 · LLEGADA AL BARRIO</span>
             </figcaption>
           </figure>
-          <article class="card stack">
+          <article class="tarjeta stack">
             <h2>Mensaje del docente</h2>
             <p>{{ actual.mensaje || 'Sigue las instrucciones del caso y responde cada escena.' }}</p>
           </article>
           <div class="grid-2">
-            <article class="card stack">
+            <article class="tarjeta stack">
               <h2>Reglas de participación</h2>
-              <p>1. Tiempo máximo: {{ actual.tiempoMaxMin }} minutos.</p>
-              <p>2. No podrás ingresar si ya pasó el tiempo de tolerancia.</p>
-              <p>3. La retroalimentación se muestra solo al finalizar.</p>
+              <dl class="resumen-lista">
+                <div><dt>Tiempo</dt><dd>{{ actual.tiempoMaxMin }} min</dd></div>
+                <div><dt>Ingreso</dt><dd>{{ actual.toleranciaMin }} min</dd></div>
+                <div><dt>Inicio</dt><dd>{{ horaCorta(actual.inicio) }}</dd></div>
+                <div><dt>Fin</dt><dd>{{ horaCorta(actual.fin) }}</dd></div>
+              </dl>
+              <p class="resumen-nota">La retroalimentación se muestra al finalizar.</p>
             </article>
-            <article class="card stack">
+            <article class="tarjeta stack">
               <h2>Ficha</h2>
-              <p>{{ actual.grupo }} · {{ actual.espacio }}</p>
-              <p>{{ actual.lugar || 'Sin lugar físico' }}</p>
+              <dl class="resumen-lista">
+                <div><dt>Grupo</dt><dd>{{ actual.grupo }}</dd></div>
+                <div><dt>Espacio</dt><dd>{{ actual.espacio }}</dd></div>
+                <div><dt>Lugar</dt><dd>{{ actual.lugar || 'Virtual' }}</dd></div>
+                <div><dt>Estado</dt><dd>{{ actual.estado }}@if (actual.participacionEstado) { · {{ actual.participacionEstado }} }</dd></div>
+                @if (actual.nota != null) { <div><dt>Puntaje</dt><dd>{{ actual.nota }} / 5,0</dd></div> }
+                @if (actual.progreso != null) { <div><dt>Avance</dt><dd>{{ actual.progreso }}%</dd></div> }
+              </dl>
             </article>
           </div>
+          @if (actual.sensible && actual.advertencia) {
+            <article class="aviso"><strong>Advertencia.</strong> {{ actual.advertencia }}</article>
+          }
+          @if (actual.contexto) { <article class="tarjeta"><h2>Contexto</h2><p>{{ actual.contexto }}</p></article> }
           <div [innerHTML]="actual.desarrollo"></div>
           <label class="check"><input type="checkbox" [(ngModel)]="acepto" /> He leído y acepto las reglas de participación.</label>
           @if (error()) { <p class="error">{{ error() }}</p> }
           <div class="row">
-            <a mat-stroked-button routerLink="/estudiante">Volver al panel</a>
+            <a class="btn-suave" routerLink="/estudiante">Volver al panel</a>
             @if (actual.estado === 'SIN_INICIAR') {
               <p class="sub">El docente todavía no inicia la sesión.</p>
             } @else if (actual.participacionEstado === 'FINALIZADA' && actual.participacionId && !actual.repeticionAutorizada) {
-              <button mat-flat-button color="primary" type="button" (click)="ver(actual.participacionId)">Ver resultados</button>
+              <button class="btn-oscuro" type="button" (click)="ver(actual.participacionId)">Ver resultados</button>
             } @else if (actual.estado === 'FINALIZADO' && !actual.repeticionAutorizada) {
               <p class="sub">La sesión ya finalizó.</p>
             } @else {
-              <button mat-flat-button color="primary" type="button" [disabled]="!acepto" (click)="iniciar(actual)">{{ actual.repeticionAutorizada ? 'Iniciar nuevo intento' : 'Iniciar simulación' }}</button>
+              <button class="btn-oscuro" type="button" [disabled]="!acepto" (click)="iniciar(actual)">{{ actual.repeticionAutorizada ? 'Iniciar nuevo intento' : 'Iniciar simulación' }}</button>
             }
           </div>
         </section>
       }
-    </app-marco>
+    </app-marco-docente>
   `
 })
 export class BriefingComponent {
@@ -418,100 +444,110 @@ export class BriefingComponent {
     });
   }
   ver(id: number) { this.router.navigate(['/estudiante/participacion', id]); }
+  horaCorta(valor: string | null | undefined) {
+    if (!valor) return '—';
+    const fecha = new Date(valor);
+    if (Number.isNaN(fecha.getTime())) return valor;
+    return fecha.toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  }
 }
 
 @Component({
-  imports: [MarcoComponent, RouterLink, MatButtonModule, MatCardModule],
+  imports: [MarcoEstudianteComponent, RouterLink, MatButtonModule, MatCardModule, NovelaReproductorComponent],
   template: `
-    <app-marco [enlaces]="enlaces" modo="superior">
+    <app-marco-estudiante [activa]="menuActivo()" [sinLeer]="sinLeer()">
       @if (juego(); as actual) {
         @if (actual.estado === 'FINALIZADA' || actual.estado === 'AUSENTE') {
-          <section class="stack">
-            <p class="kicker">Informe del caso</p>
-            <h1>Resultados del caso</h1>
-            <p class="sub">{{ actual.caso }}</p>
-            <p class="nota">Calificación final: {{ actual.nota ?? '—' }} / 5,0</p>
-            <p class="sub">Nivel: {{ nivel(actual.nota) }}</p>
-            @if (actual.aciertos !== null) {
-              <p class="sub">Acertaste {{ actual.aciertos }} de {{ actual.total }} · Fallaste {{ actual.errores }} · Sin responder {{ actual.sinResponder }}</p>
+          <section class="informe-caso">
+            <article class="tarjeta stack informe-ficha">
+              <div class="informe-ficha-cabeza">
+                <div>
+                  <span class="aviso-canal" [attr.data-estado]="actual.estado">{{ actual.estado === 'AUSENTE' ? 'Ausente' : 'Finalizado' }}</span>
+                  <h1>Resultados del caso</h1>
+                  <p class="sub">{{ actual.caso }}</p>
+                </div>
+                <a class="btn-oscuro" routerLink="/estudiante">Volver al inicio</a>
+              </div>
+              <div class="resumen-cifras informe-cifras">
+                <article><small>Calificación</small><strong>{{ actual.nota ?? '—' }} <em>/ 5,0</em></strong></article>
+                <article><small>Nivel</small><strong>{{ nivel(actual.nota) }}</strong></article>
+                @if (actual.aciertos !== null) {
+                  <article><small>Aciertos</small><strong>{{ actual.aciertos }} <em>/ {{ actual.total }}</em></strong></article>
+                  <article><small>Fallos</small><strong>{{ actual.errores }}</strong></article>
+                }
+              </div>
+            </article>
+            @if (actual.retroalimentacion) {
+              <article class="tarjeta stack">
+                <h2>Comentario del docente</h2>
+                <p>{{ actual.retroalimentacion }}</p>
+              </article>
             }
             <h2>Resumen de respuestas</h2>
             @for (pregunta of actual.preguntas; track pregunta.id) {
-              <article class="item">
-                <small>{{ pregunta.bloque }}</small>
+              <article class="tarjeta stack informe-pregunta">
+                <div class="convoca-meta">
+                  <span class="aviso-canal">{{ pregunta.bloque }}</span>
+                  <small>{{ pregunta.criterio }}@if (pregunta.puntaje != null) { · {{ pregunta.puntaje }} pts }</small>
+                </div>
                 <h3>{{ pregunta.enunciado }}</h3>
-                @for (opcion of pregunta.opciones; track opcion.id) {
-                  <div class="opcion" [class.bien]="opcion.correcta" [class.mal]="pregunta.seleccionId === opcion.id && opcion.correcta === false" [class.elegida]="pregunta.seleccionId === opcion.id">
-                    {{ pregunta.seleccionId === opcion.id ? 'Tu elección: ' : '' }}{{ opcion.texto }}
+                <div class="informe-opciones">
+                  @for (opcion of pregunta.opciones; track opcion.id) {
                     @if (pregunta.seleccionId === opcion.id || opcion.correcta) {
-                      <p class="sub">{{ opcion.explicacion }}</p>
-                      @if (opcion.fundamento) { <p class="sub">{{ opcion.fundamento }}</p> }
+                      <div class="informe-opcion" [class.bien]="opcion.correcta" [class.mal]="pregunta.seleccionId === opcion.id && opcion.correcta === false">
+                        <strong>{{ etiquetaOpcion(pregunta, opcion) }}</strong>
+                        <p>{{ opcion.texto }}</p>
+                        @if (opcion.explicacion) { <p class="sub">{{ opcion.explicacion }}</p> }
+                        @if (opcion.fundamento) { <p class="sub">{{ opcion.fundamento }}</p> }
+                      </div>
                     }
-                  </div>
-                }
+                  }
+                </div>
               </article>
             }
-            <a mat-stroked-button routerLink="/estudiante">Volver al panel</a>
           </section>
         } @else {
-          @if (pregunta(); as item) {
-            <section class="stack">
-              <div class="row">
-                <h2>Escena {{ indice() + 1 }}: {{ item.bloque }}</h2>
-                <strong>Tiempo restante: {{ reloj() }}</strong>
+          <section class="informe-caso novela-juego">
+            <div class="informe-juego-cabeza">
+              <div>
+                <p class="kicker">{{ actual.caso }}</p>
+                <h2>Simulación</h2>
               </div>
-              <div class="progreso"><div [style.width.%]="actual.progreso"></div></div>
-              <figure class="escena-juego">
-                <img [src]="escenaSrc()" [alt]="'Escena ' + (indice() + 1) + ': ' + item.bloque" />
-                <figcaption class="hud">
-                  <span>{{ lugar() }}</span>
-                  <span>ESCENA {{ indice() + 1 }} · {{ item.bloque }}</span>
-                </figcaption>
-              </figure>
-              <article class="card">
-                <p class="kicker">Contexto de la situación</p>
-                <p>{{ item.contexto }}</p>
-              </article>
-              <article class="card stack">
-                <p class="kicker">Interacción evaluativa</p>
-                <h2>{{ item.enunciado }}</h2>
-                @if (item.pista) { <p class="aviso"><strong>Herramienta.</strong> {{ item.pista }}</p> }
-                @for (opcion of item.opciones; track opcion.id; let i = $index) {
-                  <button class="opcion radio" [class.elegida]="item.seleccionId === opcion.id" type="button" (click)="elegir(item.id, opcion.id)">
-                    <span>{{ item.seleccionId === opcion.id ? '●' : '○' }}</span>
-                    <span>Opción {{ letras[i] }}: {{ opcion.texto }}</span>
-                  </button>
-                }
-              </article>
-              @if (error()) { <p class="error">{{ error() }}</p> }
-              <div class="row">
-                <button mat-stroked-button type="button" [disabled]="indice() === 0" (click)="mover(-1)">Escena anterior</button>
-                <button mat-stroked-button type="button" (click)="deshacer()">Deshacer</button>
-                @if (indice() < actual.preguntas.length - 1) {
-                  <button mat-flat-button color="primary" type="button" (click)="mover(1)">Siguiente escena</button>
-                } @else {
-                  <button mat-flat-button color="primary" type="button" (click)="finalizar()">Finalizar</button>
-                }
-              </div>
-            </section>
-          }
+            </div>
+            <div class="progreso"><div [style.width.%]="actual.progreso"></div></div>
+            @if (novela(); as caso) {
+              <app-novela-reproductor
+                [caso]="caso"
+                [personajes]="elenco()"
+                [tiempoRestante]="restante()"
+                (opcion)="elegirNovela($event)"
+                (finalizar)="finalizar()" />
+            }
+            @if (error()) { <p class="error">{{ error() }}</p> }
+          </section>
         }
       }
-    </app-marco>
+    </app-marco-estudiante>
   `
 })
 export class SimulacionComponent {
-  enlaces = enlaces;
   letras = ['A', 'B', 'C', 'D', 'E', 'F'];
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
+  private musica = inject(MusicaNovelaService);
   juego = signal<Participacion | null>(null);
+  novela = signal<CasoReproductor | null>(null);
+  elenco = signal<PersonajeCaso[]>([]);
   indice = signal(0);
   error = signal('');
   restante = signal(0);
+  sinLeer = signal(0);
   private timer = 0;
   private cerradoPorTiempo = false;
   constructor() {
+    this.http.get<PanelEstudiante>('/api/estudiante/panel').subscribe({
+      next: (dato) => this.sinLeer.set(dato.sinLeer ?? dato.avisos.filter((a) => !a.leida).length)
+    });
     this.cargar();
     this.timer = window.setInterval(() => {
       this.restante.update((valor) => {
@@ -520,16 +556,25 @@ export class SimulacionComponent {
         return siguiente;
       });
     }, 1000);
-    inject(DestroyRef).onDestroy(() => clearInterval(this.timer));
+    inject(DestroyRef).onDestroy(() => {
+      clearInterval(this.timer);
+      this.musica.detener();
+    });
   }
   pregunta() { return this.juego()?.preguntas[this.indice()] ?? null; }
-  lugar() {
-    const nombre = this.juego()?.caso ?? '';
-    return /colinas/i.test(nombre) ? 'LAS COLINAS' : nombre.toUpperCase();
+  menuActivo() {
+    return this.juego()?.estado === 'EN_CURSO' ? 'dilemas' : 'inicio';
   }
-  escenaSrc() {
-    const n = (this.indice() % 3) + 1;
-    return `/escenas/colinas-${n}.jpg`;
+  etiquetaOpcion(pregunta: PreguntaJuego, opcion: OpcionJuego) {
+    if (opcion.correcta) return 'Respuesta adecuada';
+    if (pregunta.seleccionId === opcion.id) return 'Tu elección';
+    return 'Opción';
+  }
+  elegirNovela(eleccion: OpcionElegida) {
+    const caso = this.novela();
+    const pregunta = caso?.bloques[eleccion.bloque]?.preguntas[eleccion.pregunta];
+    const opcion = pregunta?.opciones[eleccion.opcion];
+    if (pregunta?.id && opcion?.id) this.elegir(pregunta.id, opcion.id);
   }
   nivel(nota: number | null) {
     if (nota == null) return '—';
@@ -537,10 +582,6 @@ export class SimulacionComponent {
     if (nota >= 4) return 'Alto';
     if (nota >= 3) return 'Básico';
     return 'Bajo';
-  }
-  reloj() {
-    const segundos = this.restante();
-    return `${Math.floor(segundos / 60)}:${String(segundos % 60).padStart(2, '0')}`;
   }
   elegir(preguntaId: number, opcionId: number) {
     const id = this.juego()?.id;
@@ -557,7 +598,10 @@ export class SimulacionComponent {
   }
   finalizar() {
     this.http.post<Participacion>(`/api/participaciones/${this.juego()?.id}/finalizar`, {}).subscribe({
-      next: (dato) => this.juego.set(dato),
+      next: (dato) => {
+        this.musica.detener();
+        this.juego.set(dato);
+      },
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
@@ -576,58 +620,46 @@ export class SimulacionComponent {
       next: (dato) => {
         this.juego.set(dato);
         this.restante.set(Math.max(0, dato.segundosMax - dato.segundosUsados));
+        if (!this.novela() && dato.estado === 'EN_CURSO') {
+          this.novela.set(this.armarNovela(dato));
+          this.elenco.set(dato.personajes ?? []);
+          this.musica.iniciar();
+        }
       },
       error: (falla) => this.error.set(mensajeError(falla))
     });
+  }
+  private armarNovela(dato: Participacion): CasoReproductor {
+    const bloques: CasoReproductor['bloques'] = [];
+    for (const pregunta of dato.preguntas) {
+      let bloque = bloques.find((b) => b.nombre === pregunta.bloque);
+      if (!bloque) {
+        bloque = { nombre: pregunta.bloque, contexto: pregunta.contexto, preguntas: [] };
+        bloques.push(bloque);
+      }
+      bloque.preguntas.push({
+        id: pregunta.id,
+        enunciado: pregunta.enunciado,
+        pista: pregunta.pista,
+        opciones: pregunta.opciones.map((o) => ({ id: o.id, texto: o.texto }))
+      });
+    }
+    return {
+      id: dato.casoId,
+      nombre: dato.caso,
+      desarrolloSituacional: dato.desarrollo,
+      contexto: dato.contexto,
+      bloques
+    };
   }
 }
 
 @Component({
   selector: 'app-avisos',
-  imports: [MarcoComponent],
-  template: `
-    <app-marco [enlaces]="enlaces" modo="superior">
-      <section class="tablero">
-        <header class="saludo">
-          <h1>Avisos</h1>
-          <p>Mensajes de tus convocatorias.</p>
-        </header>
-        <article class="tarjeta stack">
-          <div class="tarjeta-cabeza">
-            <h2>Sin leer</h2>
-            <button class="btn-oscuro" type="button" (click)="marcar()">Marcar todo como leído</button>
-          </div>
-          @for (aviso of visibles(); track aviso.id; let i = $index) {
-            <article class="fila-lista">
-              <span class="punto" [attr.data-tono]="i % 3"></span>
-              <div>
-                <h3>{{ aviso.titulo }}</h3>
-                <p class="sub">{{ aviso.cuerpo }}</p>
-              </div>
-            </article>
-          } @empty { <p class="sub">No hay avisos pendientes.</p> }
-        </article>
-      </section>
-    </app-marco>
-  `
+  template: ''
 })
 export class AvisosComponent {
-  enlaces = enlaces;
-  private http = inject(HttpClient);
-  private busqueda = inject(BusquedaService);
-  avisos = signal<Aviso[]>([]);
-  constructor() { this.refrescar(); }
-  visibles() {
-    const q = this.busqueda.texto().trim().toLowerCase();
-    return this.avisos().filter((aviso) => !aviso.leida
-      && (!q || aviso.titulo.toLowerCase().includes(q) || aviso.cuerpo.toLowerCase().includes(q)));
-  }
-  marcar() {
-    const pendientes = this.visibles().map((aviso) => this.http.post<void>(`/api/estudiante/avisos/${aviso.id}/leer`, {}));
-    if (!pendientes.length) return;
-    forkJoin(pendientes).subscribe({ complete: () => this.refrescar(), error: () => this.refrescar() });
-  }
-  private refrescar() {
-    this.http.get<PanelEstudiante>('/api/estudiante/panel').subscribe((panel) => this.avisos.set(panel.avisos));
+  constructor() {
+    inject(Router).navigate(['/estudiante'], { queryParams: { vista: 'avisos' }, replaceUrl: true });
   }
 }

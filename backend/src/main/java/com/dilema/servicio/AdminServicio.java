@@ -20,15 +20,17 @@ public class AdminServicio {
     private final Mapeador mapeador;
     private final FabricaCuentas fabrica;
     private final PasswordEncoder cifrado;
+    private final Tokens tokens;
 
     public AdminServicio(UsuarioRepo usuarios, GrupoRepo grupos, ProxyOperacion proxy,
-                         Mapeador mapeador, FabricaCuentas fabrica, PasswordEncoder cifrado) {
+                         Mapeador mapeador, FabricaCuentas fabrica, PasswordEncoder cifrado, Tokens tokens) {
         this.usuarios = usuarios;
         this.grupos = grupos;
         this.proxy = proxy;
         this.mapeador = mapeador;
         this.fabrica = fabrica;
         this.cifrado = cifrado;
+        this.tokens = tokens;
     }
 
     @Transactional(readOnly = true)
@@ -74,6 +76,19 @@ public class AdminServicio {
         }
         fabrica.reemplazarPermisosDocente(docente, extras);
         return mapeador.usuario(docente);
+    }
+
+    @Transactional
+    public Contratos.UsuarioVista activo(Usuario admin, Long id, boolean activo) {
+        proxy.gestionarUsuarios(admin);
+        if (admin.id.equals(id)) {
+            throw new ReglaNegocio("No puedes desactivar tu propia cuenta.");
+        }
+        Usuario cuenta = usuarios.findById(id).orElseThrow(() -> new NoEncontrado("Cuenta no encontrada."));
+        cuenta.activo = activo;
+        usuarios.save(cuenta);
+        if (!activo) tokens.revocarUsuario(cuenta.id);
+        return mapeador.usuario(cuenta);
     }
 
     @Transactional(readOnly = true)

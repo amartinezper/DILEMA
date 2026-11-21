@@ -93,6 +93,28 @@ class FachadaAgendamientoTest {
     }
 
     @Test
+    @DisplayName("reprograma una convocatoria que todavía no inicia")
+    void reprogramaConvocatoriaSinIniciar() {
+        com.dilema.modelo.SesionCaso sesion = new com.dilema.modelo.SesionCaso();
+        sesion.id = 4L;
+        sesion.codigo = "DL-AB12";
+        sesion.caso = caso;
+        sesion.grupo = grupo;
+        sesion.inicio = java.time.LocalDateTime.parse("2026-06-02T08:00:00");
+        sesion.fin = java.time.LocalDateTime.parse("2026-06-02T10:00:00");
+        sesion.tiempoMaxMin = 30;
+        sesion.toleranciaMin = 10;
+        when(sesiones.findById(4L)).thenReturn(Optional.of(sesion));
+
+        Contratos.SesionVista vista = fachada.reprogramar(docente, 4L,
+                new Contratos.AgendaIn(5L, 8L, "2026-06-03T09:00", "2026-06-03T11:00", 40, 12, "Aula 2", "Cambio"));
+        assertEquals("Aula 2", vista.lugar());
+        assertEquals("2026-06-03T09:00", vista.inicio());
+        verify(notificador).reprogramada(org.mockito.ArgumentMatchers.eq(estudiante), any());
+        verify(bitacora).auditar(org.mockito.ArgumentMatchers.eq(docente), org.mockito.ArgumentMatchers.eq("REPROGRAMAR"), any());
+    }
+
+    @Test
     @DisplayName("INV-17: no agenda un caso inexistente")
     void noAgendaCasoInexistente() {
         when(casos.findById(5L)).thenReturn(Optional.empty());

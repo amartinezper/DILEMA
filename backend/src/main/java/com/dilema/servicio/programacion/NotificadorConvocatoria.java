@@ -45,6 +45,16 @@ public class NotificadorConvocatoria {
                 "Fuiste retirado del espacio " + grupo.nombre + ".");
     }
 
+    public void reprogramada(Usuario estudiante, SesionCaso sesion) {
+        bitacora.avisar(estudiante, "CORREO", "Convocatoria actualizada: " + sesion.caso.nombre,
+                "El docente cambió la programación.\nCaso: " + sesion.caso.nombre
+                        + "\nCódigo: " + sesion.codigo
+                        + "\nInicio: " + sesion.inicio
+                        + "\nFin: " + sesion.fin
+                        + (sesion.lugar == null || sesion.lugar.isBlank() ? "" : "\nLugar: " + sesion.lugar)
+                        + "\nURL: " + urlApp + "/ingreso");
+    }
+
     public void sesionIniciada(Usuario estudiante, SesionCaso sesion) {
         bitacora.avisar(estudiante, "CORREO", "La sesión inició: " + sesion.caso.nombre,
                 "El docente inició la sesión. Código: " + sesion.codigo + "\nURL: " + urlApp + "/ingreso");

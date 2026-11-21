@@ -8,4 +8,5 @@ public interface SesionEstudianteRepo extends JpaRepository<SesionEstudiante, Se
     boolean existsBySesionIdAndEstudianteId(Long sesionId, Long estudianteId);
     List<SesionEstudiante> findBySesionId(Long sesionId);
     void deleteBySesionIdAndEstudianteId(Long sesionId, Long estudianteId);
+    void deleteBySesionId(Long sesionId);
 }

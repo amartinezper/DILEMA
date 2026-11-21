@@ -33,7 +33,7 @@ class AdminServicioTest {
         GrupoRepo grupos = mock(GrupoRepo.class);
         fabrica = mock(FabricaCuentas.class);
         cifrado = mock(PasswordEncoder.class);
-        servicio = new AdminServicio(usuarios, grupos, new ProxyOperacion(), new Mapeador(), fabrica, cifrado);
+        servicio = new AdminServicio(usuarios, grupos, new ProxyOperacion(), new Mapeador(), fabrica, cifrado, mock(Tokens.class));
         admin = new Usuario();
         admin.id = 1L;
         admin.nombre = "Admin";
@@ -78,5 +78,22 @@ class AdminServicioTest {
 
         docente.rol = Catalogo.Rol.ADMIN;
         assertThrows(ReglaNegocio.class, () -> servicio.permiso(admin, 8L, List.of()));
+    }
+
+    @Test
+    @DisplayName("desactiva una cuenta y no permite desactivar la propia")
+    void desactivaCuenta() {
+        Usuario docente = new Usuario();
+        docente.id = 8L;
+        docente.nombre = "Docente";
+        docente.email = "d@psicosim.edu";
+        docente.rol = Catalogo.Rol.PROFESOR;
+        docente.activo = true;
+        docente.permisos = new java.util.HashSet<>();
+        when(usuarios.findById(8L)).thenReturn(Optional.of(docente));
+        when(usuarios.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        Contratos.UsuarioVista vista = servicio.activo(admin, 8L, false);
+        assertEquals(false, vista.activo());
+        assertThrows(ReglaNegocio.class, () -> servicio.activo(admin, 1L, false));
     }
 }

@@ -50,6 +50,37 @@ public class AuthServicio {
         return new Contratos.SesionAuth(token, mapeador.usuario(resultado.usuario()), sesionId);
     }
 
+    @Transactional
+    public Contratos.UsuarioVista actualizarPerfil(Usuario actual, Contratos.PerfilIn entrada) {
+        if (entrada == null || entrada.nombre() == null || entrada.nombre().isBlank()) {
+            throw new ReglaNegocio("Indica tu nombre.");
+        }
+        String correo = entrada.email() == null ? "" : entrada.email().trim().toLowerCase();
+        if (!correo.contains("@") || correo.length() < 5) {
+            throw new ReglaNegocio("Indica un correo institucional válido.");
+        }
+        usuarios.findByEmailIgnoreCase(correo).filter(otro -> !otro.id.equals(actual.id)).ifPresent(otro -> {
+            throw new ReglaNegocio("Ya existe una cuenta con ese correo.");
+        });
+        actual.nombre = entrada.nombre().trim();
+        actual.email = correo;
+        String nueva = entrada.claveNueva() == null ? "" : entrada.claveNueva().trim();
+        if (!nueva.isEmpty()) {
+            if (actual.rol == Catalogo.Rol.ESTUDIANTE || actual.contrasena == null) {
+                throw new ReglaNegocio("El estudiante no usa contraseña. Entra con el código de la convocatoria.");
+            }
+            if (entrada.claveActual() == null || !cifrado.matches(entrada.claveActual(), actual.contrasena)) {
+                throw new ReglaNegocio("La contraseña actual no coincide.");
+            }
+            if (nueva.length() < 6) {
+                throw new ReglaNegocio("La clave nueva debe tener al menos 6 caracteres.");
+            }
+            actual.contrasena = cifrado.encode(nueva);
+        }
+        usuarios.save(actual);
+        return mapeador.usuario(actual);
+    }
+
     public record Resultado(Usuario usuario, SesionCaso sesion) {}
 
     /**

@@ -43,7 +43,7 @@ export function mensajeError(error: unknown): string {
   return 'No se pudo completar la operación.';
 }
 
-export interface Usuario { id: number; nombre: string; email: string; rol: string; permisos: string[]; }
+export interface Usuario { id: number; nombre: string; email: string; rol: string; permisos: string[]; activo?: boolean; }
 export interface SesionAuth { token: string; usuario: Usuario; sesionId: number | null; }
 export interface Opcion { id?: number; texto: string; correcta: boolean; explicacion: string; fundamento: string; }
 export interface Pregunta { id?: number; enunciado: string; pista: string; criterio: string; peso: number; opciones: Opcion[]; }
@@ -77,6 +77,13 @@ export interface Participacion {
   segundosMax: number; segundosUsados: number; nota: number | null; retroalimentacion: string | null;
   estudiante: string; preguntas: PreguntaJuego[]; repeticionAutorizada: boolean;
   aciertos: number | null; errores: number | null; sinResponder: number | null;
+  casoId?: number; desarrollo?: string; contexto?: string; personajes?: PersonajeCaso[];
 }
 export interface Fila { participacionId: number | null; estudianteId: number; estudiante: string; email: string; estado: string; nota: number | null; retroalimentacion: string | null; repeticionAutorizada: boolean; }
+export interface IntentoConsultado { id: number; estudiante: string; numeroIntento: number; estado: string; }
+export interface SesionRealizada { id: number; caso: string; grupo: string; inicio: string; fin: string; }
+export interface RespuestaVigente { pregunta: string; opcion: string | null; acertada: boolean | null; explicacion: string | null; fundamento: string | null; }
+export interface ParticipacionConsultada {
+  id: number; estudiante: string; numeroIntento: number; valoracionGeneral: string; respuestas: RespuestaVigente[];
+}
 export interface Auditoria { id: number; fecha: string; accion: string; detalle: string; usuario: string; }

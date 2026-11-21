@@ -887,7 +887,10 @@
         "calle",
         "barrio",
         "vecindario",
-        "cuadra"
+        "cuadra",
+        "colinas",
+        "ladera",
+        "vecina"
       ],
       "alternativas": [
         {

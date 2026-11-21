@@ -53,6 +53,11 @@ public class ApiControlador {
         if (header != null && header.startsWith("Bearer ")) tokens.revocar(header.substring(7));
     }
 
+    @PutMapping("/auth/perfil")
+    Contratos.UsuarioVista perfil(@RequestBody Contratos.PerfilIn cuerpo, HttpServletRequest request) {
+        return auth.actualizarPerfil(FiltroToken.actual(request), cuerpo);
+    }
+
     @GetMapping("/estudiante/panel")
     Contratos.PanelEstudiante panel(HttpServletRequest request) {
         return participaciones.panel(FiltroToken.actual(request));
@@ -124,6 +129,16 @@ public class ApiControlador {
         return academia.crearGrupo(docente(request), cuerpo);
     }
 
+    @PutMapping("/docente/grupos/{id}")
+    Contratos.GrupoVista editarGrupo(@PathVariable Long id, @RequestBody Contratos.GrupoIn cuerpo, HttpServletRequest request) {
+        return academia.editarGrupo(docente(request), id, cuerpo);
+    }
+
+    @DeleteMapping("/docente/grupos/{id}")
+    void borrarGrupo(@PathVariable Long id, HttpServletRequest request) {
+        academia.borrarGrupo(docente(request), id);
+    }
+
     @PostMapping("/docente/grupos/{id}/estudiantes")
     Contratos.GrupoVista agregar(@PathVariable Long id, @RequestBody Contratos.EstudianteIn cuerpo, HttpServletRequest request) {
         return academia.agregarEstudiante(docente(request), id, cuerpo.nombre(), cuerpo.email());
@@ -140,6 +155,11 @@ public class ApiControlador {
     @PostMapping("/docente/sesiones")
     Contratos.SesionVista agendar(@RequestBody Contratos.AgendaIn cuerpo, HttpServletRequest request) {
         return academia.agendar(docente(request), cuerpo);
+    }
+
+    @PutMapping("/docente/sesiones/{id}")
+    Contratos.SesionVista reprogramar(@PathVariable Long id, @RequestBody Contratos.AgendaIn cuerpo, HttpServletRequest request) {
+        return academia.reprogramar(docente(request), id, cuerpo);
     }
 
     @PostMapping("/docente/sesiones/{id}/iniciar")
@@ -211,6 +231,11 @@ public class ApiControlador {
     @PostMapping("/admin/usuarios/{id}/permisos")
     Contratos.UsuarioVista permiso(@PathVariable Long id, @RequestBody Contratos.PermisosIn cuerpo, HttpServletRequest request) {
         return admin.permiso(admin(request), id, cuerpo.permisos());
+    }
+
+    @PostMapping("/admin/usuarios/{id}/activo")
+    Contratos.UsuarioVista activo(@PathVariable Long id, @RequestBody Contratos.ActivoIn cuerpo, HttpServletRequest request) {
+        return admin.activo(admin(request), id, cuerpo.activo());
     }
 
     @GetMapping("/admin/grupos")

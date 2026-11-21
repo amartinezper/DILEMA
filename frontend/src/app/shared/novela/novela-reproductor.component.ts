@@ -1,5 +1,5 @@
 import {
-  ChangeDetectionStrategy, Component, ElementRef, OnDestroy, computed, effect, inject, input, output, signal, untracked, viewChild
+  ChangeDetectionStrategy, Component, DestroyRef, ElementRef, OnDestroy, computed, effect, inject, input, output, signal, untracked, viewChild
 } from '@angular/core';
 import { Visema } from './cara-vrm';
 import { Asignacion, ElencoService } from './elenco.service';
@@ -55,12 +55,28 @@ function visemaDe(letra: string, anterior: Visema | null): Visema | null {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="reproductor" #raiz tabindex="0" (keydown)="tecla($event)"
+      [class.pantalla-completa]="pantallaCompleta()"
       aria-label="Novela del caso. Usa Enter o Espacio para avanzar.">
       <div class="lienzo" [style.max-width]="anchoMaximo()" (click)="clicEscena($event)">
         <app-escena-novela
           [caso]="casoEscena()" [bloque]="bloqueActual()" [personajes]="personajes()"
           [presentes]="reparto()" [visibles]="visibles()" [hablante]="hablante()" [boca]="boca()" [emociones]="emociones()"
           [titulo]="nombreHablante()" [texto]="textoVisible()" [mostrarDialogo]="conDialogo()" />
+
+        <div class="sobre-escena" (click)="$event.stopPropagation()">
+          @if (tiempoRestante() != null) {
+            <strong class="reloj" [class.urgente]="tiempoRestante()! <= 60" [attr.aria-label]="'Tiempo restante ' + reloj()">{{ reloj() }}</strong>
+          }
+          <button type="button" class="icono" (click)="alternarPantalla()"
+            [attr.aria-pressed]="pantallaCompleta()"
+            [attr.aria-label]="pantallaCompleta() ? 'Salir de pantalla completa' : 'Ver el caso en pantalla completa'">
+            @if (pantallaCompleta()) {
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3v2H5v4H3V3h6zm12 0v6h-2V5h-4V3h6zM3 15h2v4h4v2H3v-6zm18 0v6h-6v-2h4v-4h2z"/></svg>
+            } @else {
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v2H5v6H3V3zm10 0h8v8h-2V5h-6V3zM3 13h2v6h6v2H3v-8zm16 0h2v8h-8v-2h6v-6z"/></svg>
+            }
+          </button>
+        </div>
 
         @if (!pasos().length) { <div class="velo">Preparando la escena…</div> }
 
@@ -90,13 +106,15 @@ function visemaDe(letra: string, anterior: Visema | null): Visema | null {
           @case ('pregunta') {
             @if (preguntaActual(); as q) {
               <section class="pregunta" (click)="$event.stopPropagation()" aria-label="Pregunta">
+                <p class="marca">Decisión</p>
                 <div class="enunciado" [innerHTML]="q.enunciado"></div>
-                @if (q.pista) { <p class="pista"><b>Pista:</b> {{ q.pista }}</p> }
+                @if (q.pista) { <p class="pista">{{ q.pista }}</p> }
                 <div class="opciones" role="group" aria-label="Opciones">
                   @for (o of q.opciones; track $index; let i = $index) {
                     <button type="button" class="opcion" [attr.aria-pressed]="elegida() === i"
                       [class.elegida]="elegida() === i" (click)="elegir(i)">
-                      <span>{{ o.texto }}</span>
+                      <span class="clave">{{ 'ABCDEFGHIJ'.charAt(i) }}</span>
+                      <span class="texto">{{ o.texto }}</span>
                     </button>
                   }
                 </div>
@@ -104,25 +122,45 @@ function visemaDe(letra: string, anterior: Visema | null): Visema | null {
             }
           }
         }
+
+        @if (historialAbierto()) {
+          <aside class="historial" aria-label="Historial" (click)="$event.stopPropagation()">
+            <div class="historial-cabeza">
+              <div>
+                <p>Recorrido</p>
+                <h3>Historial</h3>
+              </div>
+              <button type="button" class="cerrar" (click)="historialAbierto.set(false)" aria-label="Cerrar historial">×</button>
+            </div>
+            <ol class="historial-lista">
+              @for (h of historial(); track $index) {
+                <li [class]="'entrada ' + h.clase">
+                  <button type="button" (click)="ir(h.indice, true)">
+                    @if (h.clase === 'habla') {
+                      <span class="avatar" aria-hidden="true">{{ h.inicial }}</span>
+                    }
+                    <span class="cuerpo">
+                      @if (h.nombre) { <strong>{{ h.nombre }}</strong> }
+                      <span>{{ h.texto }}</span>
+                    </span>
+                  </button>
+                </li>
+              } @empty {
+                <li class="vacio">Aún no hay diálogos. Avanza la escena para ver el recorrido aquí.</li>
+              }
+            </ol>
+          </aside>
+        }
       </div>
 
       <div class="controles" [class.oculto]="paso()?.tipo === 'fin' && !!resultados()">
         <button type="button" (click)="anterior()" [disabled]="indice() === 0">Anterior</button>
         <button type="button" class="principal" (click)="avanzar()" [disabled]="!pasos().length || paso()?.tipo === 'fin'">
           {{ escribiendo() ? 'Completar' : esUltimaPregunta() ? 'Finalizar' : 'Siguiente' }}</button>
-        <button type="button" (click)="historialAbierto.set(!historialAbierto())" [attr.aria-expanded]="historialAbierto()">Historial</button>
+        <button type="button" [class.activo]="historialAbierto()"
+          (click)="historialAbierto.set(!historialAbierto())" [attr.aria-expanded]="historialAbierto()">Historial</button>
         <span class="avance" aria-hidden="true">{{ indice() + 1 }} / {{ pasos().length }}</span>
       </div>
-
-      @if (historialAbierto()) {
-        <section class="historial" aria-label="Historial">
-          <div class="historial-cabeza"><h3>Historial</h3>
-            <button type="button" (click)="historialAbierto.set(false)">Cerrar</button></div>
-          @for (h of historial(); track $index) {
-            <p>@if (h.nombre) {<b>{{ h.nombre }}:</b> }{{ h.texto }}</p>
-          } @empty { <p class="vacio">Todavía no hay nada.</p> }
-        </section>
-      }
 
       <div class="solo-lector" aria-live="polite">{{ anuncio() }}</div>
     </div>
@@ -132,7 +170,23 @@ function visemaDe(letra: string, anterior: Visema | null): Visema | null {
     .reproductor { display: grid; gap: 10px; outline: none; position: relative; }
     .reproductor:focus-visible { box-shadow: 0 0 0 3px #9fe3d9; border-radius: 14px; }
     .lienzo { position: relative; width: 100%; margin: 0 auto; cursor: pointer; user-select: none; }
-    .velo, .portada, .letrero { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; border-radius: 14px; }
+    .sobre-escena {
+      position: absolute; top: 12px; right: 12px; z-index: 5; display: flex; align-items: center; gap: 8px;
+    }
+    .reloj {
+      font-variant-numeric: tabular-nums; min-width: 4.4rem; text-align: center; padding: 7px 12px;
+      border-radius: 999px; background: rgba(11, 18, 32, .78); color: #f4f7fb; font-size: 14px; font-weight: 700;
+      letter-spacing: .06em; box-shadow: 0 8px 20px rgba(0,0,0,.28); backdrop-filter: blur(8px);
+    }
+    .reloj.urgente { background: rgba(153, 27, 27, .88); color: #fff; }
+    .icono {
+      width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 12px; cursor: pointer;
+      background: rgba(11, 18, 32, .78); color: #f4f7fb; box-shadow: 0 8px 20px rgba(0,0,0,.28); backdrop-filter: blur(8px);
+    }
+    .icono svg { width: 18px; height: 18px; fill: currentColor; }
+    .icono:hover, .icono[aria-pressed="true"] { background: #1e3a5f; }
+    .velo, .portada, .letrero { position: absolute; inset: 0; z-index: 1; display: grid; place-content: center; text-align: center; border-radius: 14px; pointer-events: none; }
+    .portada button { pointer-events: auto; }
     .velo { background: rgba(15,20,28,.55); color: #fff; font-size: 1rem; }
     .portada { background: linear-gradient(180deg, rgba(15,20,28,.15), rgba(15,20,28,.7)); color: #fff; gap: 10px; padding: 16px; }
     .portada h2 { margin: 0; font-size: clamp(1.3rem, 4vw, 2.4rem); text-shadow: 0 2px 10px rgba(0,0,0,.5); }
@@ -142,34 +196,111 @@ function visemaDe(letra: string, anterior: Visema | null): Visema | null {
       font-size: clamp(1rem, 3vw, 1.6rem); font-weight: 600; }
     .letrero.animado span { animation: letrero 1.8s ease both; }
     @keyframes letrero { 0% { opacity: 0; transform: translateY(6px); } 20%, 80% { opacity: 1; transform: none; } 100% { opacity: .85; } }
-    .pregunta { position: absolute; left: 3%; right: 3%; bottom: 3%; max-height: 72%; overflow: auto; cursor: default;
-      padding: 14px 16px; border-radius: 12px; background: rgba(250,250,250,.97); color: #1d2430; box-shadow: 0 6px 24px rgba(0,0,0,.3); }
-    .enunciado { font-weight: 600; margin-bottom: 8px; }
+    .pregunta { position: absolute; left: 3%; right: 3%; bottom: 3%; z-index: 2; max-height: 72%; overflow: auto; cursor: default;
+      padding: 16px 16px 14px; border-radius: 18px; color: #f4f7fb;
+      background: linear-gradient(180deg, rgba(10, 23, 51, .92), rgba(12, 22, 40, .88));
+      border: 1px solid rgba(159, 227, 217, .22); box-shadow: 0 18px 40px rgba(5, 10, 22, .45); backdrop-filter: blur(16px); }
+    .marca { margin: 0 0 6px; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #9fe3d9; }
+    .enunciado { font-weight: 650; margin-bottom: 8px; color: #fff; font-size: 1.02rem; line-height: 1.35; }
     .enunciado :first-child { margin-top: 0; }
-    .pista { margin: 0 0 8px; font-size: .9rem; color: #4b5563; }
-    .opciones { display: grid; gap: 6px; }
-    .opcion { display: flex; justify-content: space-between; gap: 10px; text-align: left; padding: 9px 12px; border-radius: 8px;
-      border: 1px solid #c9d1cf; background: #fff; font: inherit; cursor: pointer; }
-    .opcion:hover { border-color: #2f6f68; }
-    .opcion.elegida { border-color: #2f6f68; background: #e3f1ee; box-shadow: inset 0 0 0 1px #2f6f68; }
-    /* Resultados: sobre el último fondo, casi opaco (el fondo apenas se intuye) y con desplazamiento propio. */
-    .resultados { position: absolute; inset: 0; overflow: auto; cursor: default; border-radius: 14px;
+    .pista { margin: 0 0 12px; font-size: .86rem; color: #c5d4f0; }
+    .pista::before { content: 'Pista · '; font-weight: 700; color: #9fe3d9; }
+    .opciones { display: grid; gap: 8px; }
+    .opcion { display: flex; align-items: center; gap: 12px; text-align: left; padding: 10px 12px; border-radius: 12px;
+      border: 1px solid rgba(197, 212, 238, .18); background: rgba(232, 238, 252, .08); color: #eef2f8; font: inherit; cursor: pointer; }
+    .opcion:hover { border-color: rgba(159, 227, 217, .55); background: rgba(47, 111, 104, .28); }
+    .opcion.elegida { border-color: #9fe3d9; background: rgba(47, 111, 104, .5); box-shadow: inset 0 0 0 1px #9fe3d9; }
+    .clave {
+      flex: 0 0 auto; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px;
+      background: #16325c; color: #9fe3d9; font-size: 12px; font-weight: 800;
+    }
+    .opcion.elegida .clave { background: #9fe3d9; color: #0a1733; }
+    .texto { min-width: 0; line-height: 1.35; }
+    .resultados { position: absolute; inset: 0; z-index: 2; overflow: auto; cursor: default; border-radius: 14px;
       background: rgba(13,19,30,.94); backdrop-filter: blur(3px); overscroll-behavior: contain; }
     .controles.oculto { display: none; }
-    .controles { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; }
-    .controles button { padding: 7px 12px; border-radius: 8px; border: 1px solid #c9d1cf; background: #fff;
-      color: #1d2430; font: inherit; cursor: pointer; }
-    .controles button:disabled { opacity: .45; cursor: default; }
-    .controles .principal { background: #2f6f68; color: #fff; border-color: #2f6f68; min-width: 110px; }
-    .historial button { padding: 4px 10px; border-radius: 6px; border: 1px solid #c9d1cf; background: #fff; color: #1d2430; font: inherit; cursor: pointer; }
-    .avance { font-size: .8rem; color: #6b7280; font-variant-numeric: tabular-nums; }
-    .historial { position: absolute; top: 0; right: 0; bottom: 52px; width: min(380px, 92%); overflow: auto; z-index: 2;
-      padding: 12px 14px; border-radius: 12px; background: #fff; color: #1d2430; box-shadow: 0 8px 28px rgba(0,0,0,.3); }
-    .historial-cabeza { display: flex; justify-content: space-between; align-items: center; }
-    .historial h3 { margin: 0 0 6px; font-size: 1rem; }
-    .historial p { margin: 6px 0; font-size: .9rem; line-height: 1.4; }
-    .historial .vacio { color: #6b7280; }
+    .controles {
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center;
+      padding: 8px; border-radius: 16px; width: fit-content; margin: 0 auto;
+      background: rgba(10, 23, 51, .88); border: 1px solid rgba(159, 227, 217, .18);
+      box-shadow: 0 10px 24px rgba(5, 10, 22, .22);
+    }
+    .controles button {
+      padding: 8px 16px; border-radius: 12px; border: 1px solid rgba(197, 212, 238, .2);
+      background: rgba(232, 238, 252, .08); color: #eef2f8; font: inherit; font-weight: 650; cursor: pointer;
+    }
+    .controles button:hover:not(:disabled) { border-color: rgba(159, 227, 217, .5); background: rgba(47, 111, 104, .28); }
+    .controles button:disabled { opacity: .38; cursor: default; }
+    .controles .principal {
+      background: #2f6f68; color: #fff; border-color: #3d8a81; min-width: 118px;
+      box-shadow: 0 6px 16px rgba(47, 111, 104, .35);
+    }
+    .controles .principal:hover:not(:disabled) { background: #3a8880; border-color: #9fe3d9; }
+    .controles .activo { background: #16325c; color: #9fe3d9; border-color: #9fe3d9; }
+    .avance {
+      font-size: .8rem; font-weight: 700; color: #9fe3d9; font-variant-numeric: tabular-nums;
+      padding: 6px 10px; letter-spacing: .04em;
+    }
+    .historial {
+      position: absolute; top: 58px; right: 12px; bottom: 12px; width: min(340px, 88%); z-index: 4; display: grid;
+      grid-template-rows: auto minmax(0, 1fr); overflow: hidden; border-radius: 16px;
+      background: linear-gradient(180deg, rgba(12, 18, 32, .94), rgba(16, 24, 40, .9)); color: #eef2f8;
+      box-shadow: 0 16px 40px rgba(0,0,0,.4); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,.08);
+    }
+    .historial-cabeza { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+      padding: 16px 16px 12px; border-bottom: 1px solid rgba(255,255,255,.08); }
+    .historial-cabeza p { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #93a0b8; }
+    .historial h3 { margin: 2px 0 0; font-size: 1.05rem; }
+    .historial .cerrar {
+      width: 32px; height: 32px; border: 0; border-radius: 10px; background: rgba(255,255,255,.08); color: #fff;
+      font: 700 1.2rem/1 inherit; cursor: pointer;
+    }
+    .historial-lista { list-style: none; margin: 0; padding: 12px; overflow: auto; display: grid; gap: 8px; align-content: start; }
+    .historial .vacio { color: #93a0b8; font-size: .9rem; line-height: 1.45; padding: 12px 8px; }
+    .entrada button {
+      width: 100%; display: flex; gap: 10px; align-items: flex-start; text-align: left; padding: 10px 12px;
+      border: 0; border-radius: 14px; background: rgba(255,255,255,.06); color: inherit; font: inherit; cursor: pointer;
+    }
+    .entrada button:hover { background: rgba(255,255,255,.12); }
+    .entrada.narra button { background: transparent; padding: 8px 10px; }
+    .entrada.pregunta button { background: rgba(47, 111, 104, .28); }
+    .avatar {
+      flex: 0 0 auto; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%;
+      background: #2f6f68; color: #fff; font-size: 12px; font-weight: 700;
+    }
+    .cuerpo { display: grid; gap: 2px; min-width: 0; }
+    .cuerpo strong { font-size: 12px; color: #9fe3d9; }
+    .cuerpo span { font-size: .88rem; line-height: 1.4; color: #e8eef6; }
+    .entrada.narra .cuerpo span { font-style: italic; color: #c5cedd; }
+    .entrada.pregunta .cuerpo strong { color: #d7efe9; }
     .solo-lector { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .reproductor.pantalla-completa {
+      position: fixed; inset: 0; z-index: 80; height: 100%; width: 100%;
+      box-sizing: border-box; padding: 16px 18px 14px; gap: 12px;
+      grid-template-rows: minmax(0, 1fr) auto; background: #0b1220; border-radius: 0;
+    }
+    .reproductor:fullscreen,
+    .reproductor:-webkit-full-screen {
+      height: 100%; width: 100%; box-sizing: border-box; padding: 16px 18px 14px; gap: 12px;
+      grid-template-rows: minmax(0, 1fr) auto; background: #0b1220;
+    }
+    .reproductor.pantalla-completa .lienzo,
+    .reproductor:fullscreen .lienzo,
+    .reproductor:-webkit-full-screen .lienzo {
+      height: 100%; max-width: none !important; min-height: 0;
+    }
+    .reproductor.pantalla-completa app-escena-novela,
+    .reproductor:fullscreen app-escena-novela,
+    .reproductor:-webkit-full-screen app-escena-novela { display: block; height: 100%; }
+    .reproductor.pantalla-completa .historial,
+    .reproductor:fullscreen .historial { border-radius: 0 12px 12px 0; }
+    @media (max-width: 768px) {
+      .pregunta { left: 2%; right: 2%; bottom: 2%; max-height: 78%; padding: 12px; }
+      .opcion { min-height: 44px; align-items: center; }
+      .controles button { min-height: 44px; padding: 10px 14px; }
+      .historial { left: 8px; right: 8px; width: auto; top: 54px; bottom: 8px; }
+      .sobre-escena { top: 8px; right: 8px; }
+    }
   `]
 })
 export class NovelaReproductorComponent implements OnDestroy {
@@ -186,6 +317,8 @@ export class NovelaReproductorComponent implements OnDestroy {
   readonly mostrarCerrar = input(false);
   /** Ancho máximo de la escena (CSS), por ejemplo para que quepa en pantalla completa. */
   readonly anchoMaximo = input<string | null>(null);
+  /** Segundos restantes de la sesión (estudiante). Si llega, el reloj se muestra junto a pantalla completa. */
+  readonly tiempoRestante = input<number | null>(null);
 
   readonly opcion = output<OpcionElegida>();
   /** Se pulsó "Finalizar" en la última pregunta: opciones elegidas ("escenario:pregunta" → índice). */
@@ -210,6 +343,7 @@ export class NovelaReproductorComponent implements OnDestroy {
   readonly textoVisible = signal('');
   readonly escribiendo = signal(false);
   readonly historialAbierto = signal(false);
+  readonly pantallaCompleta = signal(false);
   readonly anuncio = signal('');
   private readonly elegidas = signal<Record<string, number>>({});
   private readonly visemaActual = signal<Visema | null>(null);
@@ -268,9 +402,35 @@ export class NovelaReproductorComponent implements OnDestroy {
     const p = this.paso();
     return p?.tipo === 'pregunta' && !this.pasos().slice(this.indice() + 1).some(x => x.tipo === 'pregunta');
   });
-  readonly historial = computed(() => this.pasos().slice(0, this.indice() + 1)
-    .filter(p => p.tipo === 'narracion' || p.tipo === 'dialogo')
-    .map(p => p.tipo === 'dialogo' ? { nombre: this.nombres().get(p.personaje) ?? '', texto: p.texto } : { nombre: '', texto: p.tipo === 'narracion' ? p.texto : '' }));
+  readonly reloj = computed(() => {
+    const segundos = this.tiempoRestante();
+    if (segundos == null) return '';
+    return `${Math.floor(segundos / 60)}:${String(segundos % 60).padStart(2, '0')}`;
+  });
+  readonly historial = computed(() => {
+    type Entrada = { indice: number; clase: 'habla' | 'narra' | 'pregunta'; nombre: string; inicial: string; texto: string };
+    const nombres = this.nombres();
+    const caso = this.caso();
+    const elegidas = this.elegidas();
+    const lista: Entrada[] = [];
+    this.pasos().slice(0, this.indice() + 1).forEach((p, indice) => {
+      if (p.tipo === 'dialogo') {
+        const nombre = nombres.get(p.personaje) ?? '';
+        lista.push({ indice, clase: 'habla', nombre, inicial: (nombre[0] ?? '?').toUpperCase(), texto: p.texto });
+      } else if (p.tipo === 'narracion') {
+        lista.push({ indice, clase: 'narra', nombre: '', inicial: '', texto: p.texto });
+      } else if (p.tipo === 'pregunta') {
+        const q = caso.bloques[p.bloqueIndice]?.preguntas?.[p.preguntaIndice];
+        const i = elegidas[`${p.bloqueIndice}:${p.preguntaIndice}`];
+        const opcion = i != null ? q?.opciones[i]?.texto : null;
+        lista.push({
+          indice, clase: 'pregunta', nombre: 'Decisión', inicial: 'D',
+          texto: opcion ? `Elegiste: ${opcion}` : (q?.enunciado ?? 'Pregunta').replace(/<[^>]*>/g, ' ').trim()
+        });
+      }
+    });
+    return lista;
+  });
 
   constructor() {
     // Elenco (perfiles) → guion.
@@ -303,11 +463,33 @@ export class NovelaReproductorComponent implements OnDestroy {
         this.ir(Math.max(0, i));
       });
     });
+    if (typeof document !== 'undefined') {
+      const alCambiar = () => {
+        const el = this.raiz()?.nativeElement;
+        this.pantallaCompleta.set(!!el && document.fullscreenElement === el);
+      };
+      document.addEventListener('fullscreenchange', alCambiar);
+      inject(DestroyRef).onDestroy(() => document.removeEventListener('fullscreenchange', alCambiar));
+    }
   }
 
   ngOnDestroy(): void {
     clearInterval(this.temporizador);
     clearTimeout(this.autoAvance);
+    if (typeof document !== 'undefined' && document.fullscreenElement === this.raiz()?.nativeElement) {
+      document.exitFullscreen?.().catch(() => undefined);
+    }
+  }
+
+  alternarPantalla(): void {
+    const el = this.raiz().nativeElement;
+    if (document.fullscreenElement === el || this.pantallaCompleta()) {
+      document.exitFullscreen?.().catch(() => undefined);
+      this.pantallaCompleta.set(false);
+      return;
+    }
+    this.pantallaCompleta.set(true);
+    el.requestFullscreen?.()?.catch(() => undefined);
   }
 
   /** Lleva el foco al reproductor (para usarlo con teclado). */
@@ -419,6 +601,8 @@ export class NovelaReproductorComponent implements OnDestroy {
       evento.preventDefault(); this.avanzar();
     } else if (evento.key === 'ArrowLeft' && !enControl) {
       evento.preventDefault(); this.anterior();
+    } else if (evento.key === 'Escape' && this.pantallaCompleta() && !document.fullscreenElement) {
+      this.pantallaCompleta.set(false);
     }
   }
 

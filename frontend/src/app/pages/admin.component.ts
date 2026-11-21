@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -13,7 +13,8 @@ const enlaces = [
   { href: '/admin/usuarios/nuevo', texto: 'Nuevo docente', exacto: true },
   { href: '/admin/grupos', texto: 'Grupos', exacto: true },
   { href: '/admin/auditoria', texto: 'Auditoría', exacto: true },
-  { href: '/admin/configuracion', texto: 'Configuración global', exacto: true }
+  { href: '/admin/configuracion', texto: 'Configuración global', exacto: true },
+  { href: '/admin/perfil', texto: 'Perfil' }
 ];
 
 @Component({
@@ -125,16 +126,27 @@ export class PanelAdminComponent {
         <header class="saludo">
           <h1>Docentes</h1>
           <p>El administrador crea docentes y asigna permisos. Los estudiantes los matricula el docente.</p>
+          <a class="btn-oscuro" routerLink="/admin/usuarios/nuevo">Nuevo docente</a>
         </header>
+        @if (error()) { <p class="error">{{ error() }}</p> }
       <article class="tarjeta stack">
           @for (usuario of visibles(); track usuario.id) {
             <article class="item">
               <h3>{{ usuario.nombre }}</h3>
-              <p class="sub">{{ usuario.email }} · {{ usuario.rol === 'PROFESOR' ? 'Docente' : 'Administración' }}</p>
-              <p class="sub">{{ usuario.permisos.join(', ') || 'Sin permisos' }}</p>
-              @if (usuario.rol === 'PROFESOR') {
-                <a class="btn-suave" [routerLink]="['/admin/usuarios', usuario.id]">Permisos</a>
-              }
+              <p class="sub">{{ usuario.email }} · {{ usuario.rol === 'PROFESOR' ? 'Docente' : 'Administración' }} · {{ usuario.activo === false ? 'Inactiva' : 'Activa' }}</p>
+              <p class="sub">{{ etiquetaPermisos(usuario.permisos) }}</p>
+              <div class="caso-acciones acciones-cuenta">
+                @if (usuario.rol === 'PROFESOR') {
+                  <a class="btn-suave" [routerLink]="['/admin/usuarios', usuario.id]">Permisos</a>
+                }
+                @if (usuario.id !== yo()) {
+                  @if (usuario.activo === false) {
+                    <button class="btn-oscuro" type="button" (click)="activo(usuario.id, true)">Activar</button>
+                  } @else {
+                    <button class="btn-suave" type="button" (click)="activo(usuario.id, false)">Desactivar</button>
+                  }
+                }
+              </div>
             </article>
           } @empty { <p class="sub">No hay cuentas para mostrar.</p> }
       </article>
@@ -146,13 +158,32 @@ export class UsuariosComponent {
   enlaces = enlaces;
   private http = inject(HttpClient);
   private filtro = inject(BusquedaService);
+  private auth = inject(AuthService);
   usuarios = signal<Usuario[]>([]);
+  error = signal('');
   constructor() {
-    this.http.get<Usuario[]>('/api/admin/usuarios').subscribe((dato) => this.usuarios.set(dato));
+    this.cargar();
+  }
+  yo() { return this.auth.usuario()?.id; }
+  etiquetaPermisos(permisos: string[]) {
+    const etiquetas = [];
+    if (permisos.includes('VISUALIZAR')) etiquetas.push('Visualizar');
+    if (permisos.includes('EDITAR')) etiquetas.push('Editar');
+    if (permisos.includes('GESTIONAR_ESPACIOS_ACADEMICOS')) etiquetas.push('Gestionar espacios');
+    return etiquetas.join(' · ') || 'Sin permisos';
   }
   visibles() {
     const q = this.filtro.texto().trim().toLowerCase();
     return this.usuarios().filter((usuario) => !q || usuario.nombre.toLowerCase().includes(q) || usuario.email.toLowerCase().includes(q));
+  }
+  activo(id: number, activo: boolean) {
+    this.http.post<Usuario>(`/api/admin/usuarios/${id}/activo`, { activo }).subscribe({
+      next: () => this.cargar(),
+      error: (falla) => this.error.set(mensajeError(falla))
+    });
+  }
+  private cargar() {
+    this.http.get<Usuario[]>('/api/admin/usuarios').subscribe((dato) => this.usuarios.set(dato));
   }
 }
 
@@ -300,6 +331,9 @@ interface Auditoria { id: number; fecha: string; accion: string; detalle: string
               <h3>{{ grupo.nombre }}</h3>
               <p class="sub">{{ grupo.espacioAcademico }} · {{ grupo.docente.nombre }}</p>
               <p class="sub">{{ grupo.estudiantes.length }} estudiantes</p>
+              @for (estudiante of grupo.estudiantes; track estudiante.id) {
+                <p class="sub">{{ estudiante.nombre }} · {{ estudiante.email }}</p>
+              }
             </article>
           } @empty { <p class="sub">Todavía no hay grupos.</p> }
         </article>
@@ -398,5 +432,55 @@ export class ConfiguracionComponent {
     const base = { nombre: 'Simulador de Psicología Social', soporte: 'soporte.academico@universidad.edu', zona: 'America/Bogota', inactividad: 30, notificar: true, docentePublica: true, escalaMin: 0, escalaMax: 5 };
     try { return { ...base, ...JSON.parse(localStorage.getItem('dilema-config') || '{}') }; }
     catch { return base; }
+  }
+}
+
+const enlacesDocente = [
+  { href: '/docente', texto: 'Inicio', exacto: true },
+  { href: '/docente/casos', texto: 'Mis Casos', exacto: true },
+  { href: '/docente/grupos', texto: 'Grupos', exacto: true },
+  { href: '/docente/programar', texto: 'Programar', exacto: true },
+  { href: '/docente/seguimiento', texto: 'Reportes' },
+  { href: '/docente/perfil', texto: 'Perfil' }
+];
+
+@Component({
+  selector: 'app-perfil',
+  imports: [MarcoDocenteComponent],
+  template: `
+    <app-marco-docente [enlaces]="menu()" [inicio]="inicio()">
+      <section class="tablero ficha-tablero pagina-perfil">
+        <header class="saludo">
+          <h1>Mi perfil</h1>
+          <p>Tus datos de cuenta.</p>
+        </header>
+        <article class="dash-panel ficha-form">
+          <div class="perfil-vista">
+            <div class="perfil-cabeza">
+              <span class="inicio-avatar">{{ iniciales() }}</span>
+              <div>
+                <h2>{{ auth.usuario()?.nombre }}</h2>
+                <p class="sub">{{ auth.usuario()?.email }}</p>
+                <p class="sub">{{ etiquetaRol() }}</p>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </app-marco-docente>
+  `
+})
+export class PerfilComponent {
+  auth = inject(AuthService);
+  menu = computed(() => this.auth.rol() === 'ADMIN' ? enlaces : enlacesDocente);
+  inicio = computed(() => this.auth.rol() === 'ADMIN' ? '/admin' : '/docente');
+  etiquetaRol() {
+    if (this.auth.rol() === 'ADMIN') return 'Administración';
+    if (this.auth.rol() === 'PROFESOR') return 'Docente';
+    return 'Estudiante';
+  }
+  iniciales() {
+    const partes = (this.auth.usuario()?.nombre ?? '').trim().split(/\s+/).filter(Boolean);
+    return ((partes[0]?.[0] ?? '') + (partes[1]?.[0] ?? '')).toUpperCase() || 'D';
   }
 }

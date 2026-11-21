@@ -81,6 +81,40 @@ public class AcademiaServicio {
     }
 
     @Transactional
+    public Contratos.GrupoVista editarGrupo(Usuario docente, Long id, Contratos.GrupoIn entrada) {
+        proxy.gestionarEspacio(docente);
+        if (entrada.nombre() == null || entrada.nombre().isBlank() || entrada.espacioAcademico() == null || entrada.espacioAcademico().isBlank()) {
+            throw new ReglaNegocio("El grupo necesita nombre y semestre.");
+        }
+        Grupo grupo = propio(docente, id);
+        grupo.nombre = entrada.nombre().trim();
+        grupo.semestre = entrada.espacioAcademico().trim();
+        bitacora.auditar(docente, "EDITAR_GRUPO", grupo.nombre);
+        return mapeador.grupo(grupo);
+    }
+
+    @Transactional
+    public void borrarGrupo(Usuario docente, Long id) {
+        proxy.gestionarEspacio(docente);
+        Grupo grupo = propio(docente, id);
+        List<SesionCaso> convocatorias = sesiones.findByGrupo_Id(grupo.id);
+        for (SesionCaso sesion : convocatorias) {
+            if (sesion.estado() == Catalogo.EstadoSesion.EN_CURSO) {
+                throw new ReglaNegocio("No se puede borrar un grupo con una sesión en curso.");
+            }
+            if (sesion.estado() == Catalogo.EstadoSesion.FINALIZADO) {
+                throw new ReglaNegocio("No se puede borrar un grupo con convocatorias ya cerradas.");
+            }
+        }
+        for (SesionCaso sesion : convocatorias) {
+            padron.vaciar(sesion);
+            sesiones.delete(sesion);
+        }
+        grupos.delete(grupo);
+        bitacora.auditar(docente, "BORRAR_GRUPO", grupo.nombre);
+    }
+
+    @Transactional
     public Contratos.GrupoVista agregarEstudiante(Usuario docente, Long grupoId, String nombre, String email) {
         proxy.revisarGrupo(docente);
         Grupo grupo = propio(docente, grupoId);
@@ -138,6 +172,12 @@ public class AcademiaServicio {
     public List<Contratos.SesionVista> sesionesDocente(Usuario docente) {
         proxy.revisarGrupo(docente);
         return sesiones.findByGrupo_Docente_IdOrderByIdDesc(docente.id).stream().map(mapeador::sesion).toList();
+    }
+
+    @Transactional
+    public Contratos.SesionVista reprogramar(Usuario docente, Long id, Contratos.AgendaIn entrada) {
+        proxy.revisarGrupo(docente);
+        return fachada.reprogramar(docente, id, entrada);
     }
 
     @Transactional

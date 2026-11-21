@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 public class DatosIniciales implements CommandLineRunner {
@@ -40,6 +41,7 @@ public class DatosIniciales implements CommandLineRunner {
         fabrica.asegurarCatalogo();
         if (usuarios.count() > 0) {
             usuarios.findAll().forEach(fabrica::otorgarSiVacio);
+            asegurarPractica();
             return;
         }
 
@@ -55,6 +57,7 @@ public class DatosIniciales implements CommandLineRunner {
         usuarios.save(estudiante);
         fabrica.otorgarSiVacio(admin);
         fabrica.otorgarSiVacio(docente);
+        asegurarPractica();
 
         Grupo grupo = new Grupo();
         grupo.nombre = "Psicología Social";
@@ -116,13 +119,13 @@ public class DatosIniciales implements CommandLineRunner {
         sesion.caso = caso;
         sesion.grupo = grupo;
         sesion.codigo = "DILEMA-2026";
-        sesion.inicio = LocalDateTime.now().minusHours(1);
+        sesion.inicio = LocalDateTime.now().minusMinutes(10);
         sesion.fin = LocalDateTime.now().plusDays(20);
         sesion.tiempoMaxMin = 30;
-        sesion.toleranciaMin = 180;
+        sesion.toleranciaMin = 10080;
         sesion.lugar = "Aula 3";
         sesion.mensaje = "Caso formativo. El objetivo es el encuadre ético y la ruta de atención, no reconstruir el crimen. No hay escena violenta.";
-        sesion.inicioReal = LocalDateTime.now().minusMinutes(15);
+        sesion.inicioReal = LocalDateTime.now().minusMinutes(5);
         sesiones.save(sesion);
 
         SesionEstudiante fila = new SesionEstudiante();
@@ -130,6 +133,12 @@ public class DatosIniciales implements CommandLineRunner {
         fila.estudianteId = estudiante.id;
         fila.grupoId = grupo.id;
         autorizados.save(fila);
+    }
+
+    /** La cuenta de práctica debe poder diseñar casos y abrir grupos sin pasar otra vez por administración. */
+    private void asegurarPractica() {
+        usuarios.findByEmailIgnoreCase("docente@psicosim.edu").ifPresent(docente ->
+                fabrica.reemplazarPermisosDocente(docente, List.of(FabricaCuentas.EDITAR, FabricaCuentas.GESTIONAR_ESPACIOS)));
     }
 
     private Usuario cuenta(String nombre, String email, String clave, Catalogo.Rol rol, PasswordEncoder cifrado) {
