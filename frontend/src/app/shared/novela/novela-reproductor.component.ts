@@ -94,7 +94,9 @@ function visemaDe(letra: string, anterior: Visema | null): Visema | null {
           @case ('fin') {
             @if (resultados(); as r) {
               <div class="resultados" (click)="$event.stopPropagation()">
-                <app-resultados-novela [resultados]="r" [textoCerrar]="mostrarCerrar() ? 'Cerrar' : null"
+                <app-resultados-novela [resultados]="r"
+                  [textoCerrar]="mostrarCerrar() ? (modoEstudiante() ? 'Volver al panel' : 'Cerrar') : null"
+                  [textoReiniciar]="modoEstudiante() ? null : 'Volver a empezar'"
                   (reiniciar)="volverAEmpezar()" (cerrar)="cerrar.emit()" />
               </div>
             } @else {

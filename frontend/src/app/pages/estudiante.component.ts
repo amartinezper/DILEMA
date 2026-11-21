@@ -359,7 +359,7 @@ export class PanelEstudianteComponent {
 
 @Component({
   selector: 'app-briefing',
-  imports: [MarcoEstudianteComponent, RouterLink, FormsModule, MatButtonModule, MatCardModule, NovelaReproductorComponent],
+  imports: [MarcoEstudianteComponent, RouterLink, FormsModule, MatButtonModule, MatCardModule],
   template: `
     <app-marco-estudiante activa="dilemas" [sinLeer]="sinLeer()">
       @if (sesion(); as actual) {
@@ -368,14 +368,6 @@ export class PanelEstudianteComponent {
             <p class="kicker">{{ actual.codigo }}</p>
             <h1>Bienvenido al caso: {{ actual.caso }}</h1>
           </header>
-          <!-- Portada y presentación del caso ANTES de iniciar: el reloj todavía no corre. -->
-          @if (novela(); as caso) {
-            <section class="novela-briefing" aria-label="Presentación del caso">
-              <app-novela-reproductor [caso]="caso" [personajes]="actual.personajes ?? []" tramo="presentacion"
-                textoFin="Fin de la presentación" textoVolver="Ver otra vez" />
-              <p class="sub">La presentación no gasta tiempo: el reloj empieza cuando pulses «Iniciar simulación».</p>
-            </section>
-          }
           <article class="tarjeta stack">
             <h2>Mensaje del docente</h2>
             <p>{{ actual.mensaje || 'Sigue las instrucciones del caso y responde cada escena.' }}</p>
@@ -434,18 +426,6 @@ export class BriefingComponent {
   private router = inject(Router);
   sesion = signal<Sesion | null>(null);
   sinLeer = signal(0);
-  /**
-   * El caso para la novela del briefing (solo portada y presentación). Lleva los mismos textos y escenarios que
-   * la simulación para que el elenco salga igual en las dos pantallas.
-   */
-  novela = computed<CasoReproductor | null>(() => {
-    const s = this.sesion();
-    if (!s) return null;
-    return {
-      id: s.casoId, nombre: s.caso, desarrolloSituacional: s.desarrollo, contexto: s.contexto,
-      bloques: (s.escenarios ?? []).map((e) => ({ nombre: e.nombre, contexto: e.contexto, preguntas: [] }))
-    };
-  });
   acepto = false;
   error = signal('');
   constructor() {
@@ -478,72 +458,82 @@ export class BriefingComponent {
   template: `
     <app-marco-estudiante [activa]="menuActivo()" [sinLeer]="sinLeer()">
       @if (juego(); as actual) {
-        @if (actual.estado === 'FINALIZADA' || actual.estado === 'AUSENTE') {
-          <!-- Resultados con lo que devolvió el backend (la misma pantalla de la vista previa del docente). -->
+        @if (novela(); as caso) {
+          <!--
+            La MISMA ventana que la vista previa del docente: pantalla completa, franja superior con Música y Cerrar,
+            y el caso completo (portada, presentación, escenarios, preguntas y resultados al final).
+          -->
+          <div class="modal-vista" role="dialog" aria-modal="true" [attr.aria-label]="'Caso: ' + actual.caso">
+            <header class="modal-cabeza">
+              <div class="modal-info">
+                @if (actual.estado === 'EN_CURSO') {
+                  <strong class="reloj-juego" [class.urgente]="restante() <= 60" role="timer"
+                    [attr.aria-label]="'Tiempo restante ' + reloj()">{{ reloj() }}</strong>
+                }
+                <span class="modal-titulo">{{ tituloEscena() }}</span>
+              </div>
+              @if (musica.disponible()) {
+                <button type="button" class="musica" [attr.aria-pressed]="musica.activa()"
+                  [attr.aria-label]="musica.activa() ? 'Silenciar música' : 'Activar música'" (click)="musica.alternar()">
+                  <svg viewBox="0 0 20 20" aria-hidden="true">
+                    <path class="parlante" d="M3 7.5h3l4.5-3.5v12L6 12.5H3z" />
+                    @if (musica.activa()) {
+                      <path d="M13.5 7.2a4 4 0 0 1 0 5.6M15.8 5a7 7 0 0 1 0 10" />
+                    } @else {
+                      <path d="M13.5 7.5l5 5M18.5 7.5l-5 5" />
+                    }
+                  </svg>
+                  <span>Música</span>
+                </button>
+              }
+              <button type="button" class="cerrar" (click)="volverAlPanel()"
+                [attr.aria-label]="actual.estado === 'EN_CURSO' ? 'Cerrar y volver al panel (el intento sigue abierto y el reloj sigue corriendo)' : 'Cerrar y volver al panel'">Cerrar</button>
+            </header>
+            <div class="modal-cuerpo">
+              <app-novela-reproductor #reproductor
+                [caso]="caso" [personajes]="elenco()" [tiempoRestante]="restante()"
+                [resultados]="resultados()" [mostrarCerrar]="true" (cerrar)="volverAlPanel()"
+                anchoMaximo="calc((100vh - 130px) * 16 / 9)"
+                [modoEstudiante]="true" [seleccion]="seleccion()" [empezarEn]="empezarEn()"
+                textoFin="Enviando tus respuestas…" [textoVolver]="null"
+                (opcion)="elegirNovela($event)" (deshacer)="deshacer()" (finalizar)="finalizar()" />
+              @if (error()) { <p class="error-juego" role="alert">{{ error() }}</p> }
+            </div>
+          </div>
+        } @else {
+          <!-- Entrada por "Ver resultados" desde el panel: la misma pantalla de resultados. -->
           @if (resultados(); as r) {
             <section class="resultados-estudiante" [style.background-image]="fondoResultados()">
               <app-resultados-novela [resultados]="r" [textoReiniciar]="null" textoCerrar="Volver al panel"
                 (cerrar)="volverAlPanel()" />
             </section>
           }
-        } @else {
-          <section class="informe-caso novela-juego">
-            <header class="barra-juego">
-              <div class="titulo-juego">
-                <p>{{ actual.caso }}</p>
-                <h2>{{ tituloEscena() }}</h2>
-              </div>
-              <div class="herramientas-juego">
-                <strong class="reloj-juego" [class.urgente]="restante() <= 60" role="timer"
-                  [attr.aria-label]="'Tiempo restante ' + reloj()">{{ reloj() }}</strong>
-                @if (musica.disponible()) {
-                  <button type="button" class="musica" [attr.aria-pressed]="musica.activa()"
-                    [attr.aria-label]="musica.activa() ? 'Silenciar música' : 'Activar música'" (click)="musica.alternar()">
-                    <svg viewBox="0 0 20 20" aria-hidden="true">
-                      <path class="parlante" d="M3 7.5h3l4.5-3.5v12L6 12.5H3z" />
-                      @if (musica.activa()) {
-                        <path d="M13.5 7.2a4 4 0 0 1 0 5.6M15.8 5a7 7 0 0 1 0 10" />
-                      } @else {
-                        <path d="M13.5 7.5l5 5M18.5 7.5l-5 5" />
-                      }
-                    </svg>
-                    <span>Música</span>
-                  </button>
-                }
-              </div>
-            </header>
-            <div class="progreso" role="progressbar" aria-label="Avance del caso" aria-valuemin="0" aria-valuemax="100"
-              [attr.aria-valuenow]="actual.progreso"><div [style.width.%]="actual.progreso"></div></div>
-            @if (novela(); as caso) {
-              <app-novela-reproductor #reproductor
-                [caso]="caso" [personajes]="elenco()" [tiempoRestante]="restante()"
-                tramo="escenarios" [modoEstudiante]="true" [seleccion]="seleccion()" [empezarEn]="empezarEn()"
-                textoFin="Enviando tus respuestas…" [textoVolver]="null"
-                (opcion)="elegirNovela($event)" (deshacer)="deshacer()" (finalizar)="finalizar()" />
-            }
-            @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
-          </section>
         }
       }
+      @if (error() && !novela()) { <p class="error" role="alert">{{ error() }}</p> }
     </app-marco-estudiante>
   `,
   styles: [`
-    .barra-juego { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px;
-      padding: 10px 16px; border-radius: 14px; background: #0b1220; color: #f4f7fb; }
-    .titulo-juego { min-width: 0; }
-    .titulo-juego p { margin: 0; font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #9fb0c8; }
-    .titulo-juego h2 { margin: 2px 0 0; font-size: clamp(1rem, 2.2vw, 1.25rem); color: #fff; }
-    .herramientas-juego { display: flex; align-items: center; gap: 8px; }
+    /* Copia de la ventana de la vista previa del docente (docente.component.ts). */
+    .modal-vista { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; background: #0f141c; color: #f3f3f3; }
+    .modal-cabeza { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 10px 16px; background: #0a1733; }
+    .modal-cabeza .cerrar, .modal-cabeza .musica { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
+      border-radius: 999px; border: 1px solid #cfd8ee; background: #fff; color: #0a1733; font: inherit; font-weight: 650; line-height: 1.5; cursor: pointer; }
+    .modal-cabeza .musica + .cerrar { margin-left: 0; }
+    .modal-cabeza .musica svg { width: 1.15em; height: 1.15em; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+    .modal-cabeza .musica .parlante { fill: currentColor; }
+    .modal-cabeza .cerrar:focus-visible, .modal-cabeza .musica:focus-visible { outline: 2px solid #9fe3d9; outline-offset: 2px; }
+    .modal-cuerpo { flex: 1; overflow: auto; padding: 12px 16px; }
+    /* Lo único que el estudiante tiene de más: el reloj y la escena actual, a la izquierda de la franja. */
+    .modal-info { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .modal-titulo { font-weight: 650; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .reloj-juego { font-variant-numeric: tabular-nums; min-width: 4.6rem; text-align: center; padding: 6px 14px; line-height: 1.5;
-      border-radius: 8px; background: rgba(255,255,255,.1); font-size: .95rem; letter-spacing: .04em; }
+      border-radius: 999px; background: rgba(255,255,255,.12); font-size: .95rem; letter-spacing: .04em; }
     .reloj-juego.urgente { background: #991b1b; }
-    .musica { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; border: 0;
-      background: #fff; color: #1d2430; font: inherit; line-height: 1.5; cursor: pointer; }
-    .musica svg { width: 1.15em; height: 1.15em; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-    .musica .parlante { fill: currentColor; }
-    .musica:focus-visible { outline: 2px solid #9fe3d9; outline-offset: 2px; }
+    .error-juego { margin: 10px auto 0; max-width: 720px; padding: 10px 14px; border-radius: 10px; background: #fff1f0; color: #9b1c12; }
     .resultados-estudiante { border-radius: 18px; overflow: hidden; background-color: #0f1726;
       background-size: cover; background-position: center; }
+    @media (max-width: 768px) { .modal-cuerpo { padding: 8px; } }
   `]
 })
 export class SimulacionComponent {
@@ -582,9 +572,15 @@ export class SimulacionComponent {
     const j = this.juego();
     return j && (j.estado === 'FINALIZADA' || j.estado === 'AUSENTE') ? resultadosDeParticipacion(j) : null;
   });
+  /** Franja superior: el nombre del caso en la portada y la presentación; luego la escena actual. */
   readonly tituloEscena = computed(() => {
-    const b = this.reproductor()?.bloqueActual();
-    return b && b.nombre ? `Escena ${b.indice + 1} · ${b.nombre}` : 'Simulación';
+    const r = this.reproductor();
+    const paso = r?.paso();
+    const caso = this.juego()?.caso ?? '';
+    if (!r || !paso || paso.escena.escenario < 0) return caso;
+    if (paso.tipo === 'fin') return this.resultados() ? 'Resultados' : caso;
+    const b = r.bloqueActual();
+    return b.nombre ? `Escena ${b.indice + 1} · ${b.nombre}` : caso;
   });
 
   constructor() {
@@ -613,6 +609,7 @@ export class SimulacionComponent {
     document.addEventListener('keydown', primerGesto);
     inject(DestroyRef).onDestroy(() => {
       clearInterval(this.timer);
+      document.body.style.overflow = '';
       quitar();
       this.musica.detener();
     });
@@ -686,6 +683,7 @@ export class SimulacionComponent {
           this.empezarEn.set(this.primerPendiente(dato, caso));
           this.elenco.set(dato.personajes ?? []);
           this.novela.set(caso);
+          document.body.style.overflow = 'hidden';
         } else {
           this.recibir(dato);
         }
@@ -693,8 +691,12 @@ export class SimulacionComponent {
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
-  /** Al entrar (o volver a entrar): el primer escenario con preguntas sin responder; si no hay, el último. */
-  private primerPendiente(dato: Participacion, caso: CasoReproductor): number {
+  /**
+   * Al entrar sin respuestas, la portada (como la vista previa del docente). Al volver a un intento a medias, el primer
+   * escenario con preguntas sin responder; si no queda ninguno, el último.
+   */
+  private primerPendiente(dato: Participacion, caso: CasoReproductor): number | null {
+    if (!dato.preguntas.some((q) => q.seleccionId != null)) return null;
     const pendiente = caso.bloques.findIndex((b) => b.preguntas.some((q) => dato.preguntas.find((x) => x.id === q.id)?.seleccionId == null));
     return pendiente >= 0 ? pendiente : Math.max(0, caso.bloques.length - 1);
   }
