@@ -213,6 +213,59 @@ class ParticipacionServicioTest {
         assertFalse(delDocente.preguntas().get(0).opciones().get(1).correcta());
     }
 
+    @Test
+    @DisplayName("la novela del estudiante recibe cada personaje solo en sus escenarios y nada de la correcta en curso")
+    void novelaDelEstudiante() {
+        Escenario segundo = new Escenario();
+        segundo.id = 7L;
+        segundo.orden = 1;
+        segundo.titulo = "Comisaría";
+        segundo.contexto = "Quince días después";
+        segundo.caso = sesion.caso;
+        Pregunta tercera = pregunta(23L, "¿Qué medida?", new BigDecimal("1.0"));
+        tercera.opciones.add(opcion(51L, true));
+        segundo.preguntas.add(tercera);
+        sesion.caso.escenarios.add(segundo);
+        com.dilema.modelo.Personaje madre = personaje(61L, "Madre", "Mujer, 50 años");
+        com.dilema.modelo.Personaje comisaria = personaje(62L, "Comisaria", "Mujer, 40 años");
+        com.dilema.repo.EscenarioPersonajeRepo vinculos = mock(com.dilema.repo.EscenarioPersonajeRepo.class);
+        when(vinculos.findByCasoId(5L)).thenReturn(List.of(vinculo(6L, 61L), vinculo(7L, 62L)));
+        ParticipacionServicio conVinculos = new ParticipacionServicio(participaciones, sesiones, padron,
+                new ProxyOperacion(), new Mapeador(), bitacora, null, vinculos);
+        Participacion participacion = enCurso();
+        when(participaciones.findById(11L)).thenReturn(Optional.of(participacion));
+
+        Contratos.ParticipacionVista vista = conVinculos.ver(estudiante, 11L);
+
+        assertEquals(5L, vista.casoId());
+        assertEquals(List.of(0), vista.personajes().get(0).escenarios(), "la madre solo en el primer escenario");
+        assertEquals(List.of(1), vista.personajes().get(1).escenarios(), "la comisaria solo en el segundo");
+        assertEquals(List.of(0, 0, 1), vista.preguntas().stream().map(Contratos.PreguntaJuego::bloqueIndice).toList());
+        assertEquals(3.0, vista.preguntas().get(0).peso());
+        assertTrue(vista.preguntas().stream().flatMap(q -> q.opciones().stream())
+                .allMatch(o -> o.correcta() == null && o.explicacion() == null && o.fundamento() == null),
+                "en curso no viaja la correcta ni su explicación");
+        assertTrue(madre.id != null && comisaria.id != null);
+    }
+
+    private com.dilema.modelo.Personaje personaje(long id, String nombre, String descripcion) {
+        com.dilema.modelo.Personaje personaje = new com.dilema.modelo.Personaje();
+        personaje.id = id;
+        personaje.nombre = nombre;
+        personaje.descripcion = descripcion;
+        personaje.caso = sesion.caso;
+        sesion.caso.personajes.add(personaje);
+        return personaje;
+    }
+
+    private com.dilema.modelo.EscenarioPersonaje vinculo(long escenarioId, long personajeId) {
+        com.dilema.modelo.EscenarioPersonaje vinculo = new com.dilema.modelo.EscenarioPersonaje();
+        vinculo.escenarioId = escenarioId;
+        vinculo.personajeId = personajeId;
+        vinculo.casoId = 5L;
+        return vinculo;
+    }
+
     private Participacion enCurso() {
         Participacion participacion = new Participacion();
         participacion.id = 11L;

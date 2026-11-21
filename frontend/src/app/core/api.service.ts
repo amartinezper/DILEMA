@@ -58,12 +58,15 @@ export interface Caso {
 export interface CasoResumen { id: number; nombre: string; estado: string; tiempoEstimadoMin: number; bloques: number; preguntas: number; }
 export interface Persona { id: number; nombre: string; email: string; }
 export interface Grupo { id: number; nombre: string; espacioAcademico: string; docente: Persona; estudiantes: Persona[]; }
+export interface EscenarioVista { nombre: string; contexto: string; }
 export interface Sesion {
   id: number; codigo: string; estado: string; inicio: string; fin: string; tiempoMaxMin: number; toleranciaMin: number;
   lugar: string; mensaje: string; casoId: number; caso: string; grupoId: number; grupo: string; espacio: string;
   desarrollo: string; contexto: string; sensible: boolean; advertencia: string;
   participacionId: number | null; participacionEstado: string | null; nota: number | null; progreso: number | null;
   repeticionAutorizada: boolean;
+  /** Personajes (con sus escenarios) y escenarios del caso, para la novela del briefing. */
+  personajes?: PersonajeCaso[]; escenarios?: EscenarioVista[];
 }
 export interface Aviso { id: number; canal: string; titulo: string; cuerpo: string; leida: boolean; fecha: string; }
 export interface PanelEstudiante { sesiones: Sesion[]; avisos: Aviso[]; sinLeer: number; }
@@ -71,6 +74,8 @@ export interface OpcionJuego { id: number; texto: string; correcta: boolean | nu
 export interface PreguntaJuego {
   id: number; bloque: string; contexto: string; enunciado: string; pista: string | null; criterio: string;
   seleccionId: number | null; opciones: OpcionJuego[]; puntaje: number | null;
+  /** Escenario de la pregunta (desde 0) y peso de la rúbrica. */
+  bloqueIndice?: number; peso?: number | null;
 }
 export interface Participacion {
   id: number; sesionId: number; estado: string; caso: string; progreso: number; total: number;

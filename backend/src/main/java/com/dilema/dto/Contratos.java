@@ -35,7 +35,10 @@ public final class Contratos {
                               int toleranciaMin, String lugar, String mensaje, Long casoId, String caso,
                               Long grupoId, String grupo, String espacio, String desarrollo, String contexto,
                               boolean sensible, String advertencia, Long participacionId, String participacionEstado,
-                              Double nota, Integer progreso, boolean repeticionAutorizada) {}
+                              Double nota, Integer progreso, boolean repeticionAutorizada,
+                              List<PersonajeIn> personajes, List<EscenarioVista> escenarios) {}
+    /** Nombre y contexto de un escenario: el briefing los usa para asignar el mismo elenco que la simulación. */
+    public record EscenarioVista(String nombre, String contexto) {}
 
     public record UsuarioIn(String nombre, String email, String clave, String rol) {}
     public record PermisosIn(List<String> permisos) {}
@@ -47,7 +50,8 @@ public final class Contratos {
 
     public record OpcionJuego(Long id, String texto, Boolean correcta, String explicacion, String fundamento) {}
     public record PreguntaJuego(Long id, String bloque, String contexto, String enunciado, String pista, String criterio,
-                                Long seleccionId, List<OpcionJuego> opciones, Double puntaje) {}
+                                Long seleccionId, List<OpcionJuego> opciones, Double puntaje,
+                                int bloqueIndice, Double peso) {}
     public record ParticipacionVista(Long id, Long sesionId, String estado, String caso, int progreso, int total,
                                      int segundosMax, long segundosUsados, Double nota, String retroalimentacion,
                                      String estudiante, List<PreguntaJuego> preguntas, boolean repeticionAutorizada,

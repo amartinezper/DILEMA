@@ -1,7 +1,7 @@
 // Pruebas de los resultados de la vista previa. Se corren con: npm run test:novela.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { calcularResultados, nivelDeNota, resumenPorCriterio, type CasoResultado } from './resultados.ts';
+import { calcularResultados, nivelDeNota, resultadosDeParticipacion, resumenPorCriterio, type CasoResultado } from './resultados.ts';
 
 const op = (texto: string, correcta = false) => ({ texto, correcta, explicacion: `Porque ${texto}`, fundamento: `Fundamento ${texto}` });
 const caso: CasoResultado = {
@@ -47,4 +47,22 @@ test('4. desempeño por criterio y nivel de la nota', () => {
   assert.deepEqual(resumenPorCriterio(r.preguntas), [
     { criterio: 'Decisión', puntos: 2, peso: 3.5 }, { criterio: 'Norma', puntos: 0, peso: 1.5 }]);
   assert.deepEqual([nivelDeNota(4.3), nivelDeNota(3), nivelDeNota(2.9)], ['alto', 'medio', 'bajo']);
+});
+
+test('5. estudiante: copia lo que devuelve el backend (nota, conteos, puntaje y correcta) sin recalcular', () => {
+  const o = (id: number, texto: string, correcta: boolean) => ({ id, texto, correcta, explicacion: `E ${texto}`, fundamento: `F ${texto}` });
+  const r = resultadosDeParticipacion({
+    caso: 'Caso 1', nota: 4.3, retroalimentacion: 'Bien', aciertos: 1, errores: 1, sinResponder: 1,
+    preguntas: [
+      { bloque: 'Hospital', bloqueIndice: 0, enunciado: 'P1', criterio: 'Decisión', peso: 0.8, puntaje: 0.8, seleccionId: 1, opciones: [o(1, 'a', true), o(2, 'b', false)] },
+      { bloque: 'Hospital', bloqueIndice: 0, enunciado: 'P2', criterio: 'Norma', peso: 0.7, puntaje: 0, seleccionId: 4, opciones: [o(3, 'c', true), o(4, 'd', false)] },
+      { bloque: 'Comisaría', bloqueIndice: 1, enunciado: 'P3', criterio: 'Decisión', peso: 0.8, puntaje: 0, seleccionId: null, opciones: [o(5, 'e', true)] }
+    ]
+  });
+  // La nota y los conteos son los del backend, aunque no cuadren con una cuenta propia.
+  assert.deepEqual([r.nota, r.aciertos, r.fallos, r.sinResponder, r.retroalimentacion, r.caso], [4.3, 1, 1, 1, 'Bien', 'Caso 1']);
+  assert.deepEqual(r.preguntas.map(f => [f.numeroEscenario, f.numeroPregunta, f.acierto, f.puntos, f.peso]),
+    [[1, 1, true, 0.8, 0.8], [1, 2, false, 0, 0.7], [2, 1, null, 0, 0.8]]);
+  assert.deepEqual([r.preguntas[1].elegida, r.preguntas[1].correcta, r.preguntas[1].fundamentoCorrecta], ['d', 'c', 'F c']);
+  assert.equal(r.preguntas[0].fundamentoElegida, 'F a');
 });

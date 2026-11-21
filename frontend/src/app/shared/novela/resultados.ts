@@ -1,8 +1,9 @@
 /**
  * Resultados de un caso (funciones puras, sin Angular).
  *
- * Solo se usan en la VISTA PREVIA DEL DOCENTE, que tiene las respuestas correctas en el editor. Para el
- * estudiante los resultados los calcula y los devuelve el backend al finalizar: este archivo no se usa ahí.
+ * `calcularResultados` solo se usa en la VISTA PREVIA DEL DOCENTE, que tiene las respuestas correctas en el
+ * editor. Para el estudiante los resultados los calcula el backend al finalizar; `resultadosDeParticipacion`
+ * solo los acomoda para la pantalla (no decide nada: la nota, los aciertos y la opción correcta vienen dados).
  */
 
 export interface OpcionResultado { texto: string; correcta?: boolean | null; explicacion?: string | null; fundamento?: string | null; }
@@ -103,4 +104,65 @@ export function resumenPorCriterio(filas: FilaResultado[]): CriterioResultado[] 
 /** Nivel de la nota (sobre 5,0): alto desde 4,0, medio desde 3,0, bajo por debajo. */
 export function nivelDeNota(nota: number): 'alto' | 'medio' | 'bajo' {
   return nota >= 4 ? 'alto' : nota >= 3 ? 'medio' : 'bajo';
+}
+
+/** Lo que devuelve el backend del intento del estudiante (solo los campos que usa la pantalla). */
+export interface ParticipacionResultado {
+  caso: string;
+  nota: number | null;
+  retroalimentacion: string | null;
+  aciertos: number | null;
+  errores: number | null;
+  sinResponder: number | null;
+  preguntas: {
+    bloque: string; enunciado: string; criterio: string | null; bloqueIndice?: number; peso?: number | null;
+    puntaje: number | null; seleccionId: number | null;
+    opciones: { id: number; texto: string; correcta: boolean | null; explicacion: string | null; fundamento: string | null }[];
+  }[];
+}
+
+/**
+ * Pantalla de resultados del estudiante a partir de lo que devolvió el backend al finalizar: copia la nota,
+ * los conteos, el puntaje de cada pregunta y la opción que el backend marcó como correcta. No califica.
+ */
+export function resultadosDeParticipacion(p: ParticipacionResultado): ResultadosNovela {
+  const porEscenario = new Map<number, number>();
+  const nombres: string[] = [];
+  const preguntas: FilaResultado[] = p.preguntas.map(q => {
+    let bloque = q.bloqueIndice;
+    if (bloque === undefined || bloque === null) {
+      bloque = nombres.indexOf(q.bloque);
+      if (bloque < 0) { nombres.push(q.bloque); bloque = nombres.length - 1; }
+    }
+    const numeroPregunta = (porEscenario.get(bloque) ?? 0) + 1;
+    porEscenario.set(bloque, numeroPregunta);
+    const elegida = q.opciones.find(o => o.id === q.seleccionId) ?? null;
+    const correcta = q.opciones.find(o => o.correcta === true) ?? null;
+    const acierto = elegida ? elegida.correcta === true : null;
+    return {
+      escenario: q.bloque,
+      numeroEscenario: bloque + 1,
+      numeroPregunta,
+      criterio: q.criterio?.trim() || null,
+      peso: Number(q.peso) || 0,
+      puntos: Number(q.puntaje) || 0,
+      enunciado: q.enunciado,
+      elegida: elegida?.texto ?? null,
+      acierto,
+      explicacionElegida: elegida?.explicacion || null,
+      fundamentoElegida: elegida?.fundamento || null,
+      correcta: acierto === true ? null : correcta?.texto ?? null,
+      explicacionCorrecta: acierto === true ? null : correcta?.explicacion || null,
+      fundamentoCorrecta: acierto === true ? null : correcta?.fundamento || null
+    };
+  });
+  return {
+    caso: p.caso,
+    aciertos: p.aciertos ?? 0,
+    fallos: p.errores ?? 0,
+    sinResponder: p.sinResponder ?? 0,
+    nota: p.nota ?? 0,
+    retroalimentacion: p.retroalimentacion,
+    preguntas
+  };
 }

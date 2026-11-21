@@ -2,6 +2,7 @@ package com.dilema.servicio;
 
 import com.dilema.dto.Contratos;
 import com.dilema.modelo.*;
+import com.dilema.repo.EscenarioPersonajeRepo;
 import com.dilema.repo.ParticipacionRepo;
 import com.dilema.repo.SesionRepo;
 import com.dilema.servicio.evaluacion.EstadoDeParticipacion;
@@ -42,18 +43,20 @@ public class ParticipacionServicio {
     private final Mapeador mapeador;
     private final BitacoraServicio bitacora;
     private final NotificadorConvocatoria notificador;
+    /** Vínculos escenario-personaje: la novela del estudiante muestra a cada personaje solo en sus escenarios. */
+    private final EscenarioPersonajeRepo vinculos;
     private final HistorialRespuestas historial = new HistorialRespuestas();
     private final ProxyParticipacion puerta = new ProxyParticipacion();
 
     public ParticipacionServicio(ParticipacionRepo participaciones, SesionRepo sesiones, PadronConvocatoria padron,
                                  ProxyOperacion proxy, Mapeador mapeador, BitacoraServicio bitacora) {
-        this(participaciones, sesiones, padron, proxy, mapeador, bitacora, null);
+        this(participaciones, sesiones, padron, proxy, mapeador, bitacora, null, null);
     }
 
     @Autowired
     public ParticipacionServicio(ParticipacionRepo participaciones, SesionRepo sesiones, PadronConvocatoria padron,
                                  ProxyOperacion proxy, Mapeador mapeador, BitacoraServicio bitacora,
-                                 NotificadorConvocatoria notificador) {
+                                 NotificadorConvocatoria notificador, EscenarioPersonajeRepo vinculos) {
         this.participaciones = participaciones;
         this.sesiones = sesiones;
         this.padron = padron;
@@ -61,6 +64,7 @@ public class ParticipacionServicio {
         this.mapeador = mapeador;
         this.bitacora = bitacora;
         this.notificador = notificador;
+        this.vinculos = vinculos;
     }
 
     /**
@@ -74,7 +78,7 @@ public class ParticipacionServicio {
         List<Contratos.SesionVista> sesionesVista = propias.stream().map(sesion -> {
             Participacion ultima = participaciones.findByEstudianteIdAndSesionId(estudiante.id, sesion.id).stream()
                     .max(Comparator.comparing(p -> p.id)).orElse(null);
-            return mapeador.sesion(sesion, ultima);
+            return mapeador.sesion(sesion, ultima, vinculosDe(sesion.caso));
         }).toList();
         for (SesionCaso sesion : propias) {
             bitacora.registrarUnaVez(estudiante, "sesion:" + sesion.id + ":asignado", "CORREO", "Caso asignado",
@@ -285,6 +289,10 @@ public class ParticipacionServicio {
                 .orElseThrow(() -> new ReglaNegocio("La pregunta no pertenece a este caso."));
     }
 
+    private List<EscenarioPersonaje> vinculosDe(Caso caso) {
+        return vinculos == null ? List.of() : vinculos.findByCasoId(caso.id);
+    }
+
     private Contratos.ParticipacionVista vista(Participacion participacion, boolean revelar) {
         List<Contratos.PreguntaJuego> preguntas = new ArrayList<>();
         for (Escenario escenario : participacion.sesion.caso.escenarios) {
@@ -299,9 +307,11 @@ public class ParticipacionServicio {
                         .toList();
                 String criterio = pregunta.criterio == null ? "" : pregunta.criterio.criterio;
                 BigDecimal puntaje = RetroalimentacionProxy.visible(participacion) ? participacion.puntajeDe(pregunta) : null;
+                // El peso es de la rúbrica (no revela la opción correcta); al final se muestra "obtenido / peso".
+                Double peso = pregunta.criterio == null || pregunta.criterio.peso == null ? null : pregunta.criterio.peso.doubleValue();
                 preguntas.add(new Contratos.PreguntaJuego(pregunta.id, escenario.titulo, escenario.contexto,
                         pregunta.enunciado, pregunta.pista, criterio, seleccion, opciones,
-                        puntaje == null ? null : puntaje.doubleValue()));
+                        puntaje == null ? null : puntaje.doubleValue(), escenario.orden, peso));
             }
         }
         LocalDateTime hasta = participacion.fin == null ? LocalDateTime.now() : participacion.fin;
@@ -310,11 +320,8 @@ public class ParticipacionServicio {
         int progreso = ProgresoParticipacion.porcentaje(participacion, total);
         ResumenIntento resumen = ResumenIntento.de(participacion);
         Caso caso = participacion.sesion.caso;
-        List<Integer> escenarios = new ArrayList<>();
-        for (int i = 0; i < caso.escenarios.size(); i++) escenarios.add(i);
-        List<Contratos.PersonajeIn> personajes = caso.personajes == null ? List.of() : caso.personajes.stream()
-                .map(p -> new Contratos.PersonajeIn(p.id, p.nombre, p.descripcion, escenarios))
-                .toList();
+        // Cada personaje solo en los escenarios donde el docente lo puso (EscenarioPersonaje), como en su vista previa.
+        List<Contratos.PersonajeIn> personajes = caso.personajes == null ? List.of() : mapeador.personajes(caso, vinculosDe(caso));
         return new Contratos.ParticipacionVista(participacion.id, participacion.sesion.id, participacion.estadoNombre(),
                 caso.nombre, progreso, total,
                 participacion.sesion.tiempoMaxMin * 60, usados, participacion.nota(),

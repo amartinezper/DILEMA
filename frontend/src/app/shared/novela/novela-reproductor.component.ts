@@ -64,7 +64,8 @@ function visemaDe(letra: string, anterior: Visema | null): Visema | null {
           [titulo]="nombreHablante()" [texto]="textoVisible()" [mostrarDialogo]="conDialogo()" />
 
         <div class="sobre-escena" (click)="$event.stopPropagation()">
-          @if (tiempoRestante() != null) {
+          <!-- Fuera de pantalla completa el reloj va en la barra de la página; aquí solo en pantalla completa. -->
+          @if (tiempoRestante() != null && pantallaCompleta()) {
             <strong class="reloj" [class.urgente]="tiempoRestante()! <= 60" [attr.aria-label]="'Tiempo restante ' + reloj()">{{ reloj() }}</strong>
           }
           <button type="button" class="icono" (click)="alternarPantalla()"
@@ -98,8 +99,10 @@ function visemaDe(letra: string, anterior: Visema | null): Visema | null {
               </div>
             } @else {
               <div class="portada">
-                <h2>Fin del caso</h2>
-                <button type="button" (click)="volverAEmpezar(); $event.stopPropagation()">Volver a empezar</button>
+                <h2>{{ textoFin() }}</h2>
+                @if (textoVolver()) {
+                  <button type="button" (click)="volverAEmpezar(); $event.stopPropagation()">{{ textoVolver() }}</button>
+                }
               </div>
             }
           }
@@ -118,6 +121,14 @@ function visemaDe(letra: string, anterior: Visema | null): Visema | null {
                     </button>
                   }
                 </div>
+                @if (modoEstudiante()) {
+                  <div class="acciones-pregunta">
+                    @if (tieneNarracion()) {
+                      <button type="button" (click)="releer()">Ver narración otra vez</button>
+                    }
+                    <button type="button" (click)="deshacer.emit()">Deshacer última respuesta</button>
+                  </div>
+                }
               </section>
             }
           }
@@ -154,7 +165,7 @@ function visemaDe(letra: string, anterior: Visema | null): Visema | null {
       </div>
 
       <div class="controles" [class.oculto]="paso()?.tipo === 'fin' && !!resultados()">
-        <button type="button" (click)="anterior()" [disabled]="indice() === 0">Anterior</button>
+        <button type="button" (click)="anterior()" [disabled]="destinoAtras() === null">Anterior</button>
         <button type="button" class="principal" (click)="avanzar()" [disabled]="!pasos().length || paso()?.tipo === 'fin'">
           {{ escribiendo() ? 'Completar' : esUltimaPregunta() ? 'Finalizar' : 'Siguiente' }}</button>
         <button type="button" [class.activo]="historialAbierto()"
@@ -216,6 +227,11 @@ function visemaDe(letra: string, anterior: Visema | null): Visema | null {
     }
     .opcion.elegida .clave { background: #9fe3d9; color: #0a1733; }
     .texto { min-width: 0; line-height: 1.35; }
+    .acciones-pregunta { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+    .acciones-pregunta button { padding: 7px 14px; border-radius: 10px; border: 1px solid rgba(197, 212, 238, .28);
+      background: transparent; color: #dfe7f3; font: inherit; font-size: .88rem; cursor: pointer; }
+    .acciones-pregunta button:hover { border-color: #9fe3d9; color: #fff; }
+    .acciones-pregunta button:focus-visible { outline: 2px solid #9fe3d9; outline-offset: 2px; }
     .resultados { position: absolute; inset: 0; z-index: 2; overflow: auto; cursor: default; border-radius: 14px;
       background: rgba(13,19,30,.94); backdrop-filter: blur(3px); overscroll-behavior: contain; }
     .controles.oculto { display: none; }
@@ -319,6 +335,24 @@ export class NovelaReproductorComponent implements OnDestroy {
   readonly anchoMaximo = input<string | null>(null);
   /** Segundos restantes de la sesión (estudiante). Si llega, el reloj se muestra junto a pantalla completa. */
   readonly tiempoRestante = input<number | null>(null);
+  /**
+   * Qué parte del guion se recorre: todo (vista previa del docente), solo portada y presentación (briefing del
+   * estudiante, antes de que corra el reloj) o solo los escenarios (simulación del estudiante).
+   */
+  readonly tramo = input<'completo' | 'presentacion' | 'escenarios'>('completo');
+  /**
+   * Respuestas guardadas afuera (las del backend para el estudiante): "escenario:pregunta" → índice de la opción.
+   * Si llega, manda sobre las que el reproductor recuerda por su cuenta.
+   */
+  readonly seleccion = input<Record<string, number> | null>(null);
+  /**
+   * Simulación del estudiante: muestra "Deshacer última respuesta" y, al volver a un escenario que ya tiene
+   * respuestas, va directo a la pregunta (con "Ver narración otra vez").
+   */
+  readonly modoEstudiante = input(false);
+  /** Pantalla final sin resultados: título y botón (vacío = sin botón). */
+  readonly textoFin = input('Fin del caso');
+  readonly textoVolver = input<string | null>('Volver a empezar');
 
   readonly opcion = output<OpcionElegida>();
   /** Se pulsó "Finalizar" en la última pregunta: opciones elegidas ("escenario:pregunta" → índice). */
@@ -326,6 +360,8 @@ export class NovelaReproductorComponent implements OnDestroy {
   /** "Volver a empezar" desde los resultados. */
   readonly reiniciar = output<void>();
   readonly cerrar = output<void>();
+  /** "Deshacer última respuesta" (estudiante): lo resuelve el backend. */
+  readonly deshacer = output<void>();
 
   private readonly elencoSrv = inject(ElencoService);
   private readonly escenaSrv = inject(EscenaService);
@@ -346,6 +382,12 @@ export class NovelaReproductorComponent implements OnDestroy {
   readonly pantallaCompleta = signal(false);
   readonly anuncio = signal('');
   private readonly elegidas = signal<Record<string, number>>({});
+  /** Respuestas vigentes: las de afuera (backend) si llegan; si no, las que se eligieron aquí. */
+  readonly selecciones = computed(() => this.seleccion() ?? this.elegidas());
+  /** Escenarios con al menos una respuesta. */
+  private readonly respondidos = computed(() => new Set(Object.keys(this.selecciones()).map(k => Number(k.split(':')[0]))));
+  /** Escenario cuya narración se está viendo otra vez (no se salta hasta salir de él). */
+  private readonly releyendo = signal<number | null>(null);
   private readonly visemaActual = signal<Visema | null>(null);
   private temporizador?: ReturnType<typeof setInterval>;
   private autoAvance?: ReturnType<typeof setTimeout>;
@@ -395,7 +437,23 @@ export class NovelaReproductorComponent implements OnDestroy {
   });
   readonly elegida = computed(() => {
     const p = this.paso();
-    return p?.tipo === 'pregunta' ? this.elegidas()[`${p.bloqueIndice}:${p.preguntaIndice}`] ?? null : null;
+    return p?.tipo === 'pregunta' ? this.selecciones()[`${p.bloqueIndice}:${p.preguntaIndice}`] ?? null : null;
+  });
+  /** El escenario de la pregunta actual tiene narración (transición y contexto) para volver a verla. */
+  readonly tieneNarracion = computed(() => {
+    const p = this.paso();
+    return p?.tipo === 'pregunta' && this.pasos().some(x => x.tipo === 'transicion' && x.bloqueIndice === p.bloqueIndice);
+  });
+  /** A dónde lleva "Anterior" (null = no hay a dónde). */
+  readonly destinoAtras = computed(() => {
+    let i = this.indice() - 1;
+    const pasos = this.pasos();
+    if (pasos[i]?.tipo === 'transicion' && i > 0) i--;
+    if (i < 0) return null;
+    if (!this.modoEstudiante()) return i;
+    // Escenario ya respondido: se salta su narración hasta la pregunta anterior (la narración sigue en "Ver narración otra vez").
+    while (i >= 0 && this.saltable(pasos[i])) i--;
+    return i >= 0 ? i : null;
   });
   /** La pregunta actual es la última: el botón principal dice "Finalizar". */
   readonly esUltimaPregunta = computed(() => {
@@ -411,7 +469,7 @@ export class NovelaReproductorComponent implements OnDestroy {
     type Entrada = { indice: number; clase: 'habla' | 'narra' | 'pregunta'; nombre: string; inicial: string; texto: string };
     const nombres = this.nombres();
     const caso = this.caso();
-    const elegidas = this.elegidas();
+    const elegidas = this.selecciones();
     const lista: Entrada[] = [];
     this.pasos().slice(0, this.indice() + 1).forEach((p, indice) => {
       if (p.tipo === 'dialogo') {
@@ -459,7 +517,10 @@ export class NovelaReproductorComponent implements OnDestroy {
       const desde = this.empezarEn(), pasos = this.pasos();
       if (!pasos.length) return;
       untracked(() => {
-        const i = desde === null ? 0 : pasos.findIndex(p => p.tipo === 'transicion' && p.bloqueIndice === desde);
+        let i = desde === null ? 0 : pasos.findIndex(p => p.tipo === 'transicion' && p.bloqueIndice === desde);
+        if (desde !== null && this.modoEstudiante() && this.respondidos().has(desde)) {
+          i = pasos.findIndex(p => p.tipo === 'pregunta' && p.bloqueIndice === desde);
+        }
         this.ir(Math.max(0, i));
       });
     });
@@ -510,7 +571,49 @@ export class NovelaReproductorComponent implements OnDestroy {
       for (const id of p.escena.presentes) if (!lista.includes(id)) lista.push(id);
       this.repartos.set(p.escena.escenario, lista);
     }
-    this.pasos.set(todos.filter(p => p.tipo !== 'entrada'));
+    let visibles = todos.filter(p => p.tipo !== 'entrada');
+    const tramo = this.tramo();
+    if (tramo === 'presentacion') {
+      // Briefing: portada y presentación; el final queda sobre el último fondo de la presentación.
+      const presentacion = visibles.filter(p => p.escena.escenario === -1 && p.tipo !== 'fin');
+      const fin = visibles.find(p => p.tipo === 'fin');
+      const ultimo = presentacion[presentacion.length - 1];
+      visibles = fin && ultimo ? [...presentacion, { ...fin, escena: ultimo.escena }] : presentacion;
+    } else if (tramo === 'escenarios') {
+      // Simulación: sin portada ni presentación (ya se vieron en el briefing).
+      visibles = visibles.filter(p => p.escena.escenario !== -1);
+    }
+    this.pasos.set(visibles);
+  }
+
+  /** Paso de narración de un escenario ya respondido que el estudiante no está volviendo a ver. */
+  private saltable(p: Paso | undefined): boolean {
+    if (!p || !(p.tipo === 'transicion' || p.tipo === 'narracion' || p.tipo === 'dialogo')) return false;
+    const b = p.escena.escenario;
+    return b >= 0 && this.respondidos().has(b) && this.releyendo() !== b;
+  }
+
+  /** "Ver narración otra vez": vuelve a la transición del escenario de la pregunta actual. */
+  releer(): void {
+    const p = this.paso();
+    if (p?.tipo !== 'pregunta') return;
+    const i = this.pasos().findIndex(x => x.tipo === 'transicion' && x.bloqueIndice === p.bloqueIndice);
+    if (i < 0) return;
+    this.releyendo.set(p.bloqueIndice);
+    this.ir(i);
+    this.enfocar();
+  }
+
+  /** Vuelve a la última pregunta (por ejemplo, si el backend no pudo finalizar). */
+  volverAUltimaPregunta(): void {
+    const pasos = this.pasos();
+    for (let i = pasos.length - 1; i >= 0; i--) if (pasos[i].tipo === 'pregunta') { this.ir(i); return; }
+  }
+
+  /** Muestra la pantalla final (por ejemplo, cuando se acabó el tiempo). */
+  irAlFin(): void {
+    const fin = this.pasos().findIndex(p => p.tipo === 'fin');
+    if (fin >= 0) this.ir(fin);
   }
 
   // ------------------------------------------------------------ navegación
@@ -521,6 +624,8 @@ export class NovelaReproductorComponent implements OnDestroy {
     clearTimeout(this.autoAvance);
     this.indice.set(Math.min(Math.max(0, i), pasos.length - 1));
     const p = this.paso()!;
+    // Al salir del escenario cuya narración se volvió a ver, la próxima vez se vuelve a saltar.
+    if (this.releyendo() !== null && p.escena.escenario !== this.releyendo()) this.releyendo.set(null);
     this.precargarSiguiente(p.escena.escenario);
     if (p.tipo === 'narracion' || p.tipo === 'dialogo') {
       const nombre = p.tipo === 'dialogo' ? this.nombres().get(p.personaje) : '';
@@ -548,14 +653,17 @@ export class NovelaReproductorComponent implements OnDestroy {
     if (this.escribiendo()) { this.terminarTexto(this.textoCompleto()); return; }
     if (this.paso()?.tipo === 'fin') return;
     if (this.esUltimaPregunta()) { this.finalizarCaso(); return; }
-    this.ir(this.indice() + 1);
+    let i = this.indice() + 1;
+    // Estudiante: un escenario que ya tiene respuestas se abre directo en su pregunta.
+    if (this.modoEstudiante()) while (i < this.pasos().length - 1 && this.saltable(this.pasos()[i])) i++;
+    this.ir(i);
   }
 
   /** "Finalizar": pasa a la pantalla final y avisa las opciones elegidas. */
   finalizarCaso(): void {
     const fin = this.pasos().findIndex(p => p.tipo === 'fin');
     this.ir(fin >= 0 ? fin : this.pasos().length - 1);
-    this.finalizar.emit({ ...this.elegidas() });
+    this.finalizar.emit({ ...this.selecciones() });
   }
 
   volverAEmpezar(): void {
@@ -571,10 +679,10 @@ export class NovelaReproductorComponent implements OnDestroy {
   }
 
   anterior(): void {
-    // Al volver se muestra el texto completo (ya se leyó); la transición se salta hacia atrás.
-    let i = this.indice() - 1;
-    if (this.pasos()[i]?.tipo === 'transicion' && i > 0) i--;
-    this.ir(i, true);
+    // Al volver se muestra el texto completo (ya se leyó); la transición se salta hacia atrás y, para el
+    // estudiante, también la narración de los escenarios que ya respondió.
+    const i = this.destinoAtras();
+    if (i !== null) this.ir(i, true);
   }
 
 

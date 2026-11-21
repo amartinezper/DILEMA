@@ -6,7 +6,8 @@ export const routes: Routes = [
   { path: 'demo-personaje', loadComponent: () => import('./pages/demo-personaje.component').then(m => m.DemoPersonajeComponent) },
   { path: 'ingreso', loadComponent: () => import('./pages/ingreso.component').then(m => m.IngresoComponent) },
   { path: 'estudiante', canActivate: [rolGuard('ESTUDIANTE')], loadComponent: () => import('./pages/estudiante.component').then(m => m.PanelEstudianteComponent) },
-  { path: 'estudiante/sesion/:id', redirectTo: 'estudiante' },
+  // Briefing: portada y presentación del caso, reglas y "Iniciar simulación" (el reloj empieza al iniciar).
+  { path: 'estudiante/sesion/:id', canActivate: [rolGuard('ESTUDIANTE')], loadComponent: () => import('./pages/estudiante.component').then(m => m.BriefingComponent) },
   { path: 'estudiante/participacion/:id', canActivate: [rolGuard('ESTUDIANTE')], loadComponent: () => import('./pages/estudiante.component').then(m => m.SimulacionComponent) },
   { path: 'estudiante/avisos', canActivate: [rolGuard('ESTUDIANTE')], loadComponent: () => import('./pages/estudiante.component').then(m => m.AvisosComponent) },
   { path: 'docente', canActivate: [rolGuard('PROFESOR')], loadComponent: () => import('./pages/docente.component').then(m => m.PanelDocenteComponent) },

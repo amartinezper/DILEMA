@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal, viewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -12,6 +12,9 @@ import { BusquedaService } from '../core/busqueda.service';
 import { Aviso, OpcionJuego, PanelEstudiante, Participacion, PersonajeCaso, PreguntaJuego, Sesion, mensajeError } from '../core/api.service';
 import { NovelaReproductorComponent, CasoReproductor, OpcionElegida } from '../shared/novela/novela-reproductor.component';
 import { MusicaNovelaService } from '../shared/novela/musica-novela.service';
+import { ResultadosNovelaComponent } from '../shared/novela/resultados-novela.component';
+import { resultadosDeParticipacion } from '../shared/novela/resultados';
+import { EscenaService } from '../shared/novela/escena.service';
 
 const enlaces = [
   { href: '/estudiante', texto: 'Casos asignados', exacto: true },
@@ -226,15 +229,16 @@ export class PanelEstudianteComponent {
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
+  /**
+   * Con un intento en curso entra directo a la simulación. Si no, pasa por el briefing (presentación, reglas y
+   * "Iniciar simulación"): el intento y su reloj empiezan allí, no al pulsar aquí.
+   */
   iniciarCaso(sesion: Sesion) {
     if (sesion.participacionId && sesion.participacionEstado === 'EN_CURSO') {
       this.router.navigate(['/estudiante/participacion', sesion.participacionId]);
       return;
     }
-    this.http.post<Participacion>(`/api/estudiante/sesiones/${sesion.id}/participaciones`, {}).subscribe({
-      next: (participacion) => this.router.navigate(['/estudiante/participacion', participacion.id]),
-      error: (falla) => this.error.set(mensajeError(falla))
-    });
+    this.router.navigate(['/estudiante/sesion', sesion.id]);
   }
   pendientes() { return (this.panel()?.sesiones ?? []).filter((s) => !s.participacionEstado).length; }
   enCurso() { return (this.panel()?.sesiones ?? []).filter((s) => s.participacionEstado === 'EN_CURSO').length; }
@@ -355,22 +359,23 @@ export class PanelEstudianteComponent {
 
 @Component({
   selector: 'app-briefing',
-  imports: [MarcoDocenteComponent, RouterLink, FormsModule, MatButtonModule, MatCardModule],
+  imports: [MarcoEstudianteComponent, RouterLink, FormsModule, MatButtonModule, MatCardModule, NovelaReproductorComponent],
   template: `
-    <app-marco-docente [enlaces]="enlaces" inicio="/estudiante" lema="Lee, decide y responde tus dilemas.">
+    <app-marco-estudiante activa="dilemas" [sinLeer]="sinLeer()">
       @if (sesion(); as actual) {
         <section class="tablero">
           <header class="saludo">
             <p class="kicker">{{ actual.codigo }}</p>
             <h1>Bienvenido al caso: {{ actual.caso }}</h1>
           </header>
-          <figure class="escena-juego">
-            <img src="/escenas/colinas-1.jpg" alt="Vista de Las Colinas al atardecer" />
-            <figcaption class="hud">
-              <span>LAS COLINAS</span>
-              <span>ESCENA 1 · LLEGADA AL BARRIO</span>
-            </figcaption>
-          </figure>
+          <!-- Portada y presentación del caso ANTES de iniciar: el reloj todavía no corre. -->
+          @if (novela(); as caso) {
+            <section class="novela-briefing" aria-label="Presentación del caso">
+              <app-novela-reproductor [caso]="caso" [personajes]="actual.personajes ?? []" tramo="presentacion"
+                textoFin="Fin de la presentación" textoVolver="Ver otra vez" />
+              <p class="sub">La presentación no gasta tiempo: el reloj empieza cuando pulses «Iniciar simulación».</p>
+            </section>
+          }
           <article class="tarjeta stack">
             <h2>Mensaje del docente</h2>
             <p>{{ actual.mensaje || 'Sigue las instrucciones del caso y responde cada escena.' }}</p>
@@ -419,7 +424,7 @@ export class PanelEstudianteComponent {
           </div>
         </section>
       }
-    </app-marco-docente>
+    </app-marco-estudiante>
   `
 })
 export class BriefingComponent {
@@ -428,12 +433,28 @@ export class BriefingComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   sesion = signal<Sesion | null>(null);
+  sinLeer = signal(0);
+  /**
+   * El caso para la novela del briefing (solo portada y presentación). Lleva los mismos textos y escenarios que
+   * la simulación para que el elenco salga igual en las dos pantallas.
+   */
+  novela = computed<CasoReproductor | null>(() => {
+    const s = this.sesion();
+    if (!s) return null;
+    return {
+      id: s.casoId, nombre: s.caso, desarrolloSituacional: s.desarrollo, contexto: s.contexto,
+      bloques: (s.escenarios ?? []).map((e) => ({ nombre: e.nombre, contexto: e.contexto, preguntas: [] }))
+    };
+  });
   acepto = false;
   error = signal('');
   constructor() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.http.get<PanelEstudiante>('/api/estudiante/panel').subscribe({
-      next: (panel) => this.sesion.set(panel.sesiones.find((item) => item.id === id) ?? null),
+      next: (panel) => {
+        this.sesion.set(panel.sesiones.find((item) => item.id === id) ?? null);
+        this.sinLeer.set(panel.sinLeer ?? panel.avisos.filter((a) => !a.leida).length);
+      },
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
@@ -453,97 +474,119 @@ export class BriefingComponent {
 }
 
 @Component({
-  imports: [MarcoEstudianteComponent, RouterLink, MatButtonModule, MatCardModule, NovelaReproductorComponent],
+  imports: [MarcoEstudianteComponent, NovelaReproductorComponent, ResultadosNovelaComponent],
   template: `
     <app-marco-estudiante [activa]="menuActivo()" [sinLeer]="sinLeer()">
       @if (juego(); as actual) {
         @if (actual.estado === 'FINALIZADA' || actual.estado === 'AUSENTE') {
-          <section class="informe-caso">
-            <article class="tarjeta stack informe-ficha">
-              <div class="informe-ficha-cabeza">
-                <div>
-                  <span class="aviso-canal" [attr.data-estado]="actual.estado">{{ actual.estado === 'AUSENTE' ? 'Ausente' : 'Finalizado' }}</span>
-                  <h1>Resultados del caso</h1>
-                  <p class="sub">{{ actual.caso }}</p>
-                </div>
-                <a class="btn-oscuro" routerLink="/estudiante">Volver al inicio</a>
-              </div>
-              <div class="resumen-cifras informe-cifras">
-                <article><small>Calificación</small><strong>{{ actual.nota ?? '—' }} <em>/ 5,0</em></strong></article>
-                <article><small>Nivel</small><strong>{{ nivel(actual.nota) }}</strong></article>
-                @if (actual.aciertos !== null) {
-                  <article><small>Aciertos</small><strong>{{ actual.aciertos }} <em>/ {{ actual.total }}</em></strong></article>
-                  <article><small>Fallos</small><strong>{{ actual.errores }}</strong></article>
-                }
-              </div>
-            </article>
-            @if (actual.retroalimentacion) {
-              <article class="tarjeta stack">
-                <h2>Comentario del docente</h2>
-                <p>{{ actual.retroalimentacion }}</p>
-              </article>
-            }
-            <h2>Resumen de respuestas</h2>
-            @for (pregunta of actual.preguntas; track pregunta.id) {
-              <article class="tarjeta stack informe-pregunta">
-                <div class="convoca-meta">
-                  <span class="aviso-canal">{{ pregunta.bloque }}</span>
-                  <small>{{ pregunta.criterio }}@if (pregunta.puntaje != null) { · {{ pregunta.puntaje }} pts }</small>
-                </div>
-                <h3>{{ pregunta.enunciado }}</h3>
-                <div class="informe-opciones">
-                  @for (opcion of pregunta.opciones; track opcion.id) {
-                    @if (pregunta.seleccionId === opcion.id || opcion.correcta) {
-                      <div class="informe-opcion" [class.bien]="opcion.correcta" [class.mal]="pregunta.seleccionId === opcion.id && opcion.correcta === false">
-                        <strong>{{ etiquetaOpcion(pregunta, opcion) }}</strong>
-                        <p>{{ opcion.texto }}</p>
-                        @if (opcion.explicacion) { <p class="sub">{{ opcion.explicacion }}</p> }
-                        @if (opcion.fundamento) { <p class="sub">{{ opcion.fundamento }}</p> }
-                      </div>
-                    }
-                  }
-                </div>
-              </article>
-            }
-          </section>
+          <!-- Resultados con lo que devolvió el backend (la misma pantalla de la vista previa del docente). -->
+          @if (resultados(); as r) {
+            <section class="resultados-estudiante" [style.background-image]="fondoResultados()">
+              <app-resultados-novela [resultados]="r" [textoReiniciar]="null" textoCerrar="Volver al panel"
+                (cerrar)="volverAlPanel()" />
+            </section>
+          }
         } @else {
           <section class="informe-caso novela-juego">
-            <div class="informe-juego-cabeza">
-              <div>
-                <p class="kicker">{{ actual.caso }}</p>
-                <h2>Simulación</h2>
+            <header class="barra-juego">
+              <div class="titulo-juego">
+                <p>{{ actual.caso }}</p>
+                <h2>{{ tituloEscena() }}</h2>
               </div>
-            </div>
-            <div class="progreso"><div [style.width.%]="actual.progreso"></div></div>
+              <div class="herramientas-juego">
+                <strong class="reloj-juego" [class.urgente]="restante() <= 60" role="timer"
+                  [attr.aria-label]="'Tiempo restante ' + reloj()">{{ reloj() }}</strong>
+                @if (musica.disponible()) {
+                  <button type="button" class="musica" [attr.aria-pressed]="musica.activa()"
+                    [attr.aria-label]="musica.activa() ? 'Silenciar música' : 'Activar música'" (click)="musica.alternar()">
+                    <svg viewBox="0 0 20 20" aria-hidden="true">
+                      <path class="parlante" d="M3 7.5h3l4.5-3.5v12L6 12.5H3z" />
+                      @if (musica.activa()) {
+                        <path d="M13.5 7.2a4 4 0 0 1 0 5.6M15.8 5a7 7 0 0 1 0 10" />
+                      } @else {
+                        <path d="M13.5 7.5l5 5M18.5 7.5l-5 5" />
+                      }
+                    </svg>
+                    <span>Música</span>
+                  </button>
+                }
+              </div>
+            </header>
+            <div class="progreso" role="progressbar" aria-label="Avance del caso" aria-valuemin="0" aria-valuemax="100"
+              [attr.aria-valuenow]="actual.progreso"><div [style.width.%]="actual.progreso"></div></div>
             @if (novela(); as caso) {
-              <app-novela-reproductor
-                [caso]="caso"
-                [personajes]="elenco()"
-                [tiempoRestante]="restante()"
-                (opcion)="elegirNovela($event)"
-                (finalizar)="finalizar()" />
+              <app-novela-reproductor #reproductor
+                [caso]="caso" [personajes]="elenco()" [tiempoRestante]="restante()"
+                tramo="escenarios" [modoEstudiante]="true" [seleccion]="seleccion()" [empezarEn]="empezarEn()"
+                textoFin="Enviando tus respuestas…" [textoVolver]="null"
+                (opcion)="elegirNovela($event)" (deshacer)="deshacer()" (finalizar)="finalizar()" />
             }
-            @if (error()) { <p class="error">{{ error() }}</p> }
+            @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
           </section>
         }
       }
     </app-marco-estudiante>
-  `
+  `,
+  styles: [`
+    .barra-juego { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px;
+      padding: 10px 16px; border-radius: 14px; background: #0b1220; color: #f4f7fb; }
+    .titulo-juego { min-width: 0; }
+    .titulo-juego p { margin: 0; font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #9fb0c8; }
+    .titulo-juego h2 { margin: 2px 0 0; font-size: clamp(1rem, 2.2vw, 1.25rem); color: #fff; }
+    .herramientas-juego { display: flex; align-items: center; gap: 8px; }
+    .reloj-juego { font-variant-numeric: tabular-nums; min-width: 4.6rem; text-align: center; padding: 6px 14px; line-height: 1.5;
+      border-radius: 8px; background: rgba(255,255,255,.1); font-size: .95rem; letter-spacing: .04em; }
+    .reloj-juego.urgente { background: #991b1b; }
+    .musica { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 8px; border: 0;
+      background: #fff; color: #1d2430; font: inherit; line-height: 1.5; cursor: pointer; }
+    .musica svg { width: 1.15em; height: 1.15em; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+    .musica .parlante { fill: currentColor; }
+    .musica:focus-visible { outline: 2px solid #9fe3d9; outline-offset: 2px; }
+    .resultados-estudiante { border-radius: 18px; overflow: hidden; background-color: #0f1726;
+      background-size: cover; background-position: center; }
+  `]
 })
 export class SimulacionComponent {
-  letras = ['A', 'B', 'C', 'D', 'E', 'F'];
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
-  private musica = inject(MusicaNovelaService);
+  private router = inject(Router);
+  private escenas = inject(EscenaService);
+  readonly musica = inject(MusicaNovelaService);
+  private readonly reproductor = viewChild<NovelaReproductorComponent>('reproductor');
   juego = signal<Participacion | null>(null);
   novela = signal<CasoReproductor | null>(null);
   elenco = signal<PersonajeCaso[]>([]);
-  indice = signal(0);
+  /** Escenario donde arranca la novela al entrar (se fija una sola vez; si cambiara, la novela saltaría). */
+  empezarEn = signal<number | null>(null);
   error = signal('');
   restante = signal(0);
   sinLeer = signal(0);
+  fondoResultados = signal<string | null>(null);
+  /** Pregunta del backend → "escenario:pregunta" del reproductor. */
+  private claves = new Map<number, string>();
   private timer = 0;
   private cerradoPorTiempo = false;
+
+  /** Respuestas guardadas en el backend, en el formato del reproductor ("escenario:pregunta" → índice de la opción). */
+  readonly seleccion = computed(() => {
+    const r: Record<string, number> = {};
+    for (const q of this.juego()?.preguntas ?? []) {
+      const clave = this.claves.get(q.id);
+      const i = q.opciones.findIndex((o) => o.id === q.seleccionId);
+      if (clave && i >= 0) r[clave] = i;
+    }
+    return r;
+  });
+  /** Resultados para la pantalla final: los del backend, solo acomodados. */
+  readonly resultados = computed(() => {
+    const j = this.juego();
+    return j && (j.estado === 'FINALIZADA' || j.estado === 'AUSENTE') ? resultadosDeParticipacion(j) : null;
+  });
+  readonly tituloEscena = computed(() => {
+    const b = this.reproductor()?.bloqueActual();
+    return b && b.nombre ? `Escena ${b.indice + 1} · ${b.nombre}` : 'Simulación';
+  });
+
   constructor() {
     this.http.get<PanelEstudiante>('/api/estudiante/panel').subscribe({
       next: (dato) => this.sinLeer.set(dato.sinLeer ?? dato.avisos.filter((a) => !a.leida).length)
@@ -556,101 +599,134 @@ export class SimulacionComponent {
         return siguiente;
       });
     }, 1000);
+    // La música empieza después del primer clic o tecla en la página (los navegadores no dejan sonar antes).
+    this.musica.comprobar();
+    const primerGesto = () => {
+      quitar();
+      if (this.juego()?.estado === 'EN_CURSO') this.musica.iniciar();
+    };
+    const quitar = () => {
+      document.removeEventListener('pointerdown', primerGesto);
+      document.removeEventListener('keydown', primerGesto);
+    };
+    document.addEventListener('pointerdown', primerGesto);
+    document.addEventListener('keydown', primerGesto);
     inject(DestroyRef).onDestroy(() => {
       clearInterval(this.timer);
+      quitar();
       this.musica.detener();
     });
   }
-  pregunta() { return this.juego()?.preguntas[this.indice()] ?? null; }
+
   menuActivo() {
     return this.juego()?.estado === 'EN_CURSO' ? 'dilemas' : 'inicio';
   }
-  etiquetaOpcion(pregunta: PreguntaJuego, opcion: OpcionJuego) {
-    if (opcion.correcta) return 'Respuesta adecuada';
-    if (pregunta.seleccionId === opcion.id) return 'Tu elección';
-    return 'Opción';
+  reloj() {
+    const segundos = this.restante();
+    return `${Math.floor(segundos / 60)}:${String(segundos % 60).padStart(2, '0')}`;
   }
+  volverAlPanel() { this.router.navigate(['/estudiante']); }
+
   elegirNovela(eleccion: OpcionElegida) {
-    const caso = this.novela();
-    const pregunta = caso?.bloques[eleccion.bloque]?.preguntas[eleccion.pregunta];
+    const pregunta = this.novela()?.bloques[eleccion.bloque]?.preguntas[eleccion.pregunta];
     const opcion = pregunta?.opciones[eleccion.opcion];
     if (pregunta?.id && opcion?.id) this.elegir(pregunta.id, opcion.id);
-  }
-  nivel(nota: number | null) {
-    if (nota == null) return '—';
-    if (nota >= 4.6) return 'Superior';
-    if (nota >= 4) return 'Alto';
-    if (nota >= 3) return 'Básico';
-    return 'Bajo';
   }
   elegir(preguntaId: number, opcionId: number) {
     const id = this.juego()?.id;
     this.http.post<Participacion>(`/api/participaciones/${id}/responder`, { preguntaId, opcionId }).subscribe({
-      next: (dato) => this.juego.set(dato),
+      next: (dato) => { this.error.set(''); this.recibir(dato); },
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
   deshacer() {
     this.http.post<Participacion>(`/api/participaciones/${this.juego()?.id}/deshacer`, {}).subscribe({
-      next: (dato) => this.juego.set(dato),
+      next: (dato) => { this.error.set(''); this.recibir(dato); },
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
   finalizar() {
     this.http.post<Participacion>(`/api/participaciones/${this.juego()?.id}/finalizar`, {}).subscribe({
-      next: (dato) => {
-        this.musica.detener();
-        this.juego.set(dato);
-      },
-      error: (falla) => this.error.set(mensajeError(falla))
+      next: (dato) => this.recibir(dato),
+      error: (falla) => {
+        this.error.set(mensajeError(falla));
+        // Si ya estaba cerrada (por ejemplo, por tiempo), se muestran sus resultados; si no, vuelve a la pregunta.
+        this.http.get<Participacion>(`/api/participaciones/${this.juego()?.id}`).subscribe({
+          next: (dato) => {
+            if (dato.estado !== 'EN_CURSO') this.recibir(dato);
+            else this.reproductor()?.volverAUltimaPregunta();
+          },
+          error: () => this.reproductor()?.volverAUltimaPregunta()
+        });
+      }
     });
   }
   private porTiempo() {
     if (this.cerradoPorTiempo || this.juego()?.estado !== 'EN_CURSO') return;
     this.cerradoPorTiempo = true;
+    this.reproductor()?.irAlFin();
     this.finalizar();
   }
-  mover(delta: number) {
-    const total = this.juego()?.preguntas.length ?? 0;
-    this.indice.update((valor) => Math.min(total - 1, Math.max(0, valor + delta)));
+  /** Respuesta del backend: si el intento terminó, la música se detiene y se muestran los resultados. */
+  private recibir(dato: Participacion) {
+    this.juego.set(dato);
+    if (dato.estado !== 'EN_CURSO') {
+      this.musica.detener();
+      this.ponerFondoResultados(dato);
+    }
   }
   private cargar() {
     const id = this.route.snapshot.paramMap.get('id');
     this.http.get<Participacion>(`/api/participaciones/${id}`).subscribe({
       next: (dato) => {
-        this.juego.set(dato);
         this.restante.set(Math.max(0, dato.segundosMax - dato.segundosUsados));
-        if (!this.novela() && dato.estado === 'EN_CURSO') {
-          this.novela.set(this.armarNovela(dato));
+        if (dato.estado === 'EN_CURSO') {
+          const caso = this.armarNovela(dato);
+          this.juego.set(dato);
+          this.empezarEn.set(this.primerPendiente(dato, caso));
           this.elenco.set(dato.personajes ?? []);
-          this.musica.iniciar();
+          this.novela.set(caso);
+        } else {
+          this.recibir(dato);
         }
       },
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
+  /** Al entrar (o volver a entrar): el primer escenario con preguntas sin responder; si no hay, el último. */
+  private primerPendiente(dato: Participacion, caso: CasoReproductor): number {
+    const pendiente = caso.bloques.findIndex((b) => b.preguntas.some((q) => dato.preguntas.find((x) => x.id === q.id)?.seleccionId == null));
+    return pendiente >= 0 ? pendiente : Math.max(0, caso.bloques.length - 1);
+  }
+  /** Agrupa las preguntas por escenario (bloqueIndice del backend) en el formato del reproductor, sin la correcta. */
   private armarNovela(dato: Participacion): CasoReproductor {
     const bloques: CasoReproductor['bloques'] = [];
+    const indices = new Map<string, number>();
+    this.claves.clear();
     for (const pregunta of dato.preguntas) {
-      let bloque = bloques.find((b) => b.nombre === pregunta.bloque);
-      if (!bloque) {
-        bloque = { nombre: pregunta.bloque, contexto: pregunta.contexto, preguntas: [] };
-        bloques.push(bloque);
+      const llave = pregunta.bloqueIndice != null ? `i${pregunta.bloqueIndice}` : `n${pregunta.bloque}`;
+      let b = indices.get(llave);
+      if (b === undefined) {
+        b = bloques.length;
+        indices.set(llave, b);
+        bloques.push({ nombre: pregunta.bloque, contexto: pregunta.contexto, preguntas: [] });
       }
-      bloque.preguntas.push({
-        id: pregunta.id,
-        enunciado: pregunta.enunciado,
-        pista: pregunta.pista,
+      this.claves.set(pregunta.id, `${b}:${bloques[b].preguntas.length}`);
+      bloques[b].preguntas.push({
+        id: pregunta.id, enunciado: pregunta.enunciado, pista: pregunta.pista,
         opciones: pregunta.opciones.map((o) => ({ id: o.id, texto: o.texto }))
       });
     }
-    return {
-      id: dato.casoId,
-      nombre: dato.caso,
-      desarrolloSituacional: dato.desarrollo,
-      contexto: dato.contexto,
-      bloques
-    };
+    return { id: dato.casoId, nombre: dato.caso, desarrolloSituacional: dato.desarrollo, contexto: dato.contexto, bloques };
+  }
+  /** Fondo de la pantalla de resultados: el del último escenario, oscurecido. */
+  private ponerFondoResultados(dato: Participacion) {
+    const caso = this.armarNovela(dato);
+    const i = caso.bloques.length - 1;
+    if (i < 0) return;
+    this.escenas.elegir(caso, { indice: i, nombre: caso.bloques[i].nombre, contexto: caso.bloques[i].contexto })
+      .then((f) => this.fondoResultados.set(`linear-gradient(rgba(11,18,32,.88), rgba(11,18,32,.94)), url("${f.ruta}")`))
+      .catch(() => undefined);
   }
 }
 
