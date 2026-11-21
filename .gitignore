@@ -15,3 +15,5 @@ frontend/public/personajes/M03-original.vrm
 frontend/public/personajes/M03-optimizado.vrm
 # Modelos descargados de VRoid Hub/BOOTH (licencias de terceros, no se suben)
 frontend/vroid-hub/
+# Respaldos locales de la base de datos (pg_dump), no se suben
+tools/casos-prueba/respaldo-*.sql

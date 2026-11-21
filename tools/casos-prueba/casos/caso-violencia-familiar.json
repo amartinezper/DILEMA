@@ -1,0 +1,135 @@
+{
+  "nombre": "Caso 1. Violencia familiar y tentativa de feminicidio",
+  "desarrolloSituacional": "<p>Son las 11 de la noche en un barrio con altas condiciones de vulnerabilidad como: pobreza, violencias urbanas (robos, expendio de drogas, presencia de grupos armados ilegales, riñas callejeras entre vecinos) un hombre de aproximadamente 28 años de edad, entra a su domicilio donde reside con su actual pareja que tiene 22 años de edad, ella tiene una hija de 3 años de edad. Este hombre en horas de la tarde había tenido un altercado verbal con su pareja en el cual hubo presencia de groserías, maltrato psicológico de él hacia ella y chantaje emocional, donde usó expresiones relativas a que ella sin él no era nadie, que era una mujer mantenida y que adicionalmente él estaba seguro que ella le era infiel. En ese momento de la noche, a la entrada del hombre en la residencia, la mujer le hace el reclamo de llegar tarde y de haberse perdido toda la tarde, el hombre sin mediar palabra saca una navaja y hiere a la menor de edad propinándole la muerte de manera inmediata y luego procede a herir (un total de 28 heridas con armas cortopunzantes) a la mujer quien queda muy mal herida.</p>",
+  "contexto": "<p><strong>Advertencia de contenido:</strong> Este caso contiene violencia intrafamiliar, tentativa de feminicidio y la muerte de una menor de edad. Puede resultar perturbador.</p><p>Este diseño de juego de roles está estructurado para desafiar el juicio clínico y ético de los estudiantes de psicología, integrando la normativa colombiana (Ley 1257 de 2008, Ley 1098 de 2006 y el Protocolo de Atención Integral en Salud para víctimas de violencia sexual y de género).</p>",
+  "tiempoEstimadoMin": 30,
+  "sensible": true,
+  "advertencia": "Este caso contiene violencia intrafamiliar, tentativa de feminicidio y la muerte de una menor de edad. Puede resultar perturbador.",
+  "repartoRubrica": "PONDERADA",
+  "rubrica": [],
+  "bloques": [
+    {
+      "nombre": "Atención en Hospital (Urgencia Vital y Crisis)",
+      "contexto": "La sobreviviente está en shock hipovolémico y emocional. La familia (madre y hermanos) llega al hospital en estado de alteración, exigiendo ver a la niña (quien ha fallecido, pero ellos aún no lo saben con certeza).",
+      "preguntas": [
+        {
+          "enunciado": "<p>El estudiante debe decidir: ¿En qué centrar la intervención inmediata?</p>",
+          "pista": null,
+          "criterio": "Decisión de intervención",
+          "peso": 0.8,
+          "opciones": [
+            { "texto": "Notificar a la madre y la familia sobre la muerte de la niña de inmediato.", "correcta": false,
+              "explicacion": "[Propuesta, validar con la docente] Es errónea: comunicar el fallecimiento de inmediato, sin preparación ni contención y en medio de la crisis, puede agravar el impacto en la familia. La noticia se da con un protocolo, en un espacio adecuado y junto con el equipo de salud.",
+              "fundamento": "Protocolo EPICEE (SPIKES) para comunicar malas noticias y Primeros Auxilios Psicológicos." },
+            { "texto": "Contención emocional a la familia, acompañamiento en el duelo inicial y estabilización de la crisis (Primeros Auxilios Psicológicos - PAP).", "correcta": true,
+              "explicacion": "[Propuesta, validar con la docente] Es correcta: mientras el equipo médico atiende a la sobreviviente, la prioridad psicológica es contener a la familia, acompañar el duelo inicial y estabilizar la crisis.",
+              "fundamento": "Primeros Auxilios Psicológicos (PAP) y Resolución 459 de 2012 (protocolo de atención integral en salud a víctimas de violencias sexuales y basadas en género)." },
+            { "texto": "Interrogar a la víctima herida para obtener detalles del agresor antes de que entre a cirugía.", "correcta": false,
+              "explicacion": "[Propuesta, validar con la docente] Es errónea: la víctima está en shock hipovolémico y su atención médica es la prioridad. Interrogarla la revictimiza y obtener detalles del agresor no es la tarea del psicólogo en ese momento.",
+              "fundamento": "Ley 1257 de 2008 (derecho de las mujeres a una atención que no las revictimice) y Resolución 459 de 2012." }
+          ]
+        },
+        {
+          "enunciado": "<p>El estudiante debe tener claro: ¿Qué marco normativo y técnico debe seguir?</p>",
+          "pista": null,
+          "criterio": "Marco normativo",
+          "peso": 0.7,
+          "opciones": [
+            { "texto": "Resolución 459 de 2012 (Protocolo de atención integral a violencias sexuales y basadas en género).", "correcta": false,
+              "explicacion": "[Propuesta, validar con la docente] Es incompleta: la Resolución 459 de 2012 orienta la atención en salud, pero se trata de violencia contra una mujer por razones de género, por lo que también aplica la Ley 1257 de 2008.",
+              "fundamento": "Resolución 459 de 2012 y Ley 1257 de 2008." },
+            { "texto": "Resolución 459 de 2012 (Protocolo de atención integral a violencias sexuales y basadas en género) y Ley 1257 de 2008.", "correcta": true,
+              "explicacion": "[Propuesta, validar con la docente] Es correcta: combina el protocolo de atención en salud (Resolución 459 de 2012) con la ley que protege a las mujeres frente a la violencia y les garantiza atención integral (Ley 1257 de 2008).",
+              "fundamento": "Resolución 459 de 2012 y Ley 1257 de 2008." },
+            { "texto": "Resolución 459 de 2012 (Protocolo de atención integral a violencias sexuales y basadas en género) y Ley 1448 de 2011.", "correcta": false,
+              "explicacion": "[Propuesta, validar con la docente] Es errónea: la Ley 1448 de 2011 es la ley de víctimas del conflicto armado interno; este caso es de violencia intrafamiliar y basada en género, que se atiende con la Ley 1257 de 2008.",
+              "fundamento": "Ley 1448 de 2011 (víctimas del conflicto armado) frente a Ley 1257 de 2008 (violencia contra las mujeres)." }
+          ]
+        },
+        {
+          "enunciado": "<p>El estudiante debe actuar técnica y éticamente: ¿Qué se debe hacer y qué se debe evitar?</p>",
+          "pista": null,
+          "criterio": "Actuación técnica y ética",
+          "peso": 1.0,
+          "opciones": [
+            { "texto": "Escucha activa sin juicios, intervenir la disonancia cognitiva, preguntar sobre los antecedentes de la relación, activar ruta por psicología clínica y psiquiatría.", "correcta": false,
+              "explicacion": "[Propuesta, validar con la docente] Es errónea: en la urgencia no es el momento de intervenir la disonancia cognitiva ni de indagar los antecedentes de la relación. Además, deja por fuera a la familia y la comunicación de la noticia del fallecimiento.",
+              "fundamento": "Primeros Auxilios Psicológicos y Resolución 459 de 2012." },
+            { "texto": "Primeros auxilios psicológicos para la familia, escucha activa y sin juicios a la víctima (cuando esté consciente), activar protocolo EPICEE (SPIKES en inglés) para dar la noticia del fallecimiento de la menor.", "correcta": false,
+              "explicacion": "[Propuesta, validar con la docente] Es incompleta: incluye los PAP, la escucha y el protocolo EPICEE, pero no evalúa los factores protectores y de riesgo de la familia para el duelo ni plantea el manejo interdisciplinar y la derivación.",
+              "fundamento": "Protocolo EPICEE (SPIKES), Primeros Auxilios Psicológicos y Resolución 459 de 2012." },
+            { "texto": "Primeros auxilios psicológicos para la familia, escucha activa y sin juicios a la víctima, activar protocolo EPICEE (SPIKES en inglés) para dar la noticia del fallecimiento de la menor, preguntar sobre los antecedentes de la relación para determinar el ciclo de la violencia. Manejo del caso de manera interdisciplinar para la toma de decisiones (como derivación a psiquiatría y psicoterapia).", "correcta": false,
+              "explicacion": "[Propuesta, validar con la docente] Es errónea: preguntar por los antecedentes de la relación para determinar el ciclo de la violencia no corresponde a la urgencia y puede revictimizar. Además, no espera a que la víctima esté consciente para la escucha.",
+              "fundamento": "Ley 1257 de 2008 (atención sin revictimización) y Primeros Auxilios Psicológicos." },
+            { "texto": "Primeros auxilios psicológicos para la familia, escucha activa y sin juicios a la víctima (cuando esté consciente), activar protocolo EPICEE (SPIKES en inglés) para dar la noticia del fallecimiento de la menor, evaluación psicosocial de la familia para reconocer factores protectores y de riesgo en el afrontamiento del duelo. Manejo del caso de manera interdisciplinar para la toma de decisiones (como derivación a psiquiatría y psicoterapia).", "correcta": true,
+              "explicacion": "[Propuesta, validar con la docente] Es correcta: atiende a la familia y a la víctima cuando está consciente, comunica el fallecimiento con el protocolo EPICEE, evalúa los factores protectores y de riesgo para el duelo y maneja el caso de forma interdisciplinar.",
+              "fundamento": "Primeros Auxilios Psicológicos, protocolo EPICEE (SPIKES) y Resolución 459 de 2012." }
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Comisaría de Familia (Restablecimiento de Derechos)",
+      "contexto": "Han pasado 15 días. La mujer ha sido dada de alta, pero tiene secuelas físicas y trauma complejo. Se debe definir la medida de protección y el apoyo psicológico a largo plazo.",
+      "preguntas": [
+        {
+          "enunciado": "<p>El estudiante debe decidir: ¿Cuál es la prioridad en la asesoría psicosocial?</p>",
+          "pista": null,
+          "criterio": "Decisión de intervención",
+          "peso": 0.8,
+          "opciones": [
+            { "texto": "Instar a la mujer para que escuche al agresor en pro de la unión familiar (Mediación) y el perdón.", "correcta": false,
+              "explicacion": "[Propuesta, validar con la docente] Es errónea: promover el encuentro, la mediación o el perdón con el agresor pone en riesgo a la víctima después de una tentativa de feminicidio.",
+              "fundamento": "Ley 1257 de 2008 (derecho de la mujer a decidir si se enfrenta o no con el agresor)." },
+            { "texto": "Valoración del riesgo de feminicidio, activación de medidas de protección y asesoría sobre sus derechos económicos y de justicia.", "correcta": true,
+              "explicacion": "[Propuesta, validar con la docente] Es correcta: tras una tentativa de feminicidio la prioridad es valorar el riesgo, activar las medidas de protección y orientar a la mujer sobre sus derechos.",
+              "fundamento": "Ley 1257 de 2008 (medidas de protección y derechos de las mujeres víctimas) y Ley 2126 de 2021 (comisarías de familia)." },
+            { "texto": "Realizar una psicoterapia para encontrar los patrones de infancia que desencadenan su elección de pareja.", "correcta": false,
+              "explicacion": "[Propuesta, validar con la docente] Es errónea: buscar en la historia de la víctima las causas de su elección de pareja la culpabiliza y no responde a la urgencia de protección; la psicoterapia a largo plazo se deriva después.",
+              "fundamento": "Ley 1257 de 2008 (atención sin revictimización)." }
+          ]
+        },
+        {
+          "enunciado": "<p>El estudiante debe tener claro: ¿Qué marco normativo y técnico debe seguir?</p>",
+          "pista": null,
+          "criterio": "Marco normativo",
+          "peso": 0.7,
+          "opciones": [
+            { "texto": "Ley 2126 de 2021, Ley 1098 de 2006, Ley 1257 de 2008.", "correcta": true,
+              "explicacion": "[Propuesta, validar con la docente] Es correcta: la Ley 2126 de 2021 regula las comisarías de familia; la Ley 1098 de 2006 aplica porque la violencia afectó a una niña del grupo familiar; y la Ley 1257 de 2008 protege a la mujer víctima de violencia.",
+              "fundamento": "Ley 2126 de 2021, Ley 1098 de 2006 y Ley 1257 de 2008." },
+            { "texto": "Ley 1098 de 2006, Ley 1257 de 2008.", "correcta": false,
+              "explicacion": "[Propuesta, validar con la docente] Es incompleta: omite la Ley 2126 de 2021, que regula la actuación de la comisaría de familia.",
+              "fundamento": "Ley 2126 de 2021." },
+            { "texto": "Ley 1098 de 2006, Ley 1257 de 2008, Ley 1148 de 2011.", "correcta": false,
+              "explicacion": "[Propuesta, validar con la docente] Es errónea: omite la Ley 2126 de 2021, que regula la comisaría de familia, e incluye la «Ley 1148 de 2011», que no hace parte del marco normativo que plantea el caso.",
+              "fundamento": "Ley 2126 de 2021, Ley 1098 de 2006 y Ley 1257 de 2008." }
+          ]
+        },
+        {
+          "enunciado": "<p>El estudiante debe actuar técnica y éticamente: ¿Qué se debe hacer y qué se debe evitar?</p>",
+          "pista": null,
+          "criterio": "Actuación técnica y ética",
+          "peso": 1.0,
+          "opciones": [
+            { "texto": "Escucha activa sin juicios, intervenir la disonancia cognitiva, preguntar sobre los antecedentes de la relación para detectar ciclos de violencia. Aplicar la valoración de riesgo de feminicidio. Activar ruta por psicología clínica y psiquiatría.", "correcta": false,
+              "explicacion": "[Propuesta, validar con la docente] Es errónea: intervenir la disonancia cognitiva e indagar los antecedentes de la relación en la comisaría puede revictimizar, y no establece el nivel de riesgo de vulneración de los derechos de las personas afectadas.",
+              "fundamento": "Ley 2126 de 2021 y Ley 1257 de 2008." },
+            { "texto": "Realizar la valoración inicial psicológica y emocional de la víctima, de las personas dependientes o en situación de vulnerabilidad dentro de la familia, si los hay. Escucha activa sin juicios. Preguntar sobre los antecedentes de la relación para detectar ciclos de violencia. Activar rutas de derivación a salud y salud mental en caso de ser necesario.", "correcta": false,
+              "explicacion": "[Propuesta, validar con la docente] Es incompleta: valora a la víctima y deriva, pero no aplica la valoración del riesgo de feminicidio ni establece el nivel de riesgo, que es lo prioritario después de una tentativa.",
+              "fundamento": "Ley 2126 de 2021 y Ley 1257 de 2008." },
+            { "texto": "Realizar la valoración inicial psicológica y emocional de la víctima, de las personas dependientes o en situación de vulnerabilidad dentro de la familia, si los hay. Establecer el nivel de riesgo de vulneración de los derechos de las personas afectadas por el hecho de violencia. Aplicar la valoración de riesgo de feminicidio. Activar rutas de derivación a salud y salud mental en caso de ser necesario.", "correcta": true,
+              "explicacion": "[Propuesta, validar con la docente] Es correcta: valora a la víctima y a las personas dependientes, establece el nivel de riesgo de vulneración de derechos, aplica la valoración del riesgo de feminicidio y deriva a salud y salud mental.",
+              "fundamento": "Ley 2126 de 2021 (comisarías de familia), Ley 1257 de 2008 y Ley 1098 de 2006." }
+          ]
+        }
+      ]
+    }
+  ],
+  "personajes": [
+    { "nombre": "La sobreviviente", "descripcion": "Mujer, 22 años, víctima", "escenarios": [1] },
+    { "nombre": "Madre de la sobreviviente", "descripcion": "Mujer, 50 años, madre", "escenarios": [0] },
+    { "nombre": "Hermano de la sobreviviente", "descripcion": "Hombre, 25 años, hermano", "escenarios": [0] },
+    { "nombre": "Comisaria de familia", "descripcion": "Mujer, 40 años, comisaria de familia", "escenarios": [1] }
+  ]
+}

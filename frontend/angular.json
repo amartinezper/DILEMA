@@ -16,7 +16,12 @@
             "index": "src/index.html",
             "browser": "src/main.ts",
             "assets": [
-              { "glob": "**/*", "input": "public" }
+              { "glob": "**/*", "input": "public" },
+              {
+                "glob": "**/*.mp3",
+                "input": "audio",
+                "output": "audio"
+              }
             ],
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",

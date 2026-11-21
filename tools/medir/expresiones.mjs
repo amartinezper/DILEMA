@@ -21,12 +21,12 @@ try {
     const info = await p.evaluate(() => {
       const el = document.querySelector('app-personaje-vrm');
       const c = window.ng.getComponent(el);
-      c.proximoParpadeo = 1e9; c.faseParpadeo = -1;   // sin parpadeo durante la captura
+      c.cara.proximoParpadeo = 1e9; c.cara.faseParpadeo = -1;   // sin parpadeo durante la captura
       const cabeza = c.vrm.humanoid.getNormalizedBoneNode('head');
       const v = cabeza.getWorldPosition(cabeza.position.clone());
       v.y += 0.07; v.project(c.camara);
       const r = el.getBoundingClientRect();
-      return { x: r.left + (v.x + 1) / 2 * r.width, y: r.top + (1 - v.y) / 2 * r.height, partes: c.tienePartes(), version: c.vrm.meta.metaVersion };
+      return { x: r.left + (v.x + 1) / 2 * r.width, y: r.top + (1 - v.y) / 2 * r.height, partes: c.cara.tienePartes(), version: c.vrm.meta.metaVersion };
     });
     const clip = { x: info.x - 130, y: info.y - 120, width: 260, height: 260 };
     for (const [nivel, nombre, expr] of [['normal', 'neutral', 'neutral'], ['completa', 'antes', 'alegre'], ['normal', 'despues', 'alegre']]) {

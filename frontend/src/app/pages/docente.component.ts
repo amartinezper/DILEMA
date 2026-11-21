@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal, viewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -9,6 +9,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { AuthService } from '../core/auth.service';
 import { BusquedaService } from '../core/busqueda.service';
+import { BloqueNovela, CasoNovela, EscenaNovelaComponent, PersonajeNovela } from '../shared/novela/escena-novela.component';
+import { Asignacion } from '../shared/novela/elenco.service';
+import { FONDOS_MANUALES } from '../shared/novela/escena.service';
+import { NovelaReproductorComponent } from '../shared/novela/novela-reproductor.component';
+import { ResultadosNovela, calcularResultados } from '../shared/novela/resultados';
+import { MusicaNovelaService } from '../shared/novela/musica-novela.service';
+import { NgTemplateOutlet } from '@angular/common';
 
 const enlaces = [
   { href: '/docente', texto: 'Inicio', exacto: true },
@@ -219,11 +226,55 @@ export class CasosComponent {
   }
 }
 
-interface PersonaEscena { id: string; nombre: string; color: string; x: number; y: number; }
+/** movida: el docente la arrastró (si no, la escena reparte a los personajes sola). */
+interface PersonaEscena { id: string; nombre: string; color: string; x: number; y: number; movida?: boolean; }
+interface AyudaDescripcion { genero: string; edad: string; rol: string; }
+
+/** Roles de las listas de ayuda: texto femenino y masculino que se escribe en la descripción. */
+const ROLES_AYUDA = [
+  { id: 'madre', f: 'madre', m: 'padre' }, { id: 'abuela', f: 'abuela', m: 'abuelo' }, { id: 'hija', f: 'hija', m: 'hijo' },
+  { id: 'nina', f: 'niña', m: 'niño' }, { id: 'estudiante', f: 'la estudiante', m: 'el estudiante' },
+  { id: 'docente', f: 'la docente', m: 'el docente' }, { id: 'medica', f: 'médica', m: 'médico' },
+  { id: 'enfermera', f: 'enfermera', m: 'enfermero' }, { id: 'psicologa', f: 'psicóloga', m: 'psicólogo' },
+  { id: 'trabajadora', f: 'trabajadora social', m: 'trabajador social' }, { id: 'policia', f: 'la policía', m: 'el policía' },
+  { id: 'comisaria', f: 'comisaria de familia', m: 'comisario de familia' }, { id: 'vecina', f: 'vecina', m: 'vecino' }
+];
+/** Roles que ya implican un género (si no se eligió género en la lista). */
+const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
 
 @Component({
   selector: 'app-editor-caso',
-  imports: [MatButtonModule, MatCardModule, MarcoDocenteComponent, FormsModule, RouterLink, EditorTextoComponent],
+  imports: [MatButtonModule, MatCardModule, MarcoDocenteComponent, FormsModule, RouterLink, EditorTextoComponent, EscenaNovelaComponent,
+    NovelaReproductorComponent, NgTemplateOutlet],
+  styles: [`
+    .personaje-fila { display: grid; gap: 6px; padding-bottom: 10px; border-bottom: 1px solid var(--line, #e5e7eb); }
+    .ayudas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .ayudas select { flex: 1 1 110px; min-width: 0; padding: 5px 6px; font: inherit; font-size: .85rem; border: 1px solid var(--line, #d1d5db); border-radius: 6px; background: white; }
+    .personaje-pie { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 12px; }
+    .aparece { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: .85rem; }
+    .aparece .chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border: 1px solid var(--line, #d1d5db); border-radius: 999px; cursor: pointer; }
+    .entendido { font-size: .8rem; color: #2f6f68; font-weight: 600; }
+    .entendido.falta { color: #6b7280; font-weight: 400; }
+    .escena-controles { flex-wrap: wrap; gap: 8px; align-items: flex-start; }
+    .acciones-editor { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .campo-cabeza { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .insertar { padding: 3px 10px; font: inherit; font-size: .8rem; border: 1px solid var(--line, #d1d5db); border-radius: 999px; background: white; cursor: pointer; }
+    .form-dialogo { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0; padding: 8px; border-radius: 8px; background: #f3f6f5; }
+    .form-dialogo select, .form-dialogo input { padding: 6px 8px; font: inherit; border: 1px solid var(--line, #d1d5db); border-radius: 6px; }
+    .form-dialogo input { flex: 1 1 220px; min-width: 0; }
+    .form-dialogo button { padding: 6px 12px; font: inherit; border: 1px solid var(--line, #d1d5db); border-radius: 6px; background: white; cursor: pointer; }
+    .ayuda-dialogo { display: block; margin-top: 4px; font-size: .78rem; color: #6b7280; }
+    .modal-vista { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; background: #0f141c; color: #f3f3f3; }
+    .modal-cabeza { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 10px 16px; background: #1b2430; }
+    .modal-cabeza .cerrar, .modal-cabeza .musica { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px;
+      border-radius: 8px; border: 0; background: #fff; color: #1d2430; font: inherit; line-height: 1.5; cursor: pointer; }
+    /* "Música" va a la izquierda de "Cerrar", los dos pegados a la derecha. */
+    .modal-cabeza .musica + .cerrar { margin-left: 0; }
+    .modal-cabeza .musica svg { width: 1.15em; height: 1.15em; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+    .modal-cabeza .musica .parlante { fill: currentColor; }
+    .modal-cabeza .cerrar:focus-visible, .modal-cabeza .musica:focus-visible { outline: 2px solid #9fe3d9; outline-offset: 2px; }
+    .modal-cuerpo { flex: 1; overflow: auto; padding: 12px 16px; }
+  `],
   template: `
     <app-marco-docente [enlaces]="enlaces">
       <section class="stack">
@@ -232,11 +283,14 @@ interface PersonaEscena { id: string; nombre: string; color: string; x: number; 
             <p class="kicker">Creación / edición de caso</p>
             <h1>{{ caso.nombre || 'Crear caso de estudio clínico' }}</h1>
           </div>
-          <a mat-stroked-button routerLink="/docente/casos">Volver</a>
+          <div class="acciones-editor">
+            <button mat-flat-button color="primary" type="button" (click)="abrirVistaPrevia($any($event.currentTarget))">Vista previa</button>
+            <a mat-stroked-button routerLink="/docente/casos">Volver</a>
+          </div>
         </div>
         <div class="pasos">
           @for (paso of pasos; track paso.id) {
-            <button type="button" [class.activa]="activo() === paso.id" (click)="activo.set(paso.id)">{{ paso.texto }}</button>
+            <button type="button" [class.activa]="activo() === paso.id" (click)="irA(paso.id)">{{ paso.texto }}</button>
           }
         </div>
         @if (error()) { <p class="error">{{ error() }}</p> }
@@ -245,9 +299,16 @@ interface PersonaEscena { id: string; nombre: string; color: string; x: number; 
         @if (activo() === 'estructura') {
           <section class="card stack">
             <label class="field"><span>NOMBRE</span><input [(ngModel)]="caso.nombre" [disabled]="bloqueado()" /></label>
-            <label class="field"><span>DESARROLLO SITUACIONAL</span>
-              <app-editor [(valor)]="caso.desarrolloSituacional" [bloqueado]="bloqueado()" />
-            </label>
+            <div class="field">
+              <div class="campo-cabeza"><span>DESARROLLO SITUACIONAL</span>
+                @if (!bloqueado()) { <button type="button" class="insertar" (click)="abrirInsertar('desarrollo')">Insertar diálogo</button> }
+              </div>
+              @if (insertando() === 'desarrollo') {
+                <ng-container *ngTemplateOutlet="formDialogo; context: { $implicit: 'desarrollo' }" />
+              }
+              <app-editor #editorDesarrollo [(valor)]="caso.desarrolloSituacional" [bloqueado]="bloqueado()" />
+              <small class="ayuda-dialogo">{{ ayudaDialogo }}</small>
+            </div>
             <label class="field"><span>CONTEXTO</span>
               <app-editor [(valor)]="caso.contexto" [bloqueado]="bloqueado()" />
             </label>
@@ -262,7 +323,17 @@ interface PersonaEscena { id: string; nombre: string; color: string; x: number; 
             @for (bloque of caso.bloques; track $index) {
               <article class="item stack">
                 <label class="field"><span>NOMBRE DEL ESCENARIO</span><input [(ngModel)]="bloque.nombre" [disabled]="bloqueado()" /></label>
-                <label class="field"><span>CONTEXTO SITUACIONAL</span><textarea [(ngModel)]="bloque.contexto" [disabled]="bloqueado()"></textarea></label>
+                <div class="field">
+                  <div class="campo-cabeza"><span>CONTEXTO SITUACIONAL</span>
+                    @if (!bloqueado()) { <button type="button" class="insertar" (click)="abrirInsertar('bloque-' + $index)">Insertar diálogo</button> }
+                  </div>
+                  @if (insertando() === 'bloque-' + $index) {
+                    <ng-container *ngTemplateOutlet="formDialogo; context: { $implicit: { bloque: $index, area: ctx } }" />
+                  }
+                  <textarea #ctx [(ngModel)]="bloque.contexto" [disabled]="bloqueado()"
+                    [attr.aria-label]="'Contexto situacional del escenario ' + ($index + 1)"></textarea>
+                  <small class="ayuda-dialogo">{{ ayudaDialogo }}</small>
+                </div>
                 @if (!bloqueado()) { <button mat-stroked-button type="button" (click)="caso.bloques.splice($index, 1)">Quitar escenario</button> }
               </article>
             }
@@ -333,33 +404,62 @@ interface PersonaEscena { id: string; nombre: string; color: string; x: number; 
         @if (activo() === 'escena') {
           <section class="card stack">
             <h2>Diseño de escena</h2>
-            <p class="sub">Los personajes quedan guardados en el caso. Elige en qué escenarios aparecen y arrástralos. Las cuatro usan la misma pose. La posición es solo el boceto visual.</p>
-            @for (personaje of caso.personajes; track $index) {
-              <div class="grid-2">
-                <label class="field"><span>NOMBRE</span><input [(ngModel)]="personaje.nombre" [disabled]="bloqueado()" (ngModelChange)="sincronizarPersona($index)" /></label>
-                <label class="field"><span>DESCRIPCIÓN</span><input [(ngModel)]="personaje.descripcion" [disabled]="bloqueado()" /></label>
+            <p class="sub">Describe a cada personaje (por ejemplo «madre de 38 años») y el sistema elige un personaje 3D que encaje. Marca en qué escenarios aparece y arrástralo en la escena: a los lados, o hacia arriba y abajo para alejarlo o acercarlo. La posición es solo el boceto de tu vista.</p>
+            @for (personaje of caso.personajes; track $index; let i = $index) {
+              <div class="personaje-fila">
+                <div class="grid-2">
+                  <label class="field"><span>NOMBRE</span><input [(ngModel)]="personaje.nombre" [disabled]="bloqueado()" (ngModelChange)="cambioPersonaje(i)" /></label>
+                  <div class="field">
+                    <span>DESCRIPCIÓN</span>
+                    <input [(ngModel)]="personaje.descripcion" [disabled]="bloqueado()" (ngModelChange)="cambioPersonaje(i)"
+                      placeholder="Ej.: madre de 38 años, trabaja en una panadería" [attr.aria-label]="'Descripción de ' + (personaje.nombre || 'Persona ' + (i + 1))" />
+                    <div class="ayudas" role="group" [attr.aria-label]="'Ayudas para describir a ' + (personaje.nombre || 'Persona ' + (i + 1))">
+                      <select [disabled]="bloqueado()" [value]="ayuda(i).genero" (change)="escribirAyuda(i, 'genero', $any($event.target).value)" aria-label="Género">
+                        <option value="">Género…</option>
+                        <option value="mujer">Mujer</option>
+                        <option value="hombre">Hombre</option>
+                      </select>
+                      <select [disabled]="bloqueado()" [value]="ayuda(i).edad" (change)="escribirAyuda(i, 'edad', $any($event.target).value)" aria-label="Edad">
+                        <option value="">Edad…</option>
+                        @for (e of edades; track e) { <option [value]="e">{{ e }} años</option> }
+                      </select>
+                      <select [disabled]="bloqueado()" [value]="ayuda(i).rol" (change)="escribirAyuda(i, 'rol', $any($event.target).value)" aria-label="Rol">
+                        <option value="">Rol…</option>
+                        @for (r of roles; track r.id) { <option [value]="r.id">{{ ayuda(i).genero === 'hombre' ? r.m : r.f }}</option> }
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="personaje-pie">
+                  <div class="aparece" role="group" [attr.aria-label]="'Escenarios donde aparece ' + (personaje.nombre || 'Persona ' + (i + 1))">
+                    <span>Aparece en:</span>
+                    @for (bloque of caso.bloques; track $index; let b = $index) {
+                      <label class="chip"><input type="checkbox" [checked]="personaje.escenarios.includes(b)" [disabled]="bloqueado()"
+                        (change)="alternarEscenario(i, b)" />{{ b + 1 }}</label>
+                    }
+                  </div>
+                  <small class="entendido" [class.falta]="!etiquetas()[i]">{{ etiquetas()[i] || 'Sin descripción: no aparece en la escena' }}</small>
+                </div>
               </div>
             }
-            <div class="fondos">
-              @for (fondo of fondos; track fondo.id) {
-                <button type="button" [class.activa]="fondoActivo() === fondo.id" (click)="elegirFondo(fondo.id)">{{ fondo.nombre }}</button>
-              }
+            <div class="row escena-controles">
+              <div class="fondos" role="group" aria-label="Escenario">
+                @for (bloque of casoEscena().bloques; track $index; let b = $index) {
+                  <button type="button" [class.activa]="escenarioActivo() === b" (click)="escenarioActivo.set(b)">Escenario {{ b + 1 }}</button>
+                }
+              </div>
+              <div class="fondos" role="group" aria-label="Fondo (solo en tu vista)">
+                <button type="button" [class.activa]="!fondoManual()" (click)="elegirFondo(null)">Fondo automático</button>
+                @for (fondo of fondos; track fondo.id) {
+                  <button type="button" [class.activa]="fondoManual() === fondo.id" (click)="elegirFondo(fondo.id)">{{ fondo.nombre }}</button>
+                }
+              </div>
             </div>
-            <div class="escena" [class]="'escena fondo-' + fondoActivo()">
-              @for (persona of personas(); track persona.id) {
-                <div class="persona" [style.left.%]="persona.x" [style.top.%]="persona.y" (pointerdown)="arrastrar($event, persona)">
-                  <svg viewBox="0 0 80 160" aria-hidden="true">
-                    <circle cx="40" cy="28" r="16" fill="#f3d3bf"/>
-                    <rect x="22" y="48" width="36" height="48" rx="10" [attr.fill]="persona.color"/>
-                    <rect x="8" y="52" width="12" height="40" rx="6" [attr.fill]="persona.color"/>
-                    <rect x="60" y="52" width="12" height="40" rx="6" [attr.fill]="persona.color"/>
-                    <rect x="26" y="98" width="10" height="42" rx="5" fill="#243044"/>
-                    <rect x="44" y="98" width="10" height="42" rx="5" fill="#243044"/>
-                  </svg>
-                  <em>{{ persona.nombre }}</em>
-                </div>
-              }
-            </div>
+            <app-escena-novela
+              [caso]="casoEscena()" [bloque]="bloqueEscena()" [personajes]="personajesEscena()"
+              [modoEditor]="true" [bloqueado]="bloqueado()" [fondoManual]="fondoManual()" [posiciones]="posicionesEscena()"
+              (elenco)="recibirElenco($event)" (mover)="moverPersona($event)" />
+            @if (detectados()) { <p class="sub">{{ detectados() }}</p> }
           </section>
         }
 
@@ -383,10 +483,59 @@ interface PersonaEscena { id: string; nombre: string; color: string; x: number; 
           <button mat-stroked-button type="button" (click)="vistaPrevia.set(!vistaPrevia())">Previsualizar</button>
         </div>
       </section>
+
+      <!-- Formulario de "Insertar diálogo" (desarrollo situacional o contexto de un escenario). -->
+      <ng-template #formDialogo let-destino>
+        <div class="form-dialogo" role="group" aria-label="Insertar diálogo">
+          @if (hablantes().length) {
+            <select [(ngModel)]="dialogoPersonaje" aria-label="Personaje que habla">
+              @for (h of hablantes(); track h) { <option [value]="h">{{ h }}</option> }
+            </select>
+            <input [(ngModel)]="dialogoTexto" placeholder="Lo que dice" aria-label="Lo que dice"
+              (keydown.enter)="$event.preventDefault(); insertarDialogo(destino)" />
+            <button type="button" (click)="insertarDialogo(destino)" [disabled]="!dialogoPersonaje || !dialogoTexto.trim()">Insertar</button>
+          } @else {
+            <span class="sub">Primero describe a los personajes en «Diseño de escena».</span>
+          }
+          <button type="button" (click)="insertando.set(null)">Cancelar</button>
+        </div>
+      </ng-template>
+
+      @if (vistaAbierta(); as vista) {
+        <div class="modal-vista" role="dialog" aria-modal="true" aria-label="Vista previa del caso" (keydown.escape)="cerrarVistaPrevia()">
+          <header class="modal-cabeza">
+            @if (musica.disponible()) {
+              <button type="button" class="musica" [attr.aria-pressed]="musica.activa()"
+                [attr.aria-label]="musica.activa() ? 'Silenciar música' : 'Activar música'" (click)="musica.alternar()">
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <path class="parlante" d="M3 7.5h3l4.5-3.5v12L6 12.5H3z" />
+                  @if (musica.activa()) {
+                    <path d="M13.5 7.2a4 4 0 0 1 0 5.6M15.8 5a7 7 0 0 1 0 10" />
+                  } @else {
+                    <path d="M13.5 7.5l5 5M18.5 7.5l-5 5" />
+                  }
+                </svg>
+                <span>Música</span>
+              </button>
+            }
+            <button type="button" class="cerrar" (click)="cerrarVistaPrevia()">Cerrar</button>
+          </header>
+          <div class="modal-cuerpo">
+            <!-- Los resultados se calculan aquí, con los datos del editor: no hay peticiones al backend. -->
+            <app-novela-reproductor [caso]="vista" [personajes]="vista.personajes"
+              [resultados]="resultadosVista()" [mostrarCerrar]="true"
+              (finalizar)="resultadosVista.set(calcularResultados(vista, $event))" (reiniciar)="resultadosVista.set(null)"
+              (cerrar)="cerrarVistaPrevia()" anchoMaximo="calc((100vh - 130px) * 16 / 9)" />
+          </div>
+        </div>
+      }
     </app-marco-docente>
   `
 })
 export class EditorCasoComponent {
+  readonly musica = inject(MusicaNovelaService);
+  // Si se sale del editor con la vista previa abierta, la música no sigue sonando.
+  private readonly alSalir = inject(DestroyRef).onDestroy(() => this.musica.detener());
   enlaces = enlaces;
   pasos = [
     { id: 'estructura', texto: 'Información general' },
@@ -396,13 +545,10 @@ export class EditorCasoComponent {
     { id: 'escena', texto: 'Diseño de escena' },
     { id: 'estado', texto: 'Estado' }
   ];
-  fondos = [
-    { id: 'hospital', nombre: 'Hospital' },
-    { id: 'comisaria', nombre: 'Comisaría' },
-    { id: 'aula', nombre: 'Aula' },
-    { id: 'comunidad', nombre: 'Comunidad' },
-    { id: 'consultorio', nombre: 'Consultorio' }
-  ];
+  /** Fondos que el docente puede fijar a mano (solo cambian su vista). */
+  fondos = FONDOS_MANUALES;
+  edades = [8, 15, 22, 30, 38, 50, 66, 80];
+  roles = ROLES_AYUDA;
   opcionVacia = opcionVacia;
   preguntaVacia = preguntaVacia;
   activo = signal('estructura');
@@ -410,7 +556,40 @@ export class EditorCasoComponent {
   caso: Caso = casoVacio();
   error = signal('');
   ok = signal('');
-  fondoActivo = signal('hospital');
+  /** null = fondo automático (el mismo que verá el estudiante). */
+  fondoManual = signal<string | null>(null);
+  escenarioActivo = signal(0);
+  /** Copias del caso para la escena; se actualizan con 600 ms de espera al escribir. */
+  casoEscena = signal<CasoNovela>({ nombre: '', bloques: [] });
+  personajesEscena = signal<PersonajeNovela[]>([]);
+  bloqueEscena = computed<BloqueNovela>(() => {
+    const bloques = this.casoEscena().bloques;
+    const indice = Math.min(this.escenarioActivo(), Math.max(0, bloques.length - 1));
+    const b = bloques[indice];
+    return { indice, nombre: b?.nombre || `Escenario ${indice + 1}`, contexto: b?.contexto ?? '' };
+  });
+  /** Solo las posiciones que el docente arrastró; las demás las reparte la escena según cuántos hay. */
+  posicionesEscena = computed(() => this.personas().map(p => (p.movida ? { x: p.x, y: p.y } : null)));
+  /** Lo que entendió el motor de cada personaje ("Madre · 38 años"), por índice. */
+  etiquetas = signal<Record<number, string>>({});
+  /** Aviso cuando no hay descripciones y el motor detecta personajes en el texto del caso. */
+  detectados = signal('');
+  // ---- Vista previa (no guarda nada ni llama al backend al elegir opciones)
+  /** Copia del caso al abrir la vista previa (lo escrito en el editor, aunque no esté guardado). */
+  vistaAbierta = signal<Caso | null>(null);
+  /** Resultados de la vista previa (calculados en el navegador al pulsar "Finalizar"). */
+  resultadosVista = signal<ResultadosNovela | null>(null);
+  calcularResultados = calcularResultados;
+  private botonVista?: HTMLElement;
+  // ---- Insertar diálogo
+  readonly ayudaDialogo = "Para que un personaje hable, escribe 'Nombre: lo que dice' o usa Insertar diálogo. Lo demás lo cuenta el narrador.";
+  insertando = signal<string | null>(null);
+  dialogoPersonaje = '';
+  dialogoTexto = '';
+  private editorDesarrollo = viewChild<EditorTextoComponent>('editorDesarrollo');
+  private ayudas: Record<number, AyudaDescripcion> = {};
+  private generado: Record<number, string> = {};
+  private esperaEscena?: ReturnType<typeof setTimeout>;
   personas = signal<PersonaEscena[]>([
     { id: 'p1', nombre: 'Persona 1', color: '#3ee0ff', x: 8, y: 58 },
     { id: 'p2', nombre: 'Persona 2', color: '#ffba20', x: 30, y: 58 },
@@ -432,10 +611,14 @@ export class EditorCasoComponent {
     this.claveBoceto = `dilema-boceto-${id ?? 'nuevo'}`;
     const guardado = localStorage.getItem(this.claveBoceto);
     if (guardado) {
-      const boceto = JSON.parse(guardado) as { fondo: string; personas: PersonaEscena[] };
-      this.fondoActivo.set(boceto.fondo);
-      this.personas.set(boceto.personas);
+      try {
+        // El "fondo" de bocetos anteriores era un degradado CSS: ya no se usa; ahora se guarda fondoManual.
+        const boceto = JSON.parse(guardado) as { fondoManual?: string | null; personas?: PersonaEscena[] };
+        if (boceto.fondoManual) this.fondoManual.set(boceto.fondoManual);
+        if (Array.isArray(boceto.personas) && boceto.personas.length) this.personas.set(boceto.personas);
+      } catch { localStorage.removeItem(this.claveBoceto); }
     }
+    this.refrescarEscena();
     if (id) {
       this.http.get<Caso>(`/api/docente/casos/${id}`).subscribe({
         next: (dato) => {
@@ -444,10 +627,126 @@ export class EditorCasoComponent {
             ...persona,
             nombre: this.caso.personajes[indice]?.nombre || persona.nombre
           })));
+          this.refrescarEscena();
         },
         error: (falla) => this.error.set(mensajeError(falla))
       });
     }
+  }
+  irA(paso: string) {
+    this.activo.set(paso);
+    // Los escenarios y textos se editan en otras pestañas: al entrar a la escena se toma la versión actual.
+    if (paso === 'escena') this.refrescarEscena();
+  }
+  /** Copia el caso actual para la escena (la escena solo se entera de los cambios por estas copias). */
+  refrescarEscena() {
+    clearTimeout(this.esperaEscena);
+    this.casoEscena.set({
+      id: this.caso.id ?? null, nombre: this.caso.nombre,
+      desarrolloSituacional: this.caso.desarrolloSituacional, contexto: this.caso.contexto,
+      bloques: this.caso.bloques.map((b) => ({ nombre: b.nombre, contexto: b.contexto }))
+    });
+    this.personajesEscena.set((this.caso.personajes ?? []).map((p) => ({
+      nombre: p.nombre ?? '', descripcion: p.descripcion ?? '', escenarios: [...(p.escenarios ?? [])]
+    })));
+  }
+  /** Nombre o descripción cambiaron: el modelo se actualiza tras 600 ms sin escribir. */
+  cambioPersonaje(indice: number) {
+    this.sincronizarPersona(indice);
+    clearTimeout(this.esperaEscena);
+    this.esperaEscena = setTimeout(() => this.refrescarEscena(), 600);
+  }
+  alternarEscenario(indice: number, bloque: number) {
+    const personaje = this.caso.personajes[indice];
+    if (!personaje) return;
+    const lista = new Set(personaje.escenarios ?? []);
+    if (lista.has(bloque)) lista.delete(bloque); else lista.add(bloque);
+    personaje.escenarios = [...lista].sort((a, b) => a - b);
+    this.refrescarEscena();
+  }
+  ayuda(indice: number): AyudaDescripcion {
+    return this.ayudas[indice] ??= { genero: '', edad: '', rol: '' };
+  }
+  /**
+   * Las listas de género, edad y rol escriben una frase al inicio de la descripción (por ejemplo
+   * "madre de 38 años"); lo que el docente escribió después se conserva.
+   */
+  escribirAyuda(indice: number, campo: keyof AyudaDescripcion, valor: string) {
+    const personaje = this.caso.personajes[indice];
+    if (!personaje) return;
+    const ayuda = this.ayuda(indice);
+    ayuda[campo] = valor;
+    const genero = ayuda.genero || GENERO_DEL_ROL[ayuda.rol] || '';
+    const rol = ROLES_AYUDA.find((r) => r.id === ayuda.rol);
+    const quien = rol ? (genero === 'hombre' ? rol.m : rol.f) : (genero === 'hombre' ? 'hombre' : genero === 'mujer' ? 'mujer' : '');
+    const frase = [quien, ayuda.edad ? `${quien ? 'de ' : ''}${ayuda.edad} años` : ''].filter(Boolean).join(' ');
+    let resto = (personaje.descripcion ?? '').trim();
+    const previo = this.generado[indice];
+    if (previo && resto.startsWith(previo)) resto = resto.slice(previo.length).replace(/^[\s,;.]+/, '');
+    personaje.descripcion = [frase, resto].filter(Boolean).join(', ');
+    this.generado[indice] = frase;
+    this.cambioPersonaje(indice);
+  }
+  recibirElenco(asignados: Asignacion[]) {
+    const etiquetas: Record<number, string> = {};
+    for (const a of asignados) if (a.personaje.indice >= 0) etiquetas[a.personaje.indice] = a.perfil.etiqueta;
+    this.etiquetas.set(etiquetas);
+    const detectados = asignados.filter((a) => a.personaje.detectado);
+    this.detectados.set(detectados.length
+      ? 'Aún no describes a ningún personaje. Con el texto del caso, el estudiante verá: '
+        + detectados.map((a) => `${a.personaje.nombre} (${a.perfil.etiqueta})`).join(', ') + '.'
+      : '');
+  }
+  abrirVistaPrevia(boton: HTMLElement) {
+    this.botonVista = boton;
+    this.vistaAbierta.set(structuredClone(this.caso));
+    this.resultadosVista.set(null);
+    this.musica.iniciar();
+    document.body.style.overflow = 'hidden';
+    // Foco en el reproductor para usarlo con teclado.
+    setTimeout(() => document.querySelector<HTMLElement>('.modal-vista .reproductor')?.focus(), 0);
+  }
+  cerrarVistaPrevia() {
+    this.musica.detener();
+    this.vistaAbierta.set(null);
+    document.body.style.overflow = '';
+    this.botonVista?.focus();
+  }
+  /** Personajes que pueden hablar: los que tienen descripción. */
+  hablantes() {
+    return (this.caso.personajes ?? []).filter((p) => (p.descripcion ?? '').trim())
+      .map((p, i) => (p.nombre ?? '').trim() || `Persona ${i + 1}`);
+  }
+  abrirInsertar(destino: string) {
+    this.insertando.set(this.insertando() === destino ? null : destino);
+    this.dialogoTexto = '';
+    if (!this.hablantes().includes(this.dialogoPersonaje)) this.dialogoPersonaje = this.hablantes()[0] ?? '';
+  }
+  /** Inserta "Nombre: texto" en una línea nueva donde estaba el cursor. Se guarda en el mismo campo de siempre. */
+  insertarDialogo(destino: 'desarrollo' | { bloque: number; area: HTMLTextAreaElement }) {
+    const texto = this.dialogoTexto.trim();
+    if (!this.dialogoPersonaje || !texto) return;
+    const linea = `${this.dialogoPersonaje}: ${texto}`;
+    if (destino === 'desarrollo') {
+      this.editorDesarrollo()?.insertarLinea(linea);
+    } else {
+      const bloque = this.caso.bloques[destino.bloque];
+      if (!bloque) return;
+      const valor = bloque.contexto ?? '';
+      const pos = Math.min(destino.area.selectionStart ?? valor.length, valor.length);
+      const antes = valor.slice(0, pos), despues = valor.slice(pos);
+      const prefijo = antes && !antes.endsWith('\n') ? '\n' : '';
+      const sufijo = despues && !despues.startsWith('\n') ? '\n' : '';
+      bloque.contexto = antes + prefijo + linea + sufijo + despues;
+      const cursor = (antes + prefijo + linea).length;
+      setTimeout(() => { destino.area.focus(); destino.area.setSelectionRange(cursor, cursor); });
+    }
+    this.dialogoTexto = '';
+    this.insertando.set(null);
+  }
+  moverPersona(evento: { indice: number; x: number; y: number }) {
+    this.personas.update((lista) => lista.map((p, i) => i === evento.indice ? { ...p, x: evento.x, y: evento.y, movida: true } : p));
+    this.guardarBoceto();
   }
   bloqueado() {
     return !this.auth.puede('EDITAR') || this.caso.estado === 'PUBLICADO' || this.caso.estado === 'ARCHIVADO';
@@ -492,24 +791,7 @@ export class EditorCasoComponent {
   marcar(pregunta: { opciones: { correcta: boolean }[] }, indice: number) {
     pregunta.opciones.forEach((opcion, i) => opcion.correcta = i === indice);
   }
-  elegirFondo(id: string) { this.fondoActivo.set(id); this.guardarBoceto(); }
-  arrastrar(evento: PointerEvent, persona: PersonaEscena) {
-    const stage = (evento.currentTarget as HTMLElement).parentElement;
-    if (!stage) return;
-    const mover = (e: PointerEvent) => {
-      const caja = stage.getBoundingClientRect();
-      persona.x = Math.min(78, Math.max(0, ((e.clientX - caja.left) / caja.width) * 100 - 8));
-      persona.y = Math.min(70, Math.max(0, ((e.clientY - caja.top) / caja.height) * 100 - 10));
-      this.personas.set([...this.personas()]);
-      this.guardarBoceto();
-    };
-    const soltar = () => {
-      window.removeEventListener('pointermove', mover);
-      window.removeEventListener('pointerup', soltar);
-    };
-    window.addEventListener('pointermove', mover);
-    window.addEventListener('pointerup', soltar);
-  }
+  elegirFondo(id: string | null) { this.fondoManual.set(id); this.guardarBoceto(); }
   guardar() {
     this.error.set('');
     const pedido = this.caso.id
@@ -536,7 +818,7 @@ export class EditorCasoComponent {
     return dato;
   }
   private guardarBoceto() {
-    localStorage.setItem(this.claveBoceto, JSON.stringify({ fondo: this.fondoActivo(), personas: this.personas() }));
+    localStorage.setItem(this.claveBoceto, JSON.stringify({ fondoManual: this.fondoManual(), personas: this.personas() }));
   }
 }
 

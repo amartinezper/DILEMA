@@ -1,0 +1,93 @@
+{
+  "nombre": "Diana: atención en la comisaría de familia",
+  "desarrolloSituacional": "<p>Diana tiene 34 años, dos hijos pequeños y vive en un barrio de Cali.</p><p>Su vecina, Marleny, escuchó gritos varias noches y la acompañó a la comisaría de familia.</p><p>Diana: Me da miedo que él se entere de que vine.</p><p>La comisaria Gloria la recibe junto con el patrullero Wilson, de la Policía de Infancia y Adolescencia.</p><p>Gloria: Aquí está segura. Vamos a escucharla y a protegerla a usted y a sus hijos.</p>",
+  "contexto": "<p><strong>Advertencia de contenido:</strong> Este caso trata sobre violencia intrafamiliar contra una mujer. No incluye descripciones de agresiones: se centra en la atención y la protección. Si el tema te afecta, puedes hablarlo con tu docente o con bienestar universitario.</p><p>Eres practicante de psicología en una comisaría de familia. Acompañas la atención de una mujer víctima de violencia intrafamiliar: tu papel es escuchar sin revictimizar, informarle sus derechos y apoyar las medidas de protección.</p>",
+  "tiempoEstimadoMin": 45,
+  "sensible": true,
+  "advertencia": "Este caso trata sobre violencia intrafamiliar contra una mujer. No incluye descripciones de agresiones: se centra en la atención y la protección. Si el tema te afecta, puedes hablarlo con tu docente o con bienestar universitario.",
+  "repartoRubrica": "PONDERADA",
+  "rubrica": [],
+  "bloques": [
+    {
+      "nombre": "Comisaría de familia en la mañana",
+      "contexto": "Diana se sienta en el borde de la silla de la oficina y baja la mirada.\nGloria: Usted no tiene la culpa de lo que está pasando.\nDiana: Él dice que si lo denuncio me quita a los niños.\nDiana llora en silencio mientras la comisaria le explica sus derechos.",
+      "preguntas": [
+        {
+          "enunciado": "<p>¿Cuál debe ser la actitud del practicante durante la entrevista?</p>",
+          "pista": "Piensa en qué preguntas pueden hacerla sentir juzgada.",
+          "criterio": "Atención sin revictimización",
+          "peso": 2.0,
+          "opciones": [
+            { "texto": "Escuchar con empatía, creerle, no pedir detalles innecesarios y explicarle con claridad sus derechos y las medidas de protección.", "correcta": true,
+              "explicacion": "Evita la revictimización y le da información para que pueda decidir.",
+              "fundamento": "La Ley 1257 de 2008 reconoce el derecho de las mujeres víctimas a recibir información clara y una atención que no las revictimice." },
+            { "texto": "Preguntarle por qué no se ha ido de la casa antes.", "correcta": false,
+              "explicacion": "La pregunta la culpabiliza y desconoce las barreras que viven las víctimas.",
+              "fundamento": "La atención con enfoque de género evita los juicios sobre la víctima." },
+            { "texto": "Proponerle una reunión con su pareja para que hablen y se arreglen.", "correcta": false,
+              "explicacion": "No se debe promover el encuentro con el agresor; primero va la protección.",
+              "fundamento": "La Ley 1257 de 2008 reconoce el derecho de la mujer a decidir si se enfrenta o no con el agresor." },
+            { "texto": "Decirle que lo piense mejor y que vuelva cuando esté segura.", "correcta": false,
+              "explicacion": "Aplazar la atención puede aumentar el riesgo.",
+              "fundamento": "En violencia intrafamiliar las medidas de protección se activan sin demora (Ley 294 de 1996)." }
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Visita a la casa de Diana en la tarde",
+      "contexto": "En la tarde, el patrullero Wilson acompaña una visita a la casa de Diana.\nLos niños juegan en la sala y Marleny se acerca desde la casa de al lado.\nWilson: Venimos a verificar que los niños estén bien y a explicarles el plan de protección.\nMarleny: Yo puedo recibirlos en mi casa si algún día se sienten en peligro.\nDiana sonríe con alivio por primera vez.",
+      "preguntas": [
+        {
+          "enunciado": "<p>¿Qué se debe priorizar en la visita?</p>",
+          "pista": null,
+          "criterio": "Verificación de derechos y red de apoyo",
+          "peso": 1.5,
+          "opciones": [
+            { "texto": "Verificar el bienestar de los niños, revisar con Diana un plan de seguridad y reconocer a la vecina como red de apoyo.", "correcta": true,
+              "explicacion": "Une la protección de los niños con los recursos de la comunidad que Diana acepta.",
+              "fundamento": "La Ley 1098 de 2006 ordena verificar la garantía de los derechos de los niños cuando hay riesgo en su entorno familiar." },
+            { "texto": "Interrogar a los niños sobre todo lo que han visto en la casa.", "correcta": false,
+              "explicacion": "Puede revictimizarlos; su escucha la hacen profesionales con técnicas adecuadas.",
+              "fundamento": "Los niños deben ser escuchados con técnicas que eviten la revictimización." },
+            { "texto": "Pedirle a Marleny que no se meta, para proteger la intimidad de la familia.", "correcta": false,
+              "explicacion": "Desconoce una red de apoyo valiosa que Diana aceptó.",
+              "fundamento": "Las redes comunitarias son un factor de protección frente a la violencia." },
+            { "texto": "Cerrar el caso porque hoy la casa está tranquila.", "correcta": false,
+              "explicacion": "Un día tranquilo no elimina el riesgo; el seguimiento hace parte de la protección.",
+              "fundamento": "Las medidas de protección requieren seguimiento por parte de la autoridad." }
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Calle del barrio una semana después",
+      "contexto": "Una semana después, Diana camina con Marleny por la calle del barrio.\nDiana: Ya tengo la medida de protección, pero a veces me da miedo salir.\nMarleny: No está sola, aquí en la cuadra estamos pendientes.\nDiana respira profundo y agradece el apoyo.",
+      "preguntas": [
+        {
+          "enunciado": "<p>¿Qué seguimiento debe proponer el practicante?</p>",
+          "pista": "La medida de protección es un paso, no el final.",
+          "criterio": "Seguimiento y acompañamiento psicosocial",
+          "peso": 1.5,
+          "opciones": [
+            { "texto": "Acordar citas de acompañamiento psicosocial, revisar el plan de seguridad y orientarla sobre a quién acudir si la medida se incumple.", "correcta": true,
+              "explicacion": "Sostiene la protección y fortalece la autonomía de Diana.",
+              "fundamento": "La Ley 1257 de 2008 contempla la atención y el acompañamiento a las mujeres víctimas de violencia." },
+            { "texto": "No hacer nada más, porque ya tiene la medida de protección.", "correcta": false,
+              "explicacion": "Una medida sin seguimiento puede incumplirse sin que nadie lo note.",
+              "fundamento": "La protección se acompaña de seguimiento y de atención integral." },
+            { "texto": "Recomendarle que se vaya de la ciudad, sin preguntarle qué quiere.", "correcta": false,
+              "explicacion": "Las decisiones se construyen con ella, respetando su autonomía.",
+              "fundamento": "La atención respeta la autonomía y las decisiones informadas de la mujer." }
+          ]
+        }
+      ]
+    }
+  ],
+  "personajes": [
+    { "nombre": "Diana", "descripcion": "Mujer, 34 años", "escenarios": [0, 1, 2] },
+    { "nombre": "Gloria", "descripcion": "Comisaria de familia, 48 años", "escenarios": [0] },
+    { "nombre": "Wilson", "descripcion": "Policía de infancia y adolescencia, 32 años", "escenarios": [1] },
+    { "nombre": "Marleny", "descripcion": "Vecina, 61 años", "escenarios": [1, 2] }
+  ]
+}

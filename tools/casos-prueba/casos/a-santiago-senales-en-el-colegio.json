@@ -1,0 +1,93 @@
+{
+  "nombre": "Santiago: señales de alerta en el colegio",
+  "desarrolloSituacional": "<p>Santiago tiene 8 años, cursa tercero de primaria y vive con su madre, Yolanda, que trabaja en turnos largos.</p><p>Desde hace un mes llega cansado, no entrega tareas y se queda solo en el descanso.</p><p>El docente Hernán notó un morado en el brazo del niño y se lo contó a la orientadora Patricia.</p><p>Hernán: Santiago antes participaba mucho, ahora casi no habla.</p><p>Patricia: Vamos a escucharlo con calma y a seguir la ruta del colegio.</p>",
+  "contexto": "<p>Eres practicante de psicología en el equipo de orientación escolar de un colegio público. Tu tarea es reconocer señales de posible maltrato, escuchar sin revictimizar y activar la ruta de atención del colegio.</p>",
+  "tiempoEstimadoMin": 35,
+  "sensible": false,
+  "advertencia": "",
+  "repartoRubrica": "PONDERADA",
+  "rubrica": [],
+  "bloques": [
+    {
+      "nombre": "Salón de clase del colegio",
+      "contexto": "Es lunes en la mañana y la clase de matemáticas ya empezó.\nSantiago llega con retraso, con el uniforme sucio, y baja la mirada al sentarse.\nHernán: Santiago, ¿todo bien? Te guardé tu cuaderno.\nSantiago: Sí, profe, es que no dormí bien.\nSantiago se asusta cuando Hernán se acerca y se cubre el brazo con la manga.",
+      "preguntas": [
+        {
+          "enunciado": "<p>¿Qué debe hacer el docente en este momento?</p>",
+          "pista": "Piensa en proteger al niño sin exponerlo frente al grupo.",
+          "criterio": "Protección inmediata del niño",
+          "peso": 1.5,
+          "opciones": [
+            { "texto": "Hablar con Santiago en privado, con calma y sin presionarlo, y avisar hoy mismo a la orientadora.", "correcta": true,
+              "explicacion": "Cuida al niño, no lo expone y pone en marcha la ruta del colegio el mismo día.",
+              "fundamento": "La Ley 1098 de 2006 (Código de la Infancia y la Adolescencia) obliga a las instituciones educativas a proteger a los niños y a reportar a las autoridades las situaciones de maltrato que detecten." },
+            { "texto": "Preguntarle delante de la clase qué le pasó en el brazo.", "correcta": false,
+              "explicacion": "Lo expone frente a sus compañeros y puede hacer que se cierre o que se sienta avergonzado.",
+              "fundamento": "El interés superior del niño exige proteger su intimidad y su dignidad." },
+            { "texto": "Esperar unas semanas para ver si mejora antes de decir algo.", "correcta": false,
+              "explicacion": "Demorar la alerta puede dejar al niño expuesto a más riesgo.",
+              "fundamento": "La Ley 1620 de 2013 define una ruta de atención en el colegio para actuar a tiempo ante situaciones que afectan a los estudiantes." },
+            { "texto": "Llamar a la madre para decirle que sospecha que lo están maltratando.", "correcta": false,
+              "explicacion": "Sin conocer quién causa el daño, avisar así puede aumentar el riesgo; la comunicación con la familia se hace desde orientación siguiendo la ruta.",
+              "fundamento": "La ruta institucional define quién informa a la familia y cuándo, para no poner en riesgo al niño." }
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Oficina de orientación del colegio",
+      "contexto": "Patricia recibe a Santiago en la oficina de orientación, con colores sobre la mesa.\nPatricia: Aquí puedes hablar tranquilo, nadie te va a regañar.\nSantiago dibuja en silencio y luego llora.\nSantiago: Cuando mi mamá no está, el señor que vive con nosotros se enoja mucho.\nPatricia respira y le habla con calma.",
+      "preguntas": [
+        {
+          "enunciado": "<p>¿Cuál es la actuación más adecuada de la orientadora?</p>",
+          "pista": "El niño confió en ella: ¿qué puede prometer y qué no?",
+          "criterio": "Escucha y activación de la ruta",
+          "peso": 2.0,
+          "opciones": [
+            { "texto": "Escuchar sin interrogar, agradecerle la confianza, no prometerle secreto y reportar el caso a la autoridad competente (ICBF o comisaría de familia).", "correcta": true,
+              "explicacion": "Valida lo que el niño cuenta, no lo revictimiza y activa la protección.",
+              "fundamento": "La Ley 1098 de 2006 y la ruta de atención de la Ley 1620 de 2013 indican que, ante un presunto maltrato, el colegio informa a las autoridades competentes." },
+            { "texto": "Prometerle a Santiago que no le contará a nadie lo que dijo.", "correcta": false,
+              "explicacion": "Es una promesa que no se puede cumplir, porque proteger al niño obliga a informar.",
+              "fundamento": "El Código Deontológico del psicólogo (Ley 1090 de 2006) permite levantar la confidencialidad cuando hay un riesgo evidente para la persona." },
+            { "texto": "Pedirle todos los detalles de lo que le ha pasado para dejar el relato completo por escrito.", "correcta": false,
+              "explicacion": "Interrogar a un niño puede revictimizarlo; la indagación la hacen profesionales especializados.",
+              "fundamento": "La escucha de niños en situaciones de posible maltrato debe evitar la revictimización y repetir el relato lo menos posible." },
+            { "texto": "Llamar al señor que vive con ellos para escuchar su versión.", "correcta": false,
+              "explicacion": "Puede poner en riesgo al niño y no le corresponde al colegio investigar.",
+              "fundamento": "La protección del niño es lo primero; la investigación corresponde a las autoridades." }
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Pasillo del colegio a la hora de salida",
+      "contexto": "A la hora de salida, Yolanda llega por Santiago y la orientadora le pide unos minutos.\nYolanda se ve cansada y preocupada.\nYolanda: ¿Pasó algo con el niño? Yo trabajo todo el día y no alcanzo a estar pendiente.\nPatricia: Queremos apoyarlos. El colegio activó la ruta de protección para Santiago y le vamos a explicar cómo sigue.\nYolanda baja la mirada y llora en silencio.",
+      "preguntas": [
+        {
+          "enunciado": "<p>¿Cómo debe orientar la conversación con la madre?</p>",
+          "pista": null,
+          "criterio": "Trabajo con la familia",
+          "peso": 1.5,
+          "opciones": [
+            { "texto": "Escucharla, explicarle que se activó la ruta de protección para Santiago y orientarla sobre los apoyos disponibles, sin culparla ni discutir los detalles del relato del niño.", "correcta": true,
+              "explicacion": "Informa con respeto, no expone lo que contó el niño y fortalece a la madre como red de protección.",
+              "fundamento": "La Ley 1098 de 2006 establece la corresponsabilidad de la familia, la sociedad y el Estado en la protección de los niños." },
+            { "texto": "Decirle que ella es la culpable por no cuidar a su hijo.", "correcta": false,
+              "explicacion": "Culpabilizar rompe la alianza con la familia y no protege al niño.",
+              "fundamento": "La intervención con familias se basa en el respeto y la corresponsabilidad, no en el juicio." },
+            { "texto": "Contarle todo lo que dijo Santiago para que ella confronte al señor esa misma noche.", "correcta": false,
+              "explicacion": "Puede aumentar el riesgo para el niño y para la madre.",
+              "fundamento": "La información de la ruta se maneja cuidando siempre la seguridad del niño." }
+          ]
+        }
+      ]
+    }
+  ],
+  "personajes": [
+    { "nombre": "Santiago", "descripcion": "Niño, 8 años", "escenarios": [0, 1] },
+    { "nombre": "Hernán", "descripcion": "Docente, 40 años", "escenarios": [0] },
+    { "nombre": "Patricia", "descripcion": "Orientadora escolar, 45 años", "escenarios": [1, 2] },
+    { "nombre": "Yolanda", "descripcion": "Madre, 36 años", "escenarios": [2] }
+  ]
+}

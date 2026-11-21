@@ -49,6 +49,39 @@ EDADES = {
     "7564841051120285228": "70-80", "8163763284193467487": "25-32",
 }
 
+# Ropa de un oficio (revisada mirando cada modelo de cuerpo entero). El motor solo usa "salud" y "policia"
+# para personajes con ese rol; para roles familiares o sin rol prefiere null y luego "formal".
+ROPA_OFICIO = {
+    # salud: bata o uniforme médico
+    "6797633304401841959": "salud",   # H05-02 鷲夫: abrigo blanco largo tipo bata
+    "5298444106399367485": "salud",   # H07-02 DR Iridium: bata blanca
+    "6711556864964286505": "salud",   # M02-04 Eliza Torland: uniforme rosado de enfermera con cofia
+    "10575525746729287": "salud",     # M04-01: bata blanca sobre blusa azul
+    "21280177758786328": "salud",     # M07-01 クスノキ: bata blanca larga
+    "2060342718675092670": "salud",   # M07-02 Helen: bata blanca
+    # policia: uniforme
+    "7911164810680359787": "policia", # H06-03 tanpatu_suit: gorra de plato con insignia, traje y corbata
+    # formal: traje
+    "1610687958138132094": "formal",  # H06-01 traje negro
+    "3877179030975082588": "formal",  # H06-02 traje negro, gafas
+    "2868960598556593456": "formal",  # H06-04 traje azul marino
+    "3916861091887700785": "formal",  # H06-05 traje negro, corbata roja
+    "6081123482579224685": "formal",  # H09-01 traje azul marino
+    "7564841051120285228": "formal",  # H10-01 traje oscuro
+    "2290888234298164700": "formal",  # M06-02 Yuzuki: traje negro con falda
+    "6907289742214477700": "formal",  # M06-03 Teruha: bolero y falda lápiz
+    "6295857748080121255": "formal",  # M08-02 saco y falda negros
+    # escolar: uniforme de colegio
+    "608323607310517415": "escolar",  # H02-02 chaleco, camisa y moño
+    "2705665963485579330": "escolar", # H03-01 chaleco y camisa
+    "4746755001017872944": "escolar", # H03-03 camisa blanca de manga corta y corbata
+    "5728628125082522478": "escolar", # H03-04 chaleco y camisa
+    "5265854791577408922": "escolar", # H04-03 chaleco, pantalón corto y medias altas
+    "8163763284193467487": "escolar", # H11-01 chaleco y corbata
+    "2343542119649989448": "escolar", # M02-03 chaleco, falda plisada y moño
+    "7057403092053516903": "escolar", # M02-05 ビビ: chaleco, falda a cuadros y moño
+}
+
 # Grupos casi idénticos: el motor no debe ponerlos en el mismo caso.
 CASI_IGUALES = [
     {"6081123482579224685", "2868960598556593456"},  # mismas texturas de traje, corbata y cuerpo
@@ -229,7 +262,7 @@ def main(hub, salida, solo):
         ent = {
             "archivo": archivo_de[vid], "id_elenco": r["id_base"], "extra": r["id_elenco"] == "extra",
             "genero": "mujer" if r["id_base"].startswith("M") else "hombre",
-            "edad_aparente": EDADES.get(vid), "rol": ROLES[r["id_base"]],
+            "edad_aparente": EDADES.get(vid), "rol": ROLES[r["id_base"]], "ropa_oficio": ROPA_OFICIO.get(vid),
             "vroid_hub_id": vid, "nombre": r["nombre"], "autor": r["autor"], "pide_credito": bool(r["pide_credito"]),
             "licencia": lic, "permite_redistribuir": redis,
             "excepcion_licencia": bool(r.get("excepcion")),

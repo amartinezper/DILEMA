@@ -1,0 +1,89 @@
+{
+  "nombre": "Don Álvaro: un adulto mayor solo en casa",
+  "desarrolloSituacional": "<p>Don Álvaro tiene 78 años y vive solo en una casa vieja de un barrio de Bucaramanga.</p><p>Su hija, Claudia, vive al otro lado de la ciudad y casi no lo visita.</p><p>Gladys, la líder comunitaria, notó que el señor ya no sale a comprar el pan y llamó a la oficina de trabajo social de la alcaldía.</p><p>Gladys: Don Álvaro está muy flaco y la casa huele a encierro.</p><p>Álvaro: No quiero ser una carga para nadie, mija.</p>",
+  "contexto": "<p>Eres practicante de trabajo social en la alcaldía. Atiendes un posible caso de abandono de una persona mayor: debes escuchar su voluntad, involucrar a la familia y activar las redes de apoyo comunitarias e institucionales.</p>",
+  "tiempoEstimadoMin": 35,
+  "sensible": false,
+  "advertencia": "",
+  "repartoRubrica": "PONDERADA",
+  "rubrica": [],
+  "bloques": [
+    {
+      "nombre": "Calle del barrio en la mañana",
+      "contexto": "Gladys y el practicante de trabajo social caminan por la calle del barrio hasta la casa de don Álvaro.\nÉl está sentado en la puerta, con la misma ropa de varios días.\nGladys: Buenos días, don Álvaro, le traje un tinto y vine con un muchacho de la alcaldía.\nÁlvaro: Gracias, mija, hace días no hablo con nadie.\nDon Álvaro sonríe, pero se ve muy cansado.",
+      "preguntas": [
+        {
+          "enunciado": "<p>¿Cómo debe iniciar el contacto el practicante?</p>",
+          "pista": "Don Álvaro es quien decide si conversa o no.",
+          "criterio": "Primer contacto respetuoso",
+          "peso": 1.5,
+          "opciones": [
+            { "texto": "Presentarse, pedir permiso para conversar y escuchar cómo es su día a día, respetando sus tiempos.", "correcta": true,
+              "explicacion": "El respeto y el consentimiento construyen confianza con la persona mayor.",
+              "fundamento": "La Ley 1251 de 2008 protege la dignidad y la autonomía de las personas mayores." },
+            { "texto": "Entrar a revisar la casa sin pedirle permiso.", "correcta": false,
+              "explicacion": "Vulnera su intimidad y su autonomía.",
+              "fundamento": "La intervención con personas mayores respeta su autonomía y su derecho a decidir." },
+            { "texto": "Hablar solo con Gladys sobre él, como si no estuviera presente.", "correcta": false,
+              "explicacion": "Lo trata como un objeto de la intervención y no como una persona con derechos.",
+              "fundamento": "La persona mayor es sujeto de derechos y debe ser escuchada." }
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Sala de la casa de don Álvaro",
+      "contexto": "Dentro de la casa hay poca comida y varios medicamentos vencidos sobre la mesa.\nGladys logra comunicarse con Claudia, que llega esa misma tarde.\nClaudia: Yo trabajo todo el día y no tengo cómo cuidarlo, me siento muy culpable.\nÁlvaro: No quiero ir a un ancianato, esta es mi casa.\nClaudia llora y don Álvaro baja la mirada.",
+      "preguntas": [
+        {
+          "enunciado": "<p>¿Qué debe hacer el practicante con la familia?</p>",
+          "pista": null,
+          "criterio": "Corresponsabilidad familiar y autonomía",
+          "peso": 2.0,
+          "opciones": [
+            { "texto": "Facilitar un diálogo sin culpas para acordar apoyos concretos (visitas, alimentación, control médico) y orientarlos sobre los programas para personas mayores del municipio, respetando la voluntad de don Álvaro.", "correcta": true,
+              "explicacion": "Combina la corresponsabilidad de la familia con la autonomía de don Álvaro.",
+              "fundamento": "La Ley 1251 de 2008 establece deberes de la familia, la sociedad y el Estado en la protección de las personas mayores." },
+            { "texto": "Decidir su traslado a un hogar geriátrico porque la hija no puede cuidarlo.", "correcta": false,
+              "explicacion": "Desconoce la voluntad de don Álvaro y otras alternativas de apoyo.",
+              "fundamento": "Las decisiones sobre la persona mayor respetan su voluntad y sus derechos." },
+            { "texto": "Regañar a Claudia por abandonar a su padre.", "correcta": false,
+              "explicacion": "Culpabilizar cierra el diálogo y no resuelve el cuidado.",
+              "fundamento": "La intervención familiar busca acuerdos, no culpables." },
+            { "texto": "Dejar las cosas como están, porque él quiere quedarse solo.", "correcta": false,
+              "explicacion": "Hay señales de descuido que requieren apoyo, aunque se respete su decisión de vivir en su casa.",
+              "fundamento": "La familia y el Estado deben actuar ante situaciones de abandono de las personas mayores." }
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Parque cercano un mes después",
+      "contexto": "Un mes después, don Álvaro asiste a la actividad para personas mayores en el parque cercano.\nClaudia lo visita cada domingo y Gladys pasa a saludarlo todos los días.\nÁlvaro: Aquí me río con los otros viejitos, ya no me siento tan solo.\nClaudia: Papá, el domingo le traigo a los nietos.\nDon Álvaro ríe contento.",
+      "preguntas": [
+        {
+          "enunciado": "<p>¿Cómo se debe evaluar el avance del caso?</p>",
+          "pista": "¿Quiénes deben participar en esa revisión?",
+          "criterio": "Seguimiento",
+          "peso": 1.5,
+          "opciones": [
+            { "texto": "Revisar con don Álvaro, Claudia y Gladys si se cumplen los acuerdos, cómo está su salud y si participa en la red comunitaria.", "correcta": true,
+              "explicacion": "El seguimiento con todos los involucrados muestra si la situación mejoró de verdad.",
+              "fundamento": "El seguimiento es parte del proceso de intervención en trabajo social y permite ajustar el plan." },
+            { "texto": "Cerrar el caso porque don Álvaro ya sonríe.", "correcta": false,
+              "explicacion": "Un buen momento no garantiza que los acuerdos se sostengan.",
+              "fundamento": "El cierre de un caso se basa en objetivos verificados, no en una impresión." },
+            { "texto": "Preguntarle solo a Claudia, que es la responsable.", "correcta": false,
+              "explicacion": "Deja por fuera la voz de don Álvaro y de su red comunitaria.",
+              "fundamento": "La persona mayor participa en las decisiones sobre su propia vida." }
+          ]
+        }
+      ]
+    }
+  ],
+  "personajes": [
+    { "nombre": "Álvaro", "descripcion": "Abuelo, 78 años", "escenarios": [0, 1, 2] },
+    { "nombre": "Claudia", "descripcion": "Hija, 50 años", "escenarios": [1, 2] },
+    { "nombre": "Gladys", "descripcion": "Líder comunitaria, 57 años", "escenarios": [0, 1, 2] }
+  ]
+}
