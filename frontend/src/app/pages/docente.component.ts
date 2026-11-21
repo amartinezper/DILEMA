@@ -466,8 +466,11 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
         @if (activo() === 'estado') {
           <section class="card stack">
             <p class="kicker">{{ caso.estado || 'SIN GUARDAR' }}</p>
-            @if (!bloqueado()) { <button mat-flat-button color="primary" type="button" (click)="guardar()">Guardar borrador</button> }
-            @if (caso.id) { <button mat-stroked-button type="button" (click)="duplicar()">Duplicar</button> }
+            @if (!bloqueado()) { <button class="btn-oscuro" type="button" (click)="guardar()">Guardar borrador</button> }
+            @if (caso.id) { <button class="btn-suave" type="button" (click)="duplicar()">Duplicar</button> }
+            @if (puedePublicar()) { <button class="btn-oscuro" type="button" (click)="transicion('publicar')">Publicar</button> }
+            @if (puedeVolverBorrador()) { <button class="btn-suave" type="button" (click)="transicion('despublicar')">Volver a borrador</button> }
+            @if (puedeArchivar()) { <button class="btn-suave" type="button" (click)="transicion('archivar')">Archivar</button> }
           </section>
         }
         @if (vistaPrevia()) {
@@ -479,8 +482,11 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
           </section>
         }
         <div class="row">
-          @if (!bloqueado()) { <button mat-stroked-button type="button" (click)="guardar()">Guardar borrador</button> }
-          <button mat-stroked-button type="button" (click)="vistaPrevia.set(!vistaPrevia())">Previsualizar</button>
+          @if (!bloqueado()) { <button class="btn-suave" type="button" (click)="guardar()">Guardar borrador</button> }
+          <button class="btn-suave" type="button" (click)="vistaPrevia.set(!vistaPrevia())">Previsualizar</button>
+          @if (puedePublicar()) { <button class="btn-oscuro" type="button" (click)="transicion('publicar')">Publicar</button> }
+          @if (puedeVolverBorrador()) { <button class="btn-suave" type="button" (click)="transicion('despublicar')">Volver a borrador</button> }
+          @if (puedeArchivar()) { <button class="btn-suave" type="button" (click)="transicion('archivar')">Archivar</button> }
         </div>
       </section>
 
@@ -751,6 +757,11 @@ export class EditorCasoComponent {
   bloqueado() {
     return !this.auth.puede('EDITAR') || this.caso.estado === 'PUBLICADO' || this.caso.estado === 'ARCHIVADO';
   }
+  puedePublicar() {
+    return !!this.caso.id && this.auth.puede('EDITAR') && (this.caso.estado === 'BORRADOR' || this.caso.estado === 'ARCHIVADO');
+  }
+  puedeVolverBorrador() { return !!this.caso.id && this.auth.puede('EDITAR') && this.caso.estado === 'PUBLICADO'; }
+  puedeArchivar() { return !!this.caso.id && this.auth.puede('EDITAR') && this.caso.estado === 'PUBLICADO'; }
   sincronizarPersona(indice: number) {
     const nombre = this.caso.personajes[indice]?.nombre;
     if (!nombre) return;
@@ -809,6 +820,16 @@ export class EditorCasoComponent {
   duplicar() {
     this.http.post<Caso>(`/api/docente/casos/${this.caso.id}/duplicar`, {}).subscribe({
       next: (dato) => this.router.navigate(['/docente/casos', dato.id]),
+      error: (falla) => this.error.set(mensajeError(falla))
+    });
+  }
+  transicion(accion: 'publicar' | 'despublicar' | 'archivar') {
+    this.error.set('');
+    this.http.post<Caso>(`/api/docente/casos/${this.caso.id}/${accion}`, {}).subscribe({
+      next: (dato) => {
+        this.caso = this.recibir(dato);
+        this.ok.set(accion === 'publicar' ? 'Caso publicado.' : accion === 'archivar' ? 'Caso archivado.' : 'El caso volvió a borrador.');
+      },
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
@@ -1127,7 +1148,11 @@ export class ProgramarComponent {
             <p>Finalizados: {{ finalizados() }} / {{ filas().length }}</p>
             <p>Pendientes: {{ filas().length - finalizados() }}</p>
             <p>Superior {{ conteo('Superior') }} · Alto {{ conteo('Alto') }} · Básico {{ conteo('Básico') }} · Bajo {{ conteo('Bajo') }}</p>
-            <button mat-flat-button color="primary" type="button" (click)="descargar()">Descargar CSV</button>
+            <div class="row">
+              <button class="btn-oscuro" type="button" (click)="descargar('csv')">CSV</button>
+              <button class="btn-suave" type="button" (click)="descargar('pdf')">PDF</button>
+              <button class="btn-suave" type="button" (click)="descargar('xlsx')">Excel</button>
+            </div>
           </aside>
         </div>
       </section>
@@ -1170,12 +1195,12 @@ export class SeguimientoComponent {
     return (notas.reduce((a, b) => a + b, 0) / notas.length).toFixed(1);
   }
   conteo(nivel: string) { return this.filas().filter((f) => this.nivel(f.nota) === nivel).length; }
-  descargar() {
-    this.http.get(`/api/docente/sesiones/${this.sesionId}/reporte.csv`, { responseType: 'text' }).subscribe((texto) => {
-      const url = URL.createObjectURL(new Blob([texto], { type: 'text/csv' }));
+  descargar(formato: 'csv' | 'pdf' | 'xlsx') {
+    this.http.get(`/api/docente/sesiones/${this.sesionId}/reporte`, { params: { formato }, responseType: 'blob' }).subscribe((archivo) => {
+      const url = URL.createObjectURL(archivo);
       const enlace = document.createElement('a');
       enlace.href = url;
-      enlace.download = `reporte-${this.sesionId}.csv`;
+      enlace.download = `reporte-${this.sesionId}.${formato}`;
       enlace.click();
       URL.revokeObjectURL(url);
     });

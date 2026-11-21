@@ -48,19 +48,8 @@ public class BitacoraServicio {
             if (destinatario != null) guardar(destinatario, canal, titulo, cuerpo, LocalDateTime.now(), null);
             return;
         }
-        if (!"CORREO".equals(canal) || destinatario == null || destinatario.email == null || destinatario.email.isBlank()) {
-            return;
-        }
-        try {
-            SimpleMailMessage mensaje = new SimpleMailMessage();
-            mensaje.setFrom(desde);
-            mensaje.setTo(destinatario.email);
-            mensaje.setSubject(titulo);
-            mensaje.setText(cuerpo == null ? "" : cuerpo);
-            correo.send(mensaje);
-        } catch (RuntimeException error) {
-            log.warn("No se pudo enviar el correo a {}: {}", destinatario.email, error.getMessage());
-        }
+        if (!"CORREO".equals(canal)) return;
+        enviar(destinatario, titulo, cuerpo);
     }
 
     /**
@@ -72,6 +61,7 @@ public class BitacoraServicio {
         if (notificaciones == null || destinatario == null) return;
         if (notificaciones.findByUsuarioIdAndReferencia(destinatario.id, referencia).isPresent()) return;
         guardar(destinatario, canal, titulo, cuerpo, fecha, referencia);
+        if ("CORREO".equals(canal)) enviar(destinatario, titulo, cuerpo);
     }
 
     public List<Notificacion> avisosDe(Usuario usuario) {
@@ -86,6 +76,20 @@ public class BitacoraServicio {
         if (!notificacion.usuario.id.equals(usuario.id)) throw new AccesoDenegado("Este aviso no es tuyo.");
         notificacion.leida = true;
         notificaciones.save(notificacion);
+    }
+
+    private void enviar(Usuario destinatario, String titulo, String cuerpo) {
+        if (destinatario == null || destinatario.email == null || destinatario.email.isBlank()) return;
+        try {
+            SimpleMailMessage mensaje = new SimpleMailMessage();
+            mensaje.setFrom(desde);
+            mensaje.setTo(destinatario.email);
+            mensaje.setSubject(titulo);
+            mensaje.setText(cuerpo == null ? "" : cuerpo);
+            correo.send(mensaje);
+        } catch (RuntimeException error) {
+            log.warn("No se pudo enviar el correo a {}: {}", destinatario.email, error.getMessage());
+        }
     }
 
     private void guardar(Usuario destinatario, String canal, String titulo, String cuerpo,

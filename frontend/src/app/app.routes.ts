@@ -21,6 +21,8 @@ export const routes: Routes = [
   { path: 'admin/usuarios', canActivate: [rolGuard('ADMIN')], loadComponent: () => import('./pages/admin.component').then(m => m.UsuariosComponent) },
   { path: 'admin/usuarios/nuevo', canActivate: [rolGuard('ADMIN')], loadComponent: () => import('./pages/admin.component').then(m => m.CrearUsuarioComponent) },
   { path: 'admin/usuarios/:id', canActivate: [rolGuard('ADMIN')], loadComponent: () => import('./pages/admin.component').then(m => m.PermisosDocenteComponent) },
+  { path: 'admin/grupos', canActivate: [rolGuard('ADMIN')], loadComponent: () => import('./pages/admin.component').then(m => m.GruposAdminComponent) },
+  { path: 'admin/auditoria', canActivate: [rolGuard('ADMIN')], loadComponent: () => import('./pages/admin.component').then(m => m.AuditoriaComponent) },
   { path: 'admin/configuracion', canActivate: [rolGuard('ADMIN')], loadComponent: () => import('./pages/admin.component').then(m => m.ConfiguracionComponent) },
   { path: '**', redirectTo: 'ingreso' }
 ];

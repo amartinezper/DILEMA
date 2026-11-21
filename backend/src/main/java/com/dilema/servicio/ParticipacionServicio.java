@@ -17,7 +17,9 @@ import com.dilema.servicio.participacion.HistorialRespuestas;
 import com.dilema.servicio.participacion.ProgresoParticipacion;
 import com.dilema.servicio.participacion.ProxyParticipacion;
 import com.dilema.servicio.participacion.RelojParticipacion;
+import com.dilema.servicio.programacion.NotificadorConvocatoria;
 import com.dilema.servicio.programacion.PadronConvocatoria;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,17 +41,26 @@ public class ParticipacionServicio {
     private final ProxyOperacion proxy;
     private final Mapeador mapeador;
     private final BitacoraServicio bitacora;
+    private final NotificadorConvocatoria notificador;
     private final HistorialRespuestas historial = new HistorialRespuestas();
     private final ProxyParticipacion puerta = new ProxyParticipacion();
 
     public ParticipacionServicio(ParticipacionRepo participaciones, SesionRepo sesiones, PadronConvocatoria padron,
                                  ProxyOperacion proxy, Mapeador mapeador, BitacoraServicio bitacora) {
+        this(participaciones, sesiones, padron, proxy, mapeador, bitacora, null);
+    }
+
+    @Autowired
+    public ParticipacionServicio(ParticipacionRepo participaciones, SesionRepo sesiones, PadronConvocatoria padron,
+                                 ProxyOperacion proxy, Mapeador mapeador, BitacoraServicio bitacora,
+                                 NotificadorConvocatoria notificador) {
         this.participaciones = participaciones;
         this.sesiones = sesiones;
         this.padron = padron;
         this.proxy = proxy;
         this.mapeador = mapeador;
         this.bitacora = bitacora;
+        this.notificador = notificador;
     }
 
     /**
@@ -195,6 +206,9 @@ public class ParticipacionServicio {
         permiso.participacion = participacion;
         permiso.fechaAutorizacion = LocalDateTime.now();
         participacion.autorizacion = permiso;
+        if (notificador != null) notificador.repeticion(participacion.estudiante, participacion.sesion);
+        bitacora.avisar(participacion.estudiante, "SISTEMA", "Repetición autorizada",
+                "El docente autorizó un nuevo intento de " + participacion.sesion.caso.nombre + ".");
     }
 
     @Transactional(readOnly = true)
