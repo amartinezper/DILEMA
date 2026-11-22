@@ -55,6 +55,25 @@ import { AuthService } from '../core/auth.service';
         <div class="inicio-fondo" aria-hidden="true">
           <div class="inicio-cielo"></div>
           <div class="inicio-marca-hero">
+            <svg class="inicio-orbita" viewBox="0 0 500 250" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+              <defs>
+                <linearGradient id="anillo-est-logo" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#dbeafe" stop-opacity=".15"/>
+                  <stop offset=".45" stop-color="#93c5fd"/>
+                  <stop offset="1" stop-color="#3b82f6" stop-opacity=".2"/>
+                </linearGradient>
+              </defs>
+              <g fill="#fff">
+                <polygon points="140,28 144,42 160,46 144,50 140,64 136,50 120,46 136,42"/>
+                <polygon points="250,8 254,22 270,26 254,30 250,44 246,30 230,26 246,22"/>
+                <polygon points="380,48 384,60 398,64 384,68 380,80 376,68 362,64 376,60"/>
+                <circle cx="200" cy="40" r="1.8"/>
+                <circle cx="250" cy="18" r="1.5"/>
+                <circle cx="400" cy="70" r="1.6"/>
+              </g>
+              <ellipse cx="250" cy="125" rx="250" ry="118" fill="none" stroke="url(#anillo-est-logo)" stroke-width="10" transform="rotate(-18 250 125)"/>
+              <ellipse cx="250" cy="125" rx="210" ry="96" fill="none" stroke="#e0f2fe" stroke-width="2.2" transform="rotate(-18 250 125)" opacity=".8"/>
+            </svg>
             <img class="inicio-cerebro" src="/dilema-cerebro.jpg" alt="" />
           </div>
           <svg class="inicio-deco" viewBox="0 0 1440 420" preserveAspectRatio="none">
@@ -81,12 +100,25 @@ import { AuthService } from '../core/auth.service';
             <path fill="#ffffff" d="M430,0 C650,22 800,118 980,250 C1148,368 1290,400 1460,355 L1460,337 C1290,382 1148,350 980,232 C800,100 650,8 430,-10 Z"/>
             <path fill="#eef2ff" d="M0,0 H430 C650,22 800,118 980,250 C1148,368 1290,400 1440,355 L1440,420 L0,420 Z"/>
           </svg>
+          <svg class="inicio-deco-movil" viewBox="0 0 1440 300" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="anillo-est-m" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#dbeafe" stop-opacity=".18"/>
+                <stop offset=".45" stop-color="#93c5fd"/>
+                <stop offset="1" stop-color="#3b82f6" stop-opacity=".22"/>
+              </linearGradient>
+              <clipPath id="cielo-est-m">
+                <path d="M0,0 L0,34 C560,16 1040,198 1440,188 L1440,0 Z"/>
+              </clipPath>
+            </defs>
+            <g clip-path="url(#cielo-est-m)"></g>
+            <path fill="#eef2ff" d="M0,20 C560,2 1040,184 1440,174 L1440,300 L0,300 Z"/>
+            <path fill="#1e3a8a" d="M0,34 C560,16 1040,198 1480,188 L1480,156 C1040,166 560,-16 0,2 Z"/>
+            <path fill="#3b82f6" d="M0,34 C560,16 1040,198 1480,188 L1480,172 C1040,182 560,0 0,18 Z"/>
+            <path fill="#ffffff" d="M0,34 C560,16 1040,198 1480,188 L1480,180 C1040,190 560,8 0,26 Z"/>
+          </svg>
         </div>
         <header class="inicio-hero">
-          <div class="inicio-user">
-            <span class="inicio-avatar">{{ iniciales() }}</span>
-            <span>{{ nombre() }}</span>
-          </div>
           <div class="inicio-hero-copy">
             <div class="inicio-saludo">
               <h1>¡Hola, {{ primerNombre() }}! <span aria-hidden="true">👋</span></h1>
@@ -118,9 +150,5 @@ export class MarcoEstudianteComponent {
   nombre() { return this.auth.usuario()?.nombre ?? 'Estudiante'; }
   primerNombre() {
     return this.nombre().trim().split(/\s+/)[0] || 'estudiante';
-  }
-  iniciales() {
-    const partes = this.nombre().trim().split(/\s+/).filter(Boolean);
-    return ((partes[0]?.[0] ?? '') + (partes[1]?.[0] ?? '')).toUpperCase() || 'ED';
   }
 }

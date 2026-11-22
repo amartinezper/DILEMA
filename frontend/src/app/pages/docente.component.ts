@@ -279,13 +279,14 @@ function paginar<T>(lista: T[], pagina: number, porPagina: number): T[] {
 
 /** Estilos que comparten Grupos y Programar (prefijo gp- para no chocar con los globales). */
 const ESTILOS_GP = `
-  .gp { display: grid; gap: 22px; }
-  .gp-titulo { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px 20px; }
-  .gp-titulo h1 { margin: 0; font-size: clamp(28px, 3vw, 36px); font-weight: 800; letter-spacing: -0.03em; color: #0f1b3d; }
-  .gp-titulo p { margin: 6px 0 0; font-size: 15px; color: #5b6680; }
+  .gp { display: grid; gap: 18px; min-width: 0; max-width: 100%; box-sizing: border-box; overflow: visible; }
+  .gp-titulo { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px 16px; min-width: 0; max-width: 100%; }
+  .gp-titulo > div { min-width: 0; flex: 1 1 auto; }
+  .gp-titulo h1 { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.03em; color: #1a2744; }
+  .gp-titulo p { margin: 4px 0 0; font-size: 14px; color: #6b7894; }
   .gp-tarjeta { background: #fff; border: 1px solid #e6ebf5; border-radius: 22px; box-shadow: 0 1px 3px rgba(16, 24, 40, .05); }
-  .gp-btn { min-height: 44px; padding: 0 20px; border-radius: 12px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
-    display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; text-decoration: none; }
+  .gp-btn { min-height: 36px; padding: 0 16px; border-radius: 12px; font: inherit; font-size: 13px; font-weight: 650; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; text-decoration: none; flex: 0 0 auto; }
   .gp-btn-oscuro { background: #0a1733; color: #fff; border: 1px solid #0a1733; }
   .gp-btn-oscuro:hover { background: #16325c; }
   .gp-btn-borde { background: #fff; color: #1a2744; border: 1px solid #d5dbe7; font-weight: 600; }
@@ -294,13 +295,13 @@ const ESTILOS_GP = `
   .gp-btn-peligro:hover { background: #fff5f4; }
   .gp-btn-peligro-solido { background: #b42318; color: #fff; border: 1px solid #b42318; }
   .gp-btn-pildora { border-radius: 999px; }
-  .gp-btn-chico { min-height: 40px; padding: 0 16px; font-size: 14px; }
+  .gp-btn-chico { min-height: 36px; padding: 0 12px; font-size: 13px; }
   .gp-btn:focus-visible, .gp-tarjeta button:focus-visible, .gp-tarjeta a:focus-visible {
     outline: 3px solid rgba(59, 108, 255, .35); outline-offset: 2px; }
   .gp-campo { display: grid; gap: 6px; min-width: 0; }
   .gp-campo > span { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #3d4a66; }
-  .gp-campo input, .gp-campo select, .gp-campo textarea { width: 100%; box-sizing: border-box; min-height: 48px; padding: 0 14px;
-    border: 1px solid #d5dbe7; border-radius: 12px; background: #fff; color: #1a2744; font: inherit; font-size: 15px; }
+  .gp-campo input, .gp-campo select, .gp-campo textarea { width: 100%; box-sizing: border-box; min-height: 42px; padding: 0 14px;
+    border: 1px solid #d5dbe7; border-radius: 12px; background: #fff; color: #1a2744; font: inherit; font-size: 14px; }
   .gp-campo textarea { min-height: 84px; padding: 12px 14px; resize: vertical; }
   .gp-campo input::placeholder, .gp-campo textarea::placeholder, .gp-buscar input::placeholder { color: #8a93a8; }
   .gp-campo input:focus, .gp-campo select:focus, .gp-campo textarea:focus, .gp-buscar input:focus {
@@ -309,18 +310,18 @@ const ESTILOS_GP = `
   .gp-buscar { position: relative; display: block; }
   .gp-buscar svg { position: absolute; left: 14px; top: 50%; width: 16px; height: 16px; transform: translateY(-50%);
     fill: none; stroke: #6b7690; stroke-width: 1.8; stroke-linecap: round; pointer-events: none; }
-  .gp-buscar input { width: 100%; box-sizing: border-box; min-height: 44px; padding: 0 14px 0 40px; border: 1px solid #d5dbe7;
-    border-radius: 12px; background: #f8fafd; color: #1a2744; font: inherit; font-size: 14.5px; }
+  .gp-buscar input { width: 100%; box-sizing: border-box; min-height: 36px; padding: 0 14px 0 40px; border: 1px solid #d5dbe7;
+    border-radius: 12px; background: #f8fafd; color: #1a2744; font: inherit; font-size: 13px; }
   .gp-error { margin: 0; padding: 12px 16px; border-radius: 12px; background: #fff1f0; color: #9b1c12; border: 1px solid #f6cdc8; }
   .gp-ok { margin: 0; padding: 12px 16px; border-radius: 12px; background: #ecf8f1; color: #17603f; border: 1px solid #c6e9d5; }
   .gp-tabla-marco { border: 1px solid #e6ebf5; border-radius: 16px; overflow: hidden; }
   .gp-tabla-scroll { overflow-x: auto; }
-  .gp-tabla { width: 100%; border-collapse: collapse; font-size: 15px; }
+  .gp-tabla { width: 100%; border-collapse: collapse; font-size: 14px; }
   .gp-tabla th { padding: 13px 18px; text-align: left; font-size: 11.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
     color: #3d4a66; background: #f6f8fc; border-bottom: 1px solid #e6ebf5; white-space: nowrap; }
   .gp-tabla td { padding: 15px 18px; border-bottom: 1px solid #edf1f7; color: #1a2744; vertical-align: middle; }
   .gp-tabla tr:last-child td { border-bottom: 0; }
-  .gp-tabla .gp-dc { text-align: right; }
+  .gp-tabla .gp-dc { text-align: right; white-space: nowrap; overflow-wrap: normal; width: 1%; }
   .gp-vacio { color: #6b7690; }
   .solo-lector { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 `;
@@ -421,22 +422,25 @@ const ETIQUETA_CASO: Record<string, string> = { BORRADOR: 'Borrador', PUBLICADO:
     </app-marco-docente>
   `,
   styles: [ESTILOS_GP + `
-    .gp-nuevo { min-height: 46px; padding: 0 22px; box-shadow: 0 0 0 3px rgba(255, 255, 255, .92); }
+    .gp-nuevo {
+      min-height: 36px; padding: 0 16px; flex: 0 0 auto;
+      box-shadow: none; border: 3px solid rgba(255, 255, 255, .92) !important;
+    }
     .gp-nuevo svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
     .mc-listado { padding: 22px 24px 20px; display: grid; gap: 20px; }
     .mc-barra { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; }
     .mc-filtros { display: flex; flex-wrap: wrap; gap: 2px; padding: 4px; border-radius: 999px; background: #f1f4fa; }
-    .mc-filtros button { min-height: 40px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: #1a2744;
-      font: inherit; font-size: 14.5px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+    .mc-filtros button { min-height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: #1a2744;
+      font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; }
     .mc-filtros button span { color: #6b7690; }
     .mc-filtros button[aria-pressed="true"] { background: #0a1733; color: #fff; font-weight: 700; }
     .mc-filtros button[aria-pressed="true"] span { color: #c9d3ea; }
     .mc-filtros button:focus-visible { outline: 3px solid rgba(59, 108, 255, .35); outline-offset: 1px; }
     .mc-herramientas { display: flex; flex-wrap: nowrap; align-items: center; gap: 10px; }
     .mc-buscar { flex: 0 0 260px; }
-    .mc-orden { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #5b6680; }
-    .mc-orden select { min-height: 44px; padding: 0 12px; border: 1px solid #d5dbe7; border-radius: 12px; background: #fff;
-      color: #1a2744; font: inherit; font-size: 14.5px; cursor: pointer; }
+    .mc-orden { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #5b6680; }
+    .mc-orden select { min-height: 36px; padding: 0 12px; border: 1px solid #d5dbe7; border-radius: 12px; background: #fff;
+      color: #1a2744; font: inherit; font-size: 13px; cursor: pointer; }
     .mc-orden select:focus { outline: none; border-color: #3b6cff; box-shadow: 0 0 0 3px rgba(59, 108, 255, .18); }
     .mc-rejilla { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
     .mc-caso { position: relative; display: grid; grid-template-rows: auto 1fr auto; border: 1px solid #e6ebf5; border-radius: 18px;
@@ -451,12 +455,12 @@ const ETIQUETA_CASO: Record<string, string> = { BORRADOR: 'Borrador', PUBLICADO:
     .mc-caso[data-estado="PUBLICADO"] .mc-estado { color: #1b6f45; }
     .mc-caso[data-estado="ARCHIVADO"] .mc-estado { color: #4b5565; }
     .mc-cuerpo { padding: 16px 18px 14px; display: grid; gap: 8px; align-content: start; }
-    .mc-cuerpo h3 { margin: 0; min-height: 2.6em; font-size: 17px; font-weight: 700; line-height: 1.3; color: #0f1b3d;
+    .mc-cuerpo h3 { margin: 0; min-height: 2.6em; font-size: 15px; font-weight: 650; line-height: 1.3; color: #0f1b3d;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .mc-cuerpo p { margin: 0; font-size: 13.5px; color: #5b6680; }
     .mc-pie { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 10px 6px 8px; border-top: 1px solid #edf1f7; }
     .mc-abrir { min-height: 40px; display: inline-flex; align-items: center; gap: 6px; padding: 0 10px; border-radius: 10px;
-      color: #0a1733; font-size: 14.5px; font-weight: 700; text-decoration: none; }
+      color: #0a1733; font-size: 13px; font-weight: 650; text-decoration: none; }
     .mc-abrir span { font-size: 18px; line-height: 1; }
     .mc-abrir:hover { background: #f1f4fa; }
     .mc-abrir:focus-visible, .mc-mas:focus-visible, .mc-menu a:focus-visible { outline: 3px solid rgba(59, 108, 255, .35); outline-offset: 2px; }
@@ -1483,22 +1487,25 @@ export class EditorCasoComponent {
     </app-marco-docente>
   `,
   styles: [ESTILOS_GP + `
-    .gp-nuevo { min-height: 46px; padding: 0 22px; box-shadow: 0 0 0 3px rgba(255, 255, 255, .92); }
+    .gp-nuevo {
+      min-height: 36px; padding: 0 16px; flex: 0 0 auto;
+      box-shadow: none; border: 3px solid rgba(255, 255, 255, .92) !important;
+    }
     .gp-nuevo svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
     .gp-crear { padding: 20px 22px; display: grid; gap: 14px; }
-    .gp-crear h2 { margin: 0; font-size: 18px; font-weight: 700; color: #0f1b3d; }
+    .gp-crear h2 { margin: 0; font-size: 16px; font-weight: 650; color: #0f1b3d; }
     .gp-crear-campos { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; gap: 12px; align-items: end; }
     .gp-crear-botones { display: flex; gap: 8px; }
     .gp-grupos { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 22px; align-items: start; }
     .gp-lista { padding: 22px 22px 18px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
     .gp-lista-cabeza { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-    .gp-lista-cabeza h2 { margin: 0; font-size: 19px; font-weight: 700; color: #0f1b3d; }
+    .gp-lista-cabeza h2 { margin: 0; font-size: 16px; font-weight: 650; color: #0f1b3d; }
     .gp-lista-cabeza span { font-size: 13px; color: #6b7690; }
     .gp-filas { list-style: none; margin: 0; padding: 0 0 12px; display: grid; gap: 6px; border-bottom: 1px solid #edf1f7; }
     .gp-fila { position: relative; display: flex; align-items: center; gap: 6px; }
     .gp-fila-boton { flex: 1; min-width: 0; min-height: 56px; display: grid; gap: 2px; text-align: left; padding: 9px 14px;
       border: 1px solid transparent; border-radius: 12px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
-    .gp-fila-boton strong { font-size: 15.5px; font-weight: 600; color: #0f1b3d; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .gp-fila-boton strong { font-size: 14px; font-weight: 600; color: #0f1b3d; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .gp-fila-boton span { font-size: 13px; color: #5b6680; }
     .gp-fila-boton:hover { background: #f6f8fc; }
     .gp-fila.activa .gp-fila-boton { background: #eaf1ff; border-color: #bccff7; }
@@ -1510,7 +1517,7 @@ export class EditorCasoComponent {
     .gp-menu { position: absolute; right: 0; top: 44px; z-index: 20; min-width: 150px; padding: 6px; display: grid; gap: 2px;
       background: #fff; border: 1px solid #e6ebf5; border-radius: 12px; box-shadow: 0 12px 28px rgba(16, 24, 40, .14); }
     .gp-menu button { min-height: 40px; padding: 0 12px; text-align: left; border: 0; border-radius: 8px; background: transparent;
-      color: #1a2744; font: inherit; font-size: 14.5px; cursor: pointer; }
+      color: #1a2744; font: inherit; font-size: 13px; cursor: pointer; }
     .gp-menu button:hover, .gp-menu button:focus-visible { background: #f1f4fa; outline: none; }
     .gp-menu .peligro { color: #b42318; }
     .gp-lista-vacia { padding: 12px 4px; font-size: 14px; }
@@ -1523,17 +1530,17 @@ export class EditorCasoComponent {
     .gp-confirmar { font-size: 14px; color: #9b1c12; font-weight: 600; }
     .gp-editar { display: grid; gap: 10px; }
     .gp-matricular { display: grid; gap: 12px; padding: 20px 20px 16px; border-radius: 18px; background: #f6f8fc; border: 1px solid #e6ebf5; }
-    .gp-matricular h3 { margin: 0; font-size: 17px; font-weight: 700; color: #0f1b3d; }
+    .gp-matricular h3 { margin: 0; font-size: 16px; font-weight: 650; color: #0f1b3d; }
     .gp-matricular-fila { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) auto; gap: 12px; align-items: end; }
     .gp-matricular-fila .gp-btn { min-height: 48px; }
     .gp-estudiantes-cabeza { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 4px; }
-    .gp-estudiantes-cabeza h3 { margin: 0; font-size: 17px; font-weight: 700; color: #0f1b3d; }
+    .gp-estudiantes-cabeza h3 { margin: 0; font-size: 16px; font-weight: 650; color: #0f1b3d; }
     .gp-estudiantes-cabeza h3 span { font-weight: 500; color: #6b7690; }
     .gp-estudiantes-cabeza .gp-buscar { width: min(290px, 100%); }
     .gp-nombre { font-weight: 600; }
     .gp-correo { color: #3d4a66; }
     .gp-quitar { min-height: 40px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: #b42318;
-      font: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer; }
+      font: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
     .gp-quitar:hover { background: #fff1f0; }
     @media (max-width: 1100px) {
       .gp-grupos { grid-template-columns: minmax(0, 1fr); }
@@ -1828,7 +1835,7 @@ type FiltroSesion = 'TODAS' | 'SIN_INICIAR' | 'EN_CURSO' | 'FINALIZADO';
     .pg-form { padding: 10px 28px 24px; display: grid; }
     .pg-seccion { margin: 0; padding: 22px 0; border: 0; border-bottom: 1px solid #edf1f7; display: grid; gap: 14px; min-width: 0; }
     .pg-seccion legend { float: left; width: 100%; padding: 0; margin: 0 0 4px; display: flex; align-items: center; gap: 12px;
-      font-size: 18px; font-weight: 700; color: #0f1b3d; }
+      font-size: 16px; font-weight: 650; color: #0f1b3d; }
     .pg-seccion legend + * { clear: both; }
     .pg-num { width: 28px; height: 28px; display: inline-grid; place-items: center; border-radius: 50%; background: #e8eefc;
       color: #2f5bd3; font-size: 13px; font-weight: 800; }
@@ -1840,16 +1847,16 @@ type FiltroSesion = 'TODAS' | 'SIN_INICIAR' | 'EN_CURSO' | 'FINALIZADO';
       text-decoration: underline; cursor: pointer; }
     .pg-enlace:focus-visible { outline: 3px solid rgba(59, 108, 255, .35); outline-offset: 2px; border-radius: 4px; }
     .pg-botones { display: flex; gap: 10px; }
-    .pg-botones .gp-btn { min-height: 48px; padding: 0 24px; }
+    .pg-botones .gp-btn { min-height: 36px; padding: 0 16px; }
     .pg-resumen { position: sticky; top: 16px; padding: 22px 22px 20px; display: grid; gap: 14px; }
     .pg-resumen-cabeza { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-    .pg-resumen-cabeza h2 { margin: 0; font-size: 19px; font-weight: 700; color: #0f1b3d; }
+    .pg-resumen-cabeza h2 { margin: 0; font-size: 16px; font-weight: 650; color: #0f1b3d; }
     .pg-chip { padding: 4px 10px; border-radius: 999px; background: #eef1f6; color: #3d4a66; font-size: 11.5px; font-weight: 700;
       letter-spacing: .06em; text-transform: uppercase; }
-    .pg-resumen-caso { margin: 0; font-size: 17px; font-weight: 600; color: #3d4a66; }
+    .pg-resumen-caso { margin: 0; font-size: 15px; font-weight: 600; color: #3d4a66; }
     .pg-datos { margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; }
     .pg-datos dt { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #5b6680; }
-    .pg-datos dd { margin: 2px 0 0; font-size: 15px; color: #0f1b3d; overflow-wrap: anywhere; }
+    .pg-datos dd { margin: 2px 0 0; font-size: 14px; color: #0f1b3d; overflow-wrap: anywhere; }
     .pg-cifras { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding-bottom: 16px; border-bottom: 1px solid #edf1f7; }
     .pg-cifras div { display: grid; gap: 2px; justify-items: center; padding: 10px 4px; border: 1px solid #e6ebf5; border-radius: 12px; background: #f8fafd; }
     .pg-cifras small { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #5b6680; }
@@ -1857,15 +1864,15 @@ type FiltroSesion = 'TODAS' | 'SIN_INICIAR' | 'EN_CURSO' | 'FINALIZADO';
     .pg-resumen-nota { margin: 0; font-size: 13px; line-height: 1.5; color: #5b6680; }
     .pg-convocatorias { padding: 24px 26px 20px; display: grid; gap: 16px; }
     .pg-conv-cabeza { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; }
-    .pg-conv-cabeza h2 { margin: 0; font-size: 21px; font-weight: 700; color: #0f1b3d; }
-    .pg-conv-cabeza h2 span { font-weight: 500; color: #6b7690; font-size: 17px; }
-    .pg-conv-herramientas { display: flex; flex-wrap: nowrap; align-items: center; gap: 10px; }
-    .pg-filtros { display: flex; flex-wrap: wrap; gap: 2px; padding: 4px; border-radius: 999px; background: #f1f4fa; }
-    .pg-filtros button { min-height: 40px; padding: 0 14px; border: 0; border-radius: 999px; background: transparent; color: #1a2744;
-      font: inherit; font-size: 14.5px; font-weight: 500; cursor: pointer; }
+    .pg-conv-cabeza h2 { margin: 0; font-size: 16px; font-weight: 650; color: #0f1b3d; }
+    .pg-conv-cabeza h2 span { font-weight: 500; color: #6b7690; font-size: 14px; }
+    .pg-conv-herramientas { display: flex; flex-direction: column; align-items: stretch; gap: 10px; width: 400px; max-width: 100%; flex: 0 0 auto; }
+    .pg-filtros { display: flex; width: 100%; gap: 2px; padding: 4px; border-radius: 999px; background: #f1f4fa; box-sizing: border-box; }
+    .pg-filtros button { flex: 1 1 0; min-width: 0; min-height: 36px; padding: 0 8px; border: 0; border-radius: 999px; background: transparent; color: #1a2744;
+      font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; }
     .pg-filtros button[aria-pressed="true"] { background: #0a1733; color: #fff; font-weight: 700; }
     .pg-filtros button:focus-visible { outline: 3px solid rgba(59, 108, 255, .35); outline-offset: 1px; }
-    .pg-buscar { flex: 0 0 270px; }
+    .pg-buscar { width: 100%; }
     .pg-codigo { font-weight: 700; white-space: nowrap; }
     .pg-caso { font-weight: 500; min-width: 180px; max-width: 260px; }
     .pg-tenue { color: #5b6680; }
@@ -1876,7 +1883,6 @@ type FiltroSesion = 'TODAS' | 'SIN_INICIAR' | 'EN_CURSO' | 'FINALIZADO';
     .pg-estado[data-estado="FINALIZADO"] { background: #e3f5ea; color: #1b6f45; }
     .pg-acciones { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
     @media (max-width: 1100px) {
-      .pg-conv-herramientas { flex-wrap: wrap; }
       .pg-arriba { grid-template-columns: minmax(0, 1fr); }
       .pg-resumen { position: static; }
     }
@@ -1884,7 +1890,8 @@ type FiltroSesion = 'TODAS' | 'SIN_INICIAR' | 'EN_CURSO' | 'FINALIZADO';
       .pg-dos { grid-template-columns: minmax(0, 1fr); }
       .pg-form { padding: 6px 16px 18px; }
       .pg-convocatorias { padding: 18px 14px; }
-      .pg-buscar { flex: 1 1 100%; }
+      .pg-conv-cabeza { flex-direction: column; align-items: stretch; }
+      .pg-conv-herramientas { width: 100%; }
       .pg-botones { width: 100%; }
       .pg-botones .gp-btn { flex: 1; }
     }

@@ -135,10 +135,48 @@ public class DatosIniciales implements CommandLineRunner {
         autorizados.save(fila);
     }
 
-    /** La cuenta de práctica debe poder diseñar casos y abrir grupos sin pasar otra vez por administración. */
+    /**
+     * La cuenta de práctica debe poder diseñar casos y abrir grupos sin pasar otra vez por administración.
+     * El código DILEMA-2026 también se reabre: si no, el estudiante de demostración deja de entrar
+     * cuando vence la tolerancia de un arranque anterior.
+     */
     private void asegurarPractica() {
         usuarios.findByEmailIgnoreCase("docente@psicosim.edu").ifPresent(docente ->
                 fabrica.reemplazarPermisosDocente(docente, List.of(FabricaCuentas.EDITAR, FabricaCuentas.GESTIONAR_ESPACIOS)));
+
+        Usuario estudiante = usuarios.findByEmailIgnoreCase("estudiante@psicosim.edu").orElseGet(() -> {
+            Usuario nuevo = new Usuario();
+            nuevo.nombre = "Estudiante de práctica";
+            nuevo.email = "estudiante@psicosim.edu";
+            nuevo.rol = Catalogo.Rol.ESTUDIANTE;
+            nuevo.activo = true;
+            return usuarios.save(nuevo);
+        });
+        if (!estudiante.activo) {
+            estudiante.activo = true;
+            usuarios.save(estudiante);
+        }
+
+        sesiones.findByCodigoIgnoreCase("DILEMA-2026").ifPresent(sesion -> {
+            LocalDateTime ahora = LocalDateTime.now();
+            sesion.inicio = ahora.minusMinutes(10);
+            sesion.fin = ahora.plusDays(20);
+            sesion.inicioReal = ahora.minusMinutes(5);
+            sesion.cierreReal = null;
+            sesion.toleranciaMin = Math.max(sesion.toleranciaMin, 10080);
+            if (sesion.caso != null) {
+                sesion.caso.estado = Catalogo.EstadoCaso.PUBLICADO;
+                casos.save(sesion.caso);
+            }
+            sesiones.save(sesion);
+            if (!autorizados.existsBySesionIdAndEstudianteId(sesion.id, estudiante.id)) {
+                SesionEstudiante fila = new SesionEstudiante();
+                fila.sesionId = sesion.id;
+                fila.estudianteId = estudiante.id;
+                fila.grupoId = sesion.grupo == null ? null : sesion.grupo.id;
+                autorizados.save(fila);
+            }
+        });
     }
 
     private Usuario cuenta(String nombre, String email, String clave, Catalogo.Rol rol, PasswordEncoder cifrado) {

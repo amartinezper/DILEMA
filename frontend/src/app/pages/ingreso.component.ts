@@ -345,11 +345,12 @@ export class IngresoComponent {
     this.modo.set(modo);
   }
 
-  /** Rellena la cuenta de práctica del estudiante y abre su formulario. */
+  /** Rellena la cuenta de práctica del estudiante, abre su formulario y entra. */
   rellenarEstudiante() {
     this.elegir('estudiante');
     this.correoEstudiante = 'estudiante@psicosim.edu';
     this.codigo = 'DILEMA-2026';
+    this.entrarEstudiante();
   }
 
   /** Rellena la cuenta de práctica del docente y abre el formulario de contraseña. */
