@@ -5,6 +5,7 @@ import { AuthService } from '../core/auth.service';
 @Component({
   selector: 'app-marco-estudiante',
   imports: [RouterLink],
+  styles: [`:host { display: block; width: 100%; height: 100%; }`],
   template: `
     <div class="inicio-est" [class.menu-abierto]="menuAbierto()">
       <button class="inicio-menu-btn" type="button" (click)="alternarMenu()" [attr.aria-expanded]="menuAbierto()" aria-label="Menú">

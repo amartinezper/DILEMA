@@ -531,8 +531,13 @@ export class BriefingComponent {
       border-radius: 999px; background: rgba(255,255,255,.12); font-size: .95rem; letter-spacing: .04em; }
     .reloj-juego.urgente { background: #991b1b; }
     .error-juego { margin: 10px auto 0; max-width: 720px; padding: 10px 14px; border-radius: 10px; background: #fff1f0; color: #9b1c12; }
-    .resultados-estudiante { border-radius: 18px; overflow: hidden; background-color: #0f1726;
-      background-size: cover; background-position: center; }
+    :host { display: block; width: 100%; height: 100%; min-width: 0; }
+    /* La ficha usa todo el ancho del panel y se desplaza si el contenido no cabe. */
+    .resultados-estudiante { width: 100%; height: 100%; min-height: 0; border-radius: 18px; overflow: auto;
+      background-color: #0f1726; background-size: cover; background-position: center;
+      scrollbar-width: thin; scrollbar-color: #8ea0c6 transparent; }
+    .resultados-estudiante::-webkit-scrollbar { display: block; width: 10px; height: 10px; }
+    .resultados-estudiante::-webkit-scrollbar-thumb { background: #8ea0c6; border-radius: 999px; }
     @media (max-width: 768px) { .modal-cuerpo { padding: 8px; } }
   `]
 })

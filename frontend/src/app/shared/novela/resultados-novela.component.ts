@@ -140,6 +140,7 @@ type Fila = FilaResultado & { clave: string; enunciadoTexto: string };
     :host { display: block; color: #e8edf3; font-size: .95rem; line-height: 1.45;
       --fondo-tarjeta: #172234; --borde: rgba(255,255,255,.07); --acento: #7fd8c6; --falla: #f2a25c; --tenue: #9aa8b8; }
     .rn-columna { max-width: 960px; margin: 0 auto; padding: clamp(18px, 4vw, 40px) clamp(14px, 3vw, 24px) 32px; display: grid; gap: 16px; }
+    :host-context(.resultados-estudiante) .rn-columna { max-width: none; }
     header { display: grid; gap: 4px; }
     .rn-eyebrow { margin: 0; font-size: .75rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--tenue); }
     h2 { margin: 0; font-size: clamp(1.6rem, 3.4vw, 2.1rem); font-weight: 800; color: #fff; }
