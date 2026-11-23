@@ -25,4 +25,9 @@ public class Tokens {
     public void revocar(String token) {
         if (token != null) activos.remove(token);
     }
+
+    public void revocarUsuario(Long usuarioId) {
+        if (usuarioId == null) return;
+        activos.entrySet().removeIf(entrada -> usuarioId.equals(entrada.getValue()));
+    }
 }

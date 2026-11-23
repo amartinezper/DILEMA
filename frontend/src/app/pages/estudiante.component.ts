@@ -1,74 +1,299 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { forkJoin } from 'rxjs';
-import { MarcoComponent } from '../shared/marco.component';
-import { Aviso, PanelEstudiante, Participacion, Sesion, mensajeError } from '../core/api.service';
+import { MarcoDocenteComponent } from '../shared/marco-docente.component';
+import { MarcoEstudianteComponent } from '../shared/marco-estudiante.component';
+import { AuthService } from '../core/auth.service';
+import { BusquedaService } from '../core/busqueda.service';
+import { Aviso, OpcionJuego, PanelEstudiante, Participacion, PersonajeCaso, PreguntaJuego, Sesion, mensajeError } from '../core/api.service';
+import { NovelaReproductorComponent, CasoReproductor, OpcionElegida } from '../shared/novela/novela-reproductor.component';
+import { MusicaNovelaService } from '../shared/novela/musica-novela.service';
+import { ResultadosNovelaComponent } from '../shared/novela/resultados-novela.component';
+import { resultadosDeParticipacion } from '../shared/novela/resultados';
+import { EscenaService } from '../shared/novela/escena.service';
 
 const enlaces = [
   { href: '/estudiante', texto: 'Casos asignados', exacto: true },
   { href: '/estudiante/avisos', texto: 'Notificaciones', exacto: true }
 ];
 
+/** Escena neutra del banco si no se puede leer escenas.json. */
+const FONDO_NEUTRO = '/escenas/oficina-institucional/1-dia.webp';
+
+/** Id de la sesión con la que entró el estudiante (lo guarda AuthService al ingresar). */
+function sesionDelIngreso(): number | null {
+  try {
+    const valor = Number(localStorage.getItem('dilema-sesion'));
+    return Number.isFinite(valor) && valor > 0 ? valor : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Sesión destacada: la del ingreso si sigue en el panel; si no, la que está en curso (primero las que el
+ * estudiante aún puede resolver, y entre ellas la que cierra antes); si no, la pendiente más próxima; y si
+ * no, la más reciente.
+ */
+function elegirDestacado(lista: Sesion[], deIngreso: number | null, ahora: number): Sesion | null {
+  if (!lista.length) return null;
+  const delIngreso = deIngreso == null ? undefined : lista.find((s) => s.id === deIngreso);
+  if (delIngreso) return delIngreso;
+  const t = (iso: string) => { const v = Date.parse(iso); return Number.isNaN(v) ? 0 : v; };
+  const porResolver = (s: Sesion) => s.repeticionAutorizada || !s.participacionEstado || s.participacionEstado === 'EN_CURSO';
+  const enCurso = lista.filter((s) => s.estado === 'EN_CURSO')
+    .sort((a, b) => Number(porResolver(b)) - Number(porResolver(a)) || t(a.fin) - t(b.fin));
+  if (enCurso.length) return enCurso[0];
+  const pendientes = lista.filter((s) => s.estado === 'SIN_INICIAR');
+  const proxima = pendientes.filter((s) => t(s.inicio) >= ahora).sort((a, b) => t(a.inicio) - t(b.inicio))[0]
+    ?? pendientes.sort((a, b) => t(b.inicio) - t(a.inicio))[0];
+  if (proxima) return proxima;
+  return [...lista].sort((a, b) => t(b.inicio) - t(a.inicio))[0];
+}
+
+/** Texto sin HTML ni entidades, con los bloques separados por espacios. */
+function textoPlano(html: string): string {
+  const conEspacios = (html ?? '').replace(/<\/(p|li|h\d|div|blockquote)>|<br\s*\/?>/gi, ' ');
+  const texto = new DOMParser().parseFromString(conEspacios, 'text/html').body.textContent ?? '';
+  return texto.replace(/\s+/g, ' ').trim();
+}
+
+/** Inicio del desarrollo situacional: frases completas hasta unos `max` caracteres, terminado en "…". */
+function resumenDesarrollo(html: string, max = 200): string {
+  const texto = textoPlano(html);
+  if (texto.length <= max) return texto;
+  let resumen = '';
+  for (const frase of texto.match(/[^.!?…]+[.!?…]+["»”')]*\s*/g) ?? []) {
+    if ((resumen + frase).trim().length > max) break;
+    resumen += frase;
+  }
+  resumen = resumen.trim();
+  if (!resumen) {
+    // La primera frase ya pasa del límite: se corta en la última palabra completa.
+    const corte = texto.slice(0, max);
+    resumen = corte.slice(0, Math.max(corte.lastIndexOf(' '), 1)).replace(/[\s,;:–—-]+$/, '');
+  }
+  return `${resumen} …`;
+}
+
 @Component({
   selector: 'app-panel-estudiante',
-  imports: [MarcoComponent, RouterLink, FormsModule, MatButtonModule, MatCardModule],
+  imports: [RouterLink, MarcoEstudianteComponent],
   template: `
-    <app-marco [enlaces]="enlaces" modo="superior">
-      <section class="stack">
-        <h1>Casos asignados</h1>
-        <p class="sub">Selecciona un caso para iniciar la participación o consultar los resultados.</p>
-        @if (error()) { <p class="error">{{ error() }}</p> }
-        <div class="metricas">
-          <article class="mini"><span>Pendientes</span><strong>{{ pendientes() }}</strong></article>
-          <article class="mini"><span>En curso</span><strong>{{ enCurso() }}</strong></article>
-          <article class="mini"><span>Finalizados</span><strong>{{ finalizados() }}</strong></article>
-          <article class="mini"><span>Promedio</span><strong>{{ promedio() }}</strong></article>
-        </div>
-        <input class="busqueda" [(ngModel)]="busqueda" placeholder="Buscar por caso o grupo" />
-        <div class="lista">
-          @for (sesion of visibles(); track sesion.id) {
-            <article class="item caso-fila">
-              <div class="stack">
-                <small>CS-{{ codigoCaso(sesion.casoId) }} · {{ sesion.grupo }}</small>
-                <h3>{{ sesion.caso }}</h3>
-                <p class="sub">{{ resumen(sesion.contexto) }}</p>
-                <div class="progreso"><div [style.width.%]="barra(sesion)"></div></div>
-                <small>{{ barra(sesion) }}% de avance</small>
+    <app-marco-estudiante [activa]="seccion()" [sinLeer]="sinLeer()">
+        @if (seccion() === 'inicio') {
+          <section class="inicio-stats">
+            <article>
+              <span class="stat-icono juego">
+                <svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="10" rx="4"/><path d="M8 13h4M10 11v4M16.2 12h.01M18.2 14h.01"/></svg>
+              </span>
+              <div>
+                <small>Dilemas Resueltos</small>
+                <strong>{{ finalizados() }}</strong>
               </div>
-              @if (sesion.participacionEstado === 'FINALIZADA' && sesion.participacionId) {
-                <a mat-stroked-button [routerLink]="['/estudiante/participacion', sesion.participacionId]">Ver resultados</a>
-                @if (sesion.repeticionAutorizada) {
-                  <a mat-flat-button color="primary" [routerLink]="['/estudiante/sesion', sesion.id]">Nuevo intento</a>
-                }
-              } @else if (sesion.estado === 'SIN_INICIAR') {
-                <p class="sub">Esperando a que el docente inicie la sesión.</p>
-              } @else if (sesion.estado === 'FINALIZADO' && !sesion.participacionId) {
-                <p class="sub">No participaste. Ausencia 0,0.</p>
-              } @else {
-                <a mat-flat-button color="primary" [routerLink]="['/estudiante/sesion', sesion.id]">Ingresar al caso</a>
-              }
             </article>
-          } @empty { <p class="sub">No tienes casos asignados.</p> }
-        </div>
-      </section>
-    </app-marco>
+            <article>
+              <span class="stat-icono copa">
+                <svg viewBox="0 0 24 24"><path d="M8 5h8v4a4 4 0 0 1-8 0V5z"/><path d="M8 7H5.5A2.5 2.5 0 0 0 8 11M16 7h2.5A2.5 2.5 0 0 1 16 11"/><path d="M12 13v3M9 20h6M10 17h4"/></svg>
+              </span>
+              <div>
+                <small>Tu Puntaje</small>
+                <strong>{{ promedio() }} <em>/ 5,0</em></strong>
+              </div>
+            </article>
+          </section>
+        }
+
+        @if (error()) { <p class="error">{{ error() }}</p> }
+
+        @if (seccion() === 'inicio') {
+          <div class="inicio-home">
+          <section class="inicio-fila">
+            <article class="inicio-destacado">
+              <div class="destacado-texto">
+                <p class="chip-estrella">★ Dilema Destacado</p>
+                @if (destacado(); as caso) {
+                  <h2>{{ caso.caso }}</h2>
+                  @if (caso.sensible) {
+                    <p class="destacado-sensible" role="note">⚠ {{ (caso.advertencia || '').trim() || 'Este caso trata temas sensibles.' }}</p>
+                  }
+                  @if (textoDestacado()) { <p>{{ textoDestacado() }}</p> }
+                  @if (caso.repeticionAutorizada || caso.participacionEstado === 'EN_CURSO' || !caso.participacionEstado) {
+                    <button class="btn-resolver" type="button" (click)="iniciarCaso(caso)">▶ Resolver Dilema</button>
+                  } @else if (caso.participacionEstado === 'FINALIZADA' && caso.participacionId) {
+                    <a class="btn-resolver" [routerLink]="['/estudiante/participacion', caso.participacionId]">Ver resultados</a>
+                  } @else if (caso.estado === 'SIN_INICIAR') {
+                    <p class="sub claro">Esperando a que el docente inicie la sesión.</p>
+                  } @else if (caso.estado === 'FINALIZADO' && !caso.participacionId) {
+                    <p class="sub claro">No participaste. Ausencia 0,0.</p>
+                  } @else {
+                    <button class="btn-resolver" type="button" (click)="iniciarCaso(caso)">▶ Resolver Dilema</button>
+                  }
+                } @else if (panel()) {
+                  <h2>Aún no tienes casos asignados</h2>
+                  <p>Cuando tu docente te convoque a una sesión, el caso aparecerá aquí.</p>
+                }
+              </div>
+              <figure class="destacado-figura">
+                @if (fondoDestacado(); as fondo) {
+                  <img [src]="fondo.ruta" [alt]="altDestacado()" />
+                  @if (fondo.escenario) {
+                    <figcaption class="letrero-escena">Escena 1 · {{ fondo.escenario }}</figcaption>
+                  }
+                }
+              </figure>
+            </article>
+
+            <article class="inicio-progreso">
+              <h3><span class="progreso-ico">📊</span> Tu Progreso</h3>
+              <div class="aro" [style.--p]="'' + progresoGeneral()">
+                <span>{{ progresoGeneral() }}%</span>
+              </div>
+              <p class="nivel">★ {{ nivel() }}</p>
+              <p class="progreso-tip">{{ mensajeProgreso() }}</p>
+            </article>
+          </section>
+
+          </div>
+        }
+
+        @if (seccion() === 'dilemas') {
+          <section class="inicio-lista">
+            <h2>Mis Dilemas</h2>
+            <div class="rejilla-casos">
+              @for (sesion of listaSeccion(); track sesion.id; let i = $index) {
+                <article class="curso">
+                  <div class="franja" [attr.data-tono]="i % 3"></div>
+                  <span class="estado-pill">{{ etiqueta(sesion) }}</span>
+                  <h3>{{ sesion.caso }}</h3>
+                  <p class="sub">{{ sesion.grupo }} · {{ sesion.espacio }}</p>
+                  @if (sesion.nota != null) { <p class="sub">Puntaje {{ sesion.nota }} / 5,0</p> }
+                  @if (sesion.repeticionAutorizada) { <p class="sub">El docente autorizó un nuevo intento.</p> }
+                  <div class="progreso"><div [style.width.%]="barra(sesion)"></div></div>
+                  <small class="avance">{{ barra(sesion) }}% de avance</small>
+                  <div class="curso-acciones">
+                    @if (sesion.repeticionAutorizada || sesion.participacionEstado === 'EN_CURSO' || !sesion.participacionEstado) {
+                      <button class="btn-oscuro" type="button" (click)="iniciarCaso(sesion)">Ingresar al caso</button>
+                    } @else if (sesion.participacionEstado === 'FINALIZADA' && sesion.participacionId) {
+                      <a class="btn-suave" [routerLink]="['/estudiante/participacion', sesion.participacionId]">Ver resultados</a>
+                    } @else if (sesion.estado === 'SIN_INICIAR') {
+                      <p class="sub">Esperando a que el docente inicie la sesión.</p>
+                    } @else if (sesion.estado === 'FINALIZADO' && !sesion.participacionId) {
+                      <p class="sub">No participaste. Ausencia 0,0.</p>
+                    } @else {
+                      <button class="btn-oscuro" type="button" (click)="iniciarCaso(sesion)">Ingresar al caso</button>
+                    }
+                  </div>
+                </article>
+              } @empty { <p class="sub">No hay casos en esta vista.</p> }
+            </div>
+          </section>
+        }
+
+        @if (seccion() === 'avisos') {
+          <section class="inicio-lista">
+            <div class="tarjeta-cabeza">
+              <h2>Avisos</h2>
+              @if (sinLeer()) {
+                <button class="btn-oscuro" type="button" (click)="marcarAvisos()">Marcar como leídos</button>
+              }
+            </div>
+            <div class="aviso-filtros">
+              <button class="btn-suave" type="button" [attr.aria-pressed]="soloNoLeidos()" (click)="soloNoLeidos.set(!soloNoLeidos())">Sin leer</button>
+              <label class="field">
+                <span>Fecha</span>
+                <input type="date" [value]="diaFiltro()" (input)="diaFiltro.set(valorFecha($event))" />
+              </label>
+            </div>
+            @if (!avisos().length) {
+              <p class="sub">No hay avisos todavía.</p>
+            } @else {
+              @for (aviso of avisosVisibles(); track aviso.id; let i = $index) {
+                <article class="aviso-card" [class.sin-leer]="!aviso.leida">
+                  <span class="punto" [attr.data-tono]="i % 3"></span>
+                  <div>
+                    <div class="aviso-meta">
+                      <span class="aviso-canal">{{ aviso.canal }}</span>
+                      <span>{{ fechaAviso(aviso.fecha) }}</span>
+                      @if (!aviso.leida) { <em class="aviso-pill">Sin leer</em> }
+                    </div>
+                    <h3>{{ aviso.titulo }}</h3>
+                    <p class="sub">{{ aviso.cuerpo }}</p>
+                  </div>
+                </article>
+              } @empty { <p class="sub">No hay avisos con ese criterio.</p> }
+            }
+          </section>
+        }
+
+        @if (seccion() === 'perfil') {
+          <section class="inicio-perfil">
+            <div class="perfil-cabeza">
+              <span class="inicio-avatar">{{ iniciales() }}</span>
+              <div>
+                <h2>{{ nombreCompleto() }}</h2>
+                <p class="sub">{{ auth.usuario()?.email }}</p>
+                <p class="sub">Estudiante</p>
+              </div>
+            </div>
+            <div class="perfil-kpis">
+              <article><small>Resueltos</small><strong>{{ finalizados() }}</strong></article>
+              <article><small>Puntaje</small><strong>{{ promedio() }}</strong><span class="sub">sobre 5,0</span></article>
+              <article><small>Avisos</small><strong>{{ sinLeer() }}</strong><span class="sub">sin leer</span></article>
+            </div>
+            <h3>Convocatorias</h3>
+            @for (sesion of (panel()?.sesiones ?? []).slice(0, 5); track sesion.id) {
+              <article class="perfil-caso">
+                <strong>{{ sesion.caso }}</strong>
+                <p class="sub">{{ etiqueta(sesion) }} · {{ sesion.grupo }}@if (sesion.nota != null) { · {{ sesion.nota }} / 5,0 }</p>
+              </article>
+            } @empty { <p class="sub">Aún no tienes convocatorias.</p> }
+          </section>
+        }
+    </app-marco-estudiante>
   `
 })
 export class PanelEstudianteComponent {
   enlaces = enlaces;
   private http = inject(HttpClient);
+  private router = inject(Router);
+  auth = inject(AuthService);
+  private busqueda = inject(BusquedaService);
+  private escenas = inject(EscenaService);
   panel = signal<PanelEstudiante | null>(null);
   error = signal('');
-  busqueda = '';
+  seccion = signal<'inicio' | 'dilemas' | 'avisos' | 'perfil'>('inicio');
+  soloNoLeidos = signal(false);
+  diaFiltro = signal('');
   constructor() {
+    inject(ActivatedRoute).queryParamMap.subscribe((params) => {
+      const vista = params.get('vista');
+      if (vista === 'dilemas' || vista === 'avisos' || vista === 'perfil') this.seccion.set(vista);
+      else this.seccion.set('inicio');
+    });
     this.http.get<PanelEstudiante>('/api/estudiante/panel').subscribe({
       next: (dato) => this.panel.set(dato),
       error: (falla) => this.error.set(mensajeError(falla))
     });
+    effect(() => {
+      const sesion = this.destacado();
+      if (this.panel()) untracked(() => this.cargarFondoDestacado(sesion));
+    });
+  }
+  /**
+   * Con un intento en curso entra directo a la simulación. Si no, pasa por el briefing (presentación, reglas y
+   * "Iniciar simulación"): el intento y su reloj empiezan allí, no al pulsar aquí.
+   */
+  iniciarCaso(sesion: Sesion) {
+    if (sesion.participacionId && sesion.participacionEstado === 'EN_CURSO') {
+      this.router.navigate(['/estudiante/participacion', sesion.participacionId]);
+      return;
+    }
+    this.router.navigate(['/estudiante/sesion', sesion.id]);
   }
   pendientes() { return (this.panel()?.sesiones ?? []).filter((s) => !s.participacionEstado).length; }
   enCurso() { return (this.panel()?.sesiones ?? []).filter((s) => s.participacionEstado === 'EN_CURSO').length; }
@@ -78,9 +303,124 @@ export class PanelEstudianteComponent {
     if (!notas.length) return '—';
     return (notas.reduce((a, b) => a + b, 0) / notas.length).toFixed(1);
   }
+  nombre() {
+    const completo = this.auth.usuario()?.nombre ?? '';
+    return completo.trim().split(/\s+/)[0] || 'estudiante';
+  }
+  nombreCompleto() { return this.auth.usuario()?.nombre ?? 'Estudiante'; }
+  iniciales() {
+    const partes = this.nombreCompleto().trim().split(/\s+/).filter(Boolean);
+    return ((partes[0]?.[0] ?? '') + (partes[1]?.[0] ?? '')).toUpperCase() || 'D';
+  }
+  /** Sesión de la tarjeta "Dilema Destacado" (ver elegirDestacado). */
+  destacado = computed(() => elegirDestacado(this.panel()?.sesiones ?? [], sesionDelIngreso(), Date.now()));
+  /** Inicio del desarrollo situacional, sin HTML y recortado en una frase completa. */
+  textoDestacado = computed(() => resumenDesarrollo(this.destacado()?.desarrollo ?? ''));
+  /** Fondo del primer escenario según el motor de escenas, y el nombre de ese escenario para el letrero. */
+  fondoDestacado = signal<{ ruta: string; escenario: string } | null>(null);
+  private pedidoFondo = 0;
+  altDestacado() {
+    const caso = this.destacado()?.caso;
+    return caso ? `Escena inicial del caso ${caso}` : 'Escena de un caso de DILEMA';
+  }
+  /** Pide al motor de escenas el fondo del PRIMER escenario; sin escenarios, el neutro del tipo de caso. */
+  private cargarFondoDestacado(sesion: Sesion | null) {
+    const pedido = ++this.pedidoFondo;
+    const escenarios = sesion?.escenarios ?? [];
+    const primero = escenarios[0];
+    const caso = {
+      id: sesion?.casoId ?? null, nombre: sesion?.caso ?? '', desarrolloSituacional: sesion?.desarrollo ?? '',
+      contexto: sesion?.contexto ?? '', bloques: escenarios.map((e) => ({ nombre: e.nombre, contexto: e.contexto }))
+    };
+    const escenario = primero?.nombre?.trim() ?? '';
+    this.escenas.elegir(caso, { indice: 0, nombre: primero?.nombre ?? '', contexto: primero?.contexto ?? '' })
+      .then((f) => { if (pedido === this.pedidoFondo) this.fondoDestacado.set({ ruta: f.ruta, escenario }); })
+      .catch(() => { if (pedido === this.pedidoFondo) this.fondoDestacado.set({ ruta: FONDO_NEUTRO, escenario }); });
+  }
+  progresoGeneral() {
+    const lista = this.panel()?.sesiones ?? [];
+    if (!lista.length) return 0;
+    const total = lista.reduce((acc, s) => acc + this.barra(s), 0);
+    return Math.round(total / lista.length);
+  }
+  nivel() {
+    const p = this.progresoGeneral();
+    if (p >= 80) return 'Nivel Avanzado';
+    if (p >= 40) return 'Nivel Explorador';
+    return 'Nivel Inicial';
+  }
+  /** Mensaje de "Tu Progreso", coherente con lo que muestra la tarjeta destacada. */
+  mensajeProgreso() {
+    if (this.progresoGeneral() >= 70) return 'Vas muy bien. Sigue resolviendo dilemas para alcanzar el siguiente nivel.';
+    const caso = this.destacado();
+    if (!caso) return 'Cuando tu docente te asigne un caso, aquí verás tu avance.';
+    const nombre = `«${caso.caso}»`;
+    if (caso.participacionEstado === 'EN_CURSO') return `Retoma ${nombre} donde lo dejaste para subir tu progreso.`;
+    if (caso.repeticionAutorizada || !caso.participacionEstado) {
+      if (caso.estado === 'SIN_INICIAR') return `${nombre} estará disponible cuando tu docente abra la sesión.`;
+      return this.finalizados()
+        ? `Sigue con ${nombre} para subir tu progreso.`
+        : `Empieza ${nombre} para registrar tu primer avance.`;
+    }
+    return 'Revisa tus resultados y sigue con los demás casos en Mis Dilemas.';
+  }
+  listaSeccion() { return this.visibles(); }
   visibles() {
-    const q = this.busqueda.trim().toLowerCase();
-    return (this.panel()?.sesiones ?? []).filter((s) => !q || s.caso.toLowerCase().includes(q) || s.grupo.toLowerCase().includes(q));
+    const q = this.busqueda.texto().trim().toLowerCase();
+    return (this.panel()?.sesiones ?? []).filter((s) => {
+      if (!q) return true;
+      return `${s.caso} ${s.grupo} ${s.espacio} ${s.contexto} ${s.desarrollo}`.toLowerCase().includes(q);
+    });
+  }
+  hoy() { return (this.panel()?.sesiones ?? []).filter((s) => this.mismoDia(s.inicio)); }
+  proximos() { return (this.panel()?.sesiones ?? []).filter((s) => !s.participacionEstado || s.participacionEstado === 'EN_CURSO').slice(0, 4); }
+  avisos() { return this.panel()?.avisos ?? []; }
+  avisosVisibles() {
+    const dia = this.diaFiltro();
+    return this.avisos().filter((aviso) => {
+      if (this.soloNoLeidos() && aviso.leida) return false;
+      return !dia || this.diaLocal(aviso.fecha) === dia;
+    });
+  }
+  valorFecha(evento: Event) {
+    return (evento.target as HTMLInputElement).value;
+  }
+  sinLeer() { return this.panel()?.sinLeer ?? this.avisos().filter((a) => !a.leida).length; }
+  fechaAviso(iso: string) {
+    const fecha = new Date(iso);
+    if (Number.isNaN(fecha.getTime())) return iso;
+    return fecha.toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' });
+  }
+  private diaLocal(iso: string) {
+    const fecha = new Date(iso);
+    if (Number.isNaN(fecha.getTime())) return (iso ?? '').slice(0, 10);
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+    const dia = String(fecha.getDate()).padStart(2, '0');
+    return `${fecha.getFullYear()}-${mes}-${dia}`;
+  }
+  marcarAvisos() {
+    const pendientes = this.avisos().filter((a) => !a.leida).map((aviso) => this.http.post<void>(`/api/estudiante/avisos/${aviso.id}/leer`, {}));
+    if (!pendientes.length) return;
+    forkJoin(pendientes).subscribe({
+      complete: () => this.http.get<PanelEstudiante>('/api/estudiante/panel').subscribe((dato) => this.panel.set(dato))
+    });
+  }
+  etiqueta(sesion: Sesion) {
+    if (sesion.participacionEstado === 'FINALIZADA') return 'Finalizado';
+    if (sesion.participacionEstado === 'AUSENTE') return 'Ausente';
+    if (sesion.participacionEstado === 'EN_CURSO') return 'En curso';
+    return 'Pendiente';
+  }
+  cuando(iso: string) {
+    const fecha = new Date(iso);
+    if (Number.isNaN(fecha.getTime())) return iso;
+    return fecha.toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  }
+  private mismoDia(iso: string) {
+    const fecha = new Date(iso);
+    if (Number.isNaN(fecha.getTime())) return false;
+    const hoy = new Date();
+    return fecha.getFullYear() === hoy.getFullYear() && fecha.getMonth() === hoy.getMonth() && fecha.getDate() === hoy.getDate();
   }
   barra(sesion: Sesion) {
     if (sesion.participacionEstado === 'FINALIZADA' || sesion.participacionEstado === 'AUSENTE') return 100;
@@ -95,55 +435,64 @@ export class PanelEstudianteComponent {
 
 @Component({
   selector: 'app-briefing',
-  imports: [MarcoComponent, RouterLink, FormsModule, MatButtonModule, MatCardModule],
+  imports: [MarcoEstudianteComponent, RouterLink, FormsModule, MatButtonModule, MatCardModule],
   template: `
-    <app-marco [enlaces]="enlaces" modo="superior">
+    <app-marco-estudiante activa="dilemas" [sinLeer]="sinLeer()">
       @if (sesion(); as actual) {
-        <section class="stack">
-          <p class="kicker">{{ actual.codigo }}</p>
-          <h1>Bienvenido al caso: {{ actual.caso }}</h1>
-          <figure class="escena-juego">
-            <img src="/escenas/colinas-1.jpg" alt="Vista de Las Colinas al atardecer" />
-            <figcaption class="hud">
-              <span>LAS COLINAS</span>
-              <span>ESCENA 1 · LLEGADA AL BARRIO</span>
-            </figcaption>
-          </figure>
-          <article class="card stack">
+        <section class="tablero">
+          <header class="saludo">
+            <p class="kicker">{{ actual.codigo }}</p>
+            <h1>Bienvenido al caso: {{ actual.caso }}</h1>
+          </header>
+          <article class="tarjeta stack">
             <h2>Mensaje del docente</h2>
             <p>{{ actual.mensaje || 'Sigue las instrucciones del caso y responde cada escena.' }}</p>
           </article>
           <div class="grid-2">
-            <article class="card stack">
+            <article class="tarjeta stack">
               <h2>Reglas de participación</h2>
-              <p>1. Tiempo máximo: {{ actual.tiempoMaxMin }} minutos.</p>
-              <p>2. No podrás ingresar si ya pasó el tiempo de tolerancia.</p>
-              <p>3. La retroalimentación se muestra solo al finalizar.</p>
+              <dl class="resumen-lista">
+                <div><dt>Tiempo</dt><dd>{{ actual.tiempoMaxMin }} min</dd></div>
+                <div><dt>Ingreso</dt><dd>{{ actual.toleranciaMin }} min</dd></div>
+                <div><dt>Inicio</dt><dd>{{ horaCorta(actual.inicio) }}</dd></div>
+                <div><dt>Fin</dt><dd>{{ horaCorta(actual.fin) }}</dd></div>
+              </dl>
+              <p class="resumen-nota">La retroalimentación se muestra al finalizar.</p>
             </article>
-            <article class="card stack">
+            <article class="tarjeta stack">
               <h2>Ficha</h2>
-              <p>{{ actual.grupo }} · {{ actual.espacio }}</p>
-              <p>{{ actual.lugar || 'Sin lugar físico' }}</p>
+              <dl class="resumen-lista">
+                <div><dt>Grupo</dt><dd>{{ actual.grupo }}</dd></div>
+                <div><dt>Espacio</dt><dd>{{ actual.espacio }}</dd></div>
+                <div><dt>Lugar</dt><dd>{{ actual.lugar || 'Virtual' }}</dd></div>
+                <div><dt>Estado</dt><dd>{{ actual.estado }}@if (actual.participacionEstado) { · {{ actual.participacionEstado }} }</dd></div>
+                @if (actual.nota != null) { <div><dt>Puntaje</dt><dd>{{ actual.nota }} / 5,0</dd></div> }
+                @if (actual.progreso != null) { <div><dt>Avance</dt><dd>{{ actual.progreso }}%</dd></div> }
+              </dl>
             </article>
           </div>
+          @if (actual.sensible && actual.advertencia) {
+            <article class="aviso"><strong>Advertencia.</strong> {{ actual.advertencia }}</article>
+          }
+          @if (actual.contexto) { <article class="tarjeta"><h2>Contexto</h2><p>{{ actual.contexto }}</p></article> }
           <div [innerHTML]="actual.desarrollo"></div>
           <label class="check"><input type="checkbox" [(ngModel)]="acepto" /> He leído y acepto las reglas de participación.</label>
           @if (error()) { <p class="error">{{ error() }}</p> }
           <div class="row">
-            <a mat-stroked-button routerLink="/estudiante">Volver al panel</a>
+            <a class="btn-suave" routerLink="/estudiante">Volver al panel</a>
             @if (actual.estado === 'SIN_INICIAR') {
               <p class="sub">El docente todavía no inicia la sesión.</p>
             } @else if (actual.participacionEstado === 'FINALIZADA' && actual.participacionId && !actual.repeticionAutorizada) {
-              <button mat-flat-button color="primary" type="button" (click)="ver(actual.participacionId)">Ver resultados</button>
+              <button class="btn-oscuro" type="button" (click)="ver(actual.participacionId)">Ver resultados</button>
             } @else if (actual.estado === 'FINALIZADO' && !actual.repeticionAutorizada) {
               <p class="sub">La sesión ya finalizó.</p>
             } @else {
-              <button mat-flat-button color="primary" type="button" [disabled]="!acepto" (click)="iniciar(actual)">{{ actual.repeticionAutorizada ? 'Iniciar nuevo intento' : 'Iniciar simulación' }}</button>
+              <button class="btn-oscuro" type="button" [disabled]="!acepto" (click)="iniciar(actual)">{{ actual.repeticionAutorizada ? 'Iniciar nuevo intento' : 'Iniciar simulación' }}</button>
             }
           </div>
         </section>
       }
-    </app-marco>
+    </app-marco-estudiante>
   `
 })
 export class BriefingComponent {
@@ -152,12 +501,16 @@ export class BriefingComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   sesion = signal<Sesion | null>(null);
+  sinLeer = signal(0);
   acepto = false;
   error = signal('');
   constructor() {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.http.get<PanelEstudiante>('/api/estudiante/panel').subscribe({
-      next: (panel) => this.sesion.set(panel.sesiones.find((item) => item.id === id) ?? null),
+      next: (panel) => {
+        this.sesion.set(panel.sesiones.find((item) => item.id === id) ?? null);
+        this.sinLeer.set(panel.sinLeer ?? panel.avisos.filter((a) => !a.leida).length);
+      },
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
@@ -168,100 +521,153 @@ export class BriefingComponent {
     });
   }
   ver(id: number) { this.router.navigate(['/estudiante/participacion', id]); }
+  horaCorta(valor: string | null | undefined) {
+    if (!valor) return '—';
+    const fecha = new Date(valor);
+    if (Number.isNaN(fecha.getTime())) return valor;
+    return fecha.toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  }
 }
 
 @Component({
-  imports: [MarcoComponent, RouterLink, MatButtonModule, MatCardModule],
+  imports: [MarcoEstudianteComponent, NovelaReproductorComponent, ResultadosNovelaComponent],
   template: `
-    <app-marco [enlaces]="enlaces" modo="superior">
+    <app-marco-estudiante [activa]="menuActivo()" [sinLeer]="sinLeer()">
       @if (juego(); as actual) {
-        @if (actual.estado === 'FINALIZADA' || actual.estado === 'AUSENTE') {
-          <section class="stack">
-            <p class="kicker">Informe del caso</p>
-            <h1>Resultados del caso</h1>
-            <p class="sub">{{ actual.caso }}</p>
-            <p class="nota">Calificación final: {{ actual.nota ?? '—' }} / 5,0</p>
-            <p class="sub">Nivel: {{ nivel(actual.nota) }}</p>
-            @if (actual.aciertos !== null) {
-              <p class="sub">Acertaste {{ actual.aciertos }} de {{ actual.total }} · Fallaste {{ actual.errores }} · Sin responder {{ actual.sinResponder }}</p>
-            }
-            <h2>Resumen de respuestas</h2>
-            @for (pregunta of actual.preguntas; track pregunta.id) {
-              <article class="item">
-                <small>{{ pregunta.bloque }}</small>
-                <h3>{{ pregunta.enunciado }}</h3>
-                @for (opcion of pregunta.opciones; track opcion.id) {
-                  <div class="opcion" [class.bien]="opcion.correcta" [class.mal]="pregunta.seleccionId === opcion.id && opcion.correcta === false" [class.elegida]="pregunta.seleccionId === opcion.id">
-                    {{ pregunta.seleccionId === opcion.id ? 'Tu elección: ' : '' }}{{ opcion.texto }}
-                    @if (pregunta.seleccionId === opcion.id || opcion.correcta) {
-                      <p class="sub">{{ opcion.explicacion }}</p>
-                      @if (opcion.fundamento) { <p class="sub">{{ opcion.fundamento }}</p> }
+        @if (novela(); as caso) {
+          <!--
+            La MISMA ventana que la vista previa del docente: pantalla completa, franja superior con Música y Cerrar,
+            y el caso completo (portada, presentación, escenarios, preguntas y resultados al final).
+          -->
+          <div class="modal-vista" role="dialog" aria-modal="true" [attr.aria-label]="'Caso: ' + actual.caso">
+            <header class="modal-cabeza">
+              <div class="modal-info">
+                @if (actual.estado === 'EN_CURSO') {
+                  <strong class="reloj-juego" [class.urgente]="restante() <= 60" role="timer"
+                    [attr.aria-label]="'Tiempo restante ' + reloj()">{{ reloj() }}</strong>
+                }
+                <span class="modal-titulo">{{ tituloEscena() }}</span>
+              </div>
+              @if (musica.disponible()) {
+                <button type="button" class="musica" [attr.aria-pressed]="musica.activa()"
+                  [attr.aria-label]="musica.activa() ? 'Silenciar música' : 'Activar música'" (click)="musica.alternar()">
+                  <svg viewBox="0 0 20 20" aria-hidden="true">
+                    <path class="parlante" d="M3 7.5h3l4.5-3.5v12L6 12.5H3z" />
+                    @if (musica.activa()) {
+                      <path d="M13.5 7.2a4 4 0 0 1 0 5.6M15.8 5a7 7 0 0 1 0 10" />
+                    } @else {
+                      <path d="M13.5 7.5l5 5M18.5 7.5l-5 5" />
                     }
-                  </div>
-                }
-              </article>
-            }
-            <a mat-stroked-button routerLink="/estudiante">Volver al panel</a>
-          </section>
+                  </svg>
+                  <span>Música</span>
+                </button>
+              }
+              <button type="button" class="cerrar" (click)="volverAlPanel()"
+                [attr.aria-label]="actual.estado === 'EN_CURSO' ? 'Cerrar y volver al panel (el intento sigue abierto y el reloj sigue corriendo)' : 'Cerrar y volver al panel'">Cerrar</button>
+            </header>
+            <div class="modal-cuerpo">
+              <app-novela-reproductor #reproductor
+                [caso]="caso" [personajes]="elenco()" [tiempoRestante]="restante()"
+                [resultados]="resultados()" [mostrarCerrar]="true" (cerrar)="volverAlPanel()"
+                anchoMaximo="calc((100vh - 130px) * 16 / 9)"
+                [modoEstudiante]="true" [seleccion]="seleccion()" [empezarEn]="empezarEn()"
+                textoFin="Enviando tus respuestas…" [textoVolver]="null"
+                (opcion)="elegirNovela($event)" (deshacer)="deshacer()" (finalizar)="finalizar()" />
+              @if (error()) { <p class="error-juego" role="alert">{{ error() }}</p> }
+            </div>
+          </div>
         } @else {
-          @if (pregunta(); as item) {
-            <section class="stack">
-              <div class="row">
-                <h2>Escena {{ indice() + 1 }}: {{ item.bloque }}</h2>
-                <strong>Tiempo restante: {{ reloj() }}</strong>
-              </div>
-              <div class="progreso"><div [style.width.%]="actual.progreso"></div></div>
-              <figure class="escena-juego">
-                <img [src]="escenaSrc()" [alt]="'Escena ' + (indice() + 1) + ': ' + item.bloque" />
-                <figcaption class="hud">
-                  <span>{{ lugar() }}</span>
-                  <span>ESCENA {{ indice() + 1 }} · {{ item.bloque }}</span>
-                </figcaption>
-              </figure>
-              <article class="card">
-                <p class="kicker">Contexto de la situación</p>
-                <p>{{ item.contexto }}</p>
-              </article>
-              <article class="card stack">
-                <p class="kicker">Interacción evaluativa</p>
-                <h2>{{ item.enunciado }}</h2>
-                @if (item.pista) { <p class="aviso"><strong>Herramienta.</strong> {{ item.pista }}</p> }
-                @for (opcion of item.opciones; track opcion.id; let i = $index) {
-                  <button class="opcion radio" [class.elegida]="item.seleccionId === opcion.id" type="button" (click)="elegir(item.id, opcion.id)">
-                    <span>{{ item.seleccionId === opcion.id ? '●' : '○' }}</span>
-                    <span>Opción {{ letras[i] }}: {{ opcion.texto }}</span>
-                  </button>
-                }
-              </article>
-              @if (error()) { <p class="error">{{ error() }}</p> }
-              <div class="row">
-                <button mat-stroked-button type="button" [disabled]="indice() === 0" (click)="mover(-1)">Escena anterior</button>
-                <button mat-stroked-button type="button" (click)="deshacer()">Deshacer</button>
-                @if (indice() < actual.preguntas.length - 1) {
-                  <button mat-flat-button color="primary" type="button" (click)="mover(1)">Siguiente escena</button>
-                } @else {
-                  <button mat-flat-button color="primary" type="button" (click)="finalizar()">Finalizar</button>
-                }
-              </div>
+          <!-- Entrada por "Ver resultados" desde el panel: la misma pantalla de resultados. -->
+          @if (resultados(); as r) {
+            <section class="resultados-estudiante" [style.background-image]="fondoResultados()">
+              <app-resultados-novela [resultados]="r" [textoReiniciar]="null" textoCerrar="Volver al panel"
+                (cerrar)="volverAlPanel()" />
             </section>
           }
         }
       }
-    </app-marco>
-  `
+      @if (error() && !novela()) { <p class="error" role="alert">{{ error() }}</p> }
+    </app-marco-estudiante>
+  `,
+  styles: [`
+    /* Copia de la ventana de la vista previa del docente (docente.component.ts). */
+    .modal-vista { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; background: #0f141c; color: #f3f3f3; }
+    .modal-cabeza { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 10px 16px; background: #0a1733; }
+    .modal-cabeza .cerrar, .modal-cabeza .musica { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
+      border-radius: 999px; border: 1px solid #cfd8ee; background: #fff; color: #0a1733; font: inherit; font-weight: 650; line-height: 1.5; cursor: pointer; }
+    .modal-cabeza .musica + .cerrar { margin-left: 0; }
+    .modal-cabeza .musica svg { width: 1.15em; height: 1.15em; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+    .modal-cabeza .musica .parlante { fill: currentColor; }
+    .modal-cabeza .cerrar:focus-visible, .modal-cabeza .musica:focus-visible { outline: 2px solid #9fe3d9; outline-offset: 2px; }
+    .modal-cuerpo { flex: 1; overflow: auto; padding: 12px 16px; }
+    /* Lo único que el estudiante tiene de más: el reloj y la escena actual, a la izquierda de la franja. */
+    .modal-info { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .modal-titulo { font-weight: 650; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .reloj-juego { font-variant-numeric: tabular-nums; min-width: 4.6rem; text-align: center; padding: 6px 14px; line-height: 1.5;
+      border-radius: 999px; background: rgba(255,255,255,.12); font-size: .95rem; letter-spacing: .04em; }
+    .reloj-juego.urgente { background: #991b1b; }
+    .error-juego { margin: 10px auto 0; max-width: 720px; padding: 10px 14px; border-radius: 10px; background: #fff1f0; color: #9b1c12; }
+    :host { display: block; width: 100%; height: 100%; min-width: 0; }
+    /* La ficha usa todo el ancho del panel y se desplaza si el contenido no cabe. */
+    .resultados-estudiante { width: 100%; height: 100%; min-height: 0; border-radius: 18px; overflow: auto;
+      background-color: #0f1726; background-size: cover; background-position: center;
+      scrollbar-width: thin; scrollbar-color: #8ea0c6 transparent; }
+    .resultados-estudiante::-webkit-scrollbar { display: block; width: 10px; height: 10px; }
+    .resultados-estudiante::-webkit-scrollbar-thumb { background: #8ea0c6; border-radius: 999px; }
+    @media (max-width: 768px) { .modal-cuerpo { padding: 8px; } }
+  `]
 })
 export class SimulacionComponent {
-  enlaces = enlaces;
-  letras = ['A', 'B', 'C', 'D', 'E', 'F'];
   private http = inject(HttpClient);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private escenas = inject(EscenaService);
+  readonly musica = inject(MusicaNovelaService);
+  private readonly reproductor = viewChild<NovelaReproductorComponent>('reproductor');
   juego = signal<Participacion | null>(null);
-  indice = signal(0);
+  novela = signal<CasoReproductor | null>(null);
+  elenco = signal<PersonajeCaso[]>([]);
+  /** Escenario donde arranca la novela al entrar (se fija una sola vez; si cambiara, la novela saltaría). */
+  empezarEn = signal<number | null>(null);
   error = signal('');
   restante = signal(0);
+  sinLeer = signal(0);
+  fondoResultados = signal<string | null>(null);
+  /** Pregunta del backend → "escenario:pregunta" del reproductor. */
+  private claves = new Map<number, string>();
   private timer = 0;
   private cerradoPorTiempo = false;
+
+  /** Respuestas guardadas en el backend, en el formato del reproductor ("escenario:pregunta" → índice de la opción). */
+  readonly seleccion = computed(() => {
+    const r: Record<string, number> = {};
+    for (const q of this.juego()?.preguntas ?? []) {
+      const clave = this.claves.get(q.id);
+      const i = q.opciones.findIndex((o) => o.id === q.seleccionId);
+      if (clave && i >= 0) r[clave] = i;
+    }
+    return r;
+  });
+  /** Resultados para la pantalla final: los del backend, solo acomodados. */
+  readonly resultados = computed(() => {
+    const j = this.juego();
+    return j && (j.estado === 'FINALIZADA' || j.estado === 'AUSENTE') ? resultadosDeParticipacion(j) : null;
+  });
+  /** Franja superior: el nombre del caso en la portada y la presentación; luego la escena actual. */
+  readonly tituloEscena = computed(() => {
+    const r = this.reproductor();
+    const paso = r?.paso();
+    const caso = this.juego()?.caso ?? '';
+    if (!r || !paso || paso.escena.escenario < 0) return caso;
+    if (paso.tipo === 'fin') return this.resultados() ? 'Resultados' : caso;
+    const b = r.bloqueActual();
+    return b.nombre ? `Escena ${b.indice + 1} · ${b.nombre}` : caso;
+  });
+
   constructor() {
+    this.http.get<PanelEstudiante>('/api/estudiante/panel').subscribe({
+      next: (dato) => this.sinLeer.set(dato.sinLeer ?? dato.avisos.filter((a) => !a.leida).length)
+    });
     this.cargar();
     this.timer = window.setInterval(() => {
       this.restante.update((valor) => {
@@ -270,103 +676,149 @@ export class SimulacionComponent {
         return siguiente;
       });
     }, 1000);
-    inject(DestroyRef).onDestroy(() => clearInterval(this.timer));
+    // La música empieza después del primer clic o tecla en la página (los navegadores no dejan sonar antes).
+    this.musica.comprobar();
+    const primerGesto = () => {
+      quitar();
+      if (this.juego()?.estado === 'EN_CURSO') this.musica.iniciar();
+    };
+    const quitar = () => {
+      document.removeEventListener('pointerdown', primerGesto);
+      document.removeEventListener('keydown', primerGesto);
+    };
+    document.addEventListener('pointerdown', primerGesto);
+    document.addEventListener('keydown', primerGesto);
+    inject(DestroyRef).onDestroy(() => {
+      clearInterval(this.timer);
+      document.body.style.overflow = '';
+      quitar();
+      this.musica.detener();
+    });
   }
-  pregunta() { return this.juego()?.preguntas[this.indice()] ?? null; }
-  lugar() {
-    const nombre = this.juego()?.caso ?? '';
-    return /colinas/i.test(nombre) ? 'LAS COLINAS' : nombre.toUpperCase();
-  }
-  escenaSrc() {
-    const n = (this.indice() % 3) + 1;
-    return `/escenas/colinas-${n}.jpg`;
-  }
-  nivel(nota: number | null) {
-    if (nota == null) return '—';
-    if (nota >= 4.6) return 'Superior';
-    if (nota >= 4) return 'Alto';
-    if (nota >= 3) return 'Básico';
-    return 'Bajo';
+
+  menuActivo() {
+    return this.juego()?.estado === 'EN_CURSO' ? 'dilemas' : 'inicio';
   }
   reloj() {
     const segundos = this.restante();
     return `${Math.floor(segundos / 60)}:${String(segundos % 60).padStart(2, '0')}`;
   }
+  volverAlPanel() { this.router.navigate(['/estudiante']); }
+
+  elegirNovela(eleccion: OpcionElegida) {
+    const pregunta = this.novela()?.bloques[eleccion.bloque]?.preguntas[eleccion.pregunta];
+    const opcion = pregunta?.opciones[eleccion.opcion];
+    if (pregunta?.id && opcion?.id) this.elegir(pregunta.id, opcion.id);
+  }
   elegir(preguntaId: number, opcionId: number) {
     const id = this.juego()?.id;
     this.http.post<Participacion>(`/api/participaciones/${id}/responder`, { preguntaId, opcionId }).subscribe({
-      next: (dato) => this.juego.set(dato),
+      next: (dato) => { this.error.set(''); this.recibir(dato); },
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
   deshacer() {
     this.http.post<Participacion>(`/api/participaciones/${this.juego()?.id}/deshacer`, {}).subscribe({
-      next: (dato) => this.juego.set(dato),
+      next: (dato) => { this.error.set(''); this.recibir(dato); },
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
   finalizar() {
     this.http.post<Participacion>(`/api/participaciones/${this.juego()?.id}/finalizar`, {}).subscribe({
-      next: (dato) => this.juego.set(dato),
-      error: (falla) => this.error.set(mensajeError(falla))
+      next: (dato) => this.recibir(dato),
+      error: (falla) => {
+        this.error.set(mensajeError(falla));
+        // Si ya estaba cerrada (por ejemplo, por tiempo), se muestran sus resultados; si no, vuelve a la pregunta.
+        this.http.get<Participacion>(`/api/participaciones/${this.juego()?.id}`).subscribe({
+          next: (dato) => {
+            if (dato.estado !== 'EN_CURSO') this.recibir(dato);
+            else this.reproductor()?.volverAUltimaPregunta();
+          },
+          error: () => this.reproductor()?.volverAUltimaPregunta()
+        });
+      }
     });
   }
   private porTiempo() {
     if (this.cerradoPorTiempo || this.juego()?.estado !== 'EN_CURSO') return;
     this.cerradoPorTiempo = true;
+    this.reproductor()?.irAlFin();
     this.finalizar();
   }
-  mover(delta: number) {
-    const total = this.juego()?.preguntas.length ?? 0;
-    this.indice.update((valor) => Math.min(total - 1, Math.max(0, valor + delta)));
+  /** Respuesta del backend: si el intento terminó, la música se detiene y se muestran los resultados. */
+  private recibir(dato: Participacion) {
+    this.juego.set(dato);
+    if (dato.estado !== 'EN_CURSO') {
+      this.musica.detener();
+      this.ponerFondoResultados(dato);
+    }
   }
   private cargar() {
     const id = this.route.snapshot.paramMap.get('id');
     this.http.get<Participacion>(`/api/participaciones/${id}`).subscribe({
       next: (dato) => {
-        this.juego.set(dato);
         this.restante.set(Math.max(0, dato.segundosMax - dato.segundosUsados));
+        if (dato.estado === 'EN_CURSO') {
+          const caso = this.armarNovela(dato);
+          this.juego.set(dato);
+          this.empezarEn.set(this.primerPendiente(dato, caso));
+          this.elenco.set(dato.personajes ?? []);
+          this.novela.set(caso);
+          document.body.style.overflow = 'hidden';
+        } else {
+          this.recibir(dato);
+        }
       },
       error: (falla) => this.error.set(mensajeError(falla))
     });
+  }
+  /**
+   * Al entrar sin respuestas, la portada (como la vista previa del docente). Al volver a un intento a medias, el primer
+   * escenario con preguntas sin responder; si no queda ninguno, el último.
+   */
+  private primerPendiente(dato: Participacion, caso: CasoReproductor): number | null {
+    if (!dato.preguntas.some((q) => q.seleccionId != null)) return null;
+    const pendiente = caso.bloques.findIndex((b) => b.preguntas.some((q) => dato.preguntas.find((x) => x.id === q.id)?.seleccionId == null));
+    return pendiente >= 0 ? pendiente : Math.max(0, caso.bloques.length - 1);
+  }
+  /** Agrupa las preguntas por escenario (bloqueIndice del backend) en el formato del reproductor, sin la correcta. */
+  private armarNovela(dato: Participacion): CasoReproductor {
+    const bloques: CasoReproductor['bloques'] = [];
+    const indices = new Map<string, number>();
+    this.claves.clear();
+    for (const pregunta of dato.preguntas) {
+      const llave = pregunta.bloqueIndice != null ? `i${pregunta.bloqueIndice}` : `n${pregunta.bloque}`;
+      let b = indices.get(llave);
+      if (b === undefined) {
+        b = bloques.length;
+        indices.set(llave, b);
+        bloques.push({ nombre: pregunta.bloque, contexto: pregunta.contexto, preguntas: [] });
+      }
+      this.claves.set(pregunta.id, `${b}:${bloques[b].preguntas.length}`);
+      bloques[b].preguntas.push({
+        id: pregunta.id, enunciado: pregunta.enunciado, pista: pregunta.pista,
+        opciones: pregunta.opciones.map((o) => ({ id: o.id, texto: o.texto }))
+      });
+    }
+    return { id: dato.casoId, nombre: dato.caso, desarrolloSituacional: dato.desarrollo, contexto: dato.contexto, bloques };
+  }
+  /** Fondo de la pantalla de resultados: el del último escenario, oscurecido. */
+  private ponerFondoResultados(dato: Participacion) {
+    const caso = this.armarNovela(dato);
+    const i = caso.bloques.length - 1;
+    if (i < 0) return;
+    this.escenas.elegir(caso, { indice: i, nombre: caso.bloques[i].nombre, contexto: caso.bloques[i].contexto })
+      .then((f) => this.fondoResultados.set(`linear-gradient(rgba(11,18,32,.88), rgba(11,18,32,.94)), url("${f.ruta}")`))
+      .catch(() => undefined);
   }
 }
 
 @Component({
   selector: 'app-avisos',
-  imports: [MarcoComponent, MatButtonModule, MatCardModule],
-  template: `
-    <app-marco [enlaces]="enlaces" modo="superior">
-      <section class="card stack">
-        <div class="row">
-          <div>
-            <p class="kicker">Notificaciones</p>
-            <h1>Centro de avisos</h1>
-          </div>
-          <button mat-flat-button color="primary" type="button" (click)="marcar()">Marcar todo como leído</button>
-        </div>
-        @for (aviso of visibles(); track aviso.id) {
-          <article class="item">
-            <h3>{{ aviso.titulo }}</h3>
-            <p class="sub">{{ aviso.cuerpo }}</p>
-          </article>
-        } @empty { <p class="sub">No hay avisos pendientes.</p> }
-      </section>
-    </app-marco>
-  `
+  template: ''
 })
 export class AvisosComponent {
-  enlaces = enlaces;
-  private http = inject(HttpClient);
-  avisos = signal<Aviso[]>([]);
-  constructor() { this.refrescar(); }
-  visibles() { return this.avisos().filter((aviso) => !aviso.leida); }
-  marcar() {
-    const pendientes = this.visibles().map((aviso) => this.http.post<void>(`/api/estudiante/avisos/${aviso.id}/leer`, {}));
-    if (!pendientes.length) return;
-    forkJoin(pendientes).subscribe({ complete: () => this.refrescar(), error: () => this.refrescar() });
-  }
-  private refrescar() {
-    this.http.get<PanelEstudiante>('/api/estudiante/panel').subscribe((panel) => this.avisos.set(panel.avisos));
+  constructor() {
+    inject(Router).navigate(['/estudiante'], { queryParams: { vista: 'avisos' }, replaceUrl: true });
   }
 }

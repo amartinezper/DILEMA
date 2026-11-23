@@ -17,15 +17,33 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   }));
 };
 
+/** El API antiguo anteponía el código del requisito. El cliente ve la explicación, no el código. */
+const explicaciones: Record<string, string> = {
+  'RF-23: la ventana de la sesión ya cerró.': 'Esta convocatoria ya terminó. La fecha de cierre pasó y ya no puedes entrar con este código.',
+  'RF-22: ya pasó el tiempo definido por el docente para iniciar.': 'Ya pasó el tiempo que el docente dejó para entrar. Pídele que amplíe el plazo si todavía debes participar.',
+  'RF-25: la sesión ya finalizó y no admite participación.': 'Esta sesión ya finalizó, así que ya no puedes participar.',
+  'RF-25: ya registraste una participación. Solo el docente creador puede autorizar otra.': 'Ya completaste este caso. Para intentarlo otra vez, el docente que lo creó tiene que autorizarlo.',
+  'RF-19: solo se finaliza una sesión en curso.': 'Solo puedes cerrar una sesión que esté en curso.',
+  'RF-19: solo se inicia una sesión sin iniciar.': 'Solo puedes abrir una sesión que todavía no ha comenzado.',
+  'RF-09: no se puede publicar. ': 'No se puede publicar el caso. '
+};
+
+export function paraCliente(texto: string): string {
+  const conocido = explicaciones[texto];
+  if (conocido) return conocido;
+  const limpio = texto.replace(/\b(?:RF|INV)-\d+:\s*/g, '').replace(/[ \t]{2,}/g, ' ').trim();
+  return limpio || 'No se pudo completar la operación.';
+}
+
 export function mensajeError(error: unknown): string {
   if (error instanceof HttpErrorResponse) {
     const cuerpo = error.error as { mensaje?: string } | null;
-    return cuerpo?.mensaje ?? 'No se pudo completar la operación.';
+    return paraCliente(cuerpo?.mensaje ?? 'No se pudo completar la operación.');
   }
   return 'No se pudo completar la operación.';
 }
 
-export interface Usuario { id: number; nombre: string; email: string; rol: string; permisos: string[]; }
+export interface Usuario { id: number; nombre: string; email: string; rol: string; permisos: string[]; activo?: boolean; }
 export interface SesionAuth { token: string; usuario: Usuario; sesionId: number | null; }
 export interface Opcion { id?: number; texto: string; correcta: boolean; explicacion: string; fundamento: string; }
 export interface Pregunta { id?: number; enunciado: string; pista: string; criterio: string; peso: number; opciones: Opcion[]; }
@@ -40,12 +58,15 @@ export interface Caso {
 export interface CasoResumen { id: number; nombre: string; estado: string; tiempoEstimadoMin: number; bloques: number; preguntas: number; }
 export interface Persona { id: number; nombre: string; email: string; }
 export interface Grupo { id: number; nombre: string; espacioAcademico: string; docente: Persona; estudiantes: Persona[]; }
+export interface EscenarioVista { nombre: string; contexto: string; }
 export interface Sesion {
   id: number; codigo: string; estado: string; inicio: string; fin: string; tiempoMaxMin: number; toleranciaMin: number;
   lugar: string; mensaje: string; casoId: number; caso: string; grupoId: number; grupo: string; espacio: string;
   desarrollo: string; contexto: string; sensible: boolean; advertencia: string;
   participacionId: number | null; participacionEstado: string | null; nota: number | null; progreso: number | null;
   repeticionAutorizada: boolean;
+  /** Personajes (con sus escenarios) y escenarios del caso, para la novela del briefing. */
+  personajes?: PersonajeCaso[]; escenarios?: EscenarioVista[];
 }
 export interface Aviso { id: number; canal: string; titulo: string; cuerpo: string; leida: boolean; fecha: string; }
 export interface PanelEstudiante { sesiones: Sesion[]; avisos: Aviso[]; sinLeer: number; }
@@ -53,12 +74,20 @@ export interface OpcionJuego { id: number; texto: string; correcta: boolean | nu
 export interface PreguntaJuego {
   id: number; bloque: string; contexto: string; enunciado: string; pista: string | null; criterio: string;
   seleccionId: number | null; opciones: OpcionJuego[]; puntaje: number | null;
+  /** Escenario de la pregunta (desde 0) y peso de la rúbrica. */
+  bloqueIndice?: number; peso?: number | null;
 }
 export interface Participacion {
   id: number; sesionId: number; estado: string; caso: string; progreso: number; total: number;
   segundosMax: number; segundosUsados: number; nota: number | null; retroalimentacion: string | null;
   estudiante: string; preguntas: PreguntaJuego[]; repeticionAutorizada: boolean;
   aciertos: number | null; errores: number | null; sinResponder: number | null;
+  casoId?: number; desarrollo?: string; contexto?: string; personajes?: PersonajeCaso[];
 }
 export interface Fila { participacionId: number | null; estudianteId: number; estudiante: string; email: string; estado: string; nota: number | null; retroalimentacion: string | null; repeticionAutorizada: boolean; }
-export interface Auditoria { id: number; fecha: string; accion: string; detalle: string; usuario: string; }
+export interface IntentoConsultado { id: number; estudiante: string; numeroIntento: number; estado: string; }
+export interface SesionRealizada { id: number; caso: string; grupo: string; inicio: string; fin: string; }
+export interface RespuestaVigente { pregunta: string; opcion: string | null; acertada: boolean | null; explicacion: string | null; fundamento: string | null; }
+export interface ParticipacionConsultada {
+  id: number; estudiante: string; numeroIntento: number; valoracionGeneral: string; respuestas: RespuestaVigente[];
+}

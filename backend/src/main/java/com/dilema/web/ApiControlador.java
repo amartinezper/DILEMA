@@ -53,6 +53,11 @@ public class ApiControlador {
         if (header != null && header.startsWith("Bearer ")) tokens.revocar(header.substring(7));
     }
 
+    @PutMapping("/auth/perfil")
+    Contratos.UsuarioVista perfil(@RequestBody Contratos.PerfilIn cuerpo, HttpServletRequest request) {
+        return auth.actualizarPerfil(FiltroToken.actual(request), cuerpo);
+    }
+
     @GetMapping("/estudiante/panel")
     Contratos.PanelEstudiante panel(HttpServletRequest request) {
         return participaciones.panel(FiltroToken.actual(request));
@@ -124,6 +129,16 @@ public class ApiControlador {
         return academia.crearGrupo(docente(request), cuerpo);
     }
 
+    @PutMapping("/docente/grupos/{id}")
+    Contratos.GrupoVista editarGrupo(@PathVariable Long id, @RequestBody Contratos.GrupoIn cuerpo, HttpServletRequest request) {
+        return academia.editarGrupo(docente(request), id, cuerpo);
+    }
+
+    @DeleteMapping("/docente/grupos/{id}")
+    void borrarGrupo(@PathVariable Long id, HttpServletRequest request) {
+        academia.borrarGrupo(docente(request), id);
+    }
+
     @PostMapping("/docente/grupos/{id}/estudiantes")
     Contratos.GrupoVista agregar(@PathVariable Long id, @RequestBody Contratos.EstudianteIn cuerpo, HttpServletRequest request) {
         return academia.agregarEstudiante(docente(request), id, cuerpo.nombre(), cuerpo.email());
@@ -140,6 +155,11 @@ public class ApiControlador {
     @PostMapping("/docente/sesiones")
     Contratos.SesionVista agendar(@RequestBody Contratos.AgendaIn cuerpo, HttpServletRequest request) {
         return academia.agendar(docente(request), cuerpo);
+    }
+
+    @PutMapping("/docente/sesiones/{id}")
+    Contratos.SesionVista reprogramar(@PathVariable Long id, @RequestBody Contratos.AgendaIn cuerpo, HttpServletRequest request) {
+        return academia.reprogramar(docente(request), id, cuerpo);
     }
 
     @PostMapping("/docente/sesiones/{id}/iniciar")
@@ -170,13 +190,6 @@ public class ApiControlador {
     @GetMapping("/docente/seguimiento/participaciones/{id}")
     Contratos.ParticipacionConsultada verParticipacion(@PathVariable Long id, HttpServletRequest request) {
         return seguimiento.ver(docente(request), id);
-    }
-
-    @GetMapping(value = "/docente/sesiones/{id}/reporte.csv", produces = "text/csv")
-    ResponseEntity<String> reporte(@PathVariable Long id, HttpServletRequest request) {
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=reporte-sesion-" + id + ".csv")
-                .body(participaciones.reporte(docente(request), id));
     }
 
     @GetMapping("/docente/sesiones/{id}/reporte")
@@ -213,11 +226,13 @@ public class ApiControlador {
         return admin.permiso(admin(request), id, cuerpo.permisos());
     }
 
+    @PostMapping("/admin/usuarios/{id}/activo")
+    Contratos.UsuarioVista activo(@PathVariable Long id, @RequestBody Contratos.ActivoIn cuerpo, HttpServletRequest request) {
+        return admin.activo(admin(request), id, cuerpo.activo());
+    }
+
     @GetMapping("/admin/grupos")
     List<Contratos.GrupoVista> gruposAdmin(HttpServletRequest request) { return admin.grupos(admin(request)); }
-
-    @GetMapping("/admin/auditoria")
-    List<Contratos.AuditoriaVista> auditoria(HttpServletRequest request) { return admin.auditoria(admin(request)); }
 
     private MediaType tipo(String extension) {
         return switch (extension) {

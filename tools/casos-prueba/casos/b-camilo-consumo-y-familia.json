@@ -1,0 +1,92 @@
+{
+  "nombre": "Camilo: consumo de sustancias y familia",
+  "desarrolloSituacional": "<p>Camilo tiene 15 años y vive con su padre, Jairo, y su abuela, Carmen, en un barrio de Medellín.</p><p>En los últimos meses perdió materias, cambió de amigos y llega tarde casi todas las noches.</p><p>Carmen: Ese muchacho no es el mismo, algo le está pasando.</p><p>Jairo encontró marihuana en la mochila de Camilo y no sabe qué hacer.</p><p>Jairo: Yo trabajo todo el día, ya no sé cómo hablarle.</p>",
+  "contexto": "<p><strong>Advertencia de contenido:</strong> Este caso trata sobre el consumo de sustancias psicoactivas en un adolescente y un conflicto familiar. No incluye descripciones del consumo. Si el tema te afecta, puedes hablarlo con tu docente.</p><p>Eres practicante de psicología en un centro de salud. Debes intervenir con un enfoque de salud pública, escuchar al adolescente y a su familia, y fortalecer los factores de protección.</p>",
+  "tiempoEstimadoMin": 40,
+  "sensible": true,
+  "advertencia": "Este caso trata sobre el consumo de sustancias psicoactivas en un adolescente y un conflicto familiar. No incluye descripciones del consumo. Si el tema te afecta, puedes hablarlo con tu docente.",
+  "repartoRubrica": "PONDERADA",
+  "rubrica": [],
+  "bloques": [
+    {
+      "nombre": "Sala de la casa en la noche",
+      "contexto": "Son las once de la noche y Camilo entra a la casa sin saludar.\nJairo lo espera en la sala, molesto, con la mochila en la mano.\nJairo: ¿Qué es esto, Camilo? ¡Ya estoy harto!\nCamilo: ¡No es mío! Siempre piensas lo peor de mí.\nCarmen sale de su cuarto, preocupada, y les pide que bajen la voz.",
+      "preguntas": [
+        {
+          "enunciado": "<p>Si Jairo te llama esa misma noche para pedirte consejo, ¿qué le recomiendas?</p>",
+          "pista": "Piensa en lo que se puede lograr en medio de una discusión.",
+          "criterio": "Manejo de la crisis familiar",
+          "peso": 1.5,
+          "opciones": [
+            { "texto": "Bajar el tono, dejar la conversación para cuando ambos estén calmados y pedir una cita en el centro de salud.", "correcta": true,
+              "explicacion": "Una discusión en caliente aumenta el conflicto; la calma abre el diálogo y permite buscar ayuda.",
+              "fundamento": "La Ley 1566 de 2012 reconoce el consumo de sustancias psicoactivas como un asunto de salud pública que requiere atención integral." },
+            { "texto": "Echarlo de la casa para que aprenda.", "correcta": false,
+              "explicacion": "Expone al adolescente a más riesgos y rompe el vínculo con su familia.",
+              "fundamento": "La familia es corresponsable de la protección de los adolescentes (Ley 1098 de 2006)." },
+            { "texto": "Revisarle el celular y seguirlo a escondidas.", "correcta": false,
+              "explicacion": "Daña la confianza y no aborda el problema de fondo.",
+              "fundamento": "La intervención con adolescentes se basa en el diálogo y en límites claros, respetando su intimidad." },
+            { "texto": "Llamar a la policía para que se lleven a Camilo.", "correcta": false,
+              "explicacion": "La situación es de salud y de convivencia familiar; tratar al adolescente como delincuente no ayuda.",
+              "fundamento": "El enfoque de salud pública frente al consumo prioriza la prevención y la atención." }
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Consultorio de psicología del centro de salud",
+      "contexto": "Una semana después, Jairo y Camilo llegan al consultorio de psicología.\nCamilo se sienta lejos de su padre, con los brazos cruzados.\nJairo: Haga algo, yo ya no puedo con él.\nCamilo: Nadie me pregunta lo que yo siento.\nCamilo baja la mirada y se queda en silencio.",
+      "preguntas": [
+        {
+          "enunciado": "<p>¿Cómo debe iniciar la sesión el practicante de psicología?</p>",
+          "pista": "Camilo siente que nadie lo escucha.",
+          "criterio": "Encuadre y alianza terapéutica",
+          "peso": 2.0,
+          "opciones": [
+            { "texto": "Presentarse, explicar la confidencialidad y sus límites, y abrir un espacio para escuchar también a Camilo a solas.", "correcta": true,
+              "explicacion": "Un encuadre claro y la escucha del adolescente favorecen la confianza y que continúe el proceso.",
+              "fundamento": "La Ley 1090 de 2006 orienta el consentimiento informado y la confidencialidad en la práctica psicológica." },
+            { "texto": "Darle la razón al padre y llamarle la atención a Camilo.", "correcta": false,
+              "explicacion": "Rompe la alianza con el adolescente desde el inicio.",
+              "fundamento": "El respeto y la imparcialidad son principios del ejercicio profesional del psicólogo." },
+            { "texto": "Prometerle a Camilo que nada de lo que diga se le contará a su padre, pase lo que pase.", "correcta": false,
+              "explicacion": "La confidencialidad tiene límites cuando hay riesgo para él o para otros.",
+              "fundamento": "El Código Deontológico del psicólogo (Ley 1090 de 2006) contempla excepciones a la confidencialidad cuando hay riesgo." },
+            { "texto": "Remitirlo de inmediato a un centro de rehabilitación sin evaluarlo.", "correcta": false,
+              "explicacion": "Primero se valora el tipo de consumo y los factores de riesgo y de protección.",
+              "fundamento": "La atención integral parte de una valoración individual de cada persona." }
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Cocina de la casa al día siguiente",
+      "contexto": "Al día siguiente, Carmen prepara el almuerzo y Camilo se sienta a su lado.\nCarmen: Mijo, yo no lo regaño, solo quiero entender qué le pasa.\nCamilo: Abuela, en el colegio se burlan de mí y con esos amigos me siento parte de algo.\nCarmen sonríe con alivio cuando Camilo acepta volver a la cita.",
+      "preguntas": [
+        {
+          "enunciado": "<p>¿Qué factor de protección aparece en esta escena y cómo se aprovecha?</p>",
+          "pista": null,
+          "criterio": "Factores de protección",
+          "peso": 1.5,
+          "opciones": [
+            { "texto": "El vínculo con la abuela: invitarla al proceso como red de apoyo, con el acuerdo de Camilo.", "correcta": true,
+              "explicacion": "Un adulto de confianza favorece que Camilo siga en el proceso y se sienta acompañado.",
+              "fundamento": "La Ley 1616 de 2013 (salud mental) promueve la participación de la familia y de las redes de apoyo en la atención." },
+            { "texto": "Ninguno, porque la abuela no tiene autoridad sobre él.", "correcta": false,
+              "explicacion": "Desconoce un vínculo afectivo valioso para Camilo.",
+              "fundamento": "Los factores de protección incluyen los vínculos afectivos significativos, no solo la autoridad." },
+            { "texto": "El nuevo grupo de amigos, porque le da sentido de pertenencia.", "correcta": false,
+              "explicacion": "Ese grupo se relaciona con el consumo; la pertenencia se busca en espacios que lo protejan.",
+              "fundamento": "La intervención busca redes de pertenencia que no expongan al adolescente al consumo." }
+          ]
+        }
+      ]
+    }
+  ],
+  "personajes": [
+    { "nombre": "Camilo", "descripcion": "Adolescente, 15 años", "escenarios": [0, 1, 2] },
+    { "nombre": "Jairo", "descripcion": "Padre, 46 años", "escenarios": [0, 1] },
+    { "nombre": "Carmen", "descripcion": "Abuela, 70 años", "escenarios": [0, 2] }
+  ]
+}

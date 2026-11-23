@@ -15,6 +15,14 @@
             "outputPath": "dist/dilema",
             "index": "src/index.html",
             "browser": "src/main.ts",
+            "assets": [
+              { "glob": "**/*", "input": "public" },
+              {
+                "glob": "**/*.mp3",
+                "input": "audio",
+                "output": "audio"
+              }
+            ],
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "styles": [
@@ -27,7 +35,12 @@
               "budgets": [
                 { "type": "initial", "maximumWarning": "2MB", "maximumError": "4MB" }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "optimization": {
+                "scripts": true,
+                "styles": true,
+                "fonts": false
+              }
             },
             "development": {
               "optimization": false,
@@ -46,5 +59,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": "21fe8f28-095c-4df2-aad3-37f3bc7e7540"
   }
 }

@@ -2,6 +2,7 @@ package com.dilema.servicio;
 
 import com.dilema.dto.Contratos;
 import com.dilema.modelo.*;
+import com.dilema.repo.EscenarioPersonajeRepo;
 import com.dilema.repo.ParticipacionRepo;
 import com.dilema.repo.SesionRepo;
 import com.dilema.servicio.evaluacion.EstadoDeParticipacion;
@@ -9,15 +10,15 @@ import com.dilema.servicio.evaluacion.EstrategiaCalificacion;
 import com.dilema.servicio.evaluacion.ExplicacionReal;
 import com.dilema.servicio.evaluacion.ResumenIntento;
 import com.dilema.servicio.evaluacion.RetroalimentacionProxy;
-import com.dilema.servicio.seguimiento.ExportadorCSV;
-import com.dilema.servicio.seguimiento.GeneradorReporte;
 import com.dilema.servicio.participacion.ComandoRespuesta;
 import com.dilema.servicio.participacion.FinalizadorParticipacion;
 import com.dilema.servicio.participacion.HistorialRespuestas;
 import com.dilema.servicio.participacion.ProgresoParticipacion;
 import com.dilema.servicio.participacion.ProxyParticipacion;
 import com.dilema.servicio.participacion.RelojParticipacion;
+import com.dilema.servicio.programacion.NotificadorConvocatoria;
 import com.dilema.servicio.programacion.PadronConvocatoria;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,17 +40,29 @@ public class ParticipacionServicio {
     private final ProxyOperacion proxy;
     private final Mapeador mapeador;
     private final BitacoraServicio bitacora;
+    private final NotificadorConvocatoria notificador;
+    /** Vínculos escenario-personaje: la novela del estudiante muestra a cada personaje solo en sus escenarios. */
+    private final EscenarioPersonajeRepo vinculos;
     private final HistorialRespuestas historial = new HistorialRespuestas();
     private final ProxyParticipacion puerta = new ProxyParticipacion();
 
     public ParticipacionServicio(ParticipacionRepo participaciones, SesionRepo sesiones, PadronConvocatoria padron,
                                  ProxyOperacion proxy, Mapeador mapeador, BitacoraServicio bitacora) {
+        this(participaciones, sesiones, padron, proxy, mapeador, bitacora, null, null);
+    }
+
+    @Autowired
+    public ParticipacionServicio(ParticipacionRepo participaciones, SesionRepo sesiones, PadronConvocatoria padron,
+                                 ProxyOperacion proxy, Mapeador mapeador, BitacoraServicio bitacora,
+                                 NotificadorConvocatoria notificador, EscenarioPersonajeRepo vinculos) {
         this.participaciones = participaciones;
         this.sesiones = sesiones;
         this.padron = padron;
         this.proxy = proxy;
         this.mapeador = mapeador;
         this.bitacora = bitacora;
+        this.notificador = notificador;
+        this.vinculos = vinculos;
     }
 
     /**
@@ -63,7 +76,7 @@ public class ParticipacionServicio {
         List<Contratos.SesionVista> sesionesVista = propias.stream().map(sesion -> {
             Participacion ultima = participaciones.findByEstudianteIdAndSesionId(estudiante.id, sesion.id).stream()
                     .max(Comparator.comparing(p -> p.id)).orElse(null);
-            return mapeador.sesion(sesion, ultima);
+            return mapeador.sesion(sesion, ultima, vinculosDe(sesion.caso));
         }).toList();
         for (SesionCaso sesion : propias) {
             bitacora.registrarUnaVez(estudiante, "sesion:" + sesion.id + ":asignado", "CORREO", "Caso asignado",
@@ -177,24 +190,27 @@ public class ParticipacionServicio {
         proxy.revisarGrupo(docente);
         Participacion participacion = participaciones.findById(id).orElseThrow(() -> new NoEncontrado("Participación no encontrada."));
         if (!participacion.sesion.caso.docente.id.equals(docente.id)) {
-            throw new AccesoDenegado("RF-25: solo el docente creador del caso autoriza la repetición.");
+            throw new AccesoDenegado("Solo el docente que creó el caso puede autorizar otro intento.");
         }
         if (participacion.sesion.estado() != Catalogo.EstadoSesion.EN_CURSO) {
-            throw new ReglaNegocio("RF-25: no se autoriza repetición si la sesión no está en curso.");
+            throw new ReglaNegocio("No se puede autorizar otro intento porque la sesión no está en curso.");
         }
         if (!participacion.finalizada()) throw new ReglaNegocio("Solo se autoriza repetir un intento ya terminado.");
         Participacion ultima = participaciones.findByEstudianteIdAndSesionId(participacion.estudiante.id, participacion.sesion.id)
                 .stream().max(Comparator.comparing(p -> p.id)).orElse(participacion);
         if (!ultima.id.equals(participacion.id)) {
-            throw new ReglaNegocio("RF-25: la autorización aplica al último intento del estudiante.");
+            throw new ReglaNegocio("La autorización solo aplica al último intento de ese estudiante.");
         }
         if (participacion.autorizacion != null) {
-            throw new ReglaNegocio("RF-25: ese intento ya tiene una repetición autorizada.");
+            throw new ReglaNegocio("Ese intento ya tiene permiso para repetirse.");
         }
         AutorizacionRepeticion permiso = new AutorizacionRepeticion();
         permiso.participacion = participacion;
         permiso.fechaAutorizacion = LocalDateTime.now();
         participacion.autorizacion = permiso;
+        if (notificador != null) notificador.repeticion(participacion.estudiante, participacion.sesion);
+        bitacora.avisar(participacion.estudiante, "SISTEMA", "Repetición autorizada",
+                "El docente autorizó un nuevo intento de " + participacion.sesion.caso.nombre + ".");
     }
 
     @Transactional(readOnly = true)
@@ -218,21 +234,6 @@ public class ParticipacionServicio {
             }
         }
         return filas;
-    }
-
-    /**
-     * RF-16. El CSV sale del mismo generador que PDF y Excel:
-     * una fila por intento, con ausencias en 0,0.
-     */
-    @Transactional(readOnly = true)
-    public String reporte(Usuario docente, Long sesionId) {
-        proxy.revisarGrupo(docente);
-        SesionCaso sesion = sesiones.findById(sesionId).orElseThrow(() -> new NoEncontrado("Sesión no encontrada."));
-        List<Participacion> deLaSesion = participaciones.findBySesion_Id(sesion.id);
-        GeneradorReporte generador = new GeneradorReporte();
-        generador.setFormato(new ExportadorCSV());
-        byte[] archivo = generador.generar(docente, sesion, deLaSesion == null ? List.of() : deLaSesion).contenido();
-        return new String(archivo, java.nio.charset.StandardCharsets.UTF_8);
     }
 
     private boolean cerrarSiVencio(Participacion participacion, LocalDateTime ahora) {
@@ -271,6 +272,10 @@ public class ParticipacionServicio {
                 .orElseThrow(() -> new ReglaNegocio("La pregunta no pertenece a este caso."));
     }
 
+    private List<EscenarioPersonaje> vinculosDe(Caso caso) {
+        return vinculos == null ? List.of() : vinculos.findByCasoId(caso.id);
+    }
+
     private Contratos.ParticipacionVista vista(Participacion participacion, boolean revelar) {
         List<Contratos.PreguntaJuego> preguntas = new ArrayList<>();
         for (Escenario escenario : participacion.sesion.caso.escenarios) {
@@ -285,9 +290,11 @@ public class ParticipacionServicio {
                         .toList();
                 String criterio = pregunta.criterio == null ? "" : pregunta.criterio.criterio;
                 BigDecimal puntaje = RetroalimentacionProxy.visible(participacion) ? participacion.puntajeDe(pregunta) : null;
+                // El peso es de la rúbrica (no revela la opción correcta); al final se muestra "obtenido / peso".
+                Double peso = pregunta.criterio == null || pregunta.criterio.peso == null ? null : pregunta.criterio.peso.doubleValue();
                 preguntas.add(new Contratos.PreguntaJuego(pregunta.id, escenario.titulo, escenario.contexto,
                         pregunta.enunciado, pregunta.pista, criterio, seleccion, opciones,
-                        puntaje == null ? null : puntaje.doubleValue()));
+                        puntaje == null ? null : puntaje.doubleValue(), escenario.orden, peso));
             }
         }
         LocalDateTime hasta = participacion.fin == null ? LocalDateTime.now() : participacion.fin;
@@ -295,14 +302,18 @@ public class ParticipacionServicio {
         int total = preguntas.size();
         int progreso = ProgresoParticipacion.porcentaje(participacion, total);
         ResumenIntento resumen = ResumenIntento.de(participacion);
+        Caso caso = participacion.sesion.caso;
+        // Cada personaje solo en los escenarios donde el docente lo puso (EscenarioPersonaje), como en su vista previa.
+        List<Contratos.PersonajeIn> personajes = caso.personajes == null ? List.of() : mapeador.personajes(caso, vinculosDe(caso));
         return new Contratos.ParticipacionVista(participacion.id, participacion.sesion.id, participacion.estadoNombre(),
-                participacion.sesion.caso.nombre, progreso, total,
+                caso.nombre, progreso, total,
                 participacion.sesion.tiempoMaxMin * 60, usados, participacion.nota(),
                 participacion.comentarioDocente(), participacion.estudiante.nombre, preguntas,
                 participacion.autorizacion != null,
                 resumen == null ? null : resumen.aciertos(),
                 resumen == null ? null : resumen.errores(),
-                resumen == null ? null : resumen.sinResponder());
+                resumen == null ? null : resumen.sinResponder(),
+                caso.id, caso.desarrolloSituacional, caso.contexto, personajes);
     }
 
     /** RF-14: delega en el Proxy de protección la decisión de revelar el resultado al estudiante. */

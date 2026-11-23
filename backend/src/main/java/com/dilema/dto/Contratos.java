@@ -7,7 +7,7 @@ public final class Contratos {
     private Contratos() {}
 
     public record Ingreso(String email, String clave, String codigoAutorizacion, String rol) {}
-    public record UsuarioVista(Long id, String nombre, String email, String rol, List<String> permisos) {}
+    public record UsuarioVista(Long id, String nombre, String email, String rol, List<String> permisos, boolean activo) {}
     public record SesionAuth(String token, UsuarioVista usuario, Long sesionId) {}
 
     public record OpcionIn(Long id, String texto, boolean correcta, String explicacion, String fundamento) {}
@@ -35,21 +35,27 @@ public final class Contratos {
                               int toleranciaMin, String lugar, String mensaje, Long casoId, String caso,
                               Long grupoId, String grupo, String espacio, String desarrollo, String contexto,
                               boolean sensible, String advertencia, Long participacionId, String participacionEstado,
-                              Double nota, Integer progreso, boolean repeticionAutorizada) {}
+                              Double nota, Integer progreso, boolean repeticionAutorizada,
+                              List<PersonajeIn> personajes, List<EscenarioVista> escenarios) {}
+    /** Nombre y contexto de un escenario: el briefing los usa para asignar el mismo elenco que la simulación. */
+    public record EscenarioVista(String nombre, String contexto) {}
 
     public record UsuarioIn(String nombre, String email, String clave, String rol) {}
     public record PermisosIn(List<String> permisos) {}
+    public record ActivoIn(boolean activo) {}
+    public record PerfilIn(String nombre, String email, String claveActual, String claveNueva) {}
 
     public record Aviso(Long id, String canal, String titulo, String cuerpo, boolean leida, String fecha) {}
-    public record AuditoriaVista(Long id, String fecha, String accion, String detalle, String usuario) {}
 
     public record OpcionJuego(Long id, String texto, Boolean correcta, String explicacion, String fundamento) {}
     public record PreguntaJuego(Long id, String bloque, String contexto, String enunciado, String pista, String criterio,
-                                Long seleccionId, List<OpcionJuego> opciones, Double puntaje) {}
+                                Long seleccionId, List<OpcionJuego> opciones, Double puntaje,
+                                int bloqueIndice, Double peso) {}
     public record ParticipacionVista(Long id, Long sesionId, String estado, String caso, int progreso, int total,
                                      int segundosMax, long segundosUsados, Double nota, String retroalimentacion,
                                      String estudiante, List<PreguntaJuego> preguntas, boolean repeticionAutorizada,
-                                     Integer aciertos, Integer errores, Integer sinResponder) {}
+                                     Integer aciertos, Integer errores, Integer sinResponder,
+                                     Long casoId, String desarrollo, String contexto, List<PersonajeIn> personajes) {}
     public record RespuestaIn(Long preguntaId, Long opcionId) {}
     public record TextoIn(String texto) {}
     public record PanelEstudiante(List<SesionVista> sesiones, List<Aviso> avisos, int sinLeer) {}

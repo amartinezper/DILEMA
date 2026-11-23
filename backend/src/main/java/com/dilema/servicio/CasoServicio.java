@@ -130,7 +130,7 @@ public class CasoServicio {
     private void exigirEditable(Caso caso) {
         colocar(caso);
         if (!caso.permiteEdicion()) {
-            throw new ReglaNegocio("RF-09: solo se edita un caso en borrador.");
+            throw new ReglaNegocio("Solo puedes editar un caso que esté en borrador. Si ya está publicado o archivado, no se modifica.");
         }
     }
 

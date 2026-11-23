@@ -38,7 +38,7 @@ class ProxyParticipacionTest {
     void rechazaIngresoFueraDeTolerancia() {
         SesionCaso sesion = sesionEnCurso();
         LocalDateTime ahora = LocalDateTime.of(2026, 6, 2, 9, 10);
-        assertEquals("RF-22: ya pasó el tiempo definido por el docente para iniciar.",
+        assertEquals("Ya pasó el tiempo que el docente dejó para entrar. Pídele que amplíe el plazo si todavía debes participar.",
                 assertThrows(ReglaNegocio.class, () -> proxy.ingresoTardio(sesion, ahora.plusMinutes(20))).getMessage());
     }
 
@@ -46,7 +46,7 @@ class ProxyParticipacionTest {
     @DisplayName("RF-23: rechaza el ingreso si la ventana de la sesión ya cerró")
     void rechazaIngresoSiLaVentanaCerro() {
         SesionCaso sesion = sesionEnCurso();
-        assertEquals("RF-23: la ventana de la sesión ya cerró.",
+        assertEquals("Esta convocatoria ya terminó. La fecha de cierre pasó y ya no puedes entrar con este código.",
                 assertThrows(ReglaNegocio.class, () -> proxy.sesionAbierta(sesion, LocalDateTime.of(2026, 6, 2, 11, 0))).getMessage());
     }
 
@@ -56,7 +56,7 @@ class ProxyParticipacionTest {
         SesionCaso sesion = sesionEnCurso();
         LocalDateTime ahora = LocalDateTime.of(2026, 6, 2, 9, 10);
         sesion.cierreReal = ahora;
-        assertEquals("RF-25: la sesión ya finalizó y no admite participación.",
+        assertEquals("Esta sesión ya finalizó, así que ya no puedes participar.",
                 assertThrows(ReglaNegocio.class, () -> proxy.sesionAbierta(sesion, ahora)).getMessage());
     }
 
@@ -65,7 +65,7 @@ class ProxyParticipacionTest {
     void exigeAutorizacionParaRepetir() {
         Participacion previa = new Participacion();
         previa.fin = LocalDateTime.now();
-        assertEquals("RF-25: ya registraste una participación. Solo el docente creador puede autorizar otra.",
+        assertEquals("Ya completaste este caso. Para intentarlo otra vez, el docente que lo creó tiene que autorizarlo.",
                 assertThrows(ReglaNegocio.class, () -> proxy.puedeRepetir(previa)).getMessage());
         previa.autorizacion = new AutorizacionRepeticion();
         assertDoesNotThrow(() -> proxy.puedeRepetir(previa));

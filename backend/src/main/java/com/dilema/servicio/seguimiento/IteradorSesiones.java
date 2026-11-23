@@ -31,7 +31,7 @@ public final class IteradorSesiones implements Iterador<SesionCaso> {
     @Override
     public SesionCaso siguiente() {
         if (!haySiguiente()) {
-            throw new NoSuchElementException("RF-15: no hay más sesiones en el recorrido.");
+            throw new NoSuchElementException("No hay más sesiones en este recorrido.");
         }
         return sesiones.get(posicion++);
     }

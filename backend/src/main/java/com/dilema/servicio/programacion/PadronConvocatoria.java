@@ -28,6 +28,10 @@ public class PadronConvocatoria {
         autorizados.deleteBySesionIdAndEstudianteId(sesion.id, estudiante.id);
     }
 
+    public void vaciar(SesionCaso sesion) {
+        autorizados.deleteBySesionId(sesion.id);
+    }
+
     public boolean esta(SesionCaso sesion, Usuario estudiante) {
         return autorizados.existsBySesionIdAndEstudianteId(sesion.id, estudiante.id);
     }

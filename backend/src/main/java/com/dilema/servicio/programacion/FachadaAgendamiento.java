@@ -8,9 +8,12 @@ import com.dilema.modelo.Usuario;
 import com.dilema.repo.CasoRepo;
 import com.dilema.repo.GrupoRepo;
 import com.dilema.repo.SesionRepo;
+import com.dilema.modelo.Catalogo;
+import com.dilema.servicio.AccesoDenegado;
 import com.dilema.servicio.BitacoraServicio;
 import com.dilema.servicio.Mapeador;
 import com.dilema.servicio.NoEncontrado;
+import com.dilema.servicio.ReglaNegocio;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,6 +70,40 @@ public class FachadaAgendamiento {
             notificador.convocado(estudiante, sesion);
         }
         bitacora.auditar(docente, "AGENDAR", caso.nombre + " / " + sesion.codigo);
+        return mapeador.sesion(sesion);
+    }
+
+    @Transactional
+    public Contratos.SesionVista reprogramar(Usuario docente, Long id, Contratos.AgendaIn entrada) {
+        SesionCaso sesion = sesiones.findById(id).orElseThrow(() -> new NoEncontrado("Sesión no encontrada."));
+        if (!sesion.grupo.esDirigidoPor(docente)) throw new AccesoDenegado("La sesión no está a tu cargo.");
+        if (sesion.estado() != Catalogo.EstadoSesion.SIN_INICIAR) {
+            throw new ReglaNegocio("Solo se puede editar una convocatoria que todavía no inicia.");
+        }
+        Caso caso = casos.findById(entrada.casoId()).orElseThrow(() -> new NoEncontrado("Caso no encontrado."));
+        Grupo grupo = grupos.findById(entrada.grupoId()).orElseThrow(() -> new NoEncontrado("Grupo no encontrado."));
+        LocalDateTime inicio = AgendaFechas.parse(entrada.inicio());
+        LocalDateTime fin = AgendaFechas.parse(entrada.fin());
+        cadena.validar(new ContextoAgenda(docente, caso, grupo, inicio, fin, entrada.tiempoMaxMin(), entrada.toleranciaMin()));
+        Grupo anterior = sesion.grupo;
+        sesion.caso = caso;
+        sesion.grupo = grupo;
+        sesion.inicio = inicio;
+        sesion.fin = fin;
+        sesion.tiempoMaxMin = entrada.tiempoMaxMin();
+        sesion.toleranciaMin = entrada.toleranciaMin();
+        sesion.lugar = entrada.lugar() == null ? "" : entrada.lugar().trim();
+        sesion.mensaje = entrada.mensaje();
+        if (!anterior.id.equals(grupo.id)) {
+            for (Usuario estudiante : anterior.estudiantes) padron.excluir(sesion, estudiante);
+            for (Usuario estudiante : grupo.estudiantes) {
+                padron.incluir(sesion, estudiante);
+                notificador.convocado(estudiante, sesion);
+            }
+        } else {
+            for (Usuario estudiante : grupo.estudiantes) notificador.reprogramada(estudiante, sesion);
+        }
+        bitacora.auditar(docente, "REPROGRAMAR", caso.nombre + " / " + sesion.codigo);
         return mapeador.sesion(sesion);
     }
 }

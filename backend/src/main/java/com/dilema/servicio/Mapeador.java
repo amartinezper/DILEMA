@@ -12,7 +12,7 @@ import java.util.List;
 public class Mapeador {
     public Contratos.UsuarioVista usuario(Usuario u) {
         List<String> permisos = u.permisos.stream().map(permiso -> permiso.tipo).sorted().toList();
-        return new Contratos.UsuarioVista(u.id, u.nombre, u.email, u.rol.name(), permisos);
+        return new Contratos.UsuarioVista(u.id, u.nombre, u.email, u.rol.name(), permisos, u.activo);
     }
 
     public Contratos.PersonaVista persona(Usuario u) {
@@ -90,6 +90,14 @@ public class Mapeador {
     }
 
     public Contratos.SesionVista sesion(SesionCaso s, Participacion participacion) {
+        return sesion(s, participacion, null);
+    }
+
+    /**
+     * Con los vínculos escenario-personaje del caso, la vista lleva los personajes (con sus escenarios) y los
+     * escenarios para la novela del estudiante. Sin vínculos, las dos listas van vacías.
+     */
+    public Contratos.SesionVista sesion(SesionCaso s, Participacion participacion, List<EscenarioPersonaje> vinculos) {
         Integer progreso = null;
         if (participacion != null) {
             int total = s.caso.escenarios.stream().mapToInt(e -> e.preguntas.size()).sum();
@@ -105,6 +113,12 @@ public class Mapeador {
                 participacion == null ? null : participacion.estadoNombre(),
                 participacion == null ? null : participacion.nota(),
                 progreso,
-                participacion != null && participacion.autorizacion != null);
+                participacion != null && participacion.autorizacion != null,
+                vinculos == null ? List.of() : personajes(s.caso, vinculos),
+                vinculos == null ? List.of() : escenarios(s.caso));
+    }
+
+    public List<Contratos.EscenarioVista> escenarios(Caso caso) {
+        return caso.escenarios.stream().map(e -> new Contratos.EscenarioVista(e.titulo, e.contexto)).toList();
     }
 }

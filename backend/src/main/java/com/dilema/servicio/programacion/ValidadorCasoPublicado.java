@@ -7,7 +7,7 @@ public class ValidadorCasoPublicado extends PasoAgenda {
     @Override
     protected void comprobar(ContextoAgenda c) {
         if (c.caso() == null || c.caso().estado != Catalogo.EstadoCaso.PUBLICADO) {
-            throw new ReglaNegocio("INV-17: el caso debe estar publicado para agendarlo.");
+            throw new ReglaNegocio("Solo puedes programar un caso que ya esté publicado.");
         }
     }
 }

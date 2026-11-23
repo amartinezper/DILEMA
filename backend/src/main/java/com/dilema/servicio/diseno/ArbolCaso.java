@@ -39,7 +39,7 @@ public final class ArbolCaso {
             if (caso.tiempoEstimadoMin == null || caso.tiempoEstimadoMin <= 0) {
                 errores.add("El tiempo estimado debe ser mayor que cero.");
             }
-            if (caso.escenarios.isEmpty()) errores.add("RF-05: registra al menos un escenario.");
+            if (caso.escenarios.isEmpty()) errores.add("Agrega al menos un escenario antes de continuar.");
             if (!caso.personajes.isEmpty()) {
                 for (Personaje personaje : caso.personajes) {
                     if (personaje.id == null || !personajesLigados.contains(personaje.id)) {
@@ -56,7 +56,7 @@ public final class ArbolCaso {
                 }
             }
             if (suma.compareTo(new BigDecimal("5.0")) != 0) {
-                errores.add("INV-09: los pesos de la rúbrica deben sumar 5,0. Ahora suman "
+                errores.add("Los pesos de la rúbrica deben sumar exactamente 5,0. Ahora suman "
                         + suma.setScale(1, RoundingMode.HALF_UP) + ".");
             }
         }
@@ -140,7 +140,7 @@ public final class ArbolCaso {
             long correctas = pregunta.opciones.stream().filter(o -> o.esCorrecta).count();
             if (correctas != 1) errores.add("Cada pregunta debe tener exactamente una opción correcta.");
             if (pregunta.criterio == null || Texto.vacio(pregunta.criterio.criterio) || pregunta.criterio.peso == null) {
-                errores.add("RF-17: cada pregunta tiene su criterio y su peso.");
+                errores.add("Cada pregunta necesita el nombre del criterio y su peso en la rúbrica.");
             } else if (pregunta.criterio.peso.compareTo(BigDecimal.ZERO) < 0
                     || pregunta.criterio.peso.compareTo(new BigDecimal("5.0")) > 0) {
                 errores.add("Cada peso de la rúbrica está entre 0,0 y 5,0.");

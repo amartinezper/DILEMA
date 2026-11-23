@@ -24,13 +24,20 @@ public class BitacoraServicio {
     private final JavaMailSender correo;
     private final String desde;
     private final NotificacionRepo notificaciones;
+    private final CorreoBrevo brevo;   // null o inactivo → SMTP como antes
 
     @Autowired
     public BitacoraServicio(JavaMailSender correo, @Value("${dilema.correo.desde}") String desde,
-                            NotificacionRepo notificaciones) {
+                            NotificacionRepo notificaciones, CorreoBrevo brevo) {
         this.correo = correo;
         this.desde = desde;
         this.notificaciones = notificaciones;
+        this.brevo = brevo;
+    }
+
+    /** Sin Brevo: solo SMTP (lo usan las pruebas). */
+    public BitacoraServicio(JavaMailSender correo, String desde, NotificacionRepo notificaciones) {
+        this(correo, desde, notificaciones, null);
     }
 
     /** Sin repositorio: solo correo (los avisos de SISTEMA quedan en el log). */
@@ -48,19 +55,8 @@ public class BitacoraServicio {
             if (destinatario != null) guardar(destinatario, canal, titulo, cuerpo, LocalDateTime.now(), null);
             return;
         }
-        if (!"CORREO".equals(canal) || destinatario == null || destinatario.email == null || destinatario.email.isBlank()) {
-            return;
-        }
-        try {
-            SimpleMailMessage mensaje = new SimpleMailMessage();
-            mensaje.setFrom(desde);
-            mensaje.setTo(destinatario.email);
-            mensaje.setSubject(titulo);
-            mensaje.setText(cuerpo == null ? "" : cuerpo);
-            correo.send(mensaje);
-        } catch (RuntimeException error) {
-            log.warn("No se pudo enviar el correo a {}: {}", destinatario.email, error.getMessage());
-        }
+        if (!"CORREO".equals(canal)) return;
+        enviar(destinatario, titulo, cuerpo);
     }
 
     /**
@@ -72,6 +68,7 @@ public class BitacoraServicio {
         if (notificaciones == null || destinatario == null) return;
         if (notificaciones.findByUsuarioIdAndReferencia(destinatario.id, referencia).isPresent()) return;
         guardar(destinatario, canal, titulo, cuerpo, fecha, referencia);
+        if ("CORREO".equals(canal)) enviar(destinatario, titulo, cuerpo);
     }
 
     public List<Notificacion> avisosDe(Usuario usuario) {
@@ -86,6 +83,24 @@ public class BitacoraServicio {
         if (!notificacion.usuario.id.equals(usuario.id)) throw new AccesoDenegado("Este aviso no es tuyo.");
         notificacion.leida = true;
         notificaciones.save(notificacion);
+    }
+
+    private void enviar(Usuario destinatario, String titulo, String cuerpo) {
+        if (destinatario == null || destinatario.email == null || destinatario.email.isBlank()) return;
+        if (brevo != null && brevo.activo()) {
+            brevo.enviar(desde, destinatario.email, titulo, cuerpo == null ? "" : cuerpo);
+            return;
+        }
+        try {
+            SimpleMailMessage mensaje = new SimpleMailMessage();
+            mensaje.setFrom(desde);
+            mensaje.setTo(destinatario.email);
+            mensaje.setSubject(titulo);
+            mensaje.setText(cuerpo == null ? "" : cuerpo);
+            correo.send(mensaje);
+        } catch (RuntimeException error) {
+            log.warn("No se pudo enviar el correo a {}: {}", destinatario.email, error.getMessage());
+        }
     }
 
     private void guardar(Usuario destinatario, String canal, String titulo, String cuerpo,

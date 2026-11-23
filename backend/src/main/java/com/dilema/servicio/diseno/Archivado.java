@@ -22,12 +22,12 @@ public final class Archivado extends EstadoConPublicacion {
 
     @Override
     public void despublicar(Caso caso) {
-        throw new ReglaNegocio("RF-09: un caso archivado no vuelve a borrador. Se publica de nuevo.");
+        throw new ReglaNegocio("Un caso archivado no vuelve a borrador. Si quieres usarlo, publícalo de nuevo.");
     }
 
     @Override
     public void archivar(Caso caso) {
-        throw new ReglaNegocio("RF-09: el caso ya está archivado.");
+        throw new ReglaNegocio("Este caso ya está archivado.");
     }
 
     @Override

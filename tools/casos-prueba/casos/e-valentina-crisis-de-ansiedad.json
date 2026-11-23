@@ -1,0 +1,90 @@
+{
+  "nombre": "Valentina: crisis de ansiedad en la universidad",
+  "desarrolloSituacional": "<p>Valentina tiene 20 años y estudia ingeniería en una universidad de Barranquilla.</p><p>Desde que empezó el semestre duerme poco y siente que no va a poder con todo.</p><p>Su compañero Sebastián la ha visto llorar antes de los exámenes.</p><p>Sebastián: Vale, no estás sola, si quieres vamos a bienestar.</p><p>Valentina: Estoy bien, solo es cansancio.</p><p>Más adelante la atenderán la médica Carolina, en urgencias, y el psicólogo Andrés, en bienestar universitario.</p>",
+  "contexto": "<p>Eres practicante de psicología en el área de bienestar universitario. Acompañas a una estudiante que vive una crisis de ansiedad: debes contenerla, asegurar la atención médica cuando hace falta y construir con ella un plan de seguimiento.</p>",
+  "tiempoEstimadoMin": 40,
+  "sensible": false,
+  "advertencia": "",
+  "repartoRubrica": "PONDERADA",
+  "rubrica": [],
+  "bloques": [
+    {
+      "nombre": "Cafetería de la universidad",
+      "contexto": "Antes del parcial de cálculo, Valentina y Sebastián repasan en la cafetería.\nDe repente, Valentina siente que el corazón se le acelera y que le falta el aire.\nValentina: ¡Me falta el aire, siento que me voy a morir!\nSebastián: Tranquila, aquí estoy, vamos a respirar despacio juntos.\nValentina llora angustiada y Sebastián decide llevarla a urgencias.",
+      "preguntas": [
+        {
+          "enunciado": "<p>¿Qué es lo más adecuado en el momento de la crisis?</p>",
+          "pista": "Ella siente que se va a morir y no sabe si es algo físico.",
+          "criterio": "Primeros auxilios psicológicos",
+          "peso": 1.5,
+          "opciones": [
+            { "texto": "Acompañarla con calma, ayudarla a respirar despacio, llevarla a un lugar tranquilo y buscar atención médica para descartar una causa física.", "correcta": true,
+              "explicacion": "Contiene la crisis y, como los síntomas se parecen a los de un problema físico, asegura la valoración médica.",
+              "fundamento": "Los primeros auxilios psicológicos buscan seguridad, calma y conexión con los servicios de salud." },
+            { "texto": "Decirle que se calme, que es puro drama.", "correcta": false,
+              "explicacion": "Invalida su malestar y puede aumentar la angustia.",
+              "fundamento": "Validar las emociones es clave para contener una crisis." },
+            { "texto": "Dejarla sola para que se le pase.", "correcta": false,
+              "explicacion": "La deja sin apoyo en un momento en que no se sabe si hay un riesgo físico.",
+              "fundamento": "En una crisis la persona necesita acompañamiento." }
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Urgencias del hospital en la noche",
+      "contexto": "En urgencias, la médica Carolina examina a Valentina y descarta un problema del corazón.\nCarolina: Lo que tuviste fue una crisis de ansiedad. Es real y tiene tratamiento.\nValentina: Me da vergüenza, pensé que me estaba muriendo.\nSebastián sonríe con alivio y le toma la mano.",
+      "preguntas": [
+        {
+          "enunciado": "<p>¿Qué es lo más adecuado al dar de alta a Valentina?</p>",
+          "pista": null,
+          "criterio": "Continuidad de la atención",
+          "peso": 1.5,
+          "opciones": [
+            { "texto": "Explicarle lo que pasó en lenguaje sencillo y remitirla a atención psicológica para su seguimiento.", "correcta": true,
+              "explicacion": "Entender la crisis reduce el miedo, y la remisión asegura que reciba tratamiento.",
+              "fundamento": "La Ley 1616 de 2013 garantiza el derecho a la atención integral en salud mental." },
+            { "texto": "Darle de alta sin más explicación, porque no tiene nada físico.", "correcta": false,
+              "explicacion": "La deja sin información ni ruta de atención, con riesgo de que la crisis se repita.",
+              "fundamento": "La salud mental hace parte del derecho a la salud (Ley 1616 de 2013)." },
+            { "texto": "Recomendarle que deje la universidad.", "correcta": false,
+              "explicacion": "Es una decisión desproporcionada que no aborda la ansiedad.",
+              "fundamento": "Las recomendaciones se basan en una valoración y en las metas de la persona." }
+          ]
+        }
+      ]
+    },
+    {
+      "nombre": "Consultorio de bienestar universitario",
+      "contexto": "Dos días después, Valentina llega al consultorio de bienestar universitario.\nAndrés: Bienvenida, Valentina. Cuéntame cómo has estado desde la crisis.\nValentina: Tengo miedo de que me vuelva a pasar en un examen.\nValentina respira más tranquila cuando Andrés le explica qué es la ansiedad.",
+      "preguntas": [
+        {
+          "enunciado": "<p>¿Cuál es el plan más adecuado para el seguimiento?</p>",
+          "pista": "El plan se construye con ella.",
+          "criterio": "Plan de intervención",
+          "peso": 2.0,
+          "opciones": [
+            { "texto": "Acordar con Valentina un plan con técnicas para manejar la ansiedad, revisión de sus hábitos de sueño y estudio, y citas de seguimiento, con su consentimiento informado.", "correcta": true,
+              "explicacion": "Es un plan concreto, construido con ella y basado en la evaluación.",
+              "fundamento": "La Ley 1090 de 2006 exige el consentimiento informado en la práctica psicológica." },
+            { "texto": "Recetarle medicamentos para la ansiedad.", "correcta": false,
+              "explicacion": "El psicólogo no formula medicamentos; si hacen falta, remite a psiquiatría.",
+              "fundamento": "La formulación de medicamentos es una competencia médica." },
+            { "texto": "Decirle que evite todos los exámenes hasta sentirse mejor.", "correcta": false,
+              "explicacion": "Evitar las situaciones temidas mantiene la ansiedad a largo plazo.",
+              "fundamento": "El afrontamiento gradual es una estrategia recomendada para la ansiedad." },
+            { "texto": "Hablar con sus profesores sin su permiso para que le bajen la exigencia.", "correcta": false,
+              "explicacion": "Vulnera la confidencialidad; cualquier ajuste académico se gestiona con su autorización.",
+              "fundamento": "La confidencialidad protege la información de la consultante (Ley 1090 de 2006)." }
+          ]
+        }
+      ]
+    }
+  ],
+  "personajes": [
+    { "nombre": "Valentina", "descripcion": "Estudiante universitaria, 20 años", "escenarios": [0, 1, 2] },
+    { "nombre": "Sebastián", "descripcion": "Estudiante universitario, 21 años", "escenarios": [0, 1] },
+    { "nombre": "Carolina", "descripcion": "Médica de urgencias, 39 años", "escenarios": [1] },
+    { "nombre": "Andrés", "descripcion": "Psicólogo, 42 años", "escenarios": [2] }
+  ]
+}

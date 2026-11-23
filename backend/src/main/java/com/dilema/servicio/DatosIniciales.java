@@ -2,6 +2,7 @@ package com.dilema.servicio;
 
 import com.dilema.modelo.*;
 import com.dilema.repo.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -9,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Component
 public class DatosIniciales implements CommandLineRunner {
@@ -20,10 +22,16 @@ public class DatosIniciales implements CommandLineRunner {
     private final EscenarioPersonajeRepo vinculos;
     private final FabricaCuentas fabrica;
     private final PasswordEncoder cifrado;
+    private final String claveAdmin;
+    private final String claveDocente;
 
     public DatosIniciales(UsuarioRepo usuarios, GrupoRepo grupos, CasoRepo casos, SesionRepo sesiones,
                           SesionEstudianteRepo autorizados, EscenarioPersonajeRepo vinculos,
-                          FabricaCuentas fabrica, PasswordEncoder cifrado) {
+                          FabricaCuentas fabrica, PasswordEncoder cifrado,
+                          @Value("${DILEMA_CLAVE_ADMIN:admin123}") String claveAdmin,
+                          @Value("${DILEMA_CLAVE_DOCENTE:docente123}") String claveDocente) {
+        this.claveAdmin = claveAdmin;
+        this.claveDocente = claveDocente;
         this.usuarios = usuarios;
         this.grupos = grupos;
         this.casos = casos;
@@ -40,11 +48,12 @@ public class DatosIniciales implements CommandLineRunner {
         fabrica.asegurarCatalogo();
         if (usuarios.count() > 0) {
             usuarios.findAll().forEach(fabrica::otorgarSiVacio);
+            asegurarPractica();
             return;
         }
 
-        Usuario admin = cuenta("Administración DILEMA", "admin@psicosim.edu", "admin123", Catalogo.Rol.ADMIN, cifrado);
-        Usuario docente = cuenta("Docente de práctica", "docente@psicosim.edu", "docente123", Catalogo.Rol.PROFESOR, cifrado);
+        Usuario admin = cuenta("Administración DILEMA", "admin@psicosim.edu", claveAdmin, Catalogo.Rol.ADMIN, cifrado);
+        Usuario docente = cuenta("Docente de práctica", "docente@psicosim.edu", claveDocente, Catalogo.Rol.PROFESOR, cifrado);
         Usuario estudiante = new Usuario();
         estudiante.nombre = "Estudiante de práctica";
         estudiante.email = "estudiante@psicosim.edu";
@@ -55,6 +64,7 @@ public class DatosIniciales implements CommandLineRunner {
         usuarios.save(estudiante);
         fabrica.otorgarSiVacio(admin);
         fabrica.otorgarSiVacio(docente);
+        asegurarPractica();
 
         Grupo grupo = new Grupo();
         grupo.nombre = "Psicología Social";
@@ -116,13 +126,13 @@ public class DatosIniciales implements CommandLineRunner {
         sesion.caso = caso;
         sesion.grupo = grupo;
         sesion.codigo = "DILEMA-2026";
-        sesion.inicio = LocalDateTime.now().minusHours(1);
+        sesion.inicio = LocalDateTime.now().minusMinutes(10);
         sesion.fin = LocalDateTime.now().plusDays(20);
         sesion.tiempoMaxMin = 30;
-        sesion.toleranciaMin = 180;
+        sesion.toleranciaMin = 10080;
         sesion.lugar = "Aula 3";
         sesion.mensaje = "Caso formativo. El objetivo es el encuadre ético y la ruta de atención, no reconstruir el crimen. No hay escena violenta.";
-        sesion.inicioReal = LocalDateTime.now().minusMinutes(15);
+        sesion.inicioReal = LocalDateTime.now().minusMinutes(5);
         sesiones.save(sesion);
 
         SesionEstudiante fila = new SesionEstudiante();
@@ -130,6 +140,50 @@ public class DatosIniciales implements CommandLineRunner {
         fila.estudianteId = estudiante.id;
         fila.grupoId = grupo.id;
         autorizados.save(fila);
+    }
+
+    /**
+     * La cuenta de práctica debe poder diseñar casos y abrir grupos sin pasar otra vez por administración.
+     * El código DILEMA-2026 también se reabre: si no, el estudiante de demostración deja de entrar
+     * cuando vence la tolerancia de un arranque anterior.
+     */
+    private void asegurarPractica() {
+        usuarios.findByEmailIgnoreCase("docente@psicosim.edu").ifPresent(docente ->
+                fabrica.reemplazarPermisosDocente(docente, List.of(FabricaCuentas.EDITAR, FabricaCuentas.GESTIONAR_ESPACIOS)));
+
+        Usuario estudiante = usuarios.findByEmailIgnoreCase("estudiante@psicosim.edu").orElseGet(() -> {
+            Usuario nuevo = new Usuario();
+            nuevo.nombre = "Estudiante de práctica";
+            nuevo.email = "estudiante@psicosim.edu";
+            nuevo.rol = Catalogo.Rol.ESTUDIANTE;
+            nuevo.activo = true;
+            return usuarios.save(nuevo);
+        });
+        if (!estudiante.activo) {
+            estudiante.activo = true;
+            usuarios.save(estudiante);
+        }
+
+        sesiones.findByCodigoIgnoreCase("DILEMA-2026").ifPresent(sesion -> {
+            LocalDateTime ahora = LocalDateTime.now();
+            sesion.inicio = ahora.minusMinutes(10);
+            sesion.fin = ahora.plusDays(20);
+            sesion.inicioReal = ahora.minusMinutes(5);
+            sesion.cierreReal = null;
+            sesion.toleranciaMin = Math.max(sesion.toleranciaMin, 10080);
+            if (sesion.caso != null) {
+                sesion.caso.estado = Catalogo.EstadoCaso.PUBLICADO;
+                casos.save(sesion.caso);
+            }
+            sesiones.save(sesion);
+            if (!autorizados.existsBySesionIdAndEstudianteId(sesion.id, estudiante.id)) {
+                SesionEstudiante fila = new SesionEstudiante();
+                fila.sesionId = sesion.id;
+                fila.estudianteId = estudiante.id;
+                fila.grupoId = sesion.grupo == null ? null : sesion.grupo.id;
+                autorizados.save(fila);
+            }
+        });
     }
 
     private Usuario cuenta(String nombre, String email, String clave, Catalogo.Rol rol, PasswordEncoder cifrado) {

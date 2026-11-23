@@ -3,12 +3,14 @@ import { rolGuard } from './core/guards';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'ingreso' },
+  { path: 'demo-personaje', loadComponent: () => import('./pages/demo-personaje.component').then(m => m.DemoPersonajeComponent) },
   { path: 'ingreso', loadComponent: () => import('./pages/ingreso.component').then(m => m.IngresoComponent) },
   { path: 'estudiante', canActivate: [rolGuard('ESTUDIANTE')], loadComponent: () => import('./pages/estudiante.component').then(m => m.PanelEstudianteComponent) },
+  // Briefing: portada y presentación del caso, reglas y "Iniciar simulación" (el reloj empieza al iniciar).
   { path: 'estudiante/sesion/:id', canActivate: [rolGuard('ESTUDIANTE')], loadComponent: () => import('./pages/estudiante.component').then(m => m.BriefingComponent) },
   { path: 'estudiante/participacion/:id', canActivate: [rolGuard('ESTUDIANTE')], loadComponent: () => import('./pages/estudiante.component').then(m => m.SimulacionComponent) },
   { path: 'estudiante/avisos', canActivate: [rolGuard('ESTUDIANTE')], loadComponent: () => import('./pages/estudiante.component').then(m => m.AvisosComponent) },
-  { path: 'docente', pathMatch: 'full', redirectTo: 'docente/casos' },
+  { path: 'docente', canActivate: [rolGuard('PROFESOR')], loadComponent: () => import('./pages/docente.component').then(m => m.PanelDocenteComponent) },
   { path: 'docente/casos', canActivate: [rolGuard('PROFESOR')], loadComponent: () => import('./pages/docente.component').then(m => m.CasosComponent) },
   { path: 'docente/casos/nuevo', canActivate: [rolGuard('PROFESOR')], loadComponent: () => import('./pages/docente.component').then(m => m.EditorCasoComponent) },
   { path: 'docente/casos/:id', canActivate: [rolGuard('PROFESOR')], loadComponent: () => import('./pages/docente.component').then(m => m.EditorCasoComponent) },
@@ -16,10 +18,13 @@ export const routes: Routes = [
   { path: 'docente/programar', canActivate: [rolGuard('PROFESOR')], loadComponent: () => import('./pages/docente.component').then(m => m.ProgramarComponent) },
   { path: 'docente/seguimiento', canActivate: [rolGuard('PROFESOR')], loadComponent: () => import('./pages/docente.component').then(m => m.SeguimientoComponent) },
   { path: 'docente/seguimiento/:id', canActivate: [rolGuard('PROFESOR')], loadComponent: () => import('./pages/docente.component').then(m => m.DetalleParticipacionComponent) },
-  { path: 'admin', pathMatch: 'full', redirectTo: 'admin/usuarios' },
+  { path: 'docente/perfil', canActivate: [rolGuard('PROFESOR')], loadComponent: () => import('./pages/admin.component').then(m => m.PerfilComponent) },
+  { path: 'admin', canActivate: [rolGuard('ADMIN')], loadComponent: () => import('./pages/admin.component').then(m => m.PanelAdminComponent) },
   { path: 'admin/usuarios', canActivate: [rolGuard('ADMIN')], loadComponent: () => import('./pages/admin.component').then(m => m.UsuariosComponent) },
   { path: 'admin/usuarios/nuevo', canActivate: [rolGuard('ADMIN')], loadComponent: () => import('./pages/admin.component').then(m => m.CrearUsuarioComponent) },
   { path: 'admin/usuarios/:id', canActivate: [rolGuard('ADMIN')], loadComponent: () => import('./pages/admin.component').then(m => m.PermisosDocenteComponent) },
+  { path: 'admin/grupos', canActivate: [rolGuard('ADMIN')], loadComponent: () => import('./pages/admin.component').then(m => m.GruposAdminComponent) },
   { path: 'admin/configuracion', canActivate: [rolGuard('ADMIN')], loadComponent: () => import('./pages/admin.component').then(m => m.ConfiguracionComponent) },
+  { path: 'admin/perfil', canActivate: [rolGuard('ADMIN')], loadComponent: () => import('./pages/admin.component').then(m => m.PerfilComponent) },
   { path: '**', redirectTo: 'ingreso' }
 ];

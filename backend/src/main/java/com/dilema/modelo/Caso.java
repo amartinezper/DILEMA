@@ -48,7 +48,7 @@ public class Caso {
      */
     public void colocarEstado(EstadoDelCaso estado) {
         if (estado == null || estado.codigo() != this.estado) {
-            throw new IllegalStateException("RF-09: el comportamiento no coincide con el estado guardado del caso.");
+            throw new IllegalStateException("El estado del caso no coincide con lo que está guardado. Recarga la página.");
         }
         this.comportamiento = estado;
     }
@@ -79,7 +79,7 @@ public class Caso {
      */
     public void cambiarEstado(EstadoDelCaso siguiente) {
         if (siguiente == null) {
-            throw new IllegalStateException("RF-09: la transición no tiene estado de destino.");
+            throw new IllegalStateException("No se pudo cambiar el estado del caso.");
         }
         this.estado = siguiente.codigo();
         this.comportamiento = siguiente;
@@ -87,7 +87,7 @@ public class Caso {
 
     private EstadoDelCaso estadoActual() {
         if (comportamiento == null || comportamiento.codigo() != estado) {
-            throw new IllegalStateException("RF-09: el caso no tiene cargado su estado de comportamiento.");
+            throw new IllegalStateException("No se pudo cargar el estado del caso. Recarga la página.");
         }
         return comportamiento;
     }

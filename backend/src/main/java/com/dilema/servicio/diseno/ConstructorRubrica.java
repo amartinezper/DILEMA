@@ -22,7 +22,7 @@ import java.util.List;
 public abstract class ConstructorRubrica {
     public final void construir(Caso caso, Contratos.CasoIn entrada) {
         if (caso.estado != Catalogo.EstadoCaso.BORRADOR) {
-            throw new ReglaNegocio("RF-17: la rúbrica solo se construye en borrador.");
+            throw new ReglaNegocio("La rúbrica solo se puede modificar mientras el caso está en borrador.");
         }
         List<Pregunta> preguntas = new ArrayList<>();
         for (Escenario escenario : caso.escenarios) preguntas.addAll(escenario.preguntas);

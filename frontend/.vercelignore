@@ -1,0 +1,25 @@
+# Dependencias y artefactos locales (Vercel instala y compila en su servidor)
+node_modules
+.angular
+dist
+
+# Material de trabajo y de terceros que no se publica
+vroid-hub
+escenas-originales
+
+# Versiones de M03 solo para comparar en /demo-personaje
+public/personajes/M03-original.vrm
+public/personajes/M03-optimizado.vrm
+
+# Secretos y respaldos
+.env
+.env.*
+**/.env
+**/.env.*
+*.sql
+**/*.sql
+
+# Archivos de Docker (no se usan en Vercel)
+Dockerfile
+.dockerignore
+nginx.conf

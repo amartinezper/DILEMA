@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: ${PORT:8080}
 spring:
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/dilema}
@@ -18,9 +18,15 @@ spring:
   mail:
     host: ${SPRING_MAIL_HOST:localhost}
     port: ${SPRING_MAIL_PORT:1025}
+    username: ${SPRING_MAIL_USERNAME:}
+    password: ${SPRING_MAIL_PASSWORD:}
     properties:
-      mail.smtp.auth: false
-      mail.smtp.starttls.enable: false
+      mail.smtp.auth: ${SPRING_MAIL_AUTH:false}
+      mail.smtp.starttls.enable: ${SPRING_MAIL_STARTTLS:false}
+      mail.smtp.starttls.required: ${SPRING_MAIL_STARTTLS:false}
+      mail.smtp.connectiontimeout: 10000
+      mail.smtp.timeout: 10000
+      mail.smtp.writetimeout: 10000
 dilema:
   correo:
     desde: ${CORREO_DESDE:dilema@psicosim.edu}

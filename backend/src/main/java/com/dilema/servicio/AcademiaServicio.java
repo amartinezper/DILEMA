@@ -81,6 +81,40 @@ public class AcademiaServicio {
     }
 
     @Transactional
+    public Contratos.GrupoVista editarGrupo(Usuario docente, Long id, Contratos.GrupoIn entrada) {
+        proxy.gestionarEspacio(docente);
+        if (entrada.nombre() == null || entrada.nombre().isBlank() || entrada.espacioAcademico() == null || entrada.espacioAcademico().isBlank()) {
+            throw new ReglaNegocio("El grupo necesita nombre y semestre.");
+        }
+        Grupo grupo = propio(docente, id);
+        grupo.nombre = entrada.nombre().trim();
+        grupo.semestre = entrada.espacioAcademico().trim();
+        bitacora.auditar(docente, "EDITAR_GRUPO", grupo.nombre);
+        return mapeador.grupo(grupo);
+    }
+
+    @Transactional
+    public void borrarGrupo(Usuario docente, Long id) {
+        proxy.gestionarEspacio(docente);
+        Grupo grupo = propio(docente, id);
+        List<SesionCaso> convocatorias = sesiones.findByGrupo_Id(grupo.id);
+        for (SesionCaso sesion : convocatorias) {
+            if (sesion.estado() == Catalogo.EstadoSesion.EN_CURSO) {
+                throw new ReglaNegocio("No se puede borrar un grupo con una sesión en curso.");
+            }
+            if (sesion.estado() == Catalogo.EstadoSesion.FINALIZADO) {
+                throw new ReglaNegocio("No se puede borrar un grupo con convocatorias ya cerradas.");
+            }
+        }
+        for (SesionCaso sesion : convocatorias) {
+            padron.vaciar(sesion);
+            sesiones.delete(sesion);
+        }
+        grupos.delete(grupo);
+        bitacora.auditar(docente, "BORRAR_GRUPO", grupo.nombre);
+    }
+
+    @Transactional
     public Contratos.GrupoVista agregarEstudiante(Usuario docente, Long grupoId, String nombre, String email) {
         proxy.revisarGrupo(docente);
         Grupo grupo = propio(docente, grupoId);
@@ -141,10 +175,17 @@ public class AcademiaServicio {
     }
 
     @Transactional
+    public Contratos.SesionVista reprogramar(Usuario docente, Long id, Contratos.AgendaIn entrada) {
+        proxy.revisarGrupo(docente);
+        return fachada.reprogramar(docente, id, entrada);
+    }
+
+    @Transactional
     public Contratos.SesionVista iniciar(Usuario docente, Long id) {
         proxy.revisarGrupo(docente);
         SesionCaso sesion = propia(docente, id);
         EstadosDeSesion.de(sesion).iniciar(sesion);
+        avisarConvocados(sesion, true);
         bitacora.auditar(docente, "INICIAR_SESION", sesion.codigo);
         return mapeador.sesion(sesion);
     }
@@ -154,6 +195,7 @@ public class AcademiaServicio {
         proxy.revisarGrupo(docente);
         SesionCaso sesion = propia(docente, id);
         new CierrePorDocente(participacionServicio, participaciones, bitacora).cerrar(sesion);
+        avisarConvocados(sesion, false);
         bitacora.auditar(docente, "FINALIZAR_SESION", sesion.codigo);
         return mapeador.sesion(sesion);
     }
@@ -164,7 +206,16 @@ public class AcademiaServicio {
         for (SesionCaso sesion : sesiones.findByCierreRealIsNull()) {
             if (EstadosDeSesion.vencioPlazoDeCierre(sesion, ahora)) {
                 new CierrePorFecha(participacionServicio, participaciones, bitacora).cerrar(sesion);
+                avisarConvocados(sesion, false);
             }
+        }
+    }
+
+    private void avisarConvocados(SesionCaso sesion, boolean inicio) {
+        if (sesion.grupo == null || sesion.grupo.estudiantes == null) return;
+        for (Usuario estudiante : sesion.grupo.estudiantes) {
+            if (inicio) notificador.sesionIniciada(estudiante, sesion);
+            else notificador.sesionCerrada(estudiante, sesion);
         }
     }
 

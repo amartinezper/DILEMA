@@ -77,6 +77,28 @@ class AcademiaServicioTest {
     }
 
     @Test
+    @DisplayName("edita nombre y semestre del grupo propio")
+    void editaGrupoPropio() {
+        Grupo grupo = grupo();
+        when(grupos.findById(8L)).thenReturn(Optional.of(grupo));
+        Contratos.GrupoVista vista = servicio.editarGrupo(docente, 8L, new Contratos.GrupoIn("Grupo B", "2026-II"));
+        assertEquals("Grupo B", vista.nombre());
+        assertEquals("2026-II", vista.espacioAcademico());
+        verify(bitacora).auditar(eq(docente), eq("EDITAR_GRUPO"), eq("Grupo B"));
+    }
+
+    @Test
+    @DisplayName("borra un grupo sin convocatorias")
+    void borraGrupoSinConvocatorias() {
+        Grupo grupo = grupo();
+        when(grupos.findById(8L)).thenReturn(Optional.of(grupo));
+        when(sesiones.findByGrupo_Id(8L)).thenReturn(List.of());
+        servicio.borrarGrupo(docente, 8L);
+        verify(grupos).delete(grupo);
+        verify(bitacora).auditar(eq(docente), eq("BORRAR_GRUPO"), eq("Grupo A"));
+    }
+
+    @Test
     @DisplayName("CU-12-P03 rechaza un correo institucional inválido")
     void rechazaCorreoInstitucionalInvalido() {
         when(grupos.findById(8L)).thenReturn(Optional.of(grupo()));

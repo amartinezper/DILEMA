@@ -16,15 +16,21 @@ services:
       retries: 20
   backend:
     build: ./backend
+    env_file:
+      - .env
     ports:
       - "8080:8080"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/dilema
       SPRING_DATASOURCE_USERNAME: dilema
       SPRING_DATASOURCE_PASSWORD: dilema
-      SPRING_MAIL_HOST: mailpit
-      SPRING_MAIL_PORT: 1025
-      CORREO_DESDE: dilema@psicosim.edu
+      SPRING_MAIL_HOST: ${SPRING_MAIL_HOST:-mailpit}
+      SPRING_MAIL_PORT: ${SPRING_MAIL_PORT:-1025}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME:-}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD:-}
+      SPRING_MAIL_AUTH: ${SPRING_MAIL_AUTH:-false}
+      SPRING_MAIL_STARTTLS: ${SPRING_MAIL_STARTTLS:-false}
+      CORREO_DESDE: ${CORREO_DESDE:-dilema@psicosim.edu}
       APP_URL: http://localhost:4200
     depends_on:
       postgres:

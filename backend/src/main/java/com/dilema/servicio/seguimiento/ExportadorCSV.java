@@ -2,9 +2,9 @@ package com.dilema.servicio.seguimiento;
 
 import java.nio.charset.StandardCharsets;
 
-/** Strategy (RF-16). CSV de una fila por intento, sin librería adicional. */
+/** Strategy (RF-16). CSV de una fila por intento, sin librería adicional. El encabezado no cambia. */
 public final class ExportadorCSV implements FormatoReporte {
-    static final String ENCABEZADO = "estudiante,estado,puntaje,aciertos,totalPreguntas,nivel,valoracionGeneral";
+    static final String ENCABEZADO = ColumnasReporte.encabezadoCsv();
 
     @Override
     public ArchivoReporte exportar(DatosReporte datos) {
