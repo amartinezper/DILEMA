@@ -2,6 +2,7 @@ package com.dilema.servicio;
 
 import com.dilema.modelo.*;
 import com.dilema.repo.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -21,10 +22,16 @@ public class DatosIniciales implements CommandLineRunner {
     private final EscenarioPersonajeRepo vinculos;
     private final FabricaCuentas fabrica;
     private final PasswordEncoder cifrado;
+    private final String claveAdmin;
+    private final String claveDocente;
 
     public DatosIniciales(UsuarioRepo usuarios, GrupoRepo grupos, CasoRepo casos, SesionRepo sesiones,
                           SesionEstudianteRepo autorizados, EscenarioPersonajeRepo vinculos,
-                          FabricaCuentas fabrica, PasswordEncoder cifrado) {
+                          FabricaCuentas fabrica, PasswordEncoder cifrado,
+                          @Value("${DILEMA_CLAVE_ADMIN:admin123}") String claveAdmin,
+                          @Value("${DILEMA_CLAVE_DOCENTE:docente123}") String claveDocente) {
+        this.claveAdmin = claveAdmin;
+        this.claveDocente = claveDocente;
         this.usuarios = usuarios;
         this.grupos = grupos;
         this.casos = casos;
@@ -45,8 +52,8 @@ public class DatosIniciales implements CommandLineRunner {
             return;
         }
 
-        Usuario admin = cuenta("Administración DILEMA", "admin@psicosim.edu", "admin123", Catalogo.Rol.ADMIN, cifrado);
-        Usuario docente = cuenta("Docente de práctica", "docente@psicosim.edu", "docente123", Catalogo.Rol.PROFESOR, cifrado);
+        Usuario admin = cuenta("Administración DILEMA", "admin@psicosim.edu", claveAdmin, Catalogo.Rol.ADMIN, cifrado);
+        Usuario docente = cuenta("Docente de práctica", "docente@psicosim.edu", claveDocente, Catalogo.Rol.PROFESOR, cifrado);
         Usuario estudiante = new Usuario();
         estudiante.nombre = "Estudiante de práctica";
         estudiante.email = "estudiante@psicosim.edu";

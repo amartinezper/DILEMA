@@ -24,13 +24,20 @@ public class BitacoraServicio {
     private final JavaMailSender correo;
     private final String desde;
     private final NotificacionRepo notificaciones;
+    private final CorreoBrevo brevo;   // null o inactivo → SMTP como antes
 
     @Autowired
     public BitacoraServicio(JavaMailSender correo, @Value("${dilema.correo.desde}") String desde,
-                            NotificacionRepo notificaciones) {
+                            NotificacionRepo notificaciones, CorreoBrevo brevo) {
         this.correo = correo;
         this.desde = desde;
         this.notificaciones = notificaciones;
+        this.brevo = brevo;
+    }
+
+    /** Sin Brevo: solo SMTP (lo usan las pruebas). */
+    public BitacoraServicio(JavaMailSender correo, String desde, NotificacionRepo notificaciones) {
+        this(correo, desde, notificaciones, null);
     }
 
     /** Sin repositorio: solo correo (los avisos de SISTEMA quedan en el log). */
@@ -80,6 +87,10 @@ public class BitacoraServicio {
 
     private void enviar(Usuario destinatario, String titulo, String cuerpo) {
         if (destinatario == null || destinatario.email == null || destinatario.email.isBlank()) return;
+        if (brevo != null && brevo.activo()) {
+            brevo.enviar(desde, destinatario.email, titulo, cuerpo == null ? "" : cuerpo);
+            return;
+        }
         try {
             SimpleMailMessage mensaje = new SimpleMailMessage();
             mensaje.setFrom(desde);
