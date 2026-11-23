@@ -32,6 +32,10 @@ services:
       SPRING_MAIL_STARTTLS: ${SPRING_MAIL_STARTTLS:-false}
       CORREO_DESDE: ${CORREO_DESDE:-dilema@psicosim.edu}
       APP_URL: http://localhost:4200
+      DILEMA_PORTADAS_DIR: /data/portadas
+    volumes:
+      # Fotos de portada de los casos: sobreviven a reconstruir el contenedor (igual que el volumen de Railway).
+      - dilema-portadas:/data/portadas
     depends_on:
       postgres:
         condition: service_healthy
@@ -50,3 +54,4 @@ services:
       - backend
 volumes:
   dilema-datos:
+  dilema-portadas:

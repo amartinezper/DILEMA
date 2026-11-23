@@ -5,6 +5,7 @@ import com.dilema.modelo.Usuario;
 import com.dilema.servicio.*;
 import com.dilema.servicio.seguimiento.ArchivoReporte;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,10 +25,12 @@ public class ApiControlador {
     private final AdminServicio admin;
     private final Tokens tokens;
     private final Mapeador mapeador;
+    private final PortadaServicio portadas;
 
     public ApiControlador(AuthServicio auth, CasoServicio casos, AcademiaServicio academia,
                           ParticipacionServicio participaciones, SeguimientoServicio seguimiento,
-                          AdminServicio admin, Tokens tokens, Mapeador mapeador) {
+                          AdminServicio admin, Tokens tokens, Mapeador mapeador, PortadaServicio portadas) {
+        this.portadas = portadas;
         this.auth = auth;
         this.casos = casos;
         this.academia = academia;
@@ -110,7 +113,39 @@ public class ApiControlador {
     }
 
     @PostMapping("/docente/casos/{id}/duplicar")
-    Contratos.CasoVista duplicar(@PathVariable Long id, HttpServletRequest request) { return casos.duplicar(docente(request), id); }
+    Contratos.CasoVista duplicar(@PathVariable Long id, HttpServletRequest request) {
+        Contratos.CasoVista copia = casos.duplicar(docente(request), id);
+        portadas.copiar(id, copia.id());
+        return copia;
+    }
+
+    /** Sube o reemplaza la portada (cuerpo = la imagen WebP o JPEG ya preparada en el navegador). */
+    @PutMapping(value = "/docente/casos/{id}/portada", consumes = {"image/webp", "image/jpeg"})
+    Map<String, Long> subirPortada(@PathVariable Long id, HttpServletRequest request) throws java.io.IOException {
+        if (request.getContentLengthLong() > PortadaServicio.MAXIMO_BYTES) {
+            throw new ReglaNegocio("La portada no puede pasar de 400 KB.");
+        }
+        byte[] datos = request.getInputStream().readNBytes(PortadaServicio.MAXIMO_BYTES + 1);
+        return Map.of("version", portadas.guardar(docente(request), id, datos));
+    }
+
+    @DeleteMapping("/docente/casos/{id}/portada")
+    ResponseEntity<Void> quitarPortada(@PathVariable Long id, HttpServletRequest request) {
+        portadas.quitar(docente(request), id);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** 404 si el caso no tiene portada: el frontend usa entonces la escena automática. */
+    @GetMapping("/casos/{id}/portada")
+    ResponseEntity<byte[]> verPortada(@PathVariable Long id, HttpServletRequest request) {
+        return portadas.leer(FiltroToken.actual(request), id)
+                .map(p -> ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(p.tipo()))
+                        .cacheControl(CacheControl.noCache().cachePrivate())
+                        .eTag("\"" + p.version() + "\"")
+                        .body(p.datos()))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
 
     @PostMapping("/docente/casos/{id}/publicar")
     Contratos.CasoVista publicar(@PathVariable Long id, HttpServletRequest request) { return casos.publicar(docente(request), id); }
