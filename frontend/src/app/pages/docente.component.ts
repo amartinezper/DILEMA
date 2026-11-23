@@ -2145,7 +2145,6 @@ export class ProgramarComponent {
             </div>
             <div class="row ficha-exporta">
               <button class="btn-oscuro" type="button" (click)="descargar('csv')">CSV</button>
-              <button class="btn-oscuro btn-csv-directo" type="button" (click)="descargarCsvDirecto()">CSV directo</button>
               <button class="btn-oscuro" type="button" (click)="descargar('pdf')">PDF</button>
               <button class="btn-oscuro" type="button" (click)="descargar('xlsx')">Excel</button>
             </div>
@@ -2233,9 +2232,6 @@ export class SeguimientoComponent {
   conteo(nivel: string) { return this.filas().filter((f) => this.nivel(f.nota) === nivel).length; }
   descargar(formato: 'csv' | 'pdf' | 'xlsx') {
     this.bajar(`/api/docente/sesiones/${this.sesionId}/reporte`, `reporte-${this.sesionId}.${formato}`, { formato });
-  }
-  descargarCsvDirecto() {
-    this.bajar(`/api/docente/sesiones/${this.sesionId}/reporte.csv`, `reporte-sesion-${this.sesionId}.csv`);
   }
   private bajar(url: string, nombre: string, params?: Record<string, string>) {
     this.http.get(url, { params, responseType: 'blob' }).subscribe((archivo) => {

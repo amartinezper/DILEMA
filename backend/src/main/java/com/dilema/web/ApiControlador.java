@@ -192,13 +192,6 @@ public class ApiControlador {
         return seguimiento.ver(docente(request), id);
     }
 
-    @GetMapping(value = "/docente/sesiones/{id}/reporte.csv", produces = "text/csv")
-    ResponseEntity<String> reporte(@PathVariable Long id, HttpServletRequest request) {
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=reporte-sesion-" + id + ".csv")
-                .body(participaciones.reporte(docente(request), id));
-    }
-
     @GetMapping("/docente/sesiones/{id}/reporte")
     ResponseEntity<byte[]> reporteFormato(@PathVariable Long id,
                                           @RequestParam(defaultValue = "csv") String formato,

@@ -10,8 +10,6 @@ import com.dilema.servicio.evaluacion.EstrategiaCalificacion;
 import com.dilema.servicio.evaluacion.ExplicacionReal;
 import com.dilema.servicio.evaluacion.ResumenIntento;
 import com.dilema.servicio.evaluacion.RetroalimentacionProxy;
-import com.dilema.servicio.seguimiento.ExportadorCSV;
-import com.dilema.servicio.seguimiento.GeneradorReporte;
 import com.dilema.servicio.participacion.ComandoRespuesta;
 import com.dilema.servicio.participacion.FinalizadorParticipacion;
 import com.dilema.servicio.participacion.HistorialRespuestas;
@@ -236,21 +234,6 @@ public class ParticipacionServicio {
             }
         }
         return filas;
-    }
-
-    /**
-     * RF-16. El CSV sale del mismo generador que PDF y Excel:
-     * una fila por intento, con ausencias en 0,0.
-     */
-    @Transactional(readOnly = true)
-    public String reporte(Usuario docente, Long sesionId) {
-        proxy.revisarGrupo(docente);
-        SesionCaso sesion = sesiones.findById(sesionId).orElseThrow(() -> new NoEncontrado("Sesión no encontrada."));
-        List<Participacion> deLaSesion = participaciones.findBySesion_Id(sesion.id);
-        GeneradorReporte generador = new GeneradorReporte();
-        generador.setFormato(new ExportadorCSV());
-        byte[] archivo = generador.generar(docente, sesion, deLaSesion == null ? List.of() : deLaSesion).contenido();
-        return new String(archivo, java.nio.charset.StandardCharsets.UTF_8);
     }
 
     private boolean cerrarSiVencio(Participacion participacion, LocalDateTime ahora) {

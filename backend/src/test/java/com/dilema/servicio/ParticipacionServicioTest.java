@@ -198,7 +198,6 @@ class ParticipacionServicioTest {
         List<Contratos.FilaSeguimiento> filas = servicio.seguimiento(docente, 4L);
         assertEquals("AUSENTE", filas.get(0).estado());
         assertEquals(0.0, filas.get(0).nota());
-        assertTrue(servicio.reporte(docente, 4L).contains("AUSENTE"));
     }
 
     @Test

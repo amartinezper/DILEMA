@@ -560,7 +560,6 @@ mat-card, .card, .panel, .item {
 .inicio-est .ficha-exporta > .btn-suave {
   flex: 1 1 0; min-width: 0; width: auto; max-width: none;
 }
-.inicio-est .ficha-exporta > .btn-csv-directo { flex: 1.7 1 0; }
 .row-acciones { display: flex; gap: 10px; align-items: center; }
 .row-programar { justify-content: flex-end; }
 .row-programar .row-acciones { justify-content: flex-end; }
