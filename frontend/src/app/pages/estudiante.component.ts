@@ -337,39 +337,15 @@ export class PanelEstudianteComponent {
   /** Inicio del desarrollo situacional, sin HTML y recortado en una frase completa. */
   textoDestacado = computed(() => resumenDesarrollo(this.destacado()?.desarrollo ?? ''));
   /** Fondo del primer escenario según el motor de escenas, y el nombre de ese escenario para el letrero. */
-  fondoDestacado = signal<{ ruta: string; escenario: string; portada?: boolean } | null>(null);
+  fondoDestacado = signal<{ ruta: string; escenario: string } | null>(null);
   private pedidoFondo = 0;
-  private readonly alSalirFondo = inject(DestroyRef).onDestroy(() => {
-    const fondo = this.fondoDestacado();
-    if (fondo?.portada) URL.revokeObjectURL(fondo.ruta);
-  });
   altDestacado() {
     const caso = this.destacado()?.caso;
-    if (!caso) return 'Escena de un caso de DILEMA';
-    return this.fondoDestacado()?.portada ? `Portada del caso ${caso}` : `Escena inicial del caso ${caso}`;
+    return caso ? `Escena inicial del caso ${caso}` : 'Escena de un caso de DILEMA';
   }
-  /**
-   * Imagen de la tarjeta: la portada que subió el docente; si no hay (404), el fondo que el motor de escenas
-   * elige para el PRIMER escenario (sin escenarios, el neutro del tipo de caso).
-   */
+  /** Pide al motor de escenas el fondo del PRIMER escenario; sin escenarios, el neutro del tipo de caso. */
   private cargarFondoDestacado(sesion: Sesion | null) {
     const pedido = ++this.pedidoFondo;
-    if (!sesion?.casoId) { this.cargarEscenaDestacada(sesion, pedido); return; }
-    this.http.get(`/api/casos/${sesion.casoId}/portada`, { responseType: 'blob' }).subscribe({
-      next: (imagen) => {
-        if (pedido !== this.pedidoFondo) return;
-        this.ponerFondo({ ruta: URL.createObjectURL(imagen), escenario: '', portada: true });
-      },
-      error: () => this.cargarEscenaDestacada(sesion, pedido)
-    });
-  }
-  private ponerFondo(fondo: { ruta: string; escenario: string; portada?: boolean }) {
-    const anterior = this.fondoDestacado();
-    if (anterior?.portada) URL.revokeObjectURL(anterior.ruta);
-    this.fondoDestacado.set(fondo);
-  }
-  private cargarEscenaDestacada(sesion: Sesion | null, pedido: number) {
-    if (pedido !== this.pedidoFondo) return;
     const escenarios = sesion?.escenarios ?? [];
     const primero = escenarios[0];
     const caso = {
@@ -378,8 +354,8 @@ export class PanelEstudianteComponent {
     };
     const escenario = primero?.nombre?.trim() ?? '';
     this.escenas.elegir(caso, { indice: 0, nombre: primero?.nombre ?? '', contexto: primero?.contexto ?? '' })
-      .then((f) => { if (pedido === this.pedidoFondo) this.ponerFondo({ ruta: f.ruta, escenario }); })
-      .catch(() => { if (pedido === this.pedidoFondo) this.ponerFondo({ ruta: FONDO_NEUTRO, escenario }); });
+      .then((f) => { if (pedido === this.pedidoFondo) this.fondoDestacado.set({ ruta: f.ruta, escenario }); })
+      .catch(() => { if (pedido === this.pedidoFondo) this.fondoDestacado.set({ ruta: FONDO_NEUTRO, escenario }); });
   }
   progresoGeneral() {
     const lista = this.panel()?.sesiones ?? [];

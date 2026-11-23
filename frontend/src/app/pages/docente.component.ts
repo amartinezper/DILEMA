@@ -12,7 +12,6 @@ import { BusquedaService } from '../core/busqueda.service';
 import { BloqueNovela, CasoNovela, EscenaNovelaComponent, PersonajeNovela } from '../shared/novela/escena-novela.component';
 import { Asignacion } from '../shared/novela/elenco.service';
 import { FONDOS_MANUALES } from '../shared/novela/escena.service';
-import { prepararPortada } from '../shared/portada';
 import { NovelaReproductorComponent } from '../shared/novela/novela-reproductor.component';
 import { ResultadosNovela, calcularResultados } from '../shared/novela/resultados';
 import { MusicaNovelaService } from '../shared/novela/musica-novela.service';
@@ -686,31 +685,6 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
               }
             </section>
             <section class="caso-casilla">
-              <h3>Portada</h3>
-              <p class="sub">Se muestra en la tarjeta "Dilema Destacado" del estudiante. Sin portada, el estudiante ve la escena del primer escenario. Puedes cambiarla aunque el caso esté publicado.</p>
-              <div class="portada-caso">
-                @if (portadaUrl(); as url) {
-                  <img [src]="url" [alt]="'Portada del caso ' + (caso.nombre || '')" />
-                } @else {
-                  <p class="portada-vacia">Sin portada: se usa la escena automática.</p>
-                }
-              </div>
-              @if (!caso.id) {
-                <p class="sub">Guarda el caso para poder subir una portada.</p>
-              } @else if (puedeEditar()) {
-                <div class="portada-acciones">
-                  <label class="btn-oscuro" [class.deshabilitado]="subiendoPortada()">
-                    {{ portadaUrl() ? 'Cambiar foto' : 'Subir foto' }}
-                    <input type="file" accept="image/*" hidden [disabled]="subiendoPortada()" (change)="elegirPortada($event)" />
-                  </label>
-                  @if (portadaUrl()) {
-                    <button type="button" class="btn-suave" [disabled]="subiendoPortada()" (click)="quitarPortada()">Quitar</button>
-                  }
-                </div>
-              }
-              @if (estadoPortada()) { <p class="sub">{{ estadoPortada() }}</p> }
-            </section>
-            <section class="caso-casilla">
               <div class="campo-cabeza">
                 <h3>Desarrollo situacional</h3>
                 @if (!bloqueado()) { <button type="button" class="insertar" (click)="abrirInsertar('desarrollo')">Insertar diálogo</button> }
@@ -1094,11 +1068,6 @@ export class EditorCasoComponent {
   private router = inject(Router);
   private auth = inject(AuthService);
   private claveBoceto = 'dilema-boceto-nuevo';
-  // ---- Portada (archivo en el volumen del backend; no se guarda con el resto del caso)
-  portadaUrl = signal<string | null>(null);
-  subiendoPortada = signal(false);
-  estadoPortada = signal('');
-  private readonly alSalirPortada = inject(DestroyRef).onDestroy(() => this.ponerPortada(null));
 
   constructor() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -1122,68 +1091,10 @@ export class EditorCasoComponent {
             nombre: this.caso.personajes[indice]?.nombre || persona.nombre
           })));
           this.refrescarEscena();
-          this.cargarPortada();
         },
         error: (falla) => this.error.set(mensajeError(falla))
       });
     }
-  }
-  /** Trae la portada del caso; 404 = sin portada (el estudiante ve la escena automática). */
-  private cargarPortada() {
-    if (!this.caso.id) return;
-    this.http.get(`/api/casos/${this.caso.id}/portada`, { responseType: 'blob' }).subscribe({
-      next: (imagen) => this.ponerPortada(URL.createObjectURL(imagen)),
-      error: () => this.ponerPortada(null)
-    });
-  }
-  private ponerPortada(url: string | null) {
-    const anterior = this.portadaUrl();
-    if (anterior) URL.revokeObjectURL(anterior);
-    this.portadaUrl.set(url);
-  }
-  /** Recorta a 1200 x 675, comprime (~300 KB) en el navegador y sube la imagen. */
-  async elegirPortada(evento: Event) {
-    const entrada = evento.target as HTMLInputElement;
-    const archivo = entrada.files?.[0];
-    entrada.value = '';
-    if (!archivo || !this.caso.id) return;
-    this.subiendoPortada.set(true);
-    this.estadoPortada.set('Preparando la imagen…');
-    let imagen: Blob;
-    try {
-      imagen = await prepararPortada(archivo);
-    } catch (falla) {
-      this.subiendoPortada.set(false);
-      this.estadoPortada.set(falla instanceof Error ? falla.message : 'No se pudo preparar la imagen.');
-      return;
-    }
-    this.estadoPortada.set('Subiendo…');
-    this.http.put(`/api/docente/casos/${this.caso.id}/portada`, imagen, { headers: { 'Content-Type': imagen.type } }).subscribe({
-      next: () => {
-        this.ponerPortada(URL.createObjectURL(imagen));
-        this.subiendoPortada.set(false);
-        this.estadoPortada.set(`Portada guardada (${Math.round(imagen.size / 1024)} KB).`);
-      },
-      error: (falla) => {
-        this.subiendoPortada.set(false);
-        this.estadoPortada.set(mensajeError(falla));
-      }
-    });
-  }
-  quitarPortada() {
-    if (!this.caso.id) return;
-    this.subiendoPortada.set(true);
-    this.http.delete(`/api/docente/casos/${this.caso.id}/portada`).subscribe({
-      next: () => {
-        this.ponerPortada(null);
-        this.subiendoPortada.set(false);
-        this.estadoPortada.set('Portada quitada: el estudiante verá la escena automática.');
-      },
-      error: (falla) => {
-        this.subiendoPortada.set(false);
-        this.estadoPortada.set(mensajeError(falla));
-      }
-    });
   }
   irA(paso: string) {
     this.activo.set(paso);

@@ -32,6 +32,3 @@ dilema:
     desde: ${CORREO_DESDE:dilema@psicosim.edu}
   app:
     url: ${APP_URL:http://localhost:4200}
-  portadas:
-    # Carpeta de las fotos de portada (portada-<id>.webp). En Railway es un volumen; ver docker-compose.yml.
-    dir: ${DILEMA_PORTADAS_DIR:portadas}
