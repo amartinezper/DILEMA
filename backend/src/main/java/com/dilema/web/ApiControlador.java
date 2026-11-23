@@ -241,9 +241,6 @@ public class ApiControlador {
     @GetMapping("/admin/grupos")
     List<Contratos.GrupoVista> gruposAdmin(HttpServletRequest request) { return admin.grupos(admin(request)); }
 
-    @GetMapping("/admin/auditoria")
-    List<Contratos.AuditoriaVista> auditoria(HttpServletRequest request) { return admin.auditoria(admin(request)); }
-
     private MediaType tipo(String extension) {
         return switch (extension) {
             case "pdf" -> MediaType.APPLICATION_PDF;

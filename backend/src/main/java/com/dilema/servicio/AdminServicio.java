@@ -97,12 +97,6 @@ public class AdminServicio {
         return grupos.findAll().stream().map(mapeador::grupo).toList();
     }
 
-    @Transactional(readOnly = true)
-    public List<Contratos.AuditoriaVista> auditoria(Usuario admin) {
-        proxy.gestionarUsuarios(admin);
-        return List.of();
-    }
-
     private Catalogo.Rol rolDe(String texto) {
         if (texto == null) throw new ReglaNegocio("Indica el rol.");
         return switch (texto.trim().toUpperCase()) {

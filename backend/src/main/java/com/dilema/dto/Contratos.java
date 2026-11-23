@@ -46,7 +46,6 @@ public final class Contratos {
     public record PerfilIn(String nombre, String email, String claveActual, String claveNueva) {}
 
     public record Aviso(Long id, String canal, String titulo, String cuerpo, boolean leida, String fecha) {}
-    public record AuditoriaVista(Long id, String fecha, String accion, String detalle, String usuario) {}
 
     public record OpcionJuego(Long id, String texto, Boolean correcta, String explicacion, String fundamento) {}
     public record PreguntaJuego(Long id, String bloque, String contexto, String enunciado, String pista, String criterio,

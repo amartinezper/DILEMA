@@ -12,7 +12,6 @@ const enlaces = [
   { href: '/admin/usuarios', texto: 'Docentes', exacto: true },
   { href: '/admin/usuarios/nuevo', texto: 'Nuevo docente', exacto: true },
   { href: '/admin/grupos', texto: 'Grupos', exacto: true },
-  { href: '/admin/auditoria', texto: 'Auditoría', exacto: true },
   { href: '/admin/configuracion', texto: 'Configuración global', exacto: true },
   { href: '/admin/perfil', texto: 'Perfil' }
 ];
@@ -75,10 +74,6 @@ const enlaces = [
               <a class="cat psico" routerLink="/admin/grupos">
                 <svg viewBox="0 0 24 24"><path d="M5 5.5h9.5A2.5 2.5 0 0 1 17 8v11H8.5A2.5 2.5 0 0 1 6 16.5V6.5A1 1 0 0 0 5 5.5z"/></svg>
                 <span>Grupos</span><i>→</i>
-              </a>
-              <a class="cat etica" routerLink="/admin/auditoria">
-                <svg viewBox="0 0 24 24"><path d="M5 19V10M10 19V5M15 19v-7M20 19V8"/></svg>
-                <span>Auditoría</span><i>→</i>
               </a>
               <a class="cat psico" routerLink="/admin/configuracion">
                 <svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM12 3.5v2M12 18.5v2M4.8 6.2l1.5 1.5M17.7 16.3l1.5 1.5M3.5 12h2M18.5 12h2M4.8 17.8l1.5-1.5M17.7 7.7l1.5-1.5"/></svg>
@@ -313,7 +308,6 @@ export class PermisosDocenteComponent {
 
 interface PersonaAdmin { id: number; nombre: string; email: string; }
 interface GrupoAdmin { id: number; nombre: string; espacioAcademico: string; docente: PersonaAdmin; estudiantes: PersonaAdmin[]; }
-interface Auditoria { id: number; fecha: string; accion: string; detalle: string; usuario: string; }
 
 @Component({
   selector: 'app-grupos-admin',
@@ -347,38 +341,6 @@ export class GruposAdminComponent {
   grupos = signal<GrupoAdmin[]>([]);
   constructor() {
     this.http.get<GrupoAdmin[]>('/api/admin/grupos').subscribe((dato) => this.grupos.set(dato));
-  }
-}
-
-@Component({
-  selector: 'app-auditoria',
-  imports: [MarcoDocenteComponent],
-  template: `
-    <app-marco-docente [enlaces]="enlaces" inicio="/admin">
-      <section class="tablero">
-        <header class="saludo">
-          <h1>Auditoría</h1>
-          <p>Acciones registradas en el sistema.</p>
-        </header>
-        <article class="tarjeta stack">
-          @for (fila of filas(); track fila.id) {
-            <article class="item">
-              <h3>{{ fila.accion }}</h3>
-              <p class="sub">{{ fila.usuario || 'Sistema' }} · {{ fila.fecha }}</p>
-              <p class="sub">{{ fila.detalle }}</p>
-            </article>
-          } @empty { <p class="sub">Todavía no hay registros de auditoría.</p> }
-        </article>
-      </section>
-    </app-marco-docente>
-  `
-})
-export class AuditoriaComponent {
-  enlaces = enlaces;
-  private http = inject(HttpClient);
-  filas = signal<Auditoria[]>([]);
-  constructor() {
-    this.http.get<Auditoria[]>('/api/admin/auditoria').subscribe((dato) => this.filas.set(dato));
   }
 }
 

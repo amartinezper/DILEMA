@@ -91,4 +91,3 @@ export interface RespuestaVigente { pregunta: string; opcion: string | null; ace
 export interface ParticipacionConsultada {
   id: number; estudiante: string; numeroIntento: number; valoracionGeneral: string; respuestas: RespuestaVigente[];
 }
-export interface Auditoria { id: number; fecha: string; accion: string; detalle: string; usuario: string; }
