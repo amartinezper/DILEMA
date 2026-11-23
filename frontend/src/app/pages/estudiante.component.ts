@@ -1,4 +1,4 @@
-import { Component, DestroyRef, computed, inject, signal, viewChild } from '@angular/core';
+import { Component, DestroyRef, computed, effect, inject, signal, untracked, viewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -20,6 +20,65 @@ const enlaces = [
   { href: '/estudiante', texto: 'Casos asignados', exacto: true },
   { href: '/estudiante/avisos', texto: 'Notificaciones', exacto: true }
 ];
+
+/** Escena neutra del banco si no se puede leer escenas.json. */
+const FONDO_NEUTRO = '/escenas/oficina-institucional/1-dia.webp';
+
+/** Id de la sesión con la que entró el estudiante (lo guarda AuthService al ingresar). */
+function sesionDelIngreso(): number | null {
+  try {
+    const valor = Number(localStorage.getItem('dilema-sesion'));
+    return Number.isFinite(valor) && valor > 0 ? valor : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Sesión destacada: la del ingreso si sigue en el panel; si no, la que está en curso (primero las que el
+ * estudiante aún puede resolver, y entre ellas la que cierra antes); si no, la pendiente más próxima; y si
+ * no, la más reciente.
+ */
+function elegirDestacado(lista: Sesion[], deIngreso: number | null, ahora: number): Sesion | null {
+  if (!lista.length) return null;
+  const delIngreso = deIngreso == null ? undefined : lista.find((s) => s.id === deIngreso);
+  if (delIngreso) return delIngreso;
+  const t = (iso: string) => { const v = Date.parse(iso); return Number.isNaN(v) ? 0 : v; };
+  const porResolver = (s: Sesion) => s.repeticionAutorizada || !s.participacionEstado || s.participacionEstado === 'EN_CURSO';
+  const enCurso = lista.filter((s) => s.estado === 'EN_CURSO')
+    .sort((a, b) => Number(porResolver(b)) - Number(porResolver(a)) || t(a.fin) - t(b.fin));
+  if (enCurso.length) return enCurso[0];
+  const pendientes = lista.filter((s) => s.estado === 'SIN_INICIAR');
+  const proxima = pendientes.filter((s) => t(s.inicio) >= ahora).sort((a, b) => t(a.inicio) - t(b.inicio))[0]
+    ?? pendientes.sort((a, b) => t(b.inicio) - t(a.inicio))[0];
+  if (proxima) return proxima;
+  return [...lista].sort((a, b) => t(b.inicio) - t(a.inicio))[0];
+}
+
+/** Texto sin HTML ni entidades, con los bloques separados por espacios. */
+function textoPlano(html: string): string {
+  const conEspacios = (html ?? '').replace(/<\/(p|li|h\d|div|blockquote)>|<br\s*\/?>/gi, ' ');
+  const texto = new DOMParser().parseFromString(conEspacios, 'text/html').body.textContent ?? '';
+  return texto.replace(/\s+/g, ' ').trim();
+}
+
+/** Inicio del desarrollo situacional: frases completas hasta unos `max` caracteres, terminado en "…". */
+function resumenDesarrollo(html: string, max = 200): string {
+  const texto = textoPlano(html);
+  if (texto.length <= max) return texto;
+  let resumen = '';
+  for (const frase of texto.match(/[^.!?…]+[.!?…]+["»”')]*\s*/g) ?? []) {
+    if ((resumen + frase).trim().length > max) break;
+    resumen += frase;
+  }
+  resumen = resumen.trim();
+  if (!resumen) {
+    // La primera frase ya pasa del límite: se corta en la última palabra completa.
+    const corte = texto.slice(0, max);
+    resumen = corte.slice(0, Math.max(corte.lastIndexOf(' '), 1)).replace(/[\s,;:–—-]+$/, '');
+  }
+  return `${resumen} …`;
+}
 
 @Component({
   selector: 'app-panel-estudiante',
@@ -57,9 +116,12 @@ const enlaces = [
             <article class="inicio-destacado">
               <div class="destacado-texto">
                 <p class="chip-estrella">★ Dilema Destacado</p>
-                <h2>{{ tituloDestacado() }}</h2>
-                <p>{{ textoDestacado() }}</p>
                 @if (destacado(); as caso) {
+                  <h2>{{ caso.caso }}</h2>
+                  @if (caso.sensible) {
+                    <p class="destacado-sensible" role="note">⚠ {{ (caso.advertencia || '').trim() || 'Este caso trata temas sensibles.' }}</p>
+                  }
+                  @if (textoDestacado()) { <p>{{ textoDestacado() }}</p> }
                   @if (caso.repeticionAutorizada || caso.participacionEstado === 'EN_CURSO' || !caso.participacionEstado) {
                     <button class="btn-resolver" type="button" (click)="iniciarCaso(caso)">▶ Resolver Dilema</button>
                   } @else if (caso.participacionEstado === 'FINALIZADA' && caso.participacionId) {
@@ -71,10 +133,18 @@ const enlaces = [
                   } @else {
                     <button class="btn-resolver" type="button" (click)="iniciarCaso(caso)">▶ Resolver Dilema</button>
                   }
+                } @else if (panel()) {
+                  <h2>Aún no tienes casos asignados</h2>
+                  <p>Cuando tu docente te convoque a una sesión, el caso aparecerá aquí.</p>
                 }
               </div>
-              <figure>
-                <img src="/escenas/colinas-1.jpg" alt="Barrio Las Colinas al atardecer, llegada al caso" />
+              <figure class="destacado-figura">
+                @if (fondoDestacado(); as fondo) {
+                  <img [src]="fondo.ruta" [alt]="altDestacado()" />
+                  @if (fondo.escenario) {
+                    <figcaption class="letrero-escena">Escena 1 · {{ fondo.escenario }}</figcaption>
+                  }
+                }
               </figure>
             </article>
 
@@ -210,6 +280,7 @@ export class PanelEstudianteComponent {
   private router = inject(Router);
   auth = inject(AuthService);
   private busqueda = inject(BusquedaService);
+  private escenas = inject(EscenaService);
   panel = signal<PanelEstudiante | null>(null);
   error = signal('');
   seccion = signal<'inicio' | 'dilemas' | 'avisos' | 'perfil'>('inicio');
@@ -227,6 +298,10 @@ export class PanelEstudianteComponent {
     this.http.get<PanelEstudiante>('/api/estudiante/panel').subscribe({
       next: (dato) => this.panel.set(dato),
       error: (falla) => this.error.set(mensajeError(falla))
+    });
+    effect(() => {
+      const sesion = this.destacado();
+      if (this.panel()) untracked(() => this.cargarFondoDestacado(sesion));
     });
   }
   /**
@@ -257,17 +332,30 @@ export class PanelEstudianteComponent {
     const partes = this.nombreCompleto().trim().split(/\s+/).filter(Boolean);
     return ((partes[0]?.[0] ?? '') + (partes[1]?.[0] ?? '')).toUpperCase() || 'D';
   }
-  destacado(): Sesion | null {
-    const lista = this.panel()?.sesiones ?? [];
-    return lista.find((s) => /colinas|feminicidio/i.test(s.caso)) ?? lista[0] ?? null;
+  /** Sesión de la tarjeta "Dilema Destacado" (ver elegirDestacado). */
+  destacado = computed(() => elegirDestacado(this.panel()?.sesiones ?? [], sesionDelIngreso(), Date.now()));
+  /** Inicio del desarrollo situacional, sin HTML y recortado en una frase completa. */
+  textoDestacado = computed(() => resumenDesarrollo(this.destacado()?.desarrollo ?? ''));
+  /** Fondo del primer escenario según el motor de escenas, y el nombre de ese escenario para el letrero. */
+  fondoDestacado = signal<{ ruta: string; escenario: string } | null>(null);
+  private pedidoFondo = 0;
+  altDestacado() {
+    const caso = this.destacado()?.caso;
+    return caso ? `Escena inicial del caso ${caso}` : 'Escena de un caso de DILEMA';
   }
-  tituloDestacado() {
-    const caso = this.destacado();
-    if (caso && /colinas|feminicidio/i.test(caso.caso)) return 'Feminicidio en Las Colinas';
-    return caso?.caso ?? 'Feminicidio en Las Colinas';
-  }
-  textoDestacado() {
-    return 'En el barrio Las Colinas debes reconstruir lo ocurrido con la comunidad y decidir cómo intervenir. El caso es académico: no hay escenas gráficas.';
+  /** Pide al motor de escenas el fondo del PRIMER escenario; sin escenarios, el neutro del tipo de caso. */
+  private cargarFondoDestacado(sesion: Sesion | null) {
+    const pedido = ++this.pedidoFondo;
+    const escenarios = sesion?.escenarios ?? [];
+    const primero = escenarios[0];
+    const caso = {
+      id: sesion?.casoId ?? null, nombre: sesion?.caso ?? '', desarrolloSituacional: sesion?.desarrollo ?? '',
+      contexto: sesion?.contexto ?? '', bloques: escenarios.map((e) => ({ nombre: e.nombre, contexto: e.contexto }))
+    };
+    const escenario = primero?.nombre?.trim() ?? '';
+    this.escenas.elegir(caso, { indice: 0, nombre: primero?.nombre ?? '', contexto: primero?.contexto ?? '' })
+      .then((f) => { if (pedido === this.pedidoFondo) this.fondoDestacado.set({ ruta: f.ruta, escenario }); })
+      .catch(() => { if (pedido === this.pedidoFondo) this.fondoDestacado.set({ ruta: FONDO_NEUTRO, escenario }); });
   }
   progresoGeneral() {
     const lista = this.panel()?.sesiones ?? [];
@@ -281,10 +369,20 @@ export class PanelEstudianteComponent {
     if (p >= 40) return 'Nivel Explorador';
     return 'Nivel Inicial';
   }
+  /** Mensaje de "Tu Progreso", coherente con lo que muestra la tarjeta destacada. */
   mensajeProgreso() {
     if (this.progresoGeneral() >= 70) return 'Vas muy bien. Sigue resolviendo dilemas para alcanzar el siguiente nivel.';
-    if (this.finalizados()) return 'Sigue con el caso destacado para subir tu progreso.';
-    return 'Empieza el dilema destacado para registrar tu primer avance.';
+    const caso = this.destacado();
+    if (!caso) return 'Cuando tu docente te asigne un caso, aquí verás tu avance.';
+    const nombre = `«${caso.caso}»`;
+    if (caso.participacionEstado === 'EN_CURSO') return `Retoma ${nombre} donde lo dejaste para subir tu progreso.`;
+    if (caso.repeticionAutorizada || !caso.participacionEstado) {
+      if (caso.estado === 'SIN_INICIAR') return `${nombre} estará disponible cuando tu docente abra la sesión.`;
+      return this.finalizados()
+        ? `Sigue con ${nombre} para subir tu progreso.`
+        : `Empieza ${nombre} para registrar tu primer avance.`;
+    }
+    return 'Revisa tus resultados y sigue con los demás casos en Mis Dilemas.';
   }
   verDilemas() {
     this.categoria.set('');
