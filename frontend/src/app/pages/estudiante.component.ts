@@ -158,40 +158,12 @@ function resumenDesarrollo(html: string, max = 200): string {
             </article>
           </section>
 
-          <section class="inicio-cats">
-            <div class="tarjeta-cabeza">
-              <h3>★ Categorías</h3>
-              <button type="button" class="ver-todos" (click)="verDilemas()">Ver todas →</button>
-            </div>
-            <div class="cats">
-              <button type="button" class="cat etica" (click)="abrirCategoria('Ética')">
-                <svg viewBox="0 0 24 24"><path d="M12 3v18M7 21h10M12 6h.01"/><path d="M12 7 7 16h10L12 7z"/><path d="M7 16c-1.4 0-2.5.9-2.5 2s1.1 2 2.5 2 2.5-.9 2.5-2M17 16c-1.4 0-2.5.9-2.5 2s1.1 2 2.5 2 2.5-.9 2.5-2"/></svg>
-                <span>Ética</span><i>→</i>
-              </button>
-              <button type="button" class="cat social" (click)="abrirCategoria('Social')">
-                <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="16.2" cy="9" r="2.4"/><path d="M4 19c.7-3.2 2.8-5.2 5-5.2s4.3 2 5 5.2M13.4 19c.4-2.2 1.7-3.6 3.2-3.6 1.6 0 3 1.5 3.4 3.6"/></svg>
-                <span>Social</span><i>→</i>
-              </button>
-              <button type="button" class="cat psico" (click)="abrirCategoria('Psicológico')">
-                <svg viewBox="0 0 24 24"><path d="M12 4c-3.8 0-6.5 2.6-6.5 6.2 0 2.2 1 3.6 1.6 4.6C6.4 16.6 7.6 18.2 9.5 19.2h5c1.9-1 3.1-2.6 2.4-4.4.6-1 1.6-2.4 1.6-4.6C18.5 6.6 15.8 4 12 4z"/><path d="M12 4.2v15"/></svg>
-                <span>Psicológico</span><i>→</i>
-              </button>
-              <button type="button" class="cat tec" (click)="abrirCategoria('Tecnología')">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3.2 3.2 4.6 6.2 4.6 9S15.2 17.8 12 21M12 3C8.8 6.2 7.4 9.2 7.4 12S8.8 17.8 12 21"/></svg>
-                <span>Tecnología</span><i>→</i>
-              </button>
-              <button type="button" class="cat vida" (click)="abrirCategoria('Vida Personal')">
-                <svg viewBox="0 0 24 24"><path d="M12 20.6S5 16 5 10.6A3.8 3.8 0 0 1 12 8a3.8 3.8 0 0 1 7 2.6c0 5.4-7 10-7 10z"/></svg>
-                <span>Vida Personal</span><i>→</i>
-              </button>
-            </div>
-          </section>
           </div>
         }
 
         @if (seccion() === 'dilemas') {
           <section class="inicio-lista">
-            <h2>{{ categoria() ? 'Categoría: ' + categoria() : 'Mis Dilemas' }}</h2>
+            <h2>Mis Dilemas</h2>
             <div class="rejilla-casos">
               @for (sesion of listaSeccion(); track sesion.id; let i = $index) {
                 <article class="curso">
@@ -230,20 +202,31 @@ function resumenDesarrollo(html: string, max = 200): string {
                 <button class="btn-oscuro" type="button" (click)="marcarAvisos()">Marcar como leídos</button>
               }
             </div>
-            @for (aviso of avisos(); track aviso.id; let i = $index) {
-              <article class="aviso-card" [class.sin-leer]="!aviso.leida">
-                <span class="punto" [attr.data-tono]="i % 3"></span>
-                <div>
-                  <div class="aviso-meta">
-                    <span class="aviso-canal">{{ aviso.canal }}</span>
-                    <span>{{ fechaAviso(aviso.fecha) }}</span>
-                    @if (!aviso.leida) { <em class="aviso-pill">Sin leer</em> }
+            <div class="aviso-filtros">
+              <button class="btn-suave" type="button" [attr.aria-pressed]="soloNoLeidos()" (click)="soloNoLeidos.set(!soloNoLeidos())">Sin leer</button>
+              <label class="field">
+                <span>Fecha</span>
+                <input type="date" [value]="diaFiltro()" (input)="diaFiltro.set(valorFecha($event))" />
+              </label>
+            </div>
+            @if (!avisos().length) {
+              <p class="sub">No hay avisos todavía.</p>
+            } @else {
+              @for (aviso of avisosVisibles(); track aviso.id; let i = $index) {
+                <article class="aviso-card" [class.sin-leer]="!aviso.leida">
+                  <span class="punto" [attr.data-tono]="i % 3"></span>
+                  <div>
+                    <div class="aviso-meta">
+                      <span class="aviso-canal">{{ aviso.canal }}</span>
+                      <span>{{ fechaAviso(aviso.fecha) }}</span>
+                      @if (!aviso.leida) { <em class="aviso-pill">Sin leer</em> }
+                    </div>
+                    <h3>{{ aviso.titulo }}</h3>
+                    <p class="sub">{{ aviso.cuerpo }}</p>
                   </div>
-                  <h3>{{ aviso.titulo }}</h3>
-                  <p class="sub">{{ aviso.cuerpo }}</p>
-                </div>
-              </article>
-            } @empty { <p class="sub">No hay avisos todavía.</p> }
+                </article>
+              } @empty { <p class="sub">No hay avisos con ese criterio.</p> }
+            }
           </section>
         }
 
@@ -284,16 +267,13 @@ export class PanelEstudianteComponent {
   panel = signal<PanelEstudiante | null>(null);
   error = signal('');
   seccion = signal<'inicio' | 'dilemas' | 'avisos' | 'perfil'>('inicio');
-  categoria = signal('');
+  soloNoLeidos = signal(false);
+  diaFiltro = signal('');
   constructor() {
     inject(ActivatedRoute).queryParamMap.subscribe((params) => {
       const vista = params.get('vista');
-      if (vista === 'dilemas' || vista === 'avisos' || vista === 'perfil') {
-        if (vista === 'dilemas') this.categoria.set('');
-        this.seccion.set(vista);
-      } else {
-        this.seccion.set('inicio');
-      }
+      if (vista === 'dilemas' || vista === 'avisos' || vista === 'perfil') this.seccion.set(vista);
+      else this.seccion.set('inicio');
     });
     this.http.get<PanelEstudiante>('/api/estudiante/panel').subscribe({
       next: (dato) => this.panel.set(dato),
@@ -384,41 +364,39 @@ export class PanelEstudianteComponent {
     }
     return 'Revisa tus resultados y sigue con los demás casos en Mis Dilemas.';
   }
-  verDilemas() {
-    this.categoria.set('');
-    this.router.navigate(['/estudiante'], { queryParams: { vista: 'dilemas' } });
-  }
-  abrirCategoria(nombre: string) {
-    this.categoria.set(nombre);
-    this.seccion.set('dilemas');
-  }
   listaSeccion() { return this.visibles(); }
   visibles() {
     const q = this.busqueda.texto().trim().toLowerCase();
-    const clave = this.clavesCategoria(this.categoria());
     return (this.panel()?.sesiones ?? []).filter((s) => {
-      const texto = `${s.caso} ${s.grupo} ${s.espacio} ${s.contexto} ${s.desarrollo}`.toLowerCase();
-      const busca = !q || texto.includes(q);
-      const categoria = !clave.length || this.seccion() !== 'dilemas' || clave.some((palabra) => texto.includes(palabra));
-      return busca && categoria;
+      if (!q) return true;
+      return `${s.caso} ${s.grupo} ${s.espacio} ${s.contexto} ${s.desarrollo}`.toLowerCase().includes(q);
     });
-  }
-  private clavesCategoria(nombre: string) {
-    if (nombre === 'Ética') return ['étic', 'etic', 'valor', 'dilema'];
-    if (nombre === 'Social') return ['social', 'comunidad', 'barrio', 'colinas', 'feminicidio'];
-    if (nombre === 'Psicológico') return ['psico'];
-    if (nombre === 'Tecnología') return ['tecno', 'digital', 'red'];
-    if (nombre === 'Vida Personal') return ['vida', 'familia', 'personal'];
-    return [];
   }
   hoy() { return (this.panel()?.sesiones ?? []).filter((s) => this.mismoDia(s.inicio)); }
   proximos() { return (this.panel()?.sesiones ?? []).filter((s) => !s.participacionEstado || s.participacionEstado === 'EN_CURSO').slice(0, 4); }
   avisos() { return this.panel()?.avisos ?? []; }
+  avisosVisibles() {
+    const dia = this.diaFiltro();
+    return this.avisos().filter((aviso) => {
+      if (this.soloNoLeidos() && aviso.leida) return false;
+      return !dia || this.diaLocal(aviso.fecha) === dia;
+    });
+  }
+  valorFecha(evento: Event) {
+    return (evento.target as HTMLInputElement).value;
+  }
   sinLeer() { return this.panel()?.sinLeer ?? this.avisos().filter((a) => !a.leida).length; }
   fechaAviso(iso: string) {
     const fecha = new Date(iso);
     if (Number.isNaN(fecha.getTime())) return iso;
     return fecha.toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' });
+  }
+  private diaLocal(iso: string) {
+    const fecha = new Date(iso);
+    if (Number.isNaN(fecha.getTime())) return (iso ?? '').slice(0, 10);
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+    const dia = String(fecha.getDate()).padStart(2, '0');
+    return `${fecha.getFullYear()}-${mes}-${dia}`;
   }
   marcarAvisos() {
     const pendientes = this.avisos().filter((a) => !a.leida).map((aviso) => this.http.post<void>(`/api/estudiante/avisos/${aviso.id}/leer`, {}));

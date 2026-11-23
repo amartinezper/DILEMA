@@ -1133,6 +1133,9 @@ a.fila-lista { text-decoration: none; color: inherit; }
 }
 .pagina-perfil .perfil-cabeza { margin-bottom: 0; }
 .inicio-lista .tarjeta-cabeza { margin-bottom: 14px; }
+.aviso-filtros { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin-bottom: 14px; }
+.aviso-filtros .field { min-width: 180px; }
+.aviso-filtros .btn-suave[aria-pressed="true"] { box-shadow: 0 0 0 3px rgba(59, 108, 255, 0.16); }
 .aviso-card {
   display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start;
   background: #fff; border: 1px solid var(--casilla-line); border-radius: 16px;
