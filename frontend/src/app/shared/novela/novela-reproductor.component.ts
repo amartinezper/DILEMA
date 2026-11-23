@@ -8,6 +8,7 @@ import {
   BloqueNovela, CasoNovela, EmocionNovela, EscenaNovelaComponent, PersonajeNovela, slotDe
 } from './escena-novela.component';
 import { Paso, PersonajeGuion, armarGuion, normalizar } from './guion';
+import { MusicaNovelaService } from './musica-novela.service';
 import { ResultadosNovela } from './resultados';
 import { ResultadosNovelaComponent } from './resultados-novela.component';
 
@@ -55,7 +56,8 @@ function visemaDe(letra: string, anterior: Visema | null): Visema | null {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="reproductor" #raiz tabindex="0" (keydown)="tecla($event)"
-      [class.pantalla-completa]="pantallaCompleta()"
+      [class.pantalla-completa]="pantallaCompleta()" [class.capa]="modoPantalla() === 'capa'" [class.girada]="girada()"
+      [style.--pc-ancho]="pantallaAncho() + 'px'" [style.--pc-alto]="pantallaAlto() + 'px'"
       aria-label="Novela del caso. Usa Enter o Espacio para avanzar.">
       <div class="lienzo" [style.max-width]="anchoMaximo()" (click)="clicEscena($event)">
         <app-escena-novela
@@ -67,6 +69,20 @@ function visemaDe(letra: string, anterior: Visema | null): Visema | null {
           <!-- Fuera de pantalla completa el reloj va en la barra de la página; aquí solo en pantalla completa. -->
           @if (tiempoRestante() != null && pantallaCompleta()) {
             <strong class="reloj" [class.urgente]="tiempoRestante()! <= 60" [attr.aria-label]="'Tiempo restante ' + reloj()">{{ reloj() }}</strong>
+          }
+          <!-- La página tiene su propio botón de música; agrandada, la escena tapa la página y lo trae aquí. -->
+          @if (pantallaCompleta() && musica.disponible()) {
+            <button type="button" class="icono" (click)="musica.alternar()" [attr.aria-pressed]="musica.activa()"
+              [attr.aria-label]="musica.activa() ? 'Silenciar música' : 'Activar música'">
+              <svg viewBox="0 0 20 20" aria-hidden="true" class="parlante">
+                <path d="M3 7.5h3l4.5-3.5v12L6 12.5H3z" />
+                @if (musica.activa()) {
+                  <path class="trazo" d="M13.5 7.2a4 4 0 0 1 0 5.6M15.8 5a7 7 0 0 1 0 10" />
+                } @else {
+                  <path class="trazo" d="M13.5 7.5l5 5M18.5 7.5l-5 5" />
+                }
+              </svg>
+            </button>
           }
           <button type="button" class="icono" (click)="alternarPantalla()"
             [attr.aria-pressed]="pantallaCompleta()"
@@ -292,33 +308,63 @@ function visemaDe(letra: string, anterior: Visema | null): Visema | null {
     .entrada.narra .cuerpo span { font-style: italic; color: #c5cedd; }
     .entrada.pregunta .cuerpo strong { color: #d7efe9; }
     .solo-lector { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .icono svg.parlante { fill: currentColor; }
+    .icono svg .trazo { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+
+    /*
+     * Escena agrandada (horizontal). Con pantalla completa real (Android/escritorio) el reproductor ocupa la
+     * pantalla; sin ella (iPhone) es una "capa" fija del tamaño de la ventana y, si el celular está vertical,
+     * se gira 90° para que la escena use el alto del celular como ancho. La escena queda en 16:9 dentro del
+     * espacio libre, con franjas negras si sobra (container queries: 100cqw/100cqh = espacio libre).
+     * --seg-*: márgenes seguros (notch y barra inferior) ya orientados según el giro.
+     */
     .reproductor.pantalla-completa {
-      position: fixed; inset: 0; z-index: 80; height: 100%; width: 100%;
-      box-sizing: border-box; padding: 16px 18px 14px; gap: 12px;
-      grid-template-rows: minmax(0, 1fr) auto; background: #0b1220; border-radius: 0;
+      --seg-arriba: env(safe-area-inset-top, 0px); --seg-derecha: env(safe-area-inset-right, 0px);
+      --seg-abajo: env(safe-area-inset-bottom, 0px); --seg-izquierda: env(safe-area-inset-left, 0px);
+      --borde: 6px; --controles: 112px;
+      --escena-ancho: min(100cqw, 100cqh * 16 / 9); --escena-alto: min(100cqh, 100cqw * 9 / 16);
+      position: fixed; inset: 0; z-index: 2000; width: 100%; height: 100%; margin: 0;
+      box-sizing: border-box; display: grid; place-items: center; gap: 0;
+      padding: max(var(--borde), var(--seg-arriba)) max(var(--borde), var(--seg-derecha))
+        max(var(--borde), var(--seg-abajo)) max(var(--borde), var(--seg-izquierda));
+      background: #000; border-radius: 0; container-type: size; overscroll-behavior: contain; touch-action: manipulation;
     }
-    .reproductor:fullscreen,
-    .reproductor:-webkit-full-screen {
-      height: 100%; width: 100%; box-sizing: border-box; padding: 16px 18px 14px; gap: 12px;
-      grid-template-rows: minmax(0, 1fr) auto; background: #0b1220;
+    .reproductor.capa { inset: auto; top: 0; left: 0; width: var(--pc-ancho); height: var(--pc-alto); }
+    .reproductor.capa.girada {
+      width: var(--pc-alto); height: var(--pc-ancho);
+      transform-origin: top left; transform: translateX(var(--pc-ancho)) rotate(90deg);
+      /* Girada 90° a la derecha: su borde de arriba queda a la derecha del celular, el izquierdo arriba (notch), etc. */
+      --seg-arriba: env(safe-area-inset-right, 0px); --seg-derecha: env(safe-area-inset-bottom, 0px);
+      --seg-abajo: env(safe-area-inset-left, 0px); --seg-izquierda: env(safe-area-inset-top, 0px);
     }
-    .reproductor.pantalla-completa .lienzo,
-    .reproductor:fullscreen .lienzo,
-    .reproductor:-webkit-full-screen .lienzo {
-      height: 100%; max-width: none !important; min-height: 0;
+    .reproductor.pantalla-completa .lienzo { width: var(--escena-ancho); max-width: none !important; margin: 0; }
+    .reproductor.pantalla-completa .sobre-escena { top: 8px; right: 8px; gap: 6px; }
+    .reproductor.pantalla-completa .icono { width: 36px; height: 36px; border-radius: 10px; }
+    .reproductor.pantalla-completa .reloj { padding: 6px 10px; font-size: 13px; }
+    /* Anterior, Siguiente e Historial: columna compacta dentro de la escena, abajo a la derecha. */
+    .reproductor.pantalla-completa .controles {
+      position: absolute; z-index: 6; margin: 0; width: var(--controles); box-sizing: border-box;
+      right: calc(max(var(--borde), var(--seg-derecha)) + (100cqw - var(--escena-ancho)) / 2 + 8px);
+      bottom: calc(max(var(--borde), var(--seg-abajo)) + (100cqh - var(--escena-alto)) / 2 + 8px);
+      flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 5px; padding: 5px; border-radius: 12px;
+      background: rgba(10, 23, 51, .72); backdrop-filter: blur(8px);
     }
-    .reproductor.pantalla-completa app-escena-novela,
-    .reproductor:fullscreen app-escena-novela,
-    .reproductor:-webkit-full-screen app-escena-novela { display: block; height: 100%; }
-    .reproductor.pantalla-completa .historial,
-    .reproductor:fullscreen .historial { border-radius: 0 12px 12px 0; }
+    .reproductor.pantalla-completa .controles button {
+      min-height: 32px; padding: 5px 8px; border-radius: 9px; font-size: 13px; line-height: 1.1; min-width: 0;
+    }
+    .reproductor.pantalla-completa .controles .avance { display: none; }
+    /* Lo que va dentro de la escena deja libre la columna de controles. */
+    .reproductor.pantalla-completa .pregunta { right: calc(var(--controles) + 16px); left: 2%; bottom: 3%; max-height: 82%; padding: 12px; }
+    .reproductor.pantalla-completa .historial { right: calc(var(--controles) + 16px); top: 52px; bottom: 8px; width: auto; left: auto;
+      min-width: min(300px, 50%); border-radius: 12px; }
     @media (max-width: 768px) {
-      .pregunta { left: 2%; right: 2%; bottom: 2%; max-height: 78%; padding: 12px; }
+      .reproductor:not(.pantalla-completa) .pregunta { left: 2%; right: 2%; bottom: 2%; max-height: 78%; padding: 12px; }
       .opcion { min-height: 44px; align-items: center; }
-      .controles button { min-height: 44px; padding: 10px 14px; }
-      .historial { left: 8px; right: 8px; width: auto; top: 54px; bottom: 8px; }
+      .reproductor:not(.pantalla-completa) .controles button { min-height: 44px; padding: 10px 14px; }
+      .reproductor:not(.pantalla-completa) .historial { left: 8px; right: 8px; width: auto; top: 54px; bottom: 8px; }
       .sobre-escena { top: 8px; right: 8px; }
     }
+    .reproductor.pantalla-completa .opcion { min-height: 38px; padding: 7px 10px; }
   `]
 })
 export class NovelaReproductorComponent implements OnDestroy {
@@ -382,6 +428,16 @@ export class NovelaReproductorComponent implements OnDestroy {
   readonly escribiendo = signal(false);
   readonly historialAbierto = signal(false);
   readonly pantallaCompleta = signal(false);
+  /** Cómo se agrandó: pantalla completa real del navegador o capa fija (iPhone). */
+  readonly modoPantalla = signal<'nativa' | 'capa' | null>(null);
+  /** Capa con el celular vertical: la escena se gira 90° para verse horizontal. */
+  readonly girada = signal(false);
+  readonly pantallaAncho = signal(0);
+  readonly pantallaAlto = signal(0);
+  readonly musica = inject(MusicaNovelaService);
+  private readonly escena = viewChild(EscenaNovelaComponent);
+  private entradaHistorial = false;
+  private viewportOriginal: string | null = null;
   readonly anuncio = signal('');
   private readonly elegidas = signal<Record<string, number>>({});
   /** Respuestas vigentes: las de afuera (backend) si llegan; si no, las que se eligieron aquí. */
@@ -526,33 +582,131 @@ export class NovelaReproductorComponent implements OnDestroy {
         this.ir(Math.max(0, i));
       });
     });
-    if (typeof document !== 'undefined') {
-      const alCambiar = () => {
-        const el = this.raiz()?.nativeElement;
-        this.pantallaCompleta.set(!!el && document.fullscreenElement === el);
+    if (typeof window !== 'undefined') {
+      // Pantalla completa real cerrada por el navegador (Esc, gesto de atrás en Android…): vuelve a la vista normal.
+      const alCambiarNativa = () => {
+        if (this.modoPantalla() === 'nativa' && document.fullscreenElement !== this.raiz()?.nativeElement) this.salirPantalla();
       };
-      document.addEventListener('fullscreenchange', alCambiar);
-      inject(DestroyRef).onDestroy(() => document.removeEventListener('fullscreenchange', alCambiar));
+      // Gesto o botón "atrás" con la escena agrandada: solo sale de pantalla completa (la página no cambia).
+      const alVolver = () => {
+        if (!this.entradaHistorial) return;
+        this.entradaHistorial = false;
+        this.salirPantalla();
+      };
+      // Capa (iPhone): al girar el celular o cambiar el tamaño, se recalcula si va girada y se reajusta la escena.
+      const alRedimensionar = () => { if (this.modoPantalla() === 'capa') this.medirPantalla(); };
+      document.addEventListener('fullscreenchange', alCambiarNativa);
+      window.addEventListener('popstate', alVolver);
+      window.addEventListener('resize', alRedimensionar);
+      window.addEventListener('orientationchange', alRedimensionar);
+      inject(DestroyRef).onDestroy(() => {
+        document.removeEventListener('fullscreenchange', alCambiarNativa);
+        window.removeEventListener('popstate', alVolver);
+        window.removeEventListener('resize', alRedimensionar);
+        window.removeEventListener('orientationchange', alRedimensionar);
+      });
     }
   }
 
   ngOnDestroy(): void {
     clearInterval(this.temporizador);
     clearTimeout(this.autoAvance);
-    if (typeof document !== 'undefined' && document.fullscreenElement === this.raiz()?.nativeElement) {
-      document.exitFullscreen?.().catch(() => undefined);
-    }
+    // Al cerrar el caso con la escena agrandada se deshace todo, sin tocar el historial (la página ya navega).
+    this.entradaHistorial = false;
+    if (this.pantallaCompleta()) this.salirPantalla();
   }
 
   alternarPantalla(): void {
+    if (this.pantallaCompleta()) this.salirPantalla();
+    else void this.entrarPantalla();
+  }
+
+  /**
+   * Agrandar. Si el navegador deja (Android, escritorio): pantalla completa real del reproductor y orientación
+   * horizontal bloqueada. Si no (iPhone/Safari): capa fija que cubre la pantalla y, en vertical, gira la escena 90°.
+   * El avance, el reloj y la música no cambian: es el mismo reproductor con otra presentación.
+   */
+  async entrarPantalla(): Promise<void> {
     const el = this.raiz().nativeElement;
-    if (document.fullscreenElement === el || this.pantallaCompleta()) {
-      document.exitFullscreen?.().catch(() => undefined);
-      this.pantallaCompleta.set(false);
-      return;
-    }
     this.pantallaCompleta.set(true);
-    el.requestFullscreen?.()?.catch(() => undefined);
+    // Marca la página: oculta el menú ☰ y lo demás que es fijo (ver styles.css, "novela-agrandada").
+    document.documentElement.classList.add('novela-agrandada');
+    this.cubrirNotch(true);
+    this.empujarHistorial();
+    if (document.fullscreenEnabled && typeof el.requestFullscreen === 'function') {
+      try {
+        await el.requestFullscreen({ navigationUI: 'hide' });
+        this.modoPantalla.set('nativa');
+        const orientacion = screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> };
+        await orientacion?.lock?.('landscape').catch(() => undefined);
+        this.reajustarEscena();
+        el.focus({ preventScroll: true });
+        return;
+      } catch {
+        // El navegador no la dio (permiso o iPhone): se usa la capa.
+      }
+    }
+    this.modoPantalla.set('capa');
+    document.documentElement.style.overflow = 'hidden';
+    this.medirPantalla();
+    el.focus({ preventScroll: true });
+  }
+
+  /** Vuelve a la vista normal (botón, Esc, gesto de atrás o fin de la pantalla completa real). */
+  salirPantalla(): void {
+    if (!this.pantallaCompleta()) return;
+    const el = this.raiz()?.nativeElement;
+    if (this.modoPantalla() === 'nativa') {
+      try { (screen.orientation as ScreenOrientation & { unlock?: () => void })?.unlock?.(); } catch { /* sin bloqueo */ }
+      if (el && document.fullscreenElement === el) document.exitFullscreen?.().catch(() => undefined);
+    }
+    document.documentElement.style.overflow = '';
+    document.documentElement.classList.remove('novela-agrandada');
+    this.modoPantalla.set(null);
+    this.girada.set(false);
+    this.pantallaCompleta.set(false);
+    this.cubrirNotch(false);
+    // Si se salió con el botón, se quita la entrada que se agregó al historial para el gesto de atrás.
+    if (this.entradaHistorial) {
+      this.entradaHistorial = false;
+      history.back();
+    }
+    this.reajustarEscena();
+  }
+
+  /** Capa: tamaño de la ventana y si el celular está vertical (entonces la escena se gira). */
+  private medirPantalla(): void {
+    const ancho = Math.round(window.visualViewport?.width ?? window.innerWidth);
+    const alto = Math.round(window.visualViewport?.height ?? window.innerHeight);
+    this.pantallaAncho.set(ancho);
+    this.pantallaAlto.set(alto);
+    this.girada.set(alto > ancho);
+    this.reajustarEscena();
+  }
+
+  /** Recalcula el lienzo 3D cuando ya se aplicó el nuevo tamaño (al entrar, al salir y al girar). */
+  private reajustarEscena(): void {
+    requestAnimationFrame(() => requestAnimationFrame(() => this.escena()?.reajustar()));
+  }
+
+  /** Entrada en el historial para que el gesto de "atrás" cierre la pantalla completa y no la página. */
+  private empujarHistorial(): void {
+    if (this.entradaHistorial) return;
+    history.pushState({ ...(history.state ?? {}), novelaPantalla: true }, '');
+    this.entradaHistorial = true;
+  }
+
+  /** viewport-fit=cover solo mientras la escena está agrandada, para que env(safe-area-inset-*) tenga valor. */
+  private cubrirNotch(cubrir: boolean): void {
+    const meta = document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
+    if (!meta) return;
+    if (cubrir) {
+      this.viewportOriginal ??= meta.content;
+      if (!/viewport-fit/.test(meta.content)) meta.content = `${meta.content}, viewport-fit=cover`;
+    } else if (this.viewportOriginal !== null) {
+      meta.content = this.viewportOriginal;
+      this.viewportOriginal = null;
+    }
   }
 
   /** Lleva el foco al reproductor (para usarlo con teclado). */
@@ -712,7 +866,7 @@ export class NovelaReproductorComponent implements OnDestroy {
     } else if (evento.key === 'ArrowLeft' && !enControl) {
       evento.preventDefault(); this.anterior();
     } else if (evento.key === 'Escape' && this.pantallaCompleta() && !document.fullscreenElement) {
-      this.pantallaCompleta.set(false);
+      this.salirPantalla();
     }
   }
 

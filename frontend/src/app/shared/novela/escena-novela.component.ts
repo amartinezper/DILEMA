@@ -135,12 +135,10 @@ function webglDisponible(): boolean {
   `,
   styles: [`
     :host { display: block; width: 100%; }
-    :host-context(.pantalla-completa) { height: 100%; min-height: 0; }
     .novela { position: relative; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 14px;
       background: linear-gradient(180deg, #d8e4ea, #b7c7cf); container-type: inline-size; }
-    :host-context(.pantalla-completa) .novela {
-      aspect-ratio: auto; height: 100%; min-height: 0; border-radius: 12px;
-    }
+    /* Agrandada: la escena sigue en 16:9 (el reproductor la centra con franjas negras), sin deformar personajes. */
+    :host-context(.pantalla-completa) .novela { border-radius: 6px; }
     .fondo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
     .fondo.entra { animation: aparecer .4s ease both; }
     @keyframes aparecer { from { opacity: 0; } }
@@ -163,6 +161,9 @@ function webglDisponible(): boolean {
     .dialogo { position: absolute; left: 3%; right: 3%; bottom: 3.5%; min-height: 6.2em; max-height: 22%; overflow: auto;
       padding: 8px 14px 10px; border-radius: 10px; background: rgba(15,20,28,.8); color: #f3f3f3;
       border: 1px solid rgba(255,255,255,.15); font-size: clamp(.8rem, 1.8cqi, 1.05rem); }
+    /* Agrandada: semitransparente, máximo 25 % del alto y sin pasar por debajo de los controles (columna a la derecha). */
+    :host-context(.pantalla-completa) .dialogo { left: 2%; right: calc(112px + 16px); bottom: 3%; min-height: 0;
+      max-height: 25%; background: rgba(15,20,28,.62); backdrop-filter: blur(4px); }
     .dialogo p { margin: 0; line-height: 1.35; white-space: pre-line; }
     .dialogo .nombre { display: inline-block; margin-bottom: 4px; padding: 2px 10px; border-radius: 6px;
       background: #2f6f68; color: #fff; font-weight: 600; font-size: clamp(.72rem, 1.6cqi, .9rem); }
@@ -571,9 +572,16 @@ export class EscenaNovelaComponent implements AfterViewInit, OnDestroy {
     this.zona.run(() => this.marcas.set(marcas));
   }
 
+  /** Recalcula el lienzo (lo llama el reproductor al agrandar, salir o girar el celular). */
+  reajustar(): void {
+    this.ajustarTamano();
+  }
+
   private ajustarTamano(): void {
-    const caja = this.host.nativeElement.getBoundingClientRect();
-    const w = Math.round(caja.width), h = Math.round(caja.width * 9 / 16);
+    // offsetWidth es el ancho de maquetación: no cambia con la rotación CSS de la escena agrandada en iPhone
+    // (getBoundingClientRect daría el ancho ya girado y los personajes se verían estirados).
+    const ancho = this.host.nativeElement.offsetWidth;
+    const w = Math.round(ancho), h = Math.round(ancho * 9 / 16);
     if (!w || !h) return;
     this.ancho = w; this.alto = h;
     this.renderer?.setSize(w, h, false);
