@@ -328,9 +328,13 @@ type FiltroCaso = 'TODOS' | 'BORRADOR' | 'PUBLICADO' | 'ARCHIVADO';
 type OrdenCaso = 'recientes' | 'nombre' | 'estado';
 const ETIQUETA_CASO: Record<string, string> = { BORRADOR: 'Borrador', PUBLICADO: 'Publicado', ARCHIVADO: 'Archivado' };
 
+function leerVistaCasos(): 'tarjetas' | 'lista' {
+  try { return sessionStorage.getItem('dilema-vista-casos') === 'lista' ? 'lista' : 'tarjetas'; } catch { return 'tarjetas'; }
+}
+
 @Component({
   selector: 'app-casos',
-  imports: [MarcoDocenteComponent, RouterLink, FormsModule, PaginacionGpComponent],
+  imports: [MarcoDocenteComponent, RouterLink, FormsModule, PaginacionGpComponent, NgTemplateOutlet],
   host: { '(document:click)': 'cerrarMenu()', '(document:keydown.escape)': 'cerrarMenu(true)' },
   template: `
     <app-marco-docente [enlaces]="enlaces" descripcion="Diseña, publica y reabre el editor de cada caso.">
@@ -340,7 +344,7 @@ const ETIQUETA_CASO: Record<string, string> = { BORRADOR: 'Borrador', PUBLICADO:
       @if (error()) { <p class="gp-error" role="alert">{{ error() }}</p> }
       @if (ok()) { <p class="gp-ok" role="status">{{ ok() }}</p> }
 
-      <div class="adm-herramientas">
+      <div class="adm-herramientas mc-herramientas">
         <div class="adm-filtros" role="group" aria-label="Filtrar por estado">
           @for (f of filtros; track f.valor) {
             <button type="button" class="adm-filtro" [class.activo]="filtroEstado() === f.valor" [attr.aria-pressed]="filtroEstado() === f.valor"
@@ -361,72 +365,134 @@ const ETIQUETA_CASO: Record<string, string> = { BORRADOR: 'Borrador', PUBLICADO:
               <option value="estado">Estado</option>
             </select>
           </label>
+          <div class="mc-vistas" role="group" aria-label="Vista">
+            <button type="button" [class.activa]="vista() === 'tarjetas'" [attr.aria-pressed]="vista() === 'tarjetas'" aria-label="Ver como tarjetas"
+              title="Tarjetas" (click)="cambiarVista('tarjetas')">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="9" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="2.5" y="9" width="4.5" height="4.5" rx="1"/><rect x="9" y="9" width="4.5" height="4.5" rx="1"/></svg>
+            </button>
+            <button type="button" [class.activa]="vista() === 'lista'" [attr.aria-pressed]="vista() === 'lista'" aria-label="Ver como lista"
+              title="Lista" (click)="cambiarVista('lista')">
+              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4h7.5M6 8h7.5M6 12h7.5"/><path d="M2.6 4h.01M2.6 8h.01M2.6 12h.01"/></svg>
+            </button>
+          </div>
           <a class="adm-boton" routerLink="/docente/casos/nuevo"><span aria-hidden="true">+</span> Crear caso</a>
         </div>
       </div>
 
-      @if (paginaCasos().length) {
+      <ng-template #menuCaso let-caso>
+        <div class="mc-menu-ancla" (click)="$event.stopPropagation()">
+          <button type="button" class="mc-mas" [id]="'mc-mas-' + caso.id" aria-haspopup="menu"
+            [attr.aria-expanded]="menuAbierto() === caso.id" [attr.aria-label]="'Más acciones de ' + caso.nombre"
+            (click)="alternarMenu(caso.id, $event)">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="3" cy="8" r="1.4" /><circle cx="8" cy="8" r="1.4" /><circle cx="13" cy="8" r="1.4" /></svg>
+          </button>
+          @if (menuAbierto() === caso.id) {
+            <div class="mc-menu" role="menu" [attr.aria-label]="'Acciones de ' + caso.nombre" (keydown)="teclaMenu($event)"
+              [style.top.px]="menuPos().top" [style.bottom.px]="menuPos().bottom" [style.right.px]="menuPos().right">
+              <a role="menuitem" [routerLink]="['/docente/casos', caso.id]">Abrir editor</a>
+              <button type="button" role="menuitem" (click)="duplicar(caso)">Duplicar</button>
+              @if (puedePublicar(caso)) { <button type="button" role="menuitem" (click)="transicion(caso, 'publicar')">Publicar</button> }
+              @if (puedeVolverBorrador(caso)) { <button type="button" role="menuitem" (click)="transicion(caso, 'despublicar')">Volver a borrador</button> }
+              @if (puedeArchivar(caso)) { <button type="button" role="menuitem" class="peligro" (click)="transicion(caso, 'archivar')">Archivar</button> }
+            </div>
+          }
+        </div>
+      </ng-template>
+
+      @if (!paginaCasos().length) {
+        <p class="mc-vacio">{{ cargando() ? 'Cargando casos…' : busqueda().trim() || filtro.texto().trim() ? 'Ningún caso coincide con la búsqueda.' : filtroEstado() === 'TODOS' ? 'Todavía no tienes casos.' : 'No hay casos en este estado.' }}</p>
+      } @else if (vista() === 'tarjetas') {
         <ul class="mc-rejilla" aria-label="Casos">
           @for (caso of paginaCasos(); track caso.id) {
-            <li class="mc-caso">
-              <div class="mc-cabeza"><span class="adm-estado-pill" [attr.data-estado]="caso.estado">{{ etiqueta(caso.estado) }}</span></div>
+            <li class="mc-caso" [class.archivado]="caso.estado === 'ARCHIVADO'">
+              <div class="mc-cabeza">
+                <span class="mc-estado" [attr.data-estado]="caso.estado">{{ etiqueta(caso.estado) }}</span>
+                <ng-container *ngTemplateOutlet="menuCaso; context: { $implicit: caso }" />
+              </div>
               <h3 [title]="caso.nombre">{{ caso.nombre }}</h3>
               <p class="mc-meta">
-                <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.2 1.4"/></svg>
-                {{ caso.bloques }} {{ caso.bloques === 1 ? 'escenario' : 'escenarios' }} · {{ caso.preguntas }} {{ caso.preguntas === 1 ? 'pregunta' : 'preguntas' }} · {{ caso.tiempoEstimadoMin }} min
+                <span><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="10" rx="1.6"/><path d="m2.6 11.4 3.4-3.2 2.6 2.3 1.8-1.6 3 2.6"/></svg>{{ caso.bloques }} {{ caso.bloques === 1 ? 'escenario' : 'escenarios' }}</span>
+                <span><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M6.3 6.2a1.8 1.8 0 0 1 3.5.5c0 1.2-1.8 1.5-1.8 2.6"/><path d="M8 11.4h.01"/></svg>{{ caso.preguntas }} {{ caso.preguntas === 1 ? 'pregunta' : 'preguntas' }}</span>
+                <span><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.2 1.4"/></svg>{{ caso.tiempoEstimadoMin }} min</span>
               </p>
               <div class="mc-pie">
-                <a class="mc-abrir" [routerLink]="['/docente/casos', caso.id]" [attr.aria-label]="'Abrir editor de ' + caso.nombre">
-                  Abrir editor <span aria-hidden="true">›</span>
-                </a>
-                <div class="mc-menu-ancla" (click)="$event.stopPropagation()">
-                  <button type="button" class="mc-mas" [id]="'mc-mas-' + caso.id" aria-haspopup="menu"
-                    [attr.aria-expanded]="menuAbierto() === caso.id" [attr.aria-label]="'Más acciones de ' + caso.nombre"
-                    (click)="alternarMenu(caso.id)">
-                    <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="3" cy="8" r="1.4" /><circle cx="8" cy="8" r="1.4" /><circle cx="13" cy="8" r="1.4" /></svg>
-                  </button>
-                  @if (menuAbierto() === caso.id) {
-                    <div class="mc-menu" role="menu" [attr.aria-label]="'Acciones de ' + caso.nombre" (keydown)="teclaMenu($event)">
-                      <a role="menuitem" [routerLink]="['/docente/casos', caso.id]">Abrir editor</a>
-                      <button type="button" role="menuitem" (click)="duplicar(caso)">Duplicar</button>
-                      @if (puedePublicar(caso)) { <button type="button" role="menuitem" (click)="transicion(caso, 'publicar')">Publicar</button> }
-                      @if (puedeVolverBorrador(caso)) { <button type="button" role="menuitem" (click)="transicion(caso, 'despublicar')">Volver a borrador</button> }
-                      @if (puedeArchivar(caso)) { <button type="button" role="menuitem" class="peligro" (click)="transicion(caso, 'archivar')">Archivar</button> }
-                    </div>
-                  }
-                </div>
+                <a class="mc-abrir" [routerLink]="['/docente/casos', caso.id]" [attr.aria-label]="'Abrir editor de ' + caso.nombre">Abrir editor</a>
               </div>
             </li>
           }
         </ul>
       } @else {
-        <p class="mc-vacio">{{ cargando() ? 'Cargando casos…' : busqueda().trim() || filtro.texto().trim() ? 'Ningún caso coincide con la búsqueda.' : filtroEstado() === 'TODOS' ? 'Todavía no tienes casos.' : 'No hay casos en este estado.' }}</p>
+        <article class="adm-tarjeta adm-tabla-tarjeta">
+          <div class="adm-tabla-caja">
+            <table class="adm-tabla">
+              <thead>
+                <tr><th scope="col">Caso</th><th scope="col">Estado</th><th scope="col">Duración</th><th scope="col" class="derecha">Acciones</th></tr>
+              </thead>
+              <tbody>
+                @for (caso of paginaCasos(); track caso.id) {
+                  <tr [class.mc-fila-archivada]="caso.estado === 'ARCHIVADO'">
+                    <td><div class="adm-celda-doble"><strong>{{ caso.nombre }}</strong>
+                      <small>{{ caso.bloques }} {{ caso.bloques === 1 ? 'escenario' : 'escenarios' }} · {{ caso.preguntas }} {{ caso.preguntas === 1 ? 'pregunta' : 'preguntas' }}</small></div></td>
+                    <td><span class="mc-estado" [attr.data-estado]="caso.estado">{{ etiqueta(caso.estado) }}</span></td>
+                    <td class="gris">{{ caso.tiempoEstimadoMin }} min</td>
+                    <td class="derecha">
+                      <div class="mc-acciones">
+                        <a class="mc-abrir" [routerLink]="['/docente/casos', caso.id]" [attr.aria-label]="'Abrir editor de ' + caso.nombre">Abrir editor</a>
+                        <ng-container *ngTemplateOutlet="menuCaso; context: { $implicit: caso }" />
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </article>
       }
-      <app-paginacion-gp [total]="filtrados().length" [pagina]="pagina()" [porPagina]="9" que="casos" prefijo="Mostrando "
+      <app-paginacion-gp [total]="filtrados().length" [pagina]="pagina()" [porPagina]="porPagina()" que="casos" prefijo="Mostrando "
         (cambiar)="pagina.set($event)" />
     </app-marco-docente>
   `,
   styles: [ESTILOS_GP + `
+    .mc-herramientas { flex-wrap: wrap; row-gap: 10px; }
+    .mc-herramientas .adm-buscar { width: clamp(170px, 15vw, 240px); }
+    .mc-vistas { display: inline-flex; gap: 2px; padding: 3px; border-radius: 12px; background: #e8edf6; }
+    .mc-vistas button { width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 9px;
+      background: transparent; color: #5b6782; cursor: pointer; }
+    .mc-vistas button.activa { background: #fff; color: #13213f; box-shadow: 0 1px 2px rgba(16, 24, 40, .08); }
+    .mc-vistas svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
+    .mc-vistas button:focus-visible { outline: 3px solid #7aa7ff; outline-offset: 1px; }
+
     .mc-rejilla { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-    .mc-caso { position: relative; display: grid; grid-template-rows: auto auto 1fr auto; gap: 6px; padding: 16px 18px 6px;
-      border: 1px solid #e6ecf6; border-radius: 14px; background: #fff; box-shadow: 0 1px 2px rgba(16, 24, 40, .03); }
-    .mc-cabeza { display: flex; justify-content: flex-end; }
-    .mc-caso h3 { margin: 0; min-height: 2.6em; font-size: 15px; font-weight: 650; line-height: 1.3; color: #13213f;
+    .mc-caso { display: flex; flex-direction: column; gap: 12px; padding: 16px 20px 18px;
+      border: 1px solid #e6ecf6; border-radius: 16px; background: #fff; box-shadow: 0 1px 2px rgba(16, 24, 40, .03); }
+    .mc-cabeza { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 34px; }
+    .mc-estado { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 600; white-space: nowrap; color: #6b7489; }
+    .mc-estado::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    .mc-estado[data-estado="PUBLICADO"] { color: #16803c; }
+    .mc-estado[data-estado="BORRADOR"] { color: #1d5bdc; }
+    .mc-estado[data-estado="ARCHIVADO"] { color: #6b7489; }
+    .mc-caso h3 { margin: 0; height: 2.6em; font-size: 16px; font-weight: 700; line-height: 1.3; color: #13213f;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .mc-meta { margin: 0; display: flex; align-items: center; gap: 6px; font-size: 13px; color: #5b6782; }
-    .mc-meta svg { flex: none; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
-    .mc-pie { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; padding-top: 4px; border-top: 1px solid #f0f3f9; }
-    .mc-abrir { min-height: 38px; display: inline-flex; align-items: center; gap: 4px; padding: 0 2px; border-radius: 8px;
-      color: #1d5bdc; font-size: 13.5px; font-weight: 700; text-decoration: none; }
-    .mc-abrir span { font-size: 18px; line-height: 1; }
-    .mc-abrir:hover { text-decoration: underline; }
+    .mc-meta { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-size: 13px; color: #5b6782; }
+    .mc-meta span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .mc-meta svg { flex: none; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+    .mc-pie { margin-top: auto; padding-top: 14px; border-top: 1px solid #eef2f8; }
+    .mc-abrir { min-height: 36px; display: inline-flex; align-items: center; padding: 0 14px; border-radius: 10px;
+      background: #eef4ff; color: #1d5bdc; font-size: 13.5px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+    .mc-abrir:hover { background: #e1ebff; }
     .mc-abrir:focus-visible, .mc-mas:focus-visible, .mc-menu a:focus-visible { outline: 3px solid #7aa7ff; outline-offset: 2px; }
+    .mc-caso.archivado { background: #fbfcfe; }
+    .mc-caso.archivado h3 { color: #6b7489; }
+    .mc-fila-archivada strong { color: #6b7489; }
+
+    .mc-acciones { display: inline-flex; align-items: center; gap: 6px; }
     .mc-menu-ancla { position: relative; }
     .mc-mas { width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent;
       color: #33415c; cursor: pointer; }
     .mc-mas svg { width: 17px; height: 17px; fill: currentColor; }
     .mc-mas:hover, .mc-mas[aria-expanded="true"] { background: #eef2f9; }
-    .mc-menu { position: absolute; right: 0; bottom: 40px; z-index: 20; min-width: 180px; padding: 4px; display: grid; gap: 2px;
+    /* Fijo a la ventana: no lo recorta la tabla que se desplaza de lado. */
+    .mc-menu { position: fixed; z-index: 50; min-width: 180px; padding: 4px; display: grid; gap: 2px;
       background: #fff; border: 1px solid #e6ecf6; border-radius: 10px; box-shadow: 0 8px 20px rgba(16, 24, 40, .10); }
     .mc-menu a, .mc-menu button { min-height: 36px; display: flex; align-items: center; padding: 0 12px; text-align: left; border: 0;
       border-radius: 7px; background: transparent; color: #13213f; font: inherit; font-size: 13.5px; font-weight: 600; text-decoration: none; cursor: pointer; }
@@ -435,7 +501,10 @@ const ETIQUETA_CASO: Record<string, string> = { BORRADOR: 'Borrador', PUBLICADO:
     .mc-menu .peligro:hover { background: #fdf1f0; }
     .mc-vacio { margin: 0; padding: 36px 12px; text-align: center; color: #5b6782; border: 1px dashed #d6deec; border-radius: 14px; background: #fff; }
     @media (max-width: 1200px) { .mc-rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 720px) { .mc-rejilla { grid-template-columns: minmax(0, 1fr); } }
+    @media (max-width: 720px) {
+      .mc-rejilla { grid-template-columns: minmax(0, 1fr); }
+      .mc-herramientas .adm-buscar { width: 100%; }
+    }
   `]
 })
 export class CasosComponent {
@@ -458,6 +527,11 @@ export class CasosComponent {
   orden = signal<OrdenCaso>('recientes');
   pagina = signal(1);
   menuAbierto = signal<number | null>(null);
+  /** Posición del menú "⋯" (fijo a la ventana, para que la tabla no lo recorte). */
+  menuPos = signal<{ top: number | null; bottom: number | null; right: number }>({ top: null, bottom: null, right: 0 });
+  /** Tarjetas o lista; se recuerda mientras el docente navega (sesión del navegador). */
+  vista = signal<'tarjetas' | 'lista'>(leerVistaCasos());
+  readonly porPagina = computed(() => this.vista() === 'lista' ? 8 : 9);
   readonly filtrados = computed(() => {
     const estado = this.filtroEstado();
     const q = (this.busqueda() + ' ' + this.filtro.texto()).trim().toLowerCase();
@@ -470,7 +544,13 @@ export class CasosComponent {
     if (this.orden() === 'estado') return [...lista].sort((a, b) => (rango[a.estado] ?? 9) - (rango[b.estado] ?? 9) || porNombre(a, b));
     return [...lista].sort((a, b) => b.id - a.id);
   });
-  readonly paginaCasos = computed(() => paginar(this.filtrados(), this.pagina(), 9));
+  readonly paginaCasos = computed(() => paginar(this.filtrados(), this.pagina(), this.porPagina()));
+  cambiarVista(vista: 'tarjetas' | 'lista') {
+    this.vista.set(vista);
+    this.pagina.set(1);
+    this.menuAbierto.set(null);
+    try { sessionStorage.setItem('dilema-vista-casos', vista); } catch { /* sin almacenamiento: solo dura esta pantalla */ }
+  }
   puedeEditar() { return this.auth.puede('EDITAR'); }
   constructor() { this.cargar(); }
   etiqueta(estado: string) { return ETIQUETA_CASO[estado] ?? estado; }
@@ -480,8 +560,16 @@ export class CasosComponent {
   puedePublicar(c: CasoResumen) { return this.auth.puede('EDITAR') && (c.estado === 'BORRADOR' || c.estado === 'ARCHIVADO'); }
   puedeVolverBorrador(c: CasoResumen) { return this.auth.puede('EDITAR') && c.estado === 'PUBLICADO'; }
   puedeArchivar(c: CasoResumen) { return this.auth.puede('EDITAR') && c.estado === 'PUBLICADO'; }
-  alternarMenu(id: number) {
+  alternarMenu(id: number, evento?: MouseEvent) {
     const abrir = this.menuAbierto() !== id;
+    if (abrir && evento) {
+      // Abre hacia abajo, o hacia arriba si no cabe; alineado al borde derecho del botón.
+      const b = (evento.currentTarget as HTMLElement).getBoundingClientRect();
+      const abajo = innerHeight - b.bottom > 200;
+      this.menuPos.set({ top: abajo ? b.bottom + 4 : null, bottom: abajo ? null : innerHeight - b.top + 4, right: innerWidth - b.right });
+      // Al desplazar la página el menú se cerraría lejos de su botón: se cierra.
+      document.addEventListener('scroll', () => this.menuAbierto.set(null), { capture: true, once: true });
+    }
     this.menuAbierto.set(abrir ? id : null);
     if (abrir) setTimeout(() => document.querySelector<HTMLElement>('.mc-menu [role="menuitem"]')?.focus());
   }
@@ -523,7 +611,7 @@ export class CasosComponent {
       next: (dato) => {
         this.casos.set(dato);
         this.cargando.set(false);
-        const paginas = Math.max(1, Math.ceil(this.filtrados().length / 9));
+        const paginas = Math.max(1, Math.ceil(this.filtrados().length / this.porPagina()));
         if (this.pagina() > paginas) this.pagina.set(paginas);
       },
       error: (falla) => { this.cargando.set(false); this.error.set(mensajeError(falla)); }
@@ -1663,6 +1751,7 @@ type FiltroSesion = 'TODAS' | 'SIN_INICIAR' | 'EN_CURSO' | 'FINALIZADO';
 
 @Component({
   selector: 'app-programar',
+  host: { '(document:click)': 'menuAbierto.set(null)', '(document:keydown.escape)': 'cerrarMenu()' },
   imports: [MarcoDocenteComponent, FormsModule, RouterLink, PaginacionGpComponent],
   template: `
     <app-marco-docente [enlaces]="enlaces" descripcion="Agenda un caso publicado con un grupo y abre la sesión cuando corresponda.">
@@ -1764,47 +1853,63 @@ type FiltroSesion = 'TODAS' | 'SIN_INICIAR' | 'EN_CURSO' | 'FINALIZADO';
               <span class="solo-lector">Buscar convocatoria por caso o código</span>
               <input type="search" placeholder="Buscar caso o código" [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event); pagina.set(1)" />
             </label>
+            <button class="adm-boton" type="button" (click)="irAlFormulario()"><span aria-hidden="true">+</span> Programar sesión</button>
           </div>
         </div>
         <section class="gp-tarjeta pg-convocatorias" aria-labelledby="titulo-convocatorias">
-          <div class="gp-tabla-marco">
-            <div class="gp-tabla-scroll">
-              <table class="gp-tabla pg-tabla">
-                <thead><tr>
-                  <th scope="col">Código</th><th scope="col">Caso</th><th scope="col">Grupo</th><th scope="col">Inicio</th>
-                  <th scope="col">Estado</th><th scope="col" class="gp-dc">Acción</th>
-                </tr></thead>
-                <tbody>
-                  @for (sesion of paginaSesiones(); track sesion.id) {
-                    <tr>
-                      <td class="pg-codigo">{{ sesion.codigo }}</td>
-                      <td class="pg-caso">{{ sesion.caso }}</td>
-                      <td class="pg-tenue">{{ sesion.grupo }}</td>
-                      <td class="pg-tenue pg-fecha">{{ fecha(sesion.inicio) }}</td>
-                      <td><span class="adm-estado-pill" [attr.data-estado]="sesion.estado">{{ etiquetaEstadoSesion(sesion.estado) }}</span></td>
-                      <td class="gp-dc">
-                        <div class="pg-acciones">
-                          @if (sesion.estado === 'SIN_INICIAR') {
-                            <button class="gp-btn gp-btn-borde gp-btn-pildora gp-btn-chico" type="button" (click)="cargarEdicion(sesion)"
-                              [attr.aria-label]="'Editar la convocatoria ' + sesion.codigo">Editar</button>
-                            <button class="gp-btn gp-btn-oscuro gp-btn-pildora gp-btn-chico" type="button" (click)="accion(sesion.id, 'iniciar')"
-                              [attr.aria-label]="'Iniciar la sesión ' + sesion.codigo">Iniciar</button>
-                          } @else if (sesion.estado === 'EN_CURSO') {
-                            <button class="gp-btn gp-btn-borde gp-btn-pildora gp-btn-chico" type="button" (click)="accion(sesion.id, 'finalizar')"
-                              [attr.aria-label]="'Finalizar la sesión ' + sesion.codigo">Finalizar</button>
-                            <a class="gp-btn gp-btn-borde gp-btn-pildora gp-btn-chico" routerLink="/docente/seguimiento">Bitácora</a>
-                          } @else {
-                            <a class="gp-btn gp-btn-borde gp-btn-pildora gp-btn-chico" routerLink="/docente/seguimiento">Bitácora y reportes</a>
+          <div class="adm-tabla-caja">
+            <table class="adm-tabla pg-tabla">
+              <colgroup>
+                <col class="pg-c-codigo" /><col class="pg-c-caso" /><col class="pg-c-grupo" /><col class="pg-c-inicio" />
+                <col class="pg-c-estado" /><col class="pg-c-acciones" />
+              </colgroup>
+              <thead><tr>
+                <th scope="col">Código</th><th scope="col">Caso</th><th scope="col">Grupo</th><th scope="col">Inicio</th>
+                <th scope="col">Estado</th><th scope="col" class="derecha">Acciones</th>
+              </tr></thead>
+              <tbody>
+                @for (sesion of paginaSesiones(); track sesion.id) {
+                  <tr>
+                    <td class="pg-codigo">{{ sesion.codigo }}</td>
+                    <td><span class="pg-corte" [title]="sesion.caso">{{ sesion.caso }}</span></td>
+                    <td class="gris"><span class="pg-corte" [title]="sesion.grupo">{{ sesion.grupo }}</span></td>
+                    <td class="gris">{{ fecha(sesion.inicio) }}</td>
+                    <td><span class="adm-estado-pill" [attr.data-estado]="sesion.estado">{{ etiquetaEstadoSesion(sesion.estado) }}</span></td>
+                    <td class="derecha">
+                      <div class="pg-acciones" (click)="$event.stopPropagation()">
+                        @if (sesion.estado === 'SIN_INICIAR') {
+                          <button class="pg-principal" type="button" (click)="accion(sesion.id, 'iniciar')"
+                            [attr.aria-label]="'Iniciar la sesión ' + sesion.codigo">Iniciar</button>
+                        } @else if (sesion.estado === 'EN_CURSO') {
+                          <a class="pg-suave" routerLink="/docente/seguimiento" [attr.aria-label]="'Bitácora de la sesión ' + sesion.codigo">Bitácora <span aria-hidden="true">›</span></a>
+                        } @else {
+                          <a class="pg-suave" routerLink="/docente/seguimiento" [attr.aria-label]="'Reportes de la sesión ' + sesion.codigo">Ver reportes <span aria-hidden="true">›</span></a>
+                        }
+                        @if (sesion.estado === 'FINALIZADO') {
+                          <span class="pg-mas-vacio" aria-hidden="true"></span>
+                        } @else {
+                          <button type="button" class="pg-mas" [id]="'pg-mas-' + sesion.id" aria-haspopup="menu"
+                            [attr.aria-expanded]="menuAbierto() === sesion.id" [attr.aria-label]="'Más acciones de la sesión ' + sesion.codigo"
+                            (click)="alternarMenu(sesion.id, $event)"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="3" cy="8" r="1.4" /><circle cx="8" cy="8" r="1.4" /><circle cx="13" cy="8" r="1.4" /></svg></button>
+                          @if (menuAbierto() === sesion.id) {
+                            <div class="pg-menu" role="menu" [attr.aria-label]="'Acciones de la sesión ' + sesion.codigo"
+                              [style.top.px]="menuPos().top" [style.bottom.px]="menuPos().bottom" [style.right.px]="menuPos().right">
+                              @if (sesion.estado === 'SIN_INICIAR') {
+                                <button type="button" role="menuitem" (click)="menuAbierto.set(null); cargarEdicion(sesion); irAlFormulario()">Editar</button>
+                              } @else {
+                                <button type="button" role="menuitem" class="peligro" (click)="menuAbierto.set(null); accion(sesion.id, 'finalizar')">Finalizar</button>
+                              }
+                            </div>
                           }
-                        </div>
-                      </td>
-                    </tr>
-                  } @empty {
-                    <tr><td colspan="6" class="gp-vacio">{{ sesiones().length ? 'Ninguna convocatoria coincide con el filtro.' : 'Todavía no tienes convocatorias.' }}</td></tr>
-                  }
-                </tbody>
-              </table>
-            </div>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="6" class="adm-vacio">{{ sesiones().length ? 'Ninguna convocatoria coincide con el filtro.' : 'Todavía no tienes convocatorias.' }}</td></tr>
+                }
+              </tbody>
+            </table>
           </div>
           <app-paginacion-gp [total]="sesionesFiltradas().length" [pagina]="pagina()" [porPagina]="8"
             que="convocatorias" prefijo="Mostrando " (cambiar)="pagina.set($event)" />
@@ -1844,7 +1949,6 @@ type FiltroSesion = 'TODAS' | 'SIN_INICIAR' | 'EN_CURSO' | 'FINALIZADO';
     .pg-cifras strong { font-size: 17px; font-weight: 800; color: #0f1b3d; white-space: nowrap; }
     .pg-resumen-nota { margin: 0; font-size: 13px; line-height: 1.5; color: #5b6680; }
     .pg-convocatorias { padding: 0 0 14px; display: grid; gap: 14px; overflow: hidden; }
-    .pg-convocatorias .gp-tabla-marco { border: 0; border-radius: 0; }
     .pg-convocatorias app-paginacion-gp { padding: 0 16px; }
     .pg-conv-cabeza { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; }
     .pg-conv-cabeza h2 { margin: 0; font-size: 16px; font-weight: 650; color: #0f1b3d; }
@@ -1856,15 +1960,40 @@ type FiltroSesion = 'TODAS' | 'SIN_INICIAR' | 'EN_CURSO' | 'FINALIZADO';
     .pg-filtros button[aria-pressed="true"] { background: #0a1733; color: #fff; font-weight: 700; }
     .pg-filtros button:focus-visible { outline: 3px solid rgba(59, 108, 255, .35); outline-offset: 1px; }
     .pg-buscar { width: 100%; }
-    .pg-codigo { font-weight: 700; white-space: nowrap; }
-    .pg-caso { font-weight: 500; min-width: 180px; max-width: 260px; }
+    /* Más específico que la regla global de .adm-tabla (min-width 760px): el caso nunca se queda sin ancho. */
+    .pg-convocatorias .adm-tabla.pg-tabla { table-layout: fixed; min-width: 1100px; }
+    .pg-c-codigo { width: 130px; } .pg-c-grupo { width: 200px; } .pg-c-inicio { width: 190px; }
+    .pg-c-estado { width: 120px; } .pg-c-acciones { width: 190px; }
+    .pg-tabla td { height: 64px; box-sizing: border-box; vertical-align: middle; }
+    .pg-codigo { font-weight: 700; color: #13213f; }
+    .pg-corte { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+      white-space: normal; overflow-wrap: normal; word-break: normal; line-height: 1.35; }
+    .pg-acciones { display: flex; flex-wrap: nowrap; align-items: center; justify-content: flex-end; gap: 6px; }
+    .pg-principal, .pg-suave { min-height: 34px; display: inline-flex; align-items: center; gap: 4px; padding: 0 14px; border-radius: 10px;
+      font: inherit; font-size: 13.5px; font-weight: 700; text-decoration: none; white-space: nowrap; cursor: pointer; }
+    .pg-principal { border: 0; background: #2563eb; color: #fff; }
+    .pg-principal:hover { background: #1d4fd0; }
+    .pg-suave { border: 0; background: #eef4ff; color: #1d5bdc; }
+    .pg-suave:hover { background: #e1ebff; }
+    .pg-mas, .pg-mas-vacio { flex: none; width: 34px; height: 34px; }
+    .pg-mas { display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent; color: #33415c; cursor: pointer; }
+    .pg-mas svg { width: 17px; height: 17px; fill: currentColor; }
+    .pg-mas:hover, .pg-mas[aria-expanded="true"] { background: #eef2f9; }
+    .pg-principal:focus-visible, .pg-suave:focus-visible, .pg-mas:focus-visible { outline: 3px solid #7aa7ff; outline-offset: 2px; }
+    /* Fijo a la ventana: la tabla que se desplaza de lado no lo recorta. */
+    .pg-menu { position: fixed; z-index: 50; min-width: 160px; padding: 4px; display: grid; gap: 2px; text-align: left;
+      background: #fff; border: 1px solid #e6ecf6; border-radius: 10px; box-shadow: 0 8px 20px rgba(16, 24, 40, .10); }
+    .pg-menu button { min-height: 36px; display: flex; align-items: center; padding: 0 12px; border: 0; border-radius: 7px; background: transparent;
+      color: #13213f; font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+    .pg-menu button:hover, .pg-menu button:focus-visible { background: #f2f6ff; outline: none; }
+    .pg-menu .peligro { color: #a4271b; }
+    .pg-menu .peligro:hover { background: #fdf1f0; }
     .pg-tenue { color: #5b6680; }
     .pg-fecha { white-space: nowrap; }
     .pg-estado { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap;
       background: #eef1f6; color: #3d4a66; }
     .pg-estado[data-estado="EN_CURSO"] { background: #e6efff; color: #2753c9; }
     .pg-estado[data-estado="FINALIZADO"] { background: #e3f5ea; color: #1b6f45; }
-    .pg-acciones { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
     @media (max-width: 1100px) {
       .pg-arriba { grid-template-columns: minmax(0, 1fr); }
       .pg-resumen { position: static; }
@@ -1872,7 +2001,7 @@ type FiltroSesion = 'TODAS' | 'SIN_INICIAR' | 'EN_CURSO' | 'FINALIZADO';
     @media (max-width: 720px) {
       .pg-dos { grid-template-columns: minmax(0, 1fr); }
       .pg-form { padding: 6px 16px 18px; }
-      .pg-convocatorias { padding: 18px 14px; }
+      .pg-convocatorias { padding: 0 0 12px; }
       .pg-conv-cabeza { flex-direction: column; align-items: stretch; }
       .pg-conv-herramientas { width: 100%; }
       .pg-botones { width: 100%; }
@@ -1916,6 +2045,34 @@ export class ProgramarComponent {
       && (!q || q.split(/\s+/).every((t) => s.caso.toLowerCase().includes(t) || s.codigo.toLowerCase().includes(t) || s.grupo.toLowerCase().includes(t))));
   });
   readonly paginaSesiones = computed(() => paginar(this.sesionesFiltradas(), this.pagina(), 8));
+  /** Menú "⋯" de cada convocatoria; fijo a la ventana para que la tabla no lo recorte. */
+  menuAbierto = signal<number | null>(null);
+  menuPos = signal<{ top: number | null; bottom: number | null; right: number }>({ top: null, bottom: null, right: 0 });
+  alternarMenu(id: number, evento: MouseEvent) {
+    const abrir = this.menuAbierto() !== id;
+    if (abrir) {
+      const b = (evento.currentTarget as HTMLElement).getBoundingClientRect();
+      const abajo = innerHeight - b.bottom > 120;
+      this.menuPos.set({ top: abajo ? b.bottom + 4 : null, bottom: abajo ? null : innerHeight - b.top + 4, right: innerWidth - b.right });
+      document.addEventListener('scroll', () => this.menuAbierto.set(null), { capture: true, once: true });
+      setTimeout(() => document.querySelector<HTMLElement>('.pg-menu [role="menuitem"]')?.focus());
+    }
+    this.menuAbierto.set(abrir ? id : null);
+  }
+  cerrarMenu() {
+    const id = this.menuAbierto();
+    if (id === null) return;
+    this.menuAbierto.set(null);
+    document.getElementById('pg-mas-' + id)?.focus();
+  }
+  /** "+ Programar sesión" y "Editar": lleva al formulario (la página se desplaza dentro de su marco). */
+  irAlFormulario() {
+    setTimeout(() => {
+      const formulario = document.querySelector<HTMLElement>('.pg-form');
+      formulario?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      formulario?.querySelector<HTMLElement>('select')?.focus({ preventScroll: true });
+    });
+  }
   constructor() {
     const guardado = localStorage.getItem('dilema-agenda');
     if (guardado) {

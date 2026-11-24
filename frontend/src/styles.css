@@ -1885,6 +1885,8 @@ html.novela-agrandada .inicio-menu-btn { display: none !important; }
   .marco-claro .adm-orden { flex: 1 1 0; min-width: 0; }
   .inicio-est.marco-claro .adm-orden select { width: 100%; }
   .inicio-est.marco-claro .adm-barra .adm-boton { flex: 1 1 0; padding: 0 12px; }
+  /* Mis casos: orden, vista y "+ Crear caso" comparten fila; el botón guarda su ancho natural. */
+  .inicio-est.marco-claro .mc-herramientas .adm-barra .adm-boton { flex: 0 0 auto; }
   .marco-claro .adm-campos { grid-template-columns: 1fr; }
   .marco-claro .adm-form, .marco-claro .adm-perfil { padding: 18px 16px; }
   .marco-claro .adm-tarjeta { padding: 16px; }
