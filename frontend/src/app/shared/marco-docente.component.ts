@@ -6,7 +6,7 @@ import { AuthService } from '../core/auth.service';
   selector: 'app-marco-docente',
   imports: [RouterLink, RouterLinkActive],
   template: `
-    <div class="inicio-est" [class.menu-abierto]="menuAbierto()">
+    <div class="inicio-est" [class.menu-abierto]="menuAbierto()" [class.marco-claro]="claro()">
       <button class="inicio-menu-btn" type="button" (click)="alternarMenu()" [attr.aria-expanded]="menuAbierto()" aria-label="Menú">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg>
       </button>
@@ -45,6 +45,16 @@ import { AuthService } from '../core/auth.service';
           <span>Piensa. Decide. Aprende.</span>
           <span class="lema-cierre">A decidir.</span>
         </p>
+        @if (claro()) {
+          <!-- Estilo claro: la ficha de la cuenta va en el menú, nunca sobre la ola ni el cerebro. -->
+          <div class="marco-cuenta">
+            <span class="inicio-avatar" aria-hidden="true">{{ iniciales() }}</span>
+            <span class="marco-cuenta-datos">
+              <strong>{{ nombre() || primerNombre() }}</strong>
+              <small>{{ rolTexto() }}</small>
+            </span>
+          </div>
+        }
         <button class="inicio-salir" type="button" (click)="auth.salir()">
           <svg viewBox="0 0 24 24"><path d="M10 7V5H5v14h5v-2M10 12h10M16 8l4 4-4 4"/></svg>
           Cerrar Sesión
@@ -53,6 +63,51 @@ import { AuthService } from '../core/auth.service';
 
       <main class="inicio-cuerpo">
         <div class="inicio-fondo" aria-hidden="true">
+          @if (claro()) {
+            <!--
+              Ola: azul marino muy oscuro arriba y alrededor del cerebro; solo pegado al borde inferior se aclara a
+              azul intenso, con una franja de luz azul clara en el borde y un halo blanco suave del lado claro.
+            -->
+            <svg class="ola-claro" viewBox="0 0 1440 260" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="ola-claro-noche" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#040c26"/>
+                  <stop offset=".55" stop-color="#081b52"/>
+                  <stop offset="1" stop-color="#0c2a7a"/>
+                </linearGradient>
+                <clipPath id="ola-claro-dentro">
+                  <path d="M360,0 C540,26 700,112 880,184 C1000,232 1160,236 1290,222 C1360,214 1410,206 1440,200 L1440,0 Z"/>
+                </clipPath>
+                <clipPath id="ola-claro-fuera">
+                  <path clip-rule="evenodd" d="M-60,-60 H1500 V330 H-60 Z M360,0 C540,26 700,112 880,184 C1000,232 1160,236 1290,222 C1360,214 1410,206 1440,200 L1440,0 Z"/>
+                </clipPath>
+                <filter id="ola-claro-difuso" x="-10%" y="-60%" width="120%" height="220%"><feGaussianBlur stdDeviation="16"/></filter>
+                <filter id="ola-claro-difuso-suave" x="-10%" y="-60%" width="120%" height="220%"><feGaussianBlur stdDeviation="5"/></filter>
+              </defs>
+              <path fill="url(#ola-claro-noche)" d="M360,0 C540,26 700,112 880,184 C1000,232 1160,236 1290,222 C1360,214 1410,206 1440,200 L1440,0 Z"/>
+              <g clip-path="url(#ola-claro-dentro)" fill="none">
+                <path stroke="#1b4fe6" stroke-width="90" opacity=".9" filter="url(#ola-claro-difuso)"
+                  d="M360,0 C540,26 700,112 880,184 C1000,232 1160,236 1290,222 C1360,214 1410,206 1480,196"/>
+                <path stroke="#2f6bff" stroke-width="26" filter="url(#ola-claro-difuso-suave)"
+                  d="M360,0 C540,26 700,112 880,184 C1000,232 1160,236 1290,222 C1360,214 1410,206 1480,196"/>
+              </g>
+              <g clip-path="url(#ola-claro-fuera)" fill="none">
+                <path stroke="#ffffff" stroke-width="54" opacity=".95" filter="url(#ola-claro-difuso)"
+                  d="M360,0 C540,26 700,112 880,184 C1000,232 1160,236 1290,222 C1360,214 1410,206 1480,196"/>
+                <path stroke="#cfe0ff" stroke-width="12" filter="url(#ola-claro-difuso-suave)"
+                  d="M360,0 C540,26 700,112 880,184 C1000,232 1160,236 1290,222 C1360,214 1410,206 1480,196"/>
+              </g>
+              <path fill="none" stroke="#8fb6ff" stroke-width="4"
+                d="M360,0 C540,26 700,112 880,184 C1000,232 1160,236 1290,222 C1360,214 1410,206 1480,196"/>
+            </svg>
+            <!-- Solo dos destellos: uno grande a la izquierda del cerebro y uno pequeño arriba a la derecha. -->
+            <svg class="ola-destello grande" viewBox="0 0 24 24"><path d="M12 0C12.8 8 16 11.2 24 12 16 12.8 12.8 16 12 24 11.2 16 8 12.8 0 12 8 11.2 11.2 8 12 0Z"/></svg>
+            <svg class="ola-destello pequeno" viewBox="0 0 24 24"><path d="M12 0C12.8 8 16 11.2 24 12 16 12.8 12.8 16 12 24 11.2 16 8 12.8 0 12 8 11.2 11.2 8 12 0Z"/></svg>
+            <div class="ola-marca">
+              <!-- Copia con fondo transparente (tools/imagenes/cerebro-transparente.py); el original no cambia. -->
+              <img class="ola-cerebro" src="/dilema-cerebro-ola.webp" alt="" />
+            </div>
+          } @else {
           <div class="inicio-cielo"></div>
           <div class="inicio-marca-hero">
             <svg class="inicio-orbita" viewBox="0 0 500 250" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
@@ -117,11 +172,13 @@ import { AuthService } from '../core/auth.service';
             <path fill="#3b82f6" d="M0,34 C560,16 1040,198 1480,188 L1480,172 C1040,182 560,0 0,18 Z"/>
             <path fill="#ffffff" d="M0,34 C560,16 1040,198 1480,188 L1480,180 C1040,190 560,8 0,26 Z"/>
           </svg>
+          }
         </div>
         <header class="inicio-hero">
           <div class="inicio-hero-copy">
             <div class="inicio-saludo">
               <h1>¡Hola, {{ primerNombre() }}! <span aria-hidden="true">👋</span></h1>
+              @if (claro() && descripcion()) { <p class="marco-descripcion">{{ descripcion() }}</p> }
             </div>
           </div>
         </header>
@@ -137,11 +194,26 @@ export class MarcoDocenteComponent {
   enlaces = input<{ href: string; texto: string; exacto?: boolean }[]>([]);
   inicio = input('/docente');
   lema = input('Coordina casos, grupos y sesiones desde un solo lugar.');
+  /** Estilo claro (ola azul sobre fondo claro, sin hoja blanca). Por ahora solo lo usa el administrador. */
+  claro = input(false);
+  /** Texto gris bajo el saludo en el estilo claro: qué se hace en la pantalla actual. */
+  descripcion = input('');
   menuAbierto = signal(false);
   alternarMenu() { this.menuAbierto.update((abierto) => !abierto); }
   cerrarMenu() { this.menuAbierto.set(false); }
 
   nombre() { return this.auth.usuario()?.nombre ?? ''; }
+
+  iniciales() {
+    const partes = this.nombre().trim().split(/\s+/).filter(Boolean);
+    return ((partes[0]?.[0] ?? '') + (partes[1]?.[0] ?? '')).toUpperCase() || 'D';
+  }
+
+  rolTexto() {
+    if (this.auth.rol() === 'ADMIN') return 'Administración';
+    if (this.auth.rol() === 'ESTUDIANTE') return 'Estudiante';
+    return 'Docente';
+  }
 
   primerNombre() {
     const primero = this.nombre().trim().split(/\s+/)[0];
