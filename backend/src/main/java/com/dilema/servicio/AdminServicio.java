@@ -42,7 +42,7 @@ public class AdminServicio {
         return cuentas.stream().map(mapeador::usuario).toList();
     }
 
-    /** El administrador crea docentes. El estudiante lo registra el docente de su grupo. */
+    /** El administrador crea docentes. El estudiante se da de alta en {@link #matricular}. */
     @Transactional
     public Contratos.UsuarioVista crear(Usuario admin, Contratos.UsuarioIn entrada) {
         proxy.gestionarUsuarios(admin);
@@ -54,7 +54,7 @@ public class AdminServicio {
         }
         Catalogo.Rol rol = rolDe(entrada.rol());
         if (rol == Catalogo.Rol.ESTUDIANTE) {
-            throw new ReglaNegocio("El docente registra y matricula a los estudiantes.");
+            throw new ReglaNegocio("El estudiante se da de alta sin contraseña, en su propia lista.");
         }
         if (entrada.clave() == null || entrada.clave().length() < 6) {
             throw new ReglaNegocio("La clave debe tener al menos 6 caracteres.");
@@ -65,6 +65,30 @@ public class AdminServicio {
         nuevo.contrasena = cifrado.encode(entrada.clave());
         usuarios.save(nuevo);
         return mapeador.usuario(nuevo);
+    }
+
+    /** Cuentas de estudiante, activas e inactivas. El filtro de estado lo hace la pantalla. */
+    @Transactional(readOnly = true)
+    public List<Contratos.UsuarioVista> estudiantes(Usuario admin) {
+        proxy.gestionarUsuarios(admin);
+        return usuarios.findByRol(Catalogo.Rol.ESTUDIANTE).stream().map(mapeador::usuario).toList();
+    }
+
+    /** Alta de la cuenta. No la mete en un grupo y no le pone contraseña. */
+    @Transactional
+    public Contratos.UsuarioVista matricular(Usuario admin, String nombre, String email) {
+        proxy.gestionarUsuarios(admin);
+        if (nombre == null || nombre.isBlank() || email == null || email.isBlank()) {
+            throw new ReglaNegocio("Indica nombre y correo institucional.");
+        }
+        String correo = email.trim().toLowerCase();
+        if (!correo.contains("@") || correo.length() < 5) {
+            throw new ReglaNegocio("Indica un correo institucional válido.");
+        }
+        if (usuarios.findByEmailIgnoreCase(correo).isPresent()) {
+            throw new ReglaNegocio("Ya existe una cuenta con ese correo.");
+        }
+        return mapeador.usuario(fabrica.nuevoEstudiante(nombre, correo));
     }
 
     @Transactional

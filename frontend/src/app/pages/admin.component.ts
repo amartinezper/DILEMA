@@ -11,6 +11,7 @@ import { Usuario, mensajeError } from '../core/api.service';
 const enlaces = [
   { href: '/admin', texto: 'Inicio', exacto: true },
   { href: '/admin/usuarios', texto: 'Docentes', exacto: true },
+  { href: '/admin/estudiantes', texto: 'Estudiantes', exacto: true },
   { href: '/admin/grupos', texto: 'Grupos', exacto: true },
   { href: '/admin/perfil', texto: 'Perfil' }
 ];
@@ -28,7 +29,7 @@ function inicialesDe(nombre: string) {
   imports: [MarcoDocenteComponent, RouterLink],
   template: `
     <app-marco-docente [enlaces]="enlaces" inicio="/admin"
-      descripcion="Gestiona docentes, permisos y los grupos del sistema.">
+      descripcion="Gestiona docentes, estudiantes, permisos y los grupos del sistema.">
       <section class="adm-kpis" aria-label="Resumen">
         <article class="adm-tarjeta adm-kpi">
           <span class="adm-kpi-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="16.2" cy="9" r="2.4"/><path d="M4 19c.7-3.2 2.8-5.2 5-5.2s4.3 2 5 5.2M13.4 19c.4-2.2 1.7-3.6 3.2-3.6 1.6 0 3 1.5 3.4 3.6"/></svg></span>
@@ -74,6 +75,10 @@ function inicialesDe(nombre: string) {
               <span class="adm-tarea-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M4 19c.7-3.2 2.8-5.2 5-5.2s4.3 2 5 5.2"/><path d="m15 11 2 2 3.5-4"/></svg></span>
               <span class="adm-fila-texto"><strong>Asignar permisos</strong><small>Editar casos y gestionar espacios académicos</small></span>
               <span class="adm-flecha" aria-hidden="true">›</span></a></li>
+            <li><a class="adm-fila" routerLink="/admin/estudiantes">
+              <span class="adm-tarea-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M6 19c.8-3.2 3-5 6-5s5.2 1.8 6 5"/></svg></span>
+              <span class="adm-fila-texto"><strong>Estudiantes</strong><small>Dar de alta la cuenta y activarla o desactivarla</small></span>
+              <span class="adm-flecha" aria-hidden="true">›</span></a></li>
             <li><a class="adm-fila" routerLink="/admin/grupos">
               <span class="adm-tarea-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></span>
               <span class="adm-fila-texto"><strong>Grupos</strong><small>Espacios académicos de todos los docentes</small></span>
@@ -116,7 +121,7 @@ type FiltroCuenta = 'todos' | 'docentes' | 'admin' | 'inactivos';
   host: { '(document:click)': 'menu.set(null)', '(document:keydown.escape)': 'menu.set(null)' },
   template: `
     <app-marco-docente [enlaces]="enlaces" inicio="/admin"
-      descripcion="Crea cuentas y asigna permisos. Los estudiantes los matricula cada docente.">
+      descripcion="Crea cuentas y asigna permisos. Las cuentas de estudiante se dan de alta en Estudiantes.">
       <div class="adm-herramientas">
         <div class="adm-filtros" role="group" aria-label="Filtrar cuentas">
           @for (f of filtros; track f.id) {
@@ -296,7 +301,7 @@ export class UsuariosComponent {
           <ol>
             <li><span class="adm-paso-numero" aria-hidden="true">1</span><p>La persona ingresa con el correo y la contraseña.</p></li>
             <li><span class="adm-paso-numero" aria-hidden="true">2</span><p>Asigna permisos desde <strong>Docentes › Permisos</strong>: Visualizar, Editar casos y Gestionar espacios.</p></li>
-            <li><span class="adm-paso-numero" aria-hidden="true">3</span><p>Cada docente matricula a sus estudiantes.</p></li>
+            <li><span class="adm-paso-numero" aria-hidden="true">3</span><p>Da de alta a los estudiantes y el docente los asigna a su grupo.</p></li>
           </ol>
         </aside>
       </div>
@@ -339,7 +344,7 @@ export class CrearUsuarioComponent {
           </label>
           <label class="adm-check">
             <input type="checkbox" name="gestionar" [(ngModel)]="gestionar" />
-            <span><strong>Gestionar espacios académicos</strong>: crear grupos y matricular estudiantes.</span>
+            <span><strong>Gestionar espacios académicos</strong>: crear grupos y asignar estudiantes.</span>
           </label>
         </div>
         @if (error()) { <p class="error">{{ error() }}</p> }
@@ -383,6 +388,169 @@ export class PermisosDocenteComponent {
     ];
     this.http.post(`/api/admin/usuarios/${this.id}/permisos`, { permisos }).subscribe({
       next: () => this.router.navigateByUrl('/admin/usuarios'),
+      error: (falla) => this.error.set(mensajeError(falla))
+    });
+  }
+}
+
+type FiltroEstudiante = 'todos' | 'activos' | 'inactivos';
+
+@Component({
+  selector: 'app-estudiantes',
+  imports: [MarcoDocenteComponent, RouterLink, PaginacionTablaComponent],
+  host: { '(document:click)': 'menu.set(null)', '(document:keydown.escape)': 'menu.set(null)' },
+  template: `
+    <app-marco-docente [enlaces]="enlaces" inicio="/admin"
+      descripcion="Da de alta la cuenta. El docente con permiso de espacios la asigna a un grupo.">
+      <div class="adm-herramientas">
+        <div class="adm-filtros" role="group" aria-label="Filtrar por estado">
+          @for (f of filtros; track f.id) {
+            <button type="button" class="adm-filtro" [class.activo]="filtro() === f.id" [attr.aria-pressed]="filtro() === f.id"
+              (click)="elegirFiltro(f.id)">{{ f.texto }} <span>({{ cuantos(f.id) }})</span></button>
+          }
+        </div>
+        <div class="adm-barra">
+          <label class="adm-buscar">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+            <span class="solo-lector">Buscar estudiante</span>
+            <input type="search" placeholder="Buscar por nombre o correo" [value]="busqueda()" (input)="buscar($any($event.target).value)" />
+          </label>
+          <a class="adm-boton" routerLink="/admin/estudiantes/nuevo"><span aria-hidden="true">+</span> Nuevo estudiante</a>
+        </div>
+      </div>
+      @if (error()) { <p class="error">{{ error() }}</p> }
+      <article class="adm-tarjeta adm-tabla-tarjeta">
+        <div class="adm-tabla-caja">
+          <table class="adm-tabla">
+            <thead>
+              <tr><th scope="col">Estudiante</th><th scope="col">Estado</th><th scope="col" class="derecha">Acciones</th></tr>
+            </thead>
+            <tbody>
+              @for (estudiante of filas(); track estudiante.id) {
+                <tr>
+                  <td>
+                    <div class="adm-cuenta-celda">
+                      <span class="adm-iniciales" aria-hidden="true">{{ iniciales(estudiante.nombre) }}</span>
+                      <div class="adm-celda-doble"><strong>{{ estudiante.nombre }}</strong><small>{{ estudiante.email }}</small></div>
+                    </div>
+                  </td>
+                  <td><span class="adm-estado" [class.inactiva]="estudiante.activo === false"><i aria-hidden="true"></i>{{ estudiante.activo === false ? 'Inactiva' : 'Activa' }}</span></td>
+                  <td class="derecha">
+                    <div class="adm-menu">
+                      <button type="button" class="adm-mas" aria-haspopup="menu" [attr.aria-expanded]="menu() === estudiante.id"
+                        [attr.aria-label]="'Cambiar estado de ' + estudiante.nombre" (click)="alternarMenu(estudiante.id, $event)">⋯</button>
+                      @if (menu() === estudiante.id) {
+                        <div class="adm-menu-lista" role="menu">
+                          <button type="button" role="menuitem" (click)="activo(estudiante.id, estudiante.activo === false)">
+                            {{ estudiante.activo === false ? 'Activar' : 'Desactivar' }}</button>
+                        </div>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              } @empty { <tr><td colspan="3" class="adm-vacio">{{ vacio() }}</td></tr> }
+            </tbody>
+          </table>
+        </div>
+        @if (lista().length) {
+          <app-paginacion-tabla [total]="lista().length" [pagina]="paginaActual()" (cambiar)="pagina.set($event)" />
+        }
+      </article>
+    </app-marco-docente>
+  `
+})
+export class EstudiantesComponent {
+  enlaces = enlaces;
+  filtros: { id: FiltroEstudiante; texto: string }[] = [
+    { id: 'todos', texto: 'Todos' },
+    { id: 'activos', texto: 'Solo activos' },
+    { id: 'inactivos', texto: 'Solo inactivos' }
+  ];
+  filtro = signal<FiltroEstudiante>('todos');
+  busqueda = signal('');
+  pagina = signal(1);
+  menu = signal<number | null>(null);
+  private http = inject(HttpClient);
+  private filtroGlobal = inject(BusquedaService);
+  estudiantes = signal<Usuario[]>([]);
+  error = signal('');
+  lista = computed(() => {
+    const estado = this.filtro();
+    const q = (this.busqueda() || this.filtroGlobal.texto()).trim().toLowerCase();
+    return this.estudiantes().filter((estudiante) => {
+      const coincide = !q || estudiante.nombre.toLowerCase().includes(q) || estudiante.email.toLowerCase().includes(q);
+      const activo = estudiante.activo !== false;
+      return coincide && (estado === 'todos' || (estado === 'activos' ? activo : !activo));
+    });
+  });
+  paginaActual = computed(() => Math.min(this.pagina(), Math.max(1, Math.ceil(this.lista().length / POR_PAGINA))));
+  filas = computed(() => this.lista().slice((this.paginaActual() - 1) * POR_PAGINA, this.paginaActual() * POR_PAGINA));
+  constructor() { this.cargar(); }
+  iniciales(nombre: string) { return inicialesDe(nombre); }
+  private pasa(estudiante: Usuario, filtro: FiltroEstudiante) {
+    const activo = estudiante.activo !== false;
+    if (filtro === 'activos') return activo;
+    if (filtro === 'inactivos') return !activo;
+    return true;
+  }
+  cuantos(filtro: FiltroEstudiante) { return this.estudiantes().filter((estudiante) => this.pasa(estudiante, filtro)).length; }
+  elegirFiltro(filtro: FiltroEstudiante) { this.filtro.set(filtro); this.pagina.set(1); }
+  buscar(texto: string) { this.busqueda.set(texto); this.pagina.set(1); }
+  alternarMenu(id: number, evento: Event) {
+    evento.stopPropagation();
+    this.menu.set(this.menu() === id ? null : id);
+  }
+  vacio() {
+    if (this.estudiantes().length === 0) return 'Todavía no hay estudiantes. Da de alta la primera cuenta.';
+    return 'No hay estudiantes en este estado.';
+  }
+  activo(id: number, activo: boolean) {
+    this.menu.set(null);
+    this.http.post<Usuario>(`/api/admin/usuarios/${id}/activo`, { activo }).subscribe({
+      next: (cuenta) => this.estudiantes.update((lista) => lista.map((estudiante) => estudiante.id === cuenta.id ? cuenta : estudiante)),
+      error: (falla) => this.error.set(mensajeError(falla))
+    });
+  }
+  private cargar() {
+    this.http.get<Usuario[]>('/api/admin/estudiantes').subscribe({
+      next: (dato) => this.estudiantes.set(dato),
+      error: (falla) => this.error.set(mensajeError(falla))
+    });
+  }
+}
+
+@Component({
+  selector: 'app-crear-estudiante',
+  imports: [MarcoDocenteComponent, FormsModule, RouterLink],
+  template: `
+    <app-marco-docente [enlaces]="enlaces" inicio="/admin"
+      descripcion="Nace sin contraseña. Entra con el código de la sesión que programe el docente.">
+      <a class="adm-volver" routerLink="/admin/estudiantes"><span aria-hidden="true">‹</span> Volver a estudiantes</a>
+      <article class="adm-tarjeta adm-form">
+        <h2>Datos del estudiante</h2>
+        <div class="adm-campos">
+          <label class="adm-campo"><span>Nombre completo</span><input [(ngModel)]="nombre" placeholder="Nombre y apellido" /></label>
+          <label class="adm-campo"><span>Correo electrónico</span><input [(ngModel)]="email" placeholder="estudiante@institucion.edu" /></label>
+        </div>
+        @if (error()) { <p class="error">{{ error() }}</p> }
+        <div class="adm-form-pie">
+          <a class="adm-boton-contorno" routerLink="/admin/estudiantes">Cancelar</a>
+          <button class="adm-boton" type="button" (click)="crear()">Guardar</button>
+        </div>
+      </article>
+    </app-marco-docente>
+  `
+})
+export class CrearEstudianteComponent {
+  enlaces = enlaces;
+  private http = inject(HttpClient);
+  private router = inject(Router);
+  nombre = '';
+  email = '';
+  error = signal('');
+  crear() {
+    this.http.post('/api/admin/estudiantes', { nombre: this.nombre, email: this.email }).subscribe({
+      next: () => this.router.navigateByUrl('/admin/estudiantes'),
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }

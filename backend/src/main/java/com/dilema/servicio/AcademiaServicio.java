@@ -35,7 +35,6 @@ public class AcademiaServicio {
     private final ProxyOperacion proxy;
     private final BitacoraServicio bitacora;
     private final Mapeador mapeador;
-    private final FabricaCuentas fabrica;
     private final NotificadorConvocatoria notificador;
     private final PadronConvocatoria padron;
     private final FachadaAgendamiento fachada;
@@ -43,8 +42,8 @@ public class AcademiaServicio {
     public AcademiaServicio(GrupoRepo grupos, SesionRepo sesiones, UsuarioRepo usuarios,
                             ParticipacionRepo participaciones, ParticipacionServicio participacionServicio,
                             ProxyOperacion proxy, BitacoraServicio bitacora, Mapeador mapeador,
-                            FabricaCuentas fabrica, NotificadorConvocatoria notificador,
-                            PadronConvocatoria padron, FachadaAgendamiento fachada) {
+                            NotificadorConvocatoria notificador, PadronConvocatoria padron,
+                            FachadaAgendamiento fachada) {
         this.grupos = grupos;
         this.sesiones = sesiones;
         this.usuarios = usuarios;
@@ -53,7 +52,6 @@ public class AcademiaServicio {
         this.proxy = proxy;
         this.bitacora = bitacora;
         this.mapeador = mapeador;
-        this.fabrica = fabrica;
         this.notificador = notificador;
         this.padron = padron;
         this.fachada = fachada;
@@ -115,8 +113,8 @@ public class AcademiaServicio {
     }
 
     @Transactional
-    public Contratos.GrupoVista agregarEstudiante(Usuario docente, Long grupoId, String nombre, String email) {
-        proxy.revisarGrupo(docente);
+    public Contratos.GrupoVista agregarEstudiante(Usuario docente, Long grupoId, String email) {
+        proxy.gestionarEspacio(docente);
         Grupo grupo = propio(docente, grupoId);
         String correo = email == null ? "" : email.trim().toLowerCase();
         if (!correo.contains("@") || correo.length() < 5) {
@@ -124,12 +122,13 @@ public class AcademiaServicio {
         }
         Usuario encontrado = usuarios.findByEmailIgnoreCase(correo).orElse(null);
         if (encontrado == null) {
-            if (nombre == null || nombre.isBlank()) {
-                throw new ReglaNegocio("Indica el nombre del estudiante.");
-            }
-            encontrado = fabrica.nuevoEstudiante(nombre, correo);
-        } else if (encontrado.rol != Catalogo.Rol.ESTUDIANTE || !encontrado.activo) {
+            throw new ReglaNegocio("Ese estudiante no está dado de alta. La administración debe matricularlo.");
+        }
+        if (encontrado.rol != Catalogo.Rol.ESTUDIANTE) {
             throw new ReglaNegocio("Ese correo pertenece a otra cuenta.");
+        }
+        if (!encontrado.activo) {
+            throw new ReglaNegocio("Esa cuenta de estudiante está inactiva.");
         }
         Usuario estudiante = encontrado;
         if (grupo.pertenece(estudiante)) throw new ReglaNegocio("El estudiante ya está en el grupo.");
@@ -147,9 +146,18 @@ public class AcademiaServicio {
         return mapeador.grupo(grupo);
     }
 
+    @Transactional(readOnly = true)
+    public List<Contratos.PersonaVista> estudiantesActivos(Usuario docente) {
+        proxy.gestionarEspacio(docente);
+        return usuarios.findByRol(Catalogo.Rol.ESTUDIANTE).stream()
+                .filter(estudiante -> estudiante.activo)
+                .map(mapeador::persona)
+                .toList();
+    }
+
     @Transactional
     public Contratos.GrupoVista retirarEstudiante(Usuario docente, Long grupoId, Long estudianteId) {
-        proxy.revisarGrupo(docente);
+        proxy.gestionarEspacio(docente);
         Grupo grupo = propio(docente, grupoId);
         Usuario estudiante = grupo.estudiantes.stream().filter(e -> e.id.equals(estudianteId)).findFirst()
                 .orElseThrow(() -> new NoEncontrado("El estudiante no está en el grupo."));

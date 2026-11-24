@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MarcoDocenteComponent } from '../shared/marco-docente.component';
 import { EditorTextoComponent } from '../shared/editor-texto.component';
-import { Bloque, Caso, CasoResumen, Fila, Grupo, IntentoConsultado, OpcionJuego, Participacion, ParticipacionConsultada, PreguntaJuego, Sesion, SesionRealizada, mensajeError } from '../core/api.service';
+import { Bloque, Caso, CasoResumen, Fila, Grupo, IntentoConsultado, OpcionJuego, Participacion, ParticipacionConsultada, Persona, PreguntaJuego, Sesion, SesionRealizada, mensajeError } from '../core/api.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { AuthService } from '../core/auth.service';
@@ -1386,7 +1386,7 @@ export class EditorCasoComponent {
   imports: [MarcoDocenteComponent, FormsModule, PaginacionGpComponent],
   host: { '(document:click)': 'cerrarMenu()', '(document:keydown.escape)': 'cerrarMenu(true)' },
   template: `
-    <app-marco-docente [enlaces]="enlaces" descripcion="Elige un grupo para ver y matricular a sus estudiantes.">
+    <app-marco-docente [enlaces]="enlaces" descripcion="Elige un grupo para ver y asignar a sus estudiantes.">
       <section class="gp">
         <div class="adm-herramientas">
           <p class="adm-resumen">{{ filtrados().length }} {{ filtrados().length === 1 ? 'grupo' : 'grupos' }}</p>
@@ -1400,7 +1400,7 @@ export class EditorCasoComponent {
           </div>
         </div>
         @if (!puedeGestionar()) {
-          <p class="gp-error">La administración debe asignarte el permiso de gestionar espacios académicos para crear grupos.</p>
+          <p class="gp-error">La administración debe asignarte el permiso de gestionar espacios académicos para crear grupos y asignar estudiantes.</p>
         }
         @if (error()) { <p class="gp-error" role="alert">{{ error() }}</p> }
         @if (nuevo()) {
@@ -1495,19 +1495,27 @@ export class EditorCasoComponent {
                 </div>
               }
 
-              <form class="gp-matricular" (ngSubmit)="agregar(grupo.id)" aria-labelledby="titulo-matricular">
-                <h3 id="titulo-matricular">Matricular estudiante</h3>
-                <div class="gp-matricular-fila">
-                  <label class="gp-campo"><span>Nombre completo</span>
-                    <input name="nombreEstudiante" [(ngModel)]="nombres[grupo.id]" placeholder="Ej. Laura Gómez Rincón" autocomplete="off" />
-                  </label>
-                  <label class="gp-campo"><span>Correo institucional</span>
-                    <input name="correoEstudiante" type="email" [(ngModel)]="correos[grupo.id]" placeholder="estudiante@universidad.edu" autocomplete="off" />
-                  </label>
-                  <button class="gp-btn gp-btn-oscuro" type="submit">Matricular</button>
-                </div>
-                <p class="gp-ayuda">El estudiante no recibe contraseña: su código de acceso llega por correo al agendar la sesión.</p>
-              </form>
+              @if (puedeGestionar()) {
+                <form class="gp-matricular" (ngSubmit)="agregar(grupo.id)" aria-labelledby="titulo-asignar">
+                  <h3 id="titulo-asignar">Asignar al grupo</h3>
+                  <div class="gp-matricular-fila">
+                    <label class="gp-campo"><span>Buscar</span>
+                      <input name="buscarEstudiante" type="search" [ngModel]="busquedaAsignar()"
+                        (ngModelChange)="busquedaAsignar.set($event)" placeholder="Nombre o correo" autocomplete="off" />
+                    </label>
+                    <label class="gp-campo"><span>Estudiante</span>
+                      <select name="correoEstudiante" [ngModel]="correoAsignar()" (ngModelChange)="correoAsignar.set($event)">
+                        <option value="">Elige una cuenta</option>
+                        @for (estudiante of disponibles(); track estudiante.id) {
+                          <option [value]="estudiante.email">{{ estudiante.nombre }} · {{ estudiante.email }}</option>
+                        }
+                      </select>
+                    </label>
+                    <button class="gp-btn gp-btn-oscuro" type="submit">Asignar</button>
+                  </div>
+                  <p class="gp-ayuda">La administración da de alta la cuenta. El código de acceso llega por correo al programar la sesión.</p>
+                </form>
+              }
 
               <div class="gp-estudiantes-cabeza">
                 <h3>Estudiantes matriculados <span>({{ grupo.estudiantes.length }})</span></h3>
@@ -1528,18 +1536,20 @@ export class EditorCasoComponent {
                           <td class="gp-nombre">{{ estudiante.nombre }}</td>
                           <td class="gp-correo">{{ estudiante.email }}</td>
                           <td class="gp-dc">
-                            <div class="gp-menu-ancla" (click)="$event.stopPropagation()">
-                              <button type="button" class="gp-mas" [id]="'mas-' + menuEstudiante(estudiante.id)" aria-haspopup="menu"
-                                [attr.aria-expanded]="menuAbierto() === menuEstudiante(estudiante.id)" [attr.aria-label]="'Más acciones para ' + estudiante.nombre"
-                                (click)="alternarMenu(menuEstudiante(estudiante.id))">
-                                <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="3" cy="8" r="1.4" /><circle cx="8" cy="8" r="1.4" /><circle cx="13" cy="8" r="1.4" /></svg>
-                              </button>
-                              @if (menuAbierto() === menuEstudiante(estudiante.id)) {
-                                <div class="gp-menu gp-menu-lado" role="menu" [attr.aria-label]="'Acciones para ' + estudiante.nombre" (keydown)="teclaMenu($event)">
-                                  <button type="button" role="menuitem" class="peligro" (click)="menuAbierto.set(null); retirar(grupo.id, estudiante.id)">Quitar del grupo</button>
-                                </div>
-                              }
-                            </div>
+                            @if (puedeGestionar()) {
+                              <div class="gp-menu-ancla" (click)="$event.stopPropagation()">
+                                <button type="button" class="gp-mas" [id]="'mas-' + menuEstudiante(estudiante.id)" aria-haspopup="menu"
+                                  [attr.aria-expanded]="menuAbierto() === menuEstudiante(estudiante.id)" [attr.aria-label]="'Más acciones para ' + estudiante.nombre"
+                                  (click)="alternarMenu(menuEstudiante(estudiante.id))">
+                                  <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="3" cy="8" r="1.4" /><circle cx="8" cy="8" r="1.4" /><circle cx="13" cy="8" r="1.4" /></svg>
+                                </button>
+                                @if (menuAbierto() === menuEstudiante(estudiante.id)) {
+                                  <div class="gp-menu gp-menu-lado" role="menu" [attr.aria-label]="'Acciones para ' + estudiante.nombre" (keydown)="teclaMenu($event)">
+                                    <button type="button" role="menuitem" class="peligro" (click)="menuAbierto.set(null); retirar(grupo.id, estudiante.id)">Quitar del grupo</button>
+                                  </div>
+                                }
+                              </div>
+                            }
                           </td>
                         </tr>
                       } @empty {
@@ -1639,8 +1649,9 @@ export class GruposComponent {
   editando = signal<number | null>(null);
   nombreEdicion = '';
   espacioEdicion = '';
-  correos: Record<number, string> = {};
-  nombres: Record<number, string> = {};
+  catalogo = signal<Persona[]>([]);
+  busquedaAsignar = signal('');
+  correoAsignar = signal('');
   /** Búsqueda, página y menú "⋯" (todo en el navegador, con lo que ya llegó del backend). */
   busqueda = signal('');
   pagina = signal(1);
@@ -1663,8 +1674,17 @@ export class GruposComponent {
   readonly paginaEstudiantesLista = computed(() => paginar(this.estudiantesFiltrados(), this.paginaEstudiantes(), 8));
   /** Id del menú "⋯" de un estudiante (negativo y lejos de los ids de grupo, que también usan el menú). */
   menuEstudiante(id: number) { return -1000000 - id; }
+  readonly disponibles = computed(() => {
+    const ya = new Set((this.actual()?.estudiantes ?? []).map((estudiante) => estudiante.email.toLowerCase()));
+    const q = this.busquedaAsignar().trim().toLowerCase();
+    return this.catalogo().filter((estudiante) => !ya.has(estudiante.email.toLowerCase())
+      && (!q || estudiante.nombre.toLowerCase().includes(q) || estudiante.email.toLowerCase().includes(q)));
+  });
   puedeGestionar() { return this.auth.puede('GESTIONAR_ESPACIOS_ACADEMICOS'); }
-  constructor() { this.cargar(); }
+  constructor() {
+    this.cargar();
+    if (this.puedeGestionar()) this.cargarCatalogo();
+  }
   alternarNuevo() { this.nuevo.set(!this.nuevo()); }
   alternarMenu(id: number) {
     const abrir = this.menuAbierto() !== id;
@@ -1720,8 +1740,10 @@ export class GruposComponent {
     });
   }
   agregar(id: number) {
-    this.http.post(`/api/docente/grupos/${id}/estudiantes`, { nombre: this.nombres[id] ?? '', email: this.correos[id] ?? '' }).subscribe({
-      next: () => { this.nombres[id] = ''; this.correos[id] = ''; this.error.set(''); this.cargar(); },
+    const email = this.correoAsignar();
+    if (!email) { this.error.set('Elige un estudiante dado de alta.'); return; }
+    this.http.post(`/api/docente/grupos/${id}/estudiantes`, { nombre: '', email }).subscribe({
+      next: () => { this.correoAsignar.set(''); this.busquedaAsignar.set(''); this.error.set(''); this.cargar(); },
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
@@ -1731,11 +1753,19 @@ export class GruposComponent {
   elegir(id: number) {
     if (this.seleccionado() !== id) {
       this.busquedaEstudiante.set('');
+      this.busquedaAsignar.set('');
+      this.correoAsignar.set('');
       this.paginaEstudiantes.set(1);
       if (this.confirmarBorrar() !== id) this.confirmarBorrar.set(null);
       if (this.editando() !== id) this.editando.set(null);
     }
     this.seleccionado.set(id);
+  }
+  private cargarCatalogo() {
+    this.http.get<Persona[]>('/api/docente/estudiantes').subscribe({
+      next: (dato) => this.catalogo.set(dato),
+      error: (falla) => this.error.set(mensajeError(falla))
+    });
   }
   private cargar() {
     this.http.get<Grupo[]>('/api/docente/grupos').subscribe((dato) => {

@@ -96,4 +96,48 @@ class AdminServicioTest {
         assertEquals(false, vista.activo());
         assertThrows(ReglaNegocio.class, () -> servicio.activo(admin, 1L, false));
     }
+
+    @Test
+    @DisplayName("da de alta un estudiante sin contraseña y rechaza el correo repetido")
+    void matriculaEstudiante() {
+        when(usuarios.findByEmailIgnoreCase("ana@psicosim.edu")).thenReturn(Optional.empty());
+        Usuario creado = estudiante(4L, true);
+        when(fabrica.nuevoEstudiante("Ana Ruiz", "ana@psicosim.edu")).thenReturn(creado);
+
+        Contratos.UsuarioVista vista = servicio.matricular(admin, "Ana Ruiz", "ana@psicosim.edu");
+        assertEquals("ESTUDIANTE", vista.rol());
+        assertEquals("ana@psicosim.edu", vista.email());
+        verify(fabrica).nuevoEstudiante("Ana Ruiz", "ana@psicosim.edu");
+
+        when(usuarios.findByEmailIgnoreCase("ana@psicosim.edu")).thenReturn(Optional.of(creado));
+        assertEquals("Ya existe una cuenta con ese correo.",
+                assertThrows(ReglaNegocio.class, () -> servicio.matricular(admin, "Ana Ruiz", "ana@psicosim.edu")).getMessage());
+    }
+
+    @Test
+    @DisplayName("lista activos e inactivos y desactivar no saca al estudiante de la lista")
+    void listaActivosEInactivos() {
+        Usuario activo = estudiante(2L, true);
+        Usuario inactivo = estudiante(3L, false);
+        when(usuarios.findByRol(Catalogo.Rol.ESTUDIANTE)).thenReturn(List.of(activo, inactivo));
+        assertEquals(2, servicio.estudiantes(admin).size());
+
+        when(usuarios.findById(2L)).thenReturn(Optional.of(activo));
+        when(usuarios.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        Contratos.UsuarioVista vista = servicio.activo(admin, 2L, false);
+        assertEquals(false, vista.activo());
+        assertEquals(false, activo.activo);
+        assertEquals(2, servicio.estudiantes(admin).size());
+    }
+
+    private Usuario estudiante(long id, boolean activo) {
+        Usuario estudiante = new Usuario();
+        estudiante.id = id;
+        estudiante.nombre = "Ana";
+        estudiante.email = "ana@psicosim.edu";
+        estudiante.rol = Catalogo.Rol.ESTUDIANTE;
+        estudiante.activo = activo;
+        estudiante.permisos = new java.util.HashSet<>();
+        return estudiante;
+    }
 }

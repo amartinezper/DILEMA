@@ -68,15 +68,16 @@ try {
   await p.waitForFunction(t => document.querySelector('#titulo-grupo')?.textContent.trim() === t, { timeout: 10000 }, TEMPORAL + ' editado');
   r.editar = 'ok';
 
-  // Matricular y quitar (cuenta que ya existe: no crea usuarios nuevos).
-  await escribir('input[name="nombreEstudiante"]', 'Estudiante de práctica');
-  await escribir('input[name="correoEstudiante"]', 'estudiante@psicosim.edu');
-  await boton('Matricular');
+  // Asignar y quitar (cuenta que ya existe: no crea usuarios nuevos).
+  await p.waitForFunction(() => [...document.querySelectorAll('select[name="correoEstudiante"] option')].some(o => o.value === 'estudiante@psicosim.edu'), { timeout: 10000 });
+  await p.select('select[name="correoEstudiante"]', 'estudiante@psicosim.edu');
+  await boton('Asignar');
   await p.waitForFunction(() => [...document.querySelectorAll('.gp-correo')].some(c => c.textContent.includes('estudiante@psicosim.edu')), { timeout: 10000 });
   r.matricular = await textos('.gp-tabla tbody tr');
   r.paginacion_estudiantes = await textos('.gp-detalle .gp-paginacion');
   await p.screenshot({ path: `${SALIDA}/gp-grupos-seleccionado-1440.png`, fullPage: true });
-  await (await p.waitForSelector('xpath/.//button[contains(@class,"gp-quitar")]')).click();
+  await (await p.waitForSelector('xpath/.//td[contains(@class,"gp-dc")]//button[contains(@class,"gp-mas")]')).click();
+  await boton('Quitar del grupo');
   await p.waitForFunction(() => !document.querySelector('.gp-correo'), { timeout: 10000 });
   r.quitar = 'ok';
 

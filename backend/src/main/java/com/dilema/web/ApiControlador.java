@@ -139,9 +139,14 @@ public class ApiControlador {
         academia.borrarGrupo(docente(request), id);
     }
 
+    @GetMapping("/docente/estudiantes")
+    List<Contratos.PersonaVista> estudiantesActivos(HttpServletRequest request) {
+        return academia.estudiantesActivos(docente(request));
+    }
+
     @PostMapping("/docente/grupos/{id}/estudiantes")
     Contratos.GrupoVista agregar(@PathVariable Long id, @RequestBody Contratos.EstudianteIn cuerpo, HttpServletRequest request) {
-        return academia.agregarEstudiante(docente(request), id, cuerpo.nombre(), cuerpo.email());
+        return academia.agregarEstudiante(docente(request), id, cuerpo.email());
     }
 
     @DeleteMapping("/docente/grupos/{id}/estudiantes/{estudianteId}")
@@ -229,6 +234,14 @@ public class ApiControlador {
     @PostMapping("/admin/usuarios/{id}/activo")
     Contratos.UsuarioVista activo(@PathVariable Long id, @RequestBody Contratos.ActivoIn cuerpo, HttpServletRequest request) {
         return admin.activo(admin(request), id, cuerpo.activo());
+    }
+
+    @GetMapping("/admin/estudiantes")
+    List<Contratos.UsuarioVista> estudiantes(HttpServletRequest request) { return admin.estudiantes(admin(request)); }
+
+    @PostMapping("/admin/estudiantes")
+    Contratos.UsuarioVista matricular(@RequestBody Contratos.EstudianteIn cuerpo, HttpServletRequest request) {
+        return admin.matricular(admin(request), cuerpo.nombre(), cuerpo.email());
     }
 
     @GetMapping("/admin/grupos")

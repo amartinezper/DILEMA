@@ -35,7 +35,6 @@ class AcademiaServicioTest {
     private GrupoRepo grupos;
     private SesionRepo sesiones;
     private UsuarioRepo usuarios;
-    private FabricaCuentas fabrica;
     private NotificadorConvocatoria notificador;
     private PadronConvocatoria padron;
     private FachadaAgendamiento fachada;
@@ -50,13 +49,12 @@ class AcademiaServicioTest {
         usuarios = mock(UsuarioRepo.class);
         ParticipacionRepo participaciones = mock(ParticipacionRepo.class);
         ParticipacionServicio participacionServicio = mock(ParticipacionServicio.class);
-        fabrica = mock(FabricaCuentas.class);
         notificador = mock(NotificadorConvocatoria.class);
         padron = mock(PadronConvocatoria.class);
         fachada = mock(FachadaAgendamiento.class);
         bitacora = mock(BitacoraServicio.class);
         servicio = new AcademiaServicio(grupos, sesiones, usuarios, participaciones, participacionServicio,
-                new ProxyOperacion(), bitacora, new Mapeador(), fabrica, notificador, padron, fachada);
+                new ProxyOperacion(), bitacora, new Mapeador(), notificador, padron, fachada);
         docente = docente();
     }
 
@@ -103,7 +101,7 @@ class AcademiaServicioTest {
     void rechazaCorreoInstitucionalInvalido() {
         when(grupos.findById(8L)).thenReturn(Optional.of(grupo()));
         assertEquals("Indica un correo institucional válido.",
-                assertThrows(ReglaNegocio.class, () -> servicio.agregarEstudiante(docente, 8L, "Ana", "ana")).getMessage());
+                assertThrows(ReglaNegocio.class, () -> servicio.agregarEstudiante(docente, 8L, "ana")).getMessage());
     }
 
     @Test
@@ -115,7 +113,7 @@ class AcademiaServicioTest {
         when(grupos.findById(8L)).thenReturn(Optional.of(grupo));
         when(usuarios.findByEmailIgnoreCase("ana@psicosim.edu")).thenReturn(Optional.of(existente));
         assertEquals("El estudiante ya está en el grupo.",
-                assertThrows(ReglaNegocio.class, () -> servicio.agregarEstudiante(docente, 8L, "Ana", "ana@psicosim.edu")).getMessage());
+                assertThrows(ReglaNegocio.class, () -> servicio.agregarEstudiante(docente, 8L, "ana@psicosim.edu")).getMessage());
     }
 
     @Test
@@ -124,7 +122,7 @@ class AcademiaServicioTest {
         when(grupos.findById(8L)).thenReturn(Optional.of(grupo()));
         when(usuarios.findByEmailIgnoreCase("docente@psicosim.edu")).thenReturn(Optional.of(docente));
         assertEquals("Ese correo pertenece a otra cuenta.",
-                assertThrows(ReglaNegocio.class, () -> servicio.agregarEstudiante(docente, 8L, "Ana", "docente@psicosim.edu")).getMessage());
+                assertThrows(ReglaNegocio.class, () -> servicio.agregarEstudiante(docente, 8L, "docente@psicosim.edu")).getMessage());
     }
 
     @Test
@@ -137,7 +135,7 @@ class AcademiaServicioTest {
         SesionCaso sesion = sesionAbierta();
         when(sesiones.findByGrupo_IdAndCierreRealIsNull(8L)).thenReturn(List.of(sesion));
 
-        Contratos.GrupoVista vista = servicio.agregarEstudiante(docente, 8L, "Ana", "ana@psicosim.edu");
+        Contratos.GrupoVista vista = servicio.agregarEstudiante(docente, 8L, "ana@psicosim.edu");
 
         assertEquals(1, vista.estudiantes().size());
         verify(padron).incluir(sesion, existente);
@@ -146,19 +144,23 @@ class AcademiaServicioTest {
     }
 
     @Test
-    @DisplayName("RF-21 avisa alta sin sesión y crea la cuenta si no existe")
-    void avisaAltaSinSesionYCreaCuentaSiNoExiste() {
-        Grupo grupo = grupo();
-        when(grupos.findById(8L)).thenReturn(Optional.of(grupo));
+    @DisplayName("rechaza asignar un correo que la administración no ha dado de alta")
+    void rechazaCorreoSinAlta() {
+        when(grupos.findById(8L)).thenReturn(Optional.of(grupo()));
         when(usuarios.findByEmailIgnoreCase("nueva@psicosim.edu")).thenReturn(Optional.empty());
-        Usuario creada = estudiante(10L, "nueva@psicosim.edu");
-        when(fabrica.nuevoEstudiante("Nueva", "nueva@psicosim.edu")).thenReturn(creada);
-        when(sesiones.findByGrupo_IdAndCierreRealIsNull(8L)).thenReturn(List.of());
+        assertEquals("Ese estudiante no está dado de alta. La administración debe matricularlo.",
+                assertThrows(ReglaNegocio.class, () -> servicio.agregarEstudiante(docente, 8L, "nueva@psicosim.edu")).getMessage());
+    }
 
-        servicio.agregarEstudiante(docente, 8L, "Nueva", "nueva@psicosim.edu");
-
-        verify(fabrica).nuevoEstudiante("Nueva", "nueva@psicosim.edu");
-        verify(notificador).agregadoSinSesion(creada, grupo);
+    @Test
+    @DisplayName("rechaza asignar una cuenta de estudiante inactiva")
+    void rechazaEstudianteInactivo() {
+        when(grupos.findById(8L)).thenReturn(Optional.of(grupo()));
+        Usuario inactivo = estudiante(10L, "nueva@psicosim.edu");
+        inactivo.activo = false;
+        when(usuarios.findByEmailIgnoreCase("nueva@psicosim.edu")).thenReturn(Optional.of(inactivo));
+        assertEquals("Esa cuenta de estudiante está inactiva.",
+                assertThrows(ReglaNegocio.class, () -> servicio.agregarEstudiante(docente, 8L, "nueva@psicosim.edu")).getMessage());
     }
 
     @Test
