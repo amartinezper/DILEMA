@@ -1,4 +1,5 @@
 import { Component, computed, input, output } from '@angular/core';
+import { IconoComponent } from './icono.component';
 
 /** Filas por página en las tablas (administrador, reportes del docente y estudiante). */
 export const FILAS_POR_PAGINA = 8;
@@ -19,18 +20,19 @@ export function paginaValida(pagina: number, total: number, porPagina = FILAS_PO
  */
 @Component({
   selector: 'app-paginacion-tabla',
+  imports: [IconoComponent],
   template: `
     @if (total() > 0) {
       <div class="adm-paginacion">
         <span class="adm-paginacion-texto">Mostrando {{ desde() }}–{{ hasta() }} de {{ total() }}</span>
         @if (paginas() > 1) {
           <nav class="adm-paginas" aria-label="Páginas">
-            <button type="button" class="adm-pagina" (click)="ir(pagina() - 1)" [disabled]="pagina() === 1" aria-label="Página anterior">‹</button>
+            <button type="button" class="adm-pagina" (click)="ir(pagina() - 1)" [disabled]="pagina() === 1" aria-label="Página anterior"><app-icono nombre="atras" [tamano]="18" /></button>
             @for (n of numeros(); track n) {
               <button type="button" class="adm-pagina" [class.actual]="n === pagina()" [attr.aria-current]="n === pagina() ? 'page' : null"
                 [attr.aria-label]="'Página ' + n" (click)="ir(n)">{{ n }}</button>
             }
-            <button type="button" class="adm-pagina" (click)="ir(pagina() + 1)" [disabled]="pagina() === paginas()" aria-label="Página siguiente">›</button>
+            <button type="button" class="adm-pagina" (click)="ir(pagina() + 1)" [disabled]="pagina() === paginas()" aria-label="Página siguiente"><app-icono nombre="flecha" [tamano]="18" /></button>
           </nav>
         }
       </div>

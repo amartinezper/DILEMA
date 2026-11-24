@@ -92,17 +92,17 @@ type FiltroDilema = 'todos' | 'pendientes' | 'en_curso' | 'finalizados';
         @if (error()) { <p class="error">{{ error() }}</p> }
 
         @if (seccion() === 'inicio') {
-          <section class="est-kpis" aria-label="Resumen">
-            <article class="est-kpi">
-              <span class="est-kpi-icono"><app-icono nombre="birrete" [tamano]="28" /></span>
+          <section class="dl-kpis" aria-label="Resumen">
+            <article class="dl-kpi">
+              <span class="dl-kpi-icono"><app-icono nombre="birrete" [tamano]="28" /></span>
               <div><h2>Dilemas resueltos</h2><strong>{{ resueltos() }}</strong><span>de {{ asignados() }} asignados</span></div>
             </article>
-            <article class="est-kpi">
-              <span class="est-kpi-icono"><app-icono nombre="trofeo" [tamano]="28" /></span>
-              <div><h2>Tu puntaje</h2><strong>{{ promedio() }}</strong><span><app-icono class="est-kpi-estrella" nombre="estrella" [tamano]="14" /> Promedio sobre 5.0</span></div>
+            <article class="dl-kpi">
+              <span class="dl-kpi-icono"><app-icono nombre="trofeo" [tamano]="28" /></span>
+              <div><h2>Tu puntaje</h2><strong>{{ promedio() }}</strong><span><app-icono class="dl-kpi-estrella" nombre="estrella" [tamano]="14" /> Promedio sobre 5.0</span></div>
             </article>
-            <article class="est-kpi">
-              <span class="est-kpi-icono"><app-icono nombre="check" [tamano]="28" /></span>
+            <article class="dl-kpi">
+              <span class="dl-kpi-icono"><app-icono nombre="check" [tamano]="28" /></span>
               <div><h2>Pendientes</h2><strong>{{ pendientes() }}</strong><span>{{ enCurso() === 1 ? '1 en curso' : enCurso() + ' en curso' }}</span></div>
             </article>
           </section>
@@ -145,26 +145,26 @@ type FiltroDilema = 'todos' | 'pendientes' | 'en_curso' | 'finalizados';
 
             <article class="inicio-progreso">
               <h3>Tu progreso</h3>
-              <div class="est-aro" role="img" [attr.aria-label]="'Progreso: ' + progresoGeneral() + '% (' + resueltos() + ' de ' + asignados() + ' dilemas resueltos)'">
+              <div class="dl-aro" role="img" [attr.aria-label]="'Progreso: ' + progresoGeneral() + '% (' + resueltos() + ' de ' + asignados() + ' dilemas resueltos)'">
                 <svg viewBox="0 0 140 140" aria-hidden="true">
                   <defs>
-                    <linearGradient id="est-aro-azul" x1="0" y1="0" x2="1" y2="1">
+                    <linearGradient id="dl-aro-azul" x1="0" y1="0" x2="1" y2="1">
                       <stop offset="0" stop-color="#1a73ff"/><stop offset="1" stop-color="#0b50d8"/>
                     </linearGradient>
                   </defs>
                   <circle cx="70" cy="70" r="58" fill="none" stroke="#e3edff" stroke-width="14"/>
                   @if (progresoGeneral() > 0) {
-                    <circle cx="70" cy="70" r="58" fill="none" stroke="url(#est-aro-azul)" stroke-width="14" stroke-linecap="round"
+                    <circle cx="70" cy="70" r="58" fill="none" stroke="url(#dl-aro-azul)" stroke-width="14" stroke-linecap="round"
                       pathLength="100" [attr.stroke-dasharray]="progresoGeneral() + ' 100'" transform="rotate(-90 70 70)"/>
                   }
                 </svg>
                 <span>{{ progresoGeneral() }}%</span>
               </div>
               <p class="nivel"><app-icono nombre="sube" [tamano]="18" /> {{ nivel() }}</p>
-              <div class="est-progreso-tip">
-                <app-icono class="est-progreso-trofeo" nombre="trofeo" [tamano]="22" />
+              <div class="dl-progreso-tip">
+                <app-icono class="dl-progreso-trofeo" nombre="trofeo" [tamano]="22" />
                 <p>Revisa tus resultados y sigue con los demás casos en Mis dilemas.</p>
-                <a class="est-progreso-ir" [routerLink]="['/estudiante']" [queryParams]="{ vista: 'dilemas' }" aria-label="Ir a Mis dilemas">
+                <a class="dl-progreso-ir" [routerLink]="['/estudiante']" [queryParams]="{ vista: 'dilemas' }" aria-label="Ir a Mis dilemas">
                   <app-icono nombre="flecha" [tamano]="20" />
                 </a>
               </div>

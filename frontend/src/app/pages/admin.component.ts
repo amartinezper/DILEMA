@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MarcoDocenteComponent } from '../shared/marco-docente.component';
+import { IconoComponent } from '../shared/icono.component';
 import { FILAS_POR_PAGINA, PaginacionTablaComponent } from '../shared/paginacion-tabla.component';
 import { AuthService } from '../core/auth.service';
 import { BusquedaService } from '../core/busqueda.service';
@@ -26,22 +27,22 @@ function inicialesDe(nombre: string) {
 
 @Component({
   selector: 'app-panel-admin',
-  imports: [MarcoDocenteComponent, RouterLink],
+  imports: [IconoComponent, MarcoDocenteComponent, RouterLink],
   template: `
     <app-marco-docente [enlaces]="enlaces" inicio="/admin"
       descripcion="Gestiona docentes, estudiantes, permisos y los grupos del sistema.">
-      <section class="adm-kpis" aria-label="Resumen">
-        <article class="adm-tarjeta adm-kpi">
-          <span class="adm-kpi-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="16.2" cy="9" r="2.4"/><path d="M4 19c.7-3.2 2.8-5.2 5-5.2s4.3 2 5 5.2M13.4 19c.4-2.2 1.7-3.6 3.2-3.6 1.6 0 3 1.5 3.4 3.6"/></svg></span>
-          <div><small>Docentes</small><strong>{{ docentes().length }}</strong><span>cuentas con rol docente</span></div>
+      <section class="dl-kpis" aria-label="Resumen">
+        <article class="dl-kpi">
+          <span class="dl-kpi-icono"><app-icono nombre="personas" [tamano]="28" /></span>
+          <div><h2>Docentes</h2><strong>{{ docentes().length }}</strong><span>cuentas con rol docente</span></div>
         </article>
-        <article class="adm-tarjeta adm-kpi">
-          <span class="adm-kpi-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 19l1-4L15.5 5.5a2.1 2.1 0 0 1 3 3L9 18z"/><path d="m13.5 7.5 3 3"/></svg></span>
-          <div><small>Pueden editar</small><strong>{{ conEditar() }}</strong><span>crean y publican casos</span></div>
+        <article class="dl-kpi">
+          <span class="dl-kpi-icono"><app-icono nombre="lapiz" [tamano]="28" /></span>
+          <div><h2>Pueden editar</h2><strong>{{ conEditar() }}</strong><span>crean y publican casos</span></div>
         </article>
-        <article class="adm-tarjeta adm-kpi">
-          <span class="adm-kpi-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 11.5 12 5l8 6.5V20H4z"/></svg></span>
-          <div><small>Gestionan espacios</small><strong>{{ conEspacios() }}</strong><span>pueden abrir grupos</span></div>
+        <article class="dl-kpi">
+          <span class="dl-kpi-icono"><app-icono nombre="cuadricula" [tamano]="28" /></span>
+          <div><h2>Gestionan espacios</h2><strong>{{ conEspacios() }}</strong><span>pueden abrir grupos</span></div>
         </article>
       </section>
 
@@ -68,19 +69,19 @@ function inicialesDe(nombre: string) {
           <div class="adm-cabeza"><h2>Tareas de administración</h2></div>
           <ul class="adm-lista">
             <li><a class="adm-fila" routerLink="/admin/usuarios/nuevo">
-              <span class="adm-tarea-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg></span>
+              <span class="adm-tarea-icono"><app-icono nombre="mas" [tamano]="20" /></span>
               <span class="adm-fila-texto"><strong>Crear docente</strong><small>Nueva cuenta con el permiso Visualizar</small></span>
               <span class="adm-flecha" aria-hidden="true">›</span></a></li>
             <li><a class="adm-fila" routerLink="/admin/usuarios">
-              <span class="adm-tarea-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M4 19c.7-3.2 2.8-5.2 5-5.2s4.3 2 5 5.2"/><path d="m15 11 2 2 3.5-4"/></svg></span>
+              <span class="adm-tarea-icono"><app-icono nombre="persona-check" [tamano]="20" /></span>
               <span class="adm-fila-texto"><strong>Asignar permisos</strong><small>Editar casos y gestionar espacios académicos</small></span>
               <span class="adm-flecha" aria-hidden="true">›</span></a></li>
             <li><a class="adm-fila" routerLink="/admin/estudiantes">
-              <span class="adm-tarea-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M6 19c.8-3.2 3-5 6-5s5.2 1.8 6 5"/></svg></span>
+              <span class="adm-tarea-icono"><app-icono nombre="persona" [tamano]="20" /></span>
               <span class="adm-fila-texto"><strong>Estudiantes</strong><small>Dar de alta la cuenta y activarla o desactivarla</small></span>
               <span class="adm-flecha" aria-hidden="true">›</span></a></li>
             <li><a class="adm-fila" routerLink="/admin/grupos">
-              <span class="adm-tarea-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></span>
+              <span class="adm-tarea-icono"><app-icono nombre="cuadricula" [tamano]="20" /></span>
               <span class="adm-fila-texto"><strong>Grupos</strong><small>Espacios académicos de todos los docentes</small></span>
               <span class="adm-flecha" aria-hidden="true">›</span></a></li>
           </ul>
@@ -117,7 +118,7 @@ type FiltroCuenta = 'todos' | 'docentes' | 'admin' | 'inactivos';
 
 @Component({
   selector: 'app-usuarios',
-  imports: [MarcoDocenteComponent, RouterLink, PaginacionTablaComponent],
+  imports: [IconoComponent, MarcoDocenteComponent, RouterLink, PaginacionTablaComponent],
   host: { '(document:click)': 'menu.set(null)', '(document:keydown.escape)': 'menu.set(null)' },
   template: `
     <app-marco-docente [enlaces]="enlaces" inicio="/admin"
@@ -131,7 +132,7 @@ type FiltroCuenta = 'todos' | 'docentes' | 'admin' | 'inactivos';
         </div>
         <div class="adm-barra">
           <label class="adm-buscar">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+            <app-icono nombre="buscar" [tamano]="20" />
             <span class="solo-lector">Buscar cuenta</span>
             <input type="search" placeholder="Buscar por nombre o correo" [value]="busqueda()" (input)="buscar($any($event.target).value)" />
           </label>
@@ -397,7 +398,7 @@ type FiltroEstudiante = 'todos' | 'activos' | 'inactivos';
 
 @Component({
   selector: 'app-estudiantes',
-  imports: [MarcoDocenteComponent, RouterLink, PaginacionTablaComponent],
+  imports: [IconoComponent, MarcoDocenteComponent, RouterLink, PaginacionTablaComponent],
   host: { '(document:click)': 'menu.set(null)', '(document:keydown.escape)': 'menu.set(null)' },
   template: `
     <app-marco-docente [enlaces]="enlaces" inicio="/admin"
@@ -411,7 +412,7 @@ type FiltroEstudiante = 'todos' | 'activos' | 'inactivos';
         </div>
         <div class="adm-barra">
           <label class="adm-buscar">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+            <app-icono nombre="buscar" [tamano]="20" />
             <span class="solo-lector">Buscar estudiante</span>
             <input type="search" placeholder="Buscar por nombre o correo" [value]="busqueda()" (input)="buscar($any($event.target).value)" />
           </label>
@@ -562,7 +563,7 @@ type FiltroGrupo = 'todos' | 'con' | 'sin';
 
 @Component({
   selector: 'app-grupos-admin',
-  imports: [MarcoDocenteComponent, PaginacionTablaComponent],
+  imports: [IconoComponent, MarcoDocenteComponent, PaginacionTablaComponent],
   template: `
     <app-marco-docente [enlaces]="enlaces" inicio="/admin"
       descripcion="Espacios académicos de todos los docentes y los estudiantes matriculados.">
@@ -575,7 +576,7 @@ type FiltroGrupo = 'todos' | 'con' | 'sin';
         </div>
         <div class="adm-barra">
           <label class="adm-buscar">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+            <app-icono nombre="buscar" [tamano]="20" />
             <span class="solo-lector">Buscar grupo</span>
             <input type="search" placeholder="Buscar grupo o docente" [value]="busqueda()" (input)="buscar($any($event.target).value)" />
           </label>
@@ -678,7 +679,7 @@ export class GruposAdminComponent {
 
 const enlacesDocente = [
   { href: '/docente', texto: 'Inicio', exacto: true },
-  { href: '/docente/casos', texto: 'Mis Casos', exacto: true },
+  { href: '/docente/casos', texto: 'Mis casos', exacto: true },
   { href: '/docente/grupos', texto: 'Grupos', exacto: true },
   { href: '/docente/programar', texto: 'Programar', exacto: true },
   { href: '/docente/seguimiento', texto: 'Reportes' },

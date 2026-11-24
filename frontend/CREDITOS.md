@@ -7,9 +7,10 @@ personajes tienen sus propios créditos en `public/escenas/CREDITOS.md` y
 ## Íconos: Lucide
 
 Los íconos de línea de `src/app/shared/icono.component.ts` (casa, diálogo, campana, persona, salir,
-birrete, trofeo, check, estrella, play, flecha que sube, cohete, flecha, menú, buscar, libro, personas,
-calendario, gráfica y más) usan la geometría de [Lucide](https://lucide.dev), copiada como SVG dentro
-del código, sin agregar dependencias. El ícono de diálogo tiene sus líneas internas ajustadas.
+birrete, trofeo, check, estrella, play, flecha que sube, cohete, flecha, atrás, menú, buscar, libro,
+documento, personas, persona con check, calendario, gráfica, más, engranaje, lápiz, cuadrícula, lista,
+puntos, imagen, pregunta y reloj) usan la geometría de [Lucide](https://lucide.dev), copiada como SVG dentro
+del código, sin agregar dependencias. Los usan los tres roles (estudiante, docente y administración). El ícono de diálogo tiene sus líneas internas ajustadas.
 
 Licencia de Lucide (ISC):
 

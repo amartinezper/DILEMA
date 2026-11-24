@@ -3,14 +3,14 @@ import { Component } from '@angular/core';
 let siguienteId = 0;
 
 /**
- * Encabezado del estudiante: ola azul brillante arriba a la derecha y, sobre ella, el cerebro con su
+ * Encabezado de DILEMA (los 3 roles, desde marco-dilema): ola azul brillante arriba a la derecha y, sobre ella, el cerebro con su
  * órbita y sus estrellas (dilema-cerebro-luz.webp, fondo transparente). Nada se monta encima.
  *
  * Lienzo de tamaño fijo anclado a la derecha: en pantallas angostas solo se recorta la punta delgada
  * de la ola por la izquierda. El contenedor debe ser position: relative; no recibe clics.
  */
 @Component({
-  selector: 'app-encabezado-estudiante',
+  selector: 'app-encabezado-dilema',
   template: `
     <div class="lienzo" aria-hidden="true">
       <svg class="ola" width="900" height="190" viewBox="0 0 900 190">
@@ -43,7 +43,7 @@ let siguienteId = 0;
     }
   `]
 })
-export class EncabezadoEstudianteComponent {
+export class EncabezadoDilemaComponent {
   /** Ids propios por instancia (degradado del SVG). */
-  readonly id = `ola-est-${++siguienteId}`;
+  readonly id = `ola-dl-${++siguienteId}`;
 }

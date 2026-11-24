@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MarcoDocenteComponent } from '../shared/marco-docente.component';
+import { IconoComponent } from '../shared/icono.component';
 import { EditorTextoComponent } from '../shared/editor-texto.component';
 import { Bloque, Caso, CasoResumen, Fila, Grupo, IntentoConsultado, OpcionJuego, Participacion, ParticipacionConsultada, Persona, PreguntaJuego, Sesion, SesionRealizada, mensajeError } from '../core/api.service';
 import { MatButtonModule } from '@angular/material/button';
@@ -20,7 +21,7 @@ import { PaginacionTablaComponent, paginaDe, paginaValida } from '../shared/pagi
 
 const enlaces = [
   { href: '/docente', texto: 'Inicio', exacto: true },
-  { href: '/docente/casos', texto: 'Mis Casos', exacto: true },
+  { href: '/docente/casos', texto: 'Mis casos', exacto: true },
   { href: '/docente/grupos', texto: 'Grupos', exacto: true },
   { href: '/docente/programar', texto: 'Programar', exacto: true },
   { href: '/docente/seguimiento', texto: 'Reportes' },
@@ -51,21 +52,21 @@ function casoVacio(): Caso {
 
 @Component({
   selector: 'app-panel-docente',
-  imports: [MarcoDocenteComponent, RouterLink],
+  imports: [IconoComponent, MarcoDocenteComponent, RouterLink],
   template: `
     <app-marco-docente [enlaces]="enlaces" descripcion="Coordina casos, grupos y sesiones desde un solo lugar.">
-      <section class="adm-kpis" aria-label="Resumen">
-        <article class="adm-tarjeta adm-kpi">
-          <span class="adm-kpi-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5.5h9.5A2.5 2.5 0 0 1 17 8v11H8.5A2.5 2.5 0 0 1 6 16.5V6.5A1 1 0 0 0 5 5.5z"/></svg></span>
-          <div><small>Casos</small><strong>{{ casos().length }}</strong><span>{{ publicados() }} publicados</span></div>
+      <section class="dl-kpis" aria-label="Resumen">
+        <article class="dl-kpi">
+          <span class="dl-kpi-icono"><app-icono nombre="documento" [tamano]="28" /></span>
+          <div><h2>Casos</h2><strong>{{ casos().length }}</strong><span>{{ publicados() }} publicados</span></div>
         </article>
-        <article class="adm-tarjeta adm-kpi">
-          <span class="adm-kpi-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="16.2" cy="9" r="2.4"/><path d="M4 19c.7-3.2 2.8-5.2 5-5.2s4.3 2 5 5.2M13.4 19c.4-2.2 1.7-3.6 3.2-3.6 1.6 0 3 1.5 3.4 3.6"/></svg></span>
-          <div><small>Grupos</small><strong>{{ grupos().length }}</strong><span>espacios a tu cargo</span></div>
+        <article class="dl-kpi">
+          <span class="dl-kpi-icono"><app-icono nombre="personas" [tamano]="28" /></span>
+          <div><h2>Grupos a tu cargo</h2><strong>{{ grupos().length }}</strong><span>{{ estudiantesEnGrupos() === 1 ? '1 estudiante' : estudiantesEnGrupos() + ' estudiantes' }}</span></div>
         </article>
-        <article class="adm-tarjeta adm-kpi">
-          <span class="adm-kpi-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4v3M17 4v3M5 8h14M6 5h12a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg></span>
-          <div><small>Hoy</small><strong>{{ hoy().length }}</strong><span>{{ enCurso().length }} en curso</span></div>
+        <article class="dl-kpi">
+          <span class="dl-kpi-icono"><app-icono nombre="calendario" [tamano]="28" /></span>
+          <div><h2>Sesiones de hoy</h2><strong>{{ hoy().length }}</strong><span>{{ hoyEnCurso() }} en curso</span></div>
         </article>
       </section>
       @if (aviso()) { <p class="error">{{ aviso() }}</p> }
@@ -106,19 +107,19 @@ function casoVacio(): Caso {
             <div class="adm-cabeza"><h2>Flujo de trabajo</h2></div>
             <ul class="adm-lista">
               <li><a class="adm-fila" routerLink="/docente/casos/nuevo">
-                <span class="adm-tarea-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5.5h9.5A2.5 2.5 0 0 1 17 8v11H8.5A2.5 2.5 0 0 1 6 16.5V6.5A1 1 0 0 0 5 5.5z"/></svg></span>
+                <span class="adm-tarea-icono"><app-icono nombre="documento" [tamano]="20" /></span>
                 <span class="adm-fila-texto"><strong>Diseñar</strong><small>Crea un caso con su historia y sus decisiones</small></span>
                 <span class="adm-flecha" aria-hidden="true">›</span></a></li>
               <li><a class="adm-fila" routerLink="/docente/grupos">
-                <span class="adm-tarea-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="16.2" cy="9" r="2.4"/><path d="M4 19c.7-3.2 2.8-5.2 5-5.2s4.3 2 5 5.2M13.4 19c.4-2.2 1.7-3.6 3.2-3.6 1.6 0 3 1.5 3.4 3.6"/></svg></span>
+                <span class="adm-tarea-icono"><app-icono nombre="personas" [tamano]="20" /></span>
                 <span class="adm-fila-texto"><strong>Agrupar</strong><small>Abre grupos y matricula estudiantes</small></span>
                 <span class="adm-flecha" aria-hidden="true">›</span></a></li>
               <li><a class="adm-fila" routerLink="/docente/programar">
-                <span class="adm-tarea-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4v3M17 4v3M5 8h14M6 5h12a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg></span>
+                <span class="adm-tarea-icono"><app-icono nombre="calendario" [tamano]="20" /></span>
                 <span class="adm-fila-texto"><strong>Convocar</strong><small>Agenda un caso publicado con un grupo</small></span>
                 <span class="adm-flecha" aria-hidden="true">›</span></a></li>
               <li><a class="adm-fila" routerLink="/docente/seguimiento">
-                <span class="adm-tarea-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 19V10M10 19V5M15 19v-7M20 19V8"/></svg></span>
+                <span class="adm-tarea-icono"><app-icono nombre="grafica" [tamano]="20" /></span>
                 <span class="adm-fila-texto"><strong>Seguir</strong><small>Bitácora en vivo y reportes</small></span>
                 <span class="adm-flecha" aria-hidden="true">›</span></a></li>
             </ul>
@@ -179,10 +180,11 @@ export class PanelDocenteComponent {
   publicados() {
     return this.casos().filter((caso) => caso.estado === 'PUBLICADO').length;
   }
-  enCurso() {
-    return this.sesiones().filter((sesion) => sesion.estado === 'EN_CURSO');
-  }
   hoy() { return this.sesiones().filter((sesion) => this.mismoDia(sesion.inicio)); }
+  /** Sesiones de hoy que están en curso (la línea de la tarjeta "Sesiones de hoy"). */
+  hoyEnCurso() { return this.hoy().filter((sesion) => sesion.estado === 'EN_CURSO').length; }
+  /** Estudiantes distintos matriculados en los grupos del docente. */
+  estudiantesEnGrupos() { return new Set(this.grupos().flatMap((g) => (g.estudiantes ?? []).map((e) => e.id))).size; }
   etiquetaEstado(estado: string) {
     if (estado === 'EN_CURSO') return 'En curso';
     if (estado === 'FINALIZADO') return 'Finalizada';
@@ -212,6 +214,7 @@ export class PanelDocenteComponent {
 /** Paginación de Mis casos, Grupos y Programar: "1–6 de 14" y ‹ 1 2 3 ›. Solo pagina en el navegador. */
 @Component({
   selector: 'app-paginacion-gp',
+  imports: [IconoComponent],
   template: `
     @if (total() > 0) {
       <nav class="gp-paginacion" [attr.aria-label]="'Paginación de ' + que()">
@@ -220,7 +223,7 @@ export class PanelDocenteComponent {
           <div class="gp-pag-botones">
             <button type="button" class="gp-pag" [disabled]="pagina() === 1" (click)="cambiar.emit(pagina() - 1)"
               [attr.aria-label]="'Página anterior de ' + que()">
-              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" /></svg>
+              <app-icono nombre="atras" [tamano]="18" />
             </button>
             @for (n of numeros(); track n) {
               <button type="button" class="gp-pag" [class.actual]="n === pagina()" [attr.aria-current]="n === pagina() ? 'page' : null"
@@ -228,7 +231,7 @@ export class PanelDocenteComponent {
             }
             <button type="button" class="gp-pag" [disabled]="pagina() === paginas()" (click)="cambiar.emit(pagina() + 1)"
               [attr.aria-label]="'Página siguiente de ' + que()">
-              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" /></svg>
+              <app-icono nombre="flecha" [tamano]="18" />
             </button>
           </div>
         }
@@ -243,7 +246,7 @@ export class PanelDocenteComponent {
       background: #fff; color: #1a2744; font: inherit; font-size: 14px; font-weight: 650; cursor: pointer; }
     .gp-pag svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
     .gp-pag:hover:not(:disabled):not(.actual) { border-color: #9fb0d0; }
-    .gp-pag.actual { background: #0a1733; border-color: #0a1733; color: #fff; }
+    .gp-pag.actual { background: var(--dl-degradado); border-color: var(--dl-azul-fuerte); color: #fff; }
     .gp-pag:disabled { opacity: .45; cursor: default; }
     .gp-pag:focus-visible { outline: 3px solid rgba(59,108,255,.35); outline-offset: 2px; }
   `]
@@ -285,9 +288,9 @@ const ESTILOS_GP = `
   .gp-tarjeta { background: #fff; border: 1px solid #e6ecf6; border-radius: 14px; box-shadow: 0 1px 2px rgba(16, 24, 40, .03); }
   .gp-btn { min-height: 36px; padding: 0 16px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 650; cursor: pointer;
     display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; text-decoration: none; flex: 0 0 auto; }
-  .gp-btn-oscuro { background: #2563eb; color: #fff; border: 1px solid #2563eb; font-weight: 700; }
-  .gp-btn-oscuro:hover { background: #1d4fd0; border-color: #1d4fd0; }
-  .gp-btn-borde { background: #fff; color: #1d5bdc; border: 1.5px solid #1d5bdc; font-weight: 650; }
+  .gp-btn-oscuro { background: var(--dl-degradado); color: #fff; border: 1px solid var(--dl-azul-fuerte); font-weight: 700; }
+  .gp-btn-oscuro:hover { filter: brightness(1.06); }
+  .gp-btn-borde { background: #fff; color: var(--dl-azul); border: 1.5px solid var(--dl-azul); font-weight: 650; }
   .gp-btn-borde:hover { background: #f2f6ff; }
   .gp-btn-peligro { background: #fff; color: #b42318; border: 1px solid #f1c4bf; font-weight: 600; }
   .gp-btn-peligro:hover { background: #fff5f4; }
@@ -317,7 +320,7 @@ const ESTILOS_GP = `
   .gp-tabla { width: 100%; border-collapse: collapse; font-size: 14px; }
   .gp-tabla th { padding: 12px 16px; text-align: left; font-size: 12.5px; font-weight: 650;
     color: #6b778f; background: #fafbfe; border-bottom: 1px solid #edf1f8; white-space: nowrap; }
-  .gp-tabla td { padding: 11px 16px; border-bottom: 1px solid #f0f3f9; color: #13213f; vertical-align: middle; white-space: nowrap; }
+  .gp-tabla td { padding: 11px 16px; border-bottom: 1px solid #f0f3f9; color: var(--dl-tinta); vertical-align: middle; white-space: nowrap; }
   .gp-tabla tr:last-child td { border-bottom: 0; }
   .gp-tabla .gp-dc { text-align: right; white-space: nowrap; overflow-wrap: normal; width: 1%; }
   .gp-vacio { color: #6b7690; }
@@ -334,7 +337,7 @@ function leerVistaCasos(): 'tarjetas' | 'lista' {
 
 @Component({
   selector: 'app-casos',
-  imports: [MarcoDocenteComponent, RouterLink, FormsModule, PaginacionGpComponent, NgTemplateOutlet],
+  imports: [IconoComponent, MarcoDocenteComponent, RouterLink, FormsModule, PaginacionGpComponent, NgTemplateOutlet],
   host: { '(document:click)': 'cerrarMenu()', '(document:keydown.escape)': 'cerrarMenu(true)' },
   template: `
     <app-marco-docente [enlaces]="enlaces" descripcion="Diseña, publica y reabre el editor de cada caso.">
@@ -353,7 +356,7 @@ function leerVistaCasos(): 'tarjetas' | 'lista' {
         </div>
         <div class="adm-barra">
           <label class="adm-buscar">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+            <app-icono nombre="buscar" [tamano]="20" />
             <span class="solo-lector">Buscar caso</span>
             <input type="search" placeholder="Buscar caso" [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event); pagina.set(1)" />
           </label>
@@ -368,11 +371,11 @@ function leerVistaCasos(): 'tarjetas' | 'lista' {
           <div class="mc-vistas" role="group" aria-label="Vista">
             <button type="button" [class.activa]="vista() === 'tarjetas'" [attr.aria-pressed]="vista() === 'tarjetas'" aria-label="Ver como tarjetas"
               title="Tarjetas" (click)="cambiarVista('tarjetas')">
-              <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="9" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="2.5" y="9" width="4.5" height="4.5" rx="1"/><rect x="9" y="9" width="4.5" height="4.5" rx="1"/></svg>
+              <app-icono nombre="cuadricula" [tamano]="18" />
             </button>
             <button type="button" [class.activa]="vista() === 'lista'" [attr.aria-pressed]="vista() === 'lista'" aria-label="Ver como lista"
               title="Lista" (click)="cambiarVista('lista')">
-              <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4h7.5M6 8h7.5M6 12h7.5"/><path d="M2.6 4h.01M2.6 8h.01M2.6 12h.01"/></svg>
+              <app-icono nombre="lista" [tamano]="18" />
             </button>
           </div>
           <a class="adm-boton" routerLink="/docente/casos/nuevo"><span aria-hidden="true">+</span> Crear caso</a>
@@ -384,7 +387,7 @@ function leerVistaCasos(): 'tarjetas' | 'lista' {
           <button type="button" class="mc-mas" [id]="'mc-mas-' + caso.id" aria-haspopup="menu"
             [attr.aria-expanded]="menuAbierto() === caso.id" [attr.aria-label]="'Más acciones de ' + caso.nombre"
             (click)="alternarMenu(caso.id, $event)">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="3" cy="8" r="1.4" /><circle cx="8" cy="8" r="1.4" /><circle cx="13" cy="8" r="1.4" /></svg>
+            <app-icono nombre="puntos" [tamano]="20" />
           </button>
           @if (menuAbierto() === caso.id) {
             <div class="mc-menu" role="menu" [attr.aria-label]="'Acciones de ' + caso.nombre" (keydown)="teclaMenu($event)"
@@ -411,9 +414,9 @@ function leerVistaCasos(): 'tarjetas' | 'lista' {
               </div>
               <h3 [title]="caso.nombre">{{ caso.nombre }}</h3>
               <p class="mc-meta">
-                <span><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="10" rx="1.6"/><path d="m2.6 11.4 3.4-3.2 2.6 2.3 1.8-1.6 3 2.6"/></svg>{{ caso.bloques }} {{ caso.bloques === 1 ? 'escenario' : 'escenarios' }}</span>
-                <span><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M6.3 6.2a1.8 1.8 0 0 1 3.5.5c0 1.2-1.8 1.5-1.8 2.6"/><path d="M8 11.4h.01"/></svg>{{ caso.preguntas }} {{ caso.preguntas === 1 ? 'pregunta' : 'preguntas' }}</span>
-                <span><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 4.8V8l2.2 1.4"/></svg>{{ caso.tiempoEstimadoMin }} min</span>
+                <span><app-icono nombre="imagen" [tamano]="16" />{{ caso.bloques }} {{ caso.bloques === 1 ? 'escenario' : 'escenarios' }}</span>
+                <span><app-icono nombre="pregunta" [tamano]="16" />{{ caso.preguntas }} {{ caso.preguntas === 1 ? 'pregunta' : 'preguntas' }}</span>
+                <span><app-icono nombre="reloj" [tamano]="16" />{{ caso.tiempoEstimadoMin }} min</span>
               </p>
               <div class="mc-pie">
                 <a class="mc-abrir" [routerLink]="['/docente/casos', caso.id]" [attr.aria-label]="'Abrir editor de ' + caso.nombre">Abrir editor</a>
@@ -458,7 +461,7 @@ function leerVistaCasos(): 'tarjetas' | 'lista' {
     .mc-vistas { display: inline-flex; gap: 2px; padding: 3px; border-radius: 12px; background: #e8edf6; }
     .mc-vistas button { width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 9px;
       background: transparent; color: #5b6782; cursor: pointer; }
-    .mc-vistas button.activa { background: #fff; color: #13213f; box-shadow: 0 1px 2px rgba(16, 24, 40, .08); }
+    .mc-vistas button.activa { background: #fff; color: var(--dl-tinta); box-shadow: 0 1px 2px rgba(16, 24, 40, .08); }
     .mc-vistas svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
     .mc-vistas button:focus-visible { outline: 3px solid #7aa7ff; outline-offset: 1px; }
 
@@ -469,16 +472,16 @@ function leerVistaCasos(): 'tarjetas' | 'lista' {
     .mc-estado { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 600; white-space: nowrap; color: #6b7489; }
     .mc-estado::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
     .mc-estado[data-estado="PUBLICADO"] { color: #16803c; }
-    .mc-estado[data-estado="BORRADOR"] { color: #1d5bdc; }
+    .mc-estado[data-estado="BORRADOR"] { color: var(--dl-azul); }
     .mc-estado[data-estado="ARCHIVADO"] { color: #6b7489; }
-    .mc-caso h3 { margin: 0; height: 2.6em; font-size: 16px; font-weight: 700; line-height: 1.3; color: #13213f;
+    .mc-caso h3 { margin: 0; height: 2.6em; font-size: 16px; font-weight: 700; line-height: 1.3; color: var(--dl-tinta);
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .mc-meta { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-size: 13px; color: #5b6782; }
     .mc-meta span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
     .mc-meta svg { flex: none; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
     .mc-pie { margin-top: auto; padding-top: 14px; border-top: 1px solid #eef2f8; }
     .mc-abrir { min-height: 36px; display: inline-flex; align-items: center; padding: 0 14px; border-radius: 10px;
-      background: #eef4ff; color: #1d5bdc; font-size: 13.5px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+      background: var(--dl-azul-claro); color: var(--dl-azul); font-size: 13.5px; font-weight: 700; text-decoration: none; white-space: nowrap; }
     .mc-abrir:hover { background: #e1ebff; }
     .mc-abrir:focus-visible, .mc-mas:focus-visible, .mc-menu a:focus-visible { outline: 3px solid #7aa7ff; outline-offset: 2px; }
     .mc-caso.archivado { background: #fbfcfe; }
@@ -495,7 +498,7 @@ function leerVistaCasos(): 'tarjetas' | 'lista' {
     .mc-menu { position: fixed; z-index: 50; min-width: 180px; padding: 4px; display: grid; gap: 2px;
       background: #fff; border: 1px solid #e6ecf6; border-radius: 10px; box-shadow: 0 8px 20px rgba(16, 24, 40, .10); }
     .mc-menu a, .mc-menu button { min-height: 36px; display: flex; align-items: center; padding: 0 12px; text-align: left; border: 0;
-      border-radius: 7px; background: transparent; color: #13213f; font: inherit; font-size: 13.5px; font-weight: 600; text-decoration: none; cursor: pointer; }
+      border-radius: 7px; background: transparent; color: var(--dl-tinta); font: inherit; font-size: 13.5px; font-weight: 600; text-decoration: none; cursor: pointer; }
     .mc-menu a:hover, .mc-menu button:hover, .mc-menu button:focus-visible { background: #f2f6ff; outline: none; }
     .mc-menu .peligro { color: #a4271b; }
     .mc-menu .peligro:hover { background: #fdf1f0; }
@@ -646,18 +649,18 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
     .ayudas select { flex: 1 1 110px; min-width: 0; padding: 8px 10px; font: inherit; font-size: .85rem; border: 1px solid var(--line, #e6ebf5); border-radius: 12px; background: white; }
     .personaje-pie { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 12px; }
     .aparece { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: .85rem; }
-    .aparece .chip { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border: 1px solid var(--navy-line, #cfd8ee); background: #fff; color: #0a1733; border-radius: 999px; cursor: pointer; font-weight: 650; }
+    .aparece .chip { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border: 1px solid var(--dl-borde, #cfd8ee); background: #fff; color: var(--dl-tinta, #0a1733); border-radius: 999px; cursor: pointer; font-weight: 650; }
     .entendido { font-size: .8rem; color: #5b6b8c; font-weight: 600; }
     .entendido.falta { color: #8b93a7; font-weight: 400; }
     .escena-controles { flex-wrap: wrap; gap: 8px; align-items: flex-start; }
     .acciones-editor { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
     .campo-cabeza { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-    .insertar { padding: 0 16px; height: 34px; font: inherit; font-size: 13px; border: 1.5px solid #1d5bdc; border-radius: 999px; background: #fff; color: #1d5bdc; cursor: pointer; font-weight: 650; display: inline-flex; align-items: center; box-shadow: none; }
+    .insertar { padding: 0 16px; height: 34px; font: inherit; font-size: 13px; border: 1.5px solid var(--dl-azul); border-radius: 999px; background: #fff; color: var(--dl-azul); cursor: pointer; font-weight: 650; display: inline-flex; align-items: center; box-shadow: none; }
     .form-dialogo { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 6px 0; padding: 12px; border-radius: 16px; background: #fff; border: 1px solid var(--line, #e6ebf5); }
     .form-dialogo select, .form-dialogo input { padding: 8px 10px; font: inherit; border: 1px solid var(--line, #e6ebf5); border-radius: 12px; }
     .form-dialogo input { flex: 1 1 220px; min-width: 0; }
-    .form-dialogo button { padding: 0 16px; height: 36px; font: inherit; font-size: 13px; border: 0; border-radius: 999px; background: #2563eb; color: #fff; cursor: pointer; font-weight: 700; box-shadow: none; }
-    .form-dialogo button:last-child { background: #fff; color: #1d5bdc; border: 1.5px solid #1d5bdc; }
+    .form-dialogo button { padding: 0 16px; height: 36px; font: inherit; font-size: 13px; border: 0; border-radius: 999px; background: var(--dl-degradado, #2563eb); color: #fff; cursor: pointer; font-weight: 700; box-shadow: none; }
+    .form-dialogo button:last-child { background: #fff; color: var(--dl-azul); border: 1.5px solid var(--dl-azul); }
     .ayuda-dialogo { display: block; margin-top: 4px; font-size: .78rem; color: #6b7280; }
     .modal-vista { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; background: #0f141c; color: #f3f3f3; }
     .modal-cabeza { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 10px 16px; background: #0a1733; }
@@ -1383,7 +1386,7 @@ export class EditorCasoComponent {
 
 @Component({
   selector: 'app-grupos',
-  imports: [MarcoDocenteComponent, FormsModule, PaginacionGpComponent],
+  imports: [IconoComponent, MarcoDocenteComponent, FormsModule, PaginacionGpComponent],
   host: { '(document:click)': 'cerrarMenu()', '(document:keydown.escape)': 'cerrarMenu(true)' },
   template: `
     <app-marco-docente [enlaces]="enlaces" descripcion="Elige un grupo para ver y asignar a sus estudiantes.">
@@ -1392,7 +1395,7 @@ export class EditorCasoComponent {
           <p class="adm-resumen">{{ filtrados().length }} {{ filtrados().length === 1 ? 'grupo' : 'grupos' }}</p>
           <div class="adm-barra">
             <label class="adm-buscar">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+              <app-icono nombre="buscar" [tamano]="20" />
               <span class="solo-lector">Buscar grupo</span>
               <input type="search" placeholder="Buscar grupo" [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event); pagina.set(1)" />
             </label>
@@ -1433,7 +1436,7 @@ export class EditorCasoComponent {
                     <button type="button" class="gp-mas" [id]="'mas-' + grupo.id" aria-haspopup="menu"
                       [attr.aria-expanded]="menuAbierto() === grupo.id" [attr.aria-label]="'Opciones del grupo ' + grupo.nombre"
                       (click)="alternarMenu(grupo.id)">
-                      <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="3" cy="8" r="1.4" /><circle cx="8" cy="8" r="1.4" /><circle cx="13" cy="8" r="1.4" /></svg>
+                      <app-icono nombre="puntos" [tamano]="20" />
                     </button>
                     @if (menuAbierto() === grupo.id) {
                       <div class="gp-menu" role="menu" [attr.aria-label]="'Opciones del grupo ' + grupo.nombre" (keydown)="teclaMenu($event)">
@@ -1482,7 +1485,7 @@ export class EditorCasoComponent {
                         <button type="button" class="gp-mas" [id]="'mas-' + (-grupo.id)" aria-haspopup="menu"
                           [attr.aria-expanded]="menuAbierto() === -grupo.id" [attr.aria-label]="'Más acciones del grupo ' + grupo.nombre"
                           (click)="alternarMenu(-grupo.id)">
-                          <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="3" cy="8" r="1.4" /><circle cx="8" cy="8" r="1.4" /><circle cx="13" cy="8" r="1.4" /></svg>
+                          <app-icono nombre="puntos" [tamano]="20" />
                         </button>
                         @if (menuAbierto() === -grupo.id) {
                           <div class="gp-menu" role="menu" [attr.aria-label]="'Más acciones del grupo ' + grupo.nombre" (keydown)="teclaMenu($event)">
@@ -1520,7 +1523,7 @@ export class EditorCasoComponent {
               <div class="gp-estudiantes-cabeza">
                 <h3>Estudiantes matriculados <span>({{ grupo.estudiantes.length }})</span></h3>
                 <label class="gp-buscar">
-                  <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5" /><path d="M10.5 10.5L14 14" /></svg>
+                  <app-icono nombre="buscar" [tamano]="20" />
                   <span class="solo-lector">Buscar estudiante por nombre o correo</span>
                   <input type="search" placeholder="Buscar por nombre o correo" [ngModel]="busquedaEstudiante()"
                     (ngModelChange)="busquedaEstudiante.set($event); paginaEstudiantes.set(1)" />
@@ -1541,7 +1544,7 @@ export class EditorCasoComponent {
                                 <button type="button" class="gp-mas" [id]="'mas-' + menuEstudiante(estudiante.id)" aria-haspopup="menu"
                                   [attr.aria-expanded]="menuAbierto() === menuEstudiante(estudiante.id)" [attr.aria-label]="'Más acciones para ' + estudiante.nombre"
                                   (click)="alternarMenu(menuEstudiante(estudiante.id))">
-                                  <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="3" cy="8" r="1.4" /><circle cx="8" cy="8" r="1.4" /><circle cx="13" cy="8" r="1.4" /></svg>
+                                  <app-icono nombre="puntos" [tamano]="20" />
                                 </button>
                                 @if (menuAbierto() === menuEstudiante(estudiante.id)) {
                                   <div class="gp-menu gp-menu-lado" role="menu" [attr.aria-label]="'Acciones para ' + estudiante.nombre" (keydown)="teclaMenu($event)">
@@ -1606,8 +1609,8 @@ export class EditorCasoComponent {
     .gp-lista-vacia { padding: 12px 4px; font-size: 14px; }
     .gp-detalle { position: sticky; top: 16px; padding: 26px 28px 22px; display: grid; gap: 22px; }
     .gp-detalle-cabeza { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px 16px; }
-    .gp-etiqueta { margin: 0 0 4px; font-size: 13px; font-weight: 650; color: #1d5bdc; }
-    .gp-detalle h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: #13213f; }
+    .gp-etiqueta { margin: 0 0 4px; font-size: 13px; font-weight: 650; color: var(--dl-azul); }
+    .gp-detalle h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--dl-tinta); }
     .gp-periodo { margin: 4px 0 0; font-size: 14.5px; color: #5b6680; }
     .gp-detalle-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
     .gp-confirmar { font-size: 14px; color: #9b1c12; font-weight: 600; }
@@ -1782,7 +1785,7 @@ type FiltroSesion = 'TODAS' | 'SIN_INICIAR' | 'EN_CURSO' | 'FINALIZADO';
 @Component({
   selector: 'app-programar',
   host: { '(document:click)': 'menuAbierto.set(null)', '(document:keydown.escape)': 'cerrarMenu()' },
-  imports: [MarcoDocenteComponent, FormsModule, RouterLink, PaginacionGpComponent],
+  imports: [IconoComponent, MarcoDocenteComponent, FormsModule, RouterLink, PaginacionGpComponent],
   template: `
     <app-marco-docente [enlaces]="enlaces" descripcion="Agenda un caso publicado con un grupo y abre la sesión cuando corresponda.">
       <section class="gp">
@@ -1879,7 +1882,7 @@ type FiltroSesion = 'TODAS' | 'SIN_INICIAR' | 'EN_CURSO' | 'FINALIZADO';
           </div>
           <div class="adm-barra">
             <label class="adm-buscar">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+              <app-icono nombre="buscar" [tamano]="20" />
               <span class="solo-lector">Buscar convocatoria por caso o código</span>
               <input type="search" placeholder="Buscar caso o código" [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event); pagina.set(1)" />
             </label>
@@ -1920,7 +1923,7 @@ type FiltroSesion = 'TODAS' | 'SIN_INICIAR' | 'EN_CURSO' | 'FINALIZADO';
                         } @else {
                           <button type="button" class="pg-mas" [id]="'pg-mas-' + sesion.id" aria-haspopup="menu"
                             [attr.aria-expanded]="menuAbierto() === sesion.id" [attr.aria-label]="'Más acciones de la sesión ' + sesion.codigo"
-                            (click)="alternarMenu(sesion.id, $event)"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="3" cy="8" r="1.4" /><circle cx="8" cy="8" r="1.4" /><circle cx="13" cy="8" r="1.4" /></svg></button>
+                            (click)="alternarMenu(sesion.id, $event)"><app-icono nombre="puntos" [tamano]="20" /></button>
                           @if (menuAbierto() === sesion.id) {
                             <div class="pg-menu" role="menu" [attr.aria-label]="'Acciones de la sesión ' + sesion.codigo"
                               [style.top.px]="menuPos().top" [style.bottom.px]="menuPos().bottom" [style.right.px]="menuPos().right">
@@ -1987,7 +1990,7 @@ type FiltroSesion = 'TODAS' | 'SIN_INICIAR' | 'EN_CURSO' | 'FINALIZADO';
     .pg-filtros { display: flex; width: 100%; gap: 2px; padding: 4px; border-radius: 999px; background: #f1f4fa; box-sizing: border-box; }
     .pg-filtros button { flex: 1 1 0; min-width: 0; min-height: 36px; padding: 0 8px; border: 0; border-radius: 999px; background: transparent; color: #1a2744;
       font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; }
-    .pg-filtros button[aria-pressed="true"] { background: #0a1733; color: #fff; font-weight: 700; }
+    .pg-filtros button[aria-pressed="true"] { background: var(--dl-degradado); color: #fff; font-weight: 700; }
     .pg-filtros button:focus-visible { outline: 3px solid rgba(59, 108, 255, .35); outline-offset: 1px; }
     .pg-buscar { width: 100%; }
     /* Más específico que la regla global de .adm-tabla (min-width 760px): el caso nunca se queda sin ancho. */
@@ -1995,15 +1998,15 @@ type FiltroSesion = 'TODAS' | 'SIN_INICIAR' | 'EN_CURSO' | 'FINALIZADO';
     .pg-c-codigo { width: 130px; } .pg-c-grupo { width: 200px; } .pg-c-inicio { width: 190px; }
     .pg-c-estado { width: 120px; } .pg-c-acciones { width: 190px; }
     .pg-tabla td { height: 64px; box-sizing: border-box; vertical-align: middle; }
-    .pg-codigo { font-weight: 700; color: #13213f; }
+    .pg-codigo { font-weight: 700; color: var(--dl-tinta); }
     .pg-corte { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
       white-space: normal; overflow-wrap: normal; word-break: normal; line-height: 1.35; }
     .pg-acciones { display: flex; flex-wrap: nowrap; align-items: center; justify-content: flex-end; gap: 6px; }
     .pg-principal, .pg-suave { min-height: 34px; display: inline-flex; align-items: center; gap: 4px; padding: 0 14px; border-radius: 10px;
       font: inherit; font-size: 13.5px; font-weight: 700; text-decoration: none; white-space: nowrap; cursor: pointer; }
-    .pg-principal { border: 0; background: #2563eb; color: #fff; }
-    .pg-principal:hover { background: #1d4fd0; }
-    .pg-suave { border: 0; background: #eef4ff; color: #1d5bdc; }
+    .pg-principal { border: 0; background: var(--dl-degradado); color: #fff; }
+    .pg-principal:hover { filter: brightness(1.06); }
+    .pg-suave { border: 0; background: var(--dl-azul-claro); color: var(--dl-azul); }
     .pg-suave:hover { background: #e1ebff; }
     .pg-mas, .pg-mas-vacio { flex: none; width: 34px; height: 34px; }
     .pg-mas { display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent; color: #33415c; cursor: pointer; }
@@ -2014,7 +2017,7 @@ type FiltroSesion = 'TODAS' | 'SIN_INICIAR' | 'EN_CURSO' | 'FINALIZADO';
     .pg-menu { position: fixed; z-index: 50; min-width: 160px; padding: 4px; display: grid; gap: 2px; text-align: left;
       background: #fff; border: 1px solid #e6ecf6; border-radius: 10px; box-shadow: 0 8px 20px rgba(16, 24, 40, .10); }
     .pg-menu button { min-height: 36px; display: flex; align-items: center; padding: 0 12px; border: 0; border-radius: 7px; background: transparent;
-      color: #13213f; font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+      color: var(--dl-tinta); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
     .pg-menu button:hover, .pg-menu button:focus-visible { background: #f2f6ff; outline: none; }
     .pg-menu .peligro { color: #a4271b; }
     .pg-menu .peligro:hover { background: #fdf1f0; }
@@ -2236,7 +2239,7 @@ export class ProgramarComponent {
 
 @Component({
   selector: 'app-seguimiento',
-  imports: [MatButtonModule, MatCardModule, MarcoDocenteComponent, RouterLink, FormsModule, PaginacionTablaComponent],
+  imports: [IconoComponent, MatButtonModule, MatCardModule, MarcoDocenteComponent, RouterLink, FormsModule, PaginacionTablaComponent],
   template: `
     <app-marco-docente [enlaces]="enlaces" descripcion="Bitácora en vivo y consulta de sesiones ya realizadas.">
       <div class="adm-herramientas">
@@ -2256,7 +2259,7 @@ export class ProgramarComponent {
             </select>
           </label>
           <label class="adm-buscar">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+            <app-icono nombre="buscar" [tamano]="20" />
             <span class="solo-lector">Buscar estudiante</span>
             <input type="search" [(ngModel)]="busqueda" (ngModelChange)="pagina.set(1)" placeholder="Buscar estudiante" />
           </label>
