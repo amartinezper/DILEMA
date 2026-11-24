@@ -1610,242 +1610,385 @@ html.novela-agrandada .inicio-menu-btn { display: none !important; }
 
 /* =====================================================================
  * Marco claro (rol administrador). Se activa con <app-marco-docente [claro]="true">.
- * Menú lateral oscuro en columna recta; el resto, fondo claro con una ola azul arriba a la
- * derecha (con el cerebro completo dentro). Sin hoja blanca: cada bloque es su propia tarjeta.
+ * Menú lateral oscuro recto (260 px); contenido sobre fondo claro con un degradado suave arriba;
+ * encabezado bajo (~110 px) con una ola pequeña y el cerebro a la derecha. Tarjetas de borde fino.
  * ===================================================================== */
 .inicio-est.marco-claro {
-  --claro-tinta: #13213f; --claro-gris: #55627c; --claro-borde: #e2e8f3;
-  --claro-sombra: 0 6px 18px rgba(30, 58, 138, .06), 0 1px 2px rgba(15, 23, 42, .04);
+  --claro-tinta: #13213f; --claro-gris: #5b6782; --claro-borde: #e6ecf6;
+  --claro-sombra: 0 1px 2px rgba(16, 24, 40, .03);
   --claro-azul: #1d5bdc; --claro-marino: #0a1733;
+  grid-template-columns: 260px 1fr;
   background: #0a1733;
 }
+.inicio-est.marco-claro .inicio-menu nav a, .inicio-est.marco-claro .inicio-menu nav button { white-space: nowrap; }
+/* El lema conserva sus tres líneas aunque el menú sea más ancho. */
+.marco-claro .inicio-lema > span:first-of-type { max-width: 118px; }
 .inicio-est.marco-claro .inicio-cuerpo {
-  background: linear-gradient(180deg, #ffffff 0%, #f6f9ff 38%, #eaf1ff 100%);
-  border-top-left-radius: 0; padding: 0 44px 48px; gap: 0;
+  /* Degradado muy suave arriba (#c9defe → #f3f6fe en ~110 px) para que la ola se funda sin cortes. */
+  background: linear-gradient(180deg, #c9defe 0, #f3f6fe 110px, #f3f6fe 100%);
+  border-top-left-radius: 0; padding: 0 36px 40px; gap: 0;
   overflow-x: hidden; overflow-y: auto; height: 100vh;
 }
-.inicio-est.marco-claro .inicio-fondo { height: 262px; overflow: visible; z-index: 0; }
-.marco-claro .ola-claro { position: absolute; top: 0; left: 0; width: 100%; height: 262px; display: block; overflow: visible; }
-/* Dos estrellas blancas de 4 puntas: una grande sobre la parte oscura, a la izquierda del cerebro, y una pequeña arriba a la derecha. */
-.marco-claro .ola-destello { position: absolute; z-index: 2; fill: #fff; filter: drop-shadow(0 0 6px rgba(255, 255, 255, .85)); }
-.marco-claro .ola-destello.grande { width: 30px; height: 30px; left: calc(74% - min(420px, 34%) / 2 - 64px); top: 40px; }
-.marco-claro .ola-destello.pequeno { width: 13px; height: 13px; right: 1.6%; top: 26px; }
-/* Cerebro con su órbita: casi toda la altura de la ola, centrado en el 74 % del ancho y apoyado en el borde brillante. */
-.marco-claro .ola-marca {
-  position: absolute; z-index: 1; pointer-events: none;
-  width: min(420px, 34%); aspect-ratio: 945 / 500;
-  left: calc(74% - min(420px, 34%) / 2); top: 0;
+/* La ola, el cerebro, la órbita y las estrellas: shared/encabezado-ola.component.ts (una sola pieza). */
+/* Saludo (28 px) y descripción gris, centrados en la altura de la ola. */
+.inicio-est.marco-claro .inicio-cuerpo .inicio-hero {
+  margin: 0; padding: 0; min-height: 110px; z-index: 4; justify-content: center;
 }
-.marco-claro .ola-cerebro { display: block; width: 100%; height: 100%; }
-.inicio-est.marco-claro .inicio-cuerpo .inicio-hero { margin: 0; padding: 74px 0 0; z-index: 4; }
-.marco-claro .inicio-hero-copy { max-width: min(560px, 46%); gap: 0; }
-.inicio-est.marco-claro .inicio-saludo h1 { font-size: 30px; color: var(--claro-tinta); white-space: normal; }
-.marco-claro .marco-descripcion { margin-top: 8px; color: var(--claro-gris); font-size: 15px; line-height: 1.45; }
-.inicio-est.marco-claro .inicio-docente-main {
-  overflow: visible; flex: none; height: auto; padding: 118px 0 0; gap: 26px; z-index: 4;
+.marco-claro .inicio-hero-copy { max-width: min(560px, 48%); gap: 0; }
+.inicio-est.marco-claro .inicio-saludo h1 { font-size: 28px; line-height: 1.15; color: var(--claro-tinta); white-space: normal; }
+.marco-claro .marco-descripcion { margin-top: 6px; color: var(--claro-gris); font-size: 14px; line-height: 1.4; }
+/* El contenido empieza justo donde termina la ola. */
+.inicio-est.marco-claro .inicio-docente-main, .inicio-est.marco-claro .inicio-est-cuerpo {
+  overflow: visible; flex: none; height: auto; padding: 8px 0 0; gap: 18px; z-index: 4; min-height: 0;
 }
 
-/* Ficha de la cuenta en el menú (iniciales, nombre y rol), encima de "Cerrar sesión". */
-.marco-claro .marco-cuenta {
-  position: relative; z-index: 1; display: flex; align-items: center; gap: 10px;
-  margin-top: 6px; padding: 10px; border-radius: 14px;
-  background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .09); color: #fff;
-}
-.marco-claro .marco-cuenta .inicio-avatar { flex: none; width: 36px; height: 36px; font-size: 12px; font-weight: 700; }
-.marco-claro .marco-cuenta-datos { display: grid; min-width: 0; line-height: 1.25; }
-.marco-claro .marco-cuenta-datos strong { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.marco-claro .marco-cuenta-datos small { font-size: 12px; color: #a9b8d8; }
-.inicio-est.marco-claro .inicio-salir { margin-top: 6px; }
-
-/* Tarjetas: blancas, bordes redondeados y sombra muy suave. */
+/* Tarjetas: blancas, borde fino y sombra mínima. */
 .marco-claro .adm-tarjeta {
-  background: #fff; border: 1px solid var(--claro-borde); border-radius: 18px;
-  box-shadow: var(--claro-sombra); padding: 22px 24px; color: var(--claro-tinta); min-width: 0;
+  background: #fff; border: 1px solid var(--claro-borde); border-radius: 14px;
+  box-shadow: var(--claro-sombra); padding: 18px 20px; color: var(--claro-tinta); min-width: 0;
 }
-.inicio-est.marco-claro .adm-tarjeta h2 { font-size: 17px; font-weight: 700; margin: 0; color: var(--claro-tinta); }
-.inicio-est.marco-claro .adm-tarjeta h3 { font-size: 16px; font-weight: 700; margin: 12px 0 6px; line-height: 1.3; color: var(--claro-tinta); }
+.inicio-est.marco-claro .adm-tarjeta h2 { font-size: 16px; font-weight: 700; margin: 0; color: var(--claro-tinta); }
 .marco-claro .adm-dato { color: var(--claro-gris); font-size: 13.5px; margin: 2px 0; overflow-wrap: anywhere; }
-.marco-claro .adm-vacio { color: var(--claro-gris); padding: 12px 4px; }
+.marco-claro .adm-vacio { color: var(--claro-gris); padding: 14px 16px; }
+.marco-claro .gris { color: var(--claro-gris); }
 .marco-claro .solo-lector {
   position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
 }
-.marco-claro .adm-pildora {
-  display: inline-flex; align-items: center; padding: 4px 11px; border-radius: 999px;
-  font-size: 12.5px; font-weight: 650; white-space: nowrap; background: #eef1f6; color: #4a5670;
+/* Iniciales en azul claro con letra azul. */
+.marco-claro .adm-iniciales {
+  flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
+  background: #e8f0ff; color: var(--claro-azul); font-size: 12px; font-weight: 700; letter-spacing: .02em;
 }
-.marco-claro .adm-pildora.azul { background: #e8f0ff; color: #1a4fc4; }
-.marco-claro .adm-pildora.verde { background: #e2f5ea; color: #136c3c; }
-.marco-claro .adm-pildora.violeta { background: #eee9fd; color: #5434b8; }
-.marco-claro .adm-pildora.gris { background: #eef1f6; color: #4a5670; }
+.marco-claro .adm-iniciales-grande { width: 64px; height: 64px; font-size: 22px; }
 
-/* Inicio: resumen y dos tarjetas. */
-.marco-claro .adm-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
-.marco-claro .adm-kpi { display: flex; align-items: center; gap: 16px; }
+/* Inicio: resumen, directorio y tareas. */
+.marco-claro .adm-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.marco-claro .adm-kpi { display: flex; align-items: center; gap: 14px; padding: 16px 18px; }
 .marco-claro .adm-kpi-icono, .marco-claro .adm-tarea-icono {
-  flex: none; display: grid; place-items: center; border-radius: 14px; background: #eaf1ff; color: var(--claro-azul);
+  flex: none; display: grid; place-items: center; border-radius: 12px; background: #eef3ff; color: var(--claro-azul);
 }
-.marco-claro .adm-kpi-icono { width: 48px; height: 48px; }
-.marco-claro .adm-tarea-icono { width: 40px; height: 40px; border-radius: 12px; }
+.marco-claro .adm-kpi-icono { width: 40px; height: 40px; }
+.marco-claro .adm-tarea-icono { width: 36px; height: 36px; border-radius: 10px; }
 .marco-claro .adm-kpi-icono svg, .marco-claro .adm-tarea-icono svg {
-  width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
 }
-.marco-claro .adm-kpi small { display: block; color: var(--claro-gris); font-size: 13px; font-weight: 650; }
-.marco-claro .adm-kpi strong { display: block; font-size: 28px; line-height: 1.15; color: var(--claro-tinta); }
-.marco-claro .adm-kpi div > span { color: var(--claro-gris); font-size: 13px; }
-.marco-claro .adm-dos { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; align-items: start; }
-.marco-claro .adm-cabeza { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 8px; }
+.marco-claro .adm-kpi small { display: block; color: var(--claro-tinta); font-size: 13px; font-weight: 650; }
+.marco-claro .adm-kpi strong { display: block; font-size: 24px; line-height: 1.15; color: var(--claro-tinta); }
+.marco-claro .adm-kpi div > span { color: var(--claro-gris); font-size: 12.5px; }
+.marco-claro .adm-dos { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.marco-claro .adm-cabeza { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 6px; }
 .marco-claro .adm-lista { list-style: none; margin: 0; padding: 0; display: grid; }
-.marco-claro .adm-lista li + li { border-top: 1px solid #eef2f9; }
+.marco-claro .adm-lista li + li { border-top: 1px solid #f0f3f9; }
 .marco-claro .adm-fila {
-  display: flex; align-items: center; gap: 12px; padding: 12px 6px; border-radius: 12px;
-  color: inherit; text-decoration: none;
+  display: flex; align-items: center; gap: 12px; padding: 10px 4px; border-radius: 10px; color: inherit; text-decoration: none;
 }
-.marco-claro .adm-fila:hover { background: #f5f8ff; }
-.marco-claro .adm-fila .inicio-avatar { flex: none; width: 36px; height: 36px; font-size: 12px; font-weight: 700; }
+.marco-claro .adm-fila:hover { background: #f7f9ff; }
 .marco-claro .adm-fila-texto { display: grid; min-width: 0; flex: 1; }
-.marco-claro .adm-fila-texto strong { font-size: 14px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.marco-claro .adm-fila-texto small { font-size: 13px; color: var(--claro-gris); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.marco-claro .adm-flecha { color: var(--claro-azul); font-size: 24px; line-height: 1; }
+.marco-claro .adm-fila-texto strong { font-size: 13.5px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.marco-claro .adm-fila-texto small { font-size: 12.5px; color: var(--claro-gris); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.marco-claro .adm-fila-dato { flex: none; color: var(--claro-gris); font-size: 12.5px; white-space: nowrap; }
+.marco-claro .adm-flecha { color: var(--claro-azul); font-size: 20px; line-height: 1; }
 
-/* Fila de herramientas: píldoras a la izquierda; buscador, orden y botón principal a la derecha. */
-.marco-claro .adm-herramientas { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+/* Fila de herramientas: píldoras, buscador, orden y botón principal, en una sola fila. */
+.marco-claro .adm-herramientas { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
 .marco-claro .adm-filtros {
-  display: inline-flex; gap: 4px; padding: 5px; border-radius: 999px; background: #e7ecf5;
-  max-width: 100%; overflow-x: auto; scrollbar-width: none;
+  display: inline-flex; gap: 2px; padding: 4px; border-radius: 999px; background: #e8edf6;
+  max-width: 100%; overflow-x: auto; scrollbar-width: none; flex: 0 1 auto;
 }
 .marco-claro .adm-filtros::-webkit-scrollbar { display: none; }
 .inicio-est.marco-claro .adm-filtro {
-  border: 0; background: transparent; color: #3d4a66; padding: 9px 16px; border-radius: 999px;
-  font-family: inherit; font-weight: 650; font-size: 14px; white-space: nowrap; cursor: pointer; box-shadow: none;
+  border: 0; background: transparent; color: #33415c; padding: 7px 14px; border-radius: 999px;
+  font-family: inherit; font-weight: 650; font-size: 13px; white-space: nowrap; cursor: pointer; box-shadow: none;
 }
 .marco-claro .adm-filtro span { font-weight: 600; opacity: .8; }
-.inicio-est.marco-claro .adm-filtro.activo { background: var(--claro-marino); color: #fff; box-shadow: 0 6px 14px rgba(10, 23, 51, .22); }
-.marco-claro .adm-filtro:hover:not(.activo) { background: rgba(255, 255, 255, .7); transform: none; }
-.marco-claro .adm-barra { display: flex; align-items: center; gap: 12px; flex: 0 1 auto; min-width: 0; }
+.inicio-est.marco-claro .adm-filtro.activo { background: var(--claro-marino); color: #fff; box-shadow: none; }
+.marco-claro .adm-filtro:hover:not(.activo) { background: rgba(255, 255, 255, .75); transform: none; }
+.marco-claro .adm-barra { display: flex; align-items: center; gap: 10px; flex: 0 1 auto; min-width: 0; }
 .marco-claro .adm-buscar {
-  display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 16px; border-radius: 999px;
-  width: clamp(220px, 22vw, 300px); background: #fff; border: 1px solid var(--claro-borde); box-shadow: var(--claro-sombra);
+  display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border-radius: 999px;
+  width: clamp(200px, 19vw, 260px); background: #fff; border: 1px solid var(--claro-borde);
 }
-.marco-claro .adm-buscar svg { flex: none; width: 19px; height: 19px; fill: none; stroke: #55627c; stroke-width: 2; stroke-linecap: round; }
+.marco-claro .adm-buscar svg { flex: none; width: 17px; height: 17px; fill: none; stroke: #5b6782; stroke-width: 2; stroke-linecap: round; }
 .inicio-est.marco-claro .adm-buscar input {
   flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; border-radius: 0; background: transparent;
-  box-shadow: none; outline: none; font-family: inherit; font-size: 14px; color: var(--claro-tinta);
+  box-shadow: none; outline: none; font-family: inherit; font-size: 13.5px; color: var(--claro-tinta);
 }
 .inicio-est.marco-claro .adm-orden select {
-  height: 46px; padding: 0 40px 0 18px; border-radius: 999px; border: 1px solid var(--claro-borde); cursor: pointer;
-  font-family: inherit; font-size: 14px; font-weight: 650; color: var(--claro-tinta); box-shadow: var(--claro-sombra);
+  height: 40px; padding: 0 36px 0 16px; border-radius: 999px; border: 1px solid var(--claro-borde); cursor: pointer;
+  font-family: inherit; font-size: 13.5px; font-weight: 650; color: var(--claro-tinta); box-shadow: none;
   appearance: none; -webkit-appearance: none;
-  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2313213f' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center / 16px;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2313213f' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center / 15px;
 }
-.inicio-est.marco-claro .adm-boton {
-  display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 46px; padding: 0 22px;
-  border: 0; border-radius: 999px; background: linear-gradient(180deg, #2f6bff, #1d4ed8); color: #fff;
-  font-family: inherit; font-size: 14.5px; font-weight: 700; white-space: nowrap; text-decoration: none; cursor: pointer;
-  box-shadow: 0 10px 22px rgba(37, 99, 235, .28);
+/* Botones azules sin sombra; "Cancelar" con contorno azul. */
+.inicio-est.marco-claro .adm-boton, .inicio-est.marco-claro .adm-boton-contorno {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px; height: 40px; padding: 0 18px;
+  border-radius: 999px; font-family: inherit; font-size: 14px; font-weight: 700; white-space: nowrap;
+  text-decoration: none; cursor: pointer; box-shadow: none;
 }
-.marco-claro .adm-boton span { font-size: 21px; font-weight: 500; line-height: 1; }
-.inicio-est.marco-claro .adm-boton:hover { background: linear-gradient(180deg, #3b76ff, #1e47c7); }
+.inicio-est.marco-claro .adm-boton { border: 0; background: #2563eb; color: #fff; }
+.inicio-est.marco-claro .adm-boton:hover { background: #1d4fd0; }
+.inicio-est.marco-claro .adm-boton-contorno { border: 1.5px solid var(--claro-azul); background: #fff; color: var(--claro-azul); }
+.inicio-est.marco-claro .adm-boton-contorno:hover { background: #f2f6ff; }
+.marco-claro .adm-boton span { font-size: 19px; font-weight: 500; line-height: 1; }
 .inicio-est.marco-claro .adm-enlace {
-  display: inline-flex; align-items: center; gap: 6px; padding: 4px 2px; border: 0; border-radius: 6px;
-  background: none; box-shadow: none; color: var(--claro-azul); font-family: inherit; font-size: 14px; font-weight: 700;
-  text-decoration: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px; border: 0; border-radius: 6px;
+  background: none; box-shadow: none; color: var(--claro-azul); font-family: inherit; font-size: 13.5px; font-weight: 650;
+  text-decoration: none; cursor: pointer; white-space: nowrap;
 }
-.marco-claro .adm-enlace span { font-size: 19px; line-height: 1; }
-.inicio-est.marco-claro .adm-enlace-suave { color: #a4271b; }
+.marco-claro .adm-enlace span { font-size: 17px; line-height: 1; }
 .marco-claro .adm-enlace:hover { text-decoration: underline; transform: none; }
+.marco-claro .adm-volver {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 6px;
+  color: var(--claro-azul); font-size: 14px; font-weight: 650; text-decoration: none;
+}
+.marco-claro .adm-volver span { font-size: 20px; line-height: 1; }
+.marco-claro .adm-volver:hover { text-decoration: underline; }
 
 /* Teclado: foco bien visible en todo lo que se puede usar. */
-.marco-claro .adm-filtro:focus-visible, .marco-claro .adm-boton:focus-visible, .marco-claro .adm-enlace:focus-visible,
-.marco-claro .adm-fila:focus-visible, .marco-claro .adm-orden select:focus-visible, .marco-claro .adm-detalle summary:focus-visible,
-.marco-claro .adm-check input:focus-visible, .marco-claro .inicio-menu a:focus-visible, .marco-claro .inicio-salir:focus-visible {
+.marco-claro .adm-filtro:focus-visible, .marco-claro .adm-boton:focus-visible, .marco-claro .adm-boton-contorno:focus-visible,
+.marco-claro .adm-enlace:focus-visible, .marco-claro .adm-fila:focus-visible, .marco-claro .adm-orden select:focus-visible,
+.marco-claro .adm-mas:focus-visible, .marco-claro .adm-menu-lista button:focus-visible, .marco-claro .adm-pagina:focus-visible,
+.marco-claro .adm-volver:focus-visible, .marco-claro .adm-check input:focus-visible,
+.marco-claro .inicio-menu a:focus-visible, .marco-claro .inicio-salir:focus-visible {
   outline: 3px solid #7aa7ff; outline-offset: 2px;
 }
 .marco-claro .adm-buscar:focus-within { outline: 3px solid #7aa7ff; outline-offset: 2px; }
 
-/* Rejilla de tarjetas (cuentas y grupos). */
-.marco-claro .adm-rejilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-.marco-claro .adm-cuenta, .marco-claro .adm-grupo { display: flex; flex-direction: column; padding: 18px 22px 16px; }
-.marco-claro .adm-pildoras { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
-.marco-claro .adm-permisos { margin-bottom: 16px; }
-.marco-claro .adm-pie {
-  margin-top: auto; padding-top: 12px; border-top: 1px solid #eef2f9;
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+/* Tablas (Docentes y Grupos) dentro de una tarjeta blanca; en pantallas angostas se desplazan de lado. */
+.marco-claro .adm-tabla-tarjeta { padding: 0; overflow: hidden; }
+.marco-claro .adm-tabla-caja { overflow-x: auto; }
+.inicio-est.marco-claro .adm-tabla {
+  width: 100%; min-width: 760px; border-collapse: collapse; border-spacing: 0; background: transparent;
+  font-size: 13.5px; color: var(--claro-tinta);
 }
-.marco-claro .adm-detalle { margin-top: 12px; padding-top: 10px; border-top: 1px solid #eef2f9; }
-.marco-claro .adm-detalle summary {
-  cursor: pointer; list-style: none; color: var(--claro-azul); font-weight: 700; font-size: 14px; border-radius: 6px;
+.inicio-est.marco-claro .adm-tabla th {
+  padding: 12px 16px; text-align: left; font-size: 12.5px; font-weight: 650; color: #6b778f;
+  background: #fafbfe; border-bottom: 1px solid #edf1f8; white-space: nowrap;
 }
-.marco-claro .adm-detalle summary::-webkit-details-marker { display: none; }
-.marco-claro .adm-detalle summary::after { content: " ›"; display: inline-block; transition: transform .15s; }
-.marco-claro .adm-detalle[open] summary::after { transform: rotate(90deg); }
-.marco-claro .adm-detalle ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 8px; max-height: 220px; overflow: auto; }
-.marco-claro .adm-detalle li { display: grid; font-size: 13.5px; }
-.marco-claro .adm-detalle li small { color: var(--claro-gris); overflow-wrap: anywhere; }
+.inicio-est.marco-claro .adm-tabla td {
+  padding: 10px 16px; border-bottom: 1px solid #f0f3f9; vertical-align: middle;
+  /* Una sola línea por celda: en pantallas angostas la tabla se desplaza de lado en vez de partir el texto. */
+  white-space: nowrap; overflow-wrap: normal;
+}
+.inicio-est.marco-claro .adm-tabla tr:last-child td { border-bottom: 0; }
+.inicio-est.marco-claro .adm-tabla th:first-child, .inicio-est.marco-claro .adm-tabla td:first-child { padding-left: 20px; }
+.inicio-est.marco-claro .adm-tabla th:last-child, .inicio-est.marco-claro .adm-tabla td:last-child { padding-right: 20px; }
+.inicio-est.marco-claro .adm-tabla .derecha { text-align: right; }
+.marco-claro .adm-cuenta-celda { display: flex; align-items: center; gap: 12px; }
+.marco-claro .adm-celda-doble { display: grid; line-height: 1.3; }
+.marco-claro .adm-celda-doble strong { font-weight: 650; white-space: nowrap; }
+.marco-claro .adm-celda-doble small { color: var(--claro-gris); font-size: 12.5px; white-space: nowrap; }
+.marco-claro .adm-estado { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; white-space: nowrap; }
+.marco-claro .adm-estado i { width: 8px; height: 8px; border-radius: 50%; background: #16a34a; }
+.marco-claro .adm-estado.inactiva { color: var(--claro-gris); }
+.marco-claro .adm-estado.inactiva i { background: #9aa4b8; }
+.marco-claro .adm-acciones-celda { display: inline-flex; align-items: center; justify-content: flex-end; gap: 8px; }
+.marco-claro .adm-menu { position: relative; }
+.inicio-est.marco-claro .adm-mas {
+  width: 30px; height: 30px; display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent;
+  color: #33415c; font-size: 18px; line-height: 1; cursor: pointer; box-shadow: none;
+}
+.inicio-est.marco-claro .adm-mas:hover, .inicio-est.marco-claro .adm-mas[aria-expanded="true"] { background: #eef2f9; transform: none; }
+/* El menú abre a la izquierda del botón, dentro de la fila (la tabla se desplaza de lado y recortaría hacia abajo). */
+.marco-claro .adm-menu-lista {
+  position: absolute; right: calc(100% + 6px); top: 50%; transform: translateY(-50%); z-index: 20;
+  background: #fff; border: 1px solid var(--claro-borde); border-radius: 10px; padding: 4px;
+  box-shadow: 0 8px 20px rgba(16, 24, 40, .10);
+}
+.inicio-est.marco-claro .adm-menu-lista button {
+  display: block; width: 100%; padding: 7px 14px; border: 0; border-radius: 7px; background: none; box-shadow: none;
+  font-family: inherit; font-size: 13.5px; font-weight: 650; color: #a4271b; text-align: left; white-space: nowrap; cursor: pointer;
+}
+.inicio-est.marco-claro .adm-menu-lista button:hover { background: #fdf1f0; transform: none; }
+.marco-claro .adm-fila-detalle td { background: #f8faff; }
+.marco-claro .adm-fila-detalle ul {
+  list-style: none; margin: 0; padding: 4px 0; display: grid; gap: 10px 18px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+}
+.marco-claro .adm-fila-detalle li { display: flex; align-items: center; gap: 10px; min-width: 0; }
 
-/* Formularios (crear cuenta, permisos, configuración) y perfil. */
-.marco-claro .adm-form { max-width: 820px; padding: 26px 28px; }
-.inicio-est.marco-claro .adm-form h2 { margin-bottom: 18px; }
-.marco-claro .adm-campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 20px; }
-.marco-claro .adm-campo { display: grid; gap: 7px; }
-.marco-claro .adm-campo > span { font-size: 13px; font-weight: 650; color: #3d4a66; }
-/* La regla global "label span" pone todo en mayúsculas de 11 px; en el marco claro se lee en tipo oración. */
+/* Paginación: "Mostrando 1–8 de N" y ‹ 1 2 3 ›, con la página actual en azul marino. */
+.marco-claro .adm-paginacion {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 12px 20px; border-top: 1px solid #edf1f8;
+}
+.marco-claro .adm-paginacion-texto { color: var(--claro-gris); font-size: 13px; }
+.marco-claro .adm-paginas { display: flex; gap: 6px; }
+.inicio-est.marco-claro .adm-pagina {
+  min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid var(--claro-borde); border-radius: 8px;
+  background: #fff; color: #33415c; font-family: inherit; font-size: 13px; font-weight: 650; cursor: pointer; box-shadow: none;
+}
+.inicio-est.marco-claro .adm-pagina:hover:not(:disabled) { background: #f2f6ff; transform: none; }
+.inicio-est.marco-claro .adm-pagina.actual { background: var(--claro-marino); border-color: var(--claro-marino); color: #fff; }
+.inicio-est.marco-claro .adm-pagina:disabled { opacity: .4; }
+
+/* Formularios (nuevo docente, permisos, configuración) y perfil. */
+.marco-claro .adm-ficha { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(250px, 1fr); gap: 16px; align-items: start; max-width: 1120px; }
+.marco-claro .adm-form { max-width: 820px; padding: 22px 24px; }
+.inicio-est.marco-claro .adm-form h2 { margin-bottom: 16px; }
+.marco-claro .adm-campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; }
+.marco-claro .adm-campo { display: grid; gap: 6px; }
+.marco-claro .adm-campo > span { font-size: 13px; font-weight: 650; color: #33415c; }
+/* La regla global "label span" pone todo en mayúsculas de 11 px; aquí se lee en tipo oración. */
 .marco-claro label span { text-transform: none; letter-spacing: normal; }
 .marco-claro .adm-check span { font-size: 14px; font-weight: 500; color: var(--claro-tinta); line-height: 1.4; }
 .inicio-est.marco-claro .adm-campo input, .inicio-est.marco-claro .adm-campo select {
-  width: 100%; height: 46px; padding: 0 14px; border: 1px solid #d3dbea; border-radius: 12px; background: #fff;
-  box-shadow: none; font-family: inherit; font-size: 14.5px; color: var(--claro-tinta); box-sizing: border-box;
+  width: 100%; height: 42px; padding: 0 14px; border: 1px solid #d6deec; border-radius: 10px; background: #fff;
+  box-shadow: none; font-family: inherit; font-size: 14px; color: var(--claro-tinta); box-sizing: border-box;
 }
 .inicio-est.marco-claro .adm-campo input:focus, .inicio-est.marco-claro .adm-campo select:focus {
   border-color: #2f6bff; outline: 3px solid #c7d9ff; outline-offset: 0;
 }
-.marco-claro .adm-checks { display: grid; gap: 12px; margin-top: 4px; }
-.marco-claro .adm-campos + .adm-check, .marco-claro .adm-campos + .adm-checks { margin-top: 18px; }
+.marco-claro .adm-checks { display: grid; gap: 10px; }
+.marco-claro .adm-campos + .adm-check, .marco-claro .adm-campos + .adm-checks { margin-top: 16px; }
 .marco-claro .adm-check {
-  display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: 14px; cursor: pointer;
-  border: 1px solid var(--claro-borde); background: #fafcff; font-size: 14px; color: var(--claro-tinta); line-height: 1.4;
+  display: flex; align-items: flex-start; gap: 12px; padding: 12px 14px; border-radius: 12px; cursor: pointer;
+  border: 1px solid var(--claro-borde); background: #fafcff;
 }
 .marco-claro .adm-check input { flex: none; width: 18px; height: 18px; margin: 1px 0 0; accent-color: #2563eb; }
 .marco-claro .adm-form-pie {
-  display: flex; justify-content: flex-end; align-items: center; gap: 18px;
-  margin-top: 24px; padding-top: 18px; border-top: 1px solid #eef2f9;
+  display: flex; justify-content: flex-end; align-items: center; gap: 12px;
+  margin-top: 20px; padding-top: 16px; border-top: 1px solid #eef2f9;
 }
-.marco-claro .adm-form .error, .marco-claro .adm-form .ok { margin-top: 14px; }
-.marco-claro .adm-perfil { display: flex; align-items: center; gap: 20px; max-width: 640px; padding: 26px 28px; }
-.marco-claro .adm-avatar-grande { flex: none; width: 72px; height: 72px; font-size: 24px; font-weight: 700; }
-.inicio-est.marco-claro .adm-perfil h2 { font-size: 20px; margin: 0 0 2px; }
-.marco-claro .adm-perfil .adm-pildora { margin-top: 10px; }
+.marco-claro .adm-form .error, .marco-claro .adm-form .ok { margin-top: 12px; }
+.marco-claro .adm-pasos ol { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 14px; }
+.marco-claro .adm-pasos li { display: flex; align-items: flex-start; gap: 12px; }
+.marco-claro .adm-pasos p { margin: 3px 0 0; font-size: 13.5px; line-height: 1.45; color: #33415c; }
+.marco-claro .adm-paso-numero {
+  flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+  background: #e8f0ff; color: var(--claro-azul); font-size: 13px; font-weight: 700;
+}
+.marco-claro .adm-perfil { display: flex; align-items: center; gap: 18px; max-width: 640px; padding: 22px 24px; }
+.inicio-est.marco-claro .adm-perfil h2 { font-size: 18px; margin: 0 0 2px; }
 
 @media (max-width: 1180px) {
   .marco-claro .adm-dos { grid-template-columns: 1fr; }
   .marco-claro .adm-herramientas { flex-wrap: wrap; }
+  .marco-claro .adm-ficha { grid-template-columns: 1fr; }
 }
 
-/* Celular: la ola y el cerebro se achican arriba a la derecha; el saludo va debajo, nunca bajo la ola. */
+/* Celular: ola y cerebro más pequeños a la derecha; el saludo debajo del botón de menú. */
 @media (max-width: 768px) {
-  .inicio-est.marco-claro { background: #f6f9ff; }
-  .inicio-est.marco-claro .inicio-cuerpo { padding: 0 16px 32px; height: 100dvh; }
-  .inicio-est.marco-claro .inicio-fondo { position: absolute; top: 0; left: 0; right: 0; height: 118px; z-index: 0; }
-  .marco-claro .ola-claro { height: 118px; }
-  .marco-claro .ola-marca { width: 168px; left: auto; right: 2px; top: -4px; }
-  .marco-claro .ola-destello.grande { width: 16px; height: 16px; left: auto; right: 186px; top: 16px; }
-  .marco-claro .ola-destello.pequeno { width: 9px; height: 9px; right: 6px; top: 8px; }
-  .inicio-est.marco-claro .inicio-cuerpo .inicio-hero { padding: 128px 0 0; }
+  .inicio-est.marco-claro { grid-template-columns: 1fr; background: #f3f6fe; }
+  .inicio-est.marco-claro .inicio-cuerpo { padding: 0 14px 28px; height: 100dvh; }
+  .inicio-est.marco-claro .inicio-menu-btn { top: 120px; left: 14px; width: 40px; height: 40px; border-radius: 12px; }
+  .inicio-est.marco-claro .inicio-cuerpo .inicio-hero { min-height: 0; padding: 120px 0 0 54px; }
   .inicio-est.marco-claro .inicio-cuerpo .inicio-hero-copy { max-width: 100%; }
   .inicio-est.marco-claro .inicio-cuerpo .inicio-saludo { padding-top: 0; max-width: 100%; }
   .inicio-est.marco-claro .inicio-saludo h1 { font-size: 24px; }
-  .marco-claro .marco-descripcion { font-size: 14px; }
-  .inicio-est.marco-claro .inicio-docente-main { padding-top: 26px; gap: 18px; }
-  .marco-claro .adm-kpis { grid-template-columns: 1fr; gap: 12px; }
-  .marco-claro .adm-kpi { padding: 16px 18px; }
-  .marco-claro .adm-herramientas { flex-direction: column; align-items: stretch; gap: 12px; }
+  .inicio-est.marco-claro .inicio-docente-main, .inicio-est.marco-claro .inicio-est-cuerpo { padding-top: 16px; gap: 14px; }
+  .marco-claro .adm-kpis { grid-template-columns: 1fr; gap: 10px; }
+  .marco-claro .adm-herramientas { flex-direction: column; align-items: stretch; gap: 10px; }
   .marco-claro .adm-filtros { align-self: flex-start; }
   .marco-claro .adm-barra { flex-wrap: wrap; }
   .marco-claro .adm-buscar { width: 100%; flex: 1 1 100%; }
   .marco-claro .adm-orden { flex: 1 1 0; min-width: 0; }
   .inicio-est.marco-claro .adm-orden select { width: 100%; }
-  .inicio-est.marco-claro .adm-barra .adm-boton { flex: 1 1 0; padding: 0 14px; }
-  .marco-claro .adm-rejilla { grid-template-columns: 1fr; gap: 14px; }
+  .inicio-est.marco-claro .adm-barra .adm-boton { flex: 1 1 0; padding: 0 12px; }
   .marco-claro .adm-campos { grid-template-columns: 1fr; }
-  .marco-claro .adm-form, .marco-claro .adm-perfil { padding: 20px 18px; }
-  .marco-claro .adm-tarjeta { padding: 18px; }
+  .marco-claro .adm-form, .marco-claro .adm-perfil { padding: 18px 16px; }
+  .marco-claro .adm-tarjeta { padding: 16px; }
+  .marco-claro .adm-tabla-tarjeta { padding: 0; }
+  .marco-claro .adm-paginacion { padding: 12px 14px; }
+}
+
+/* ---------------------------------------------------------------------
+ * Mismo estilo para docente y estudiante: clases que sus pantallas aún usan.
+ * Botones: principal azul relleno, secundario con contorno azul, sin negros ni sombras.
+ * --------------------------------------------------------------------- */
+.inicio-est.marco-claro .btn-oscuro, .inicio-est.marco-claro a.btn-oscuro, .inicio-est.marco-claro .tablero .btn-oscuro,
+.inicio-est.marco-claro .btn-resolver {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 38px; padding: 0 18px;
+  border: 0; border-radius: 999px; background: #2563eb; color: #fff; box-shadow: none;
+  font-family: inherit; font-size: 13.5px; font-weight: 700; text-decoration: none; white-space: nowrap; cursor: pointer;
+}
+.inicio-est.marco-claro .btn-oscuro:hover:not(:disabled), .inicio-est.marco-claro .btn-resolver:hover { background: #1d4fd0; transform: none; }
+.inicio-est.marco-claro .btn-suave, .inicio-est.marco-claro a.btn-suave, .inicio-est.marco-claro .tablero .btn-suave,
+.inicio-est.marco-claro .insertar, .inicio-est.marco-claro .form-dialogo button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 36px; height: auto; padding: 0 16px;
+  border: 1.5px solid var(--claro-azul); border-radius: 999px; background: #fff; color: var(--claro-azul); box-shadow: none;
+  font-family: inherit; font-size: 13.5px; font-weight: 650; text-decoration: none; white-space: nowrap; cursor: pointer;
+}
+.inicio-est.marco-claro .btn-suave:hover:not(:disabled), .inicio-est.marco-claro .insertar:hover,
+.inicio-est.marco-claro .form-dialogo button:hover { background: #f2f6ff; transform: none; }
+.inicio-est.marco-claro .btn-suave[aria-pressed="true"] { background: var(--claro-marino); border-color: var(--claro-marino); color: #fff; }
+.inicio-est.marco-claro .btn-oscuro:focus-visible, .inicio-est.marco-claro .btn-suave:focus-visible,
+.inicio-est.marco-claro .btn-resolver:focus-visible { outline: 3px solid #7aa7ff; outline-offset: 2px; }
+
+/* Tarjetas que ya existían: blancas, borde fino y sombra mínima (sin hoja blanca gigante). */
+.inicio-est.marco-claro .tarjeta, .inicio-est.marco-claro .dash-panel, .inicio-est.marco-claro .caso-casilla,
+.inicio-est.marco-claro .ficha-form, .inicio-est.marco-claro .inicio-progreso, .inicio-est.marco-claro .form-dialogo {
+  background: #fff; border: 1px solid var(--claro-borde); border-radius: 14px; box-shadow: var(--claro-sombra);
+}
+.inicio-est.marco-claro .tarjeta:hover, .inicio-est.marco-claro .dash-panel:hover { transform: none; box-shadow: var(--claro-sombra); }
+/* Etiquetas de formulario en tipo oración. */
+.inicio-est.marco-claro .field span, .inicio-est.marco-claro .caso-etiqueta, .inicio-est.marco-claro .kicker {
+  text-transform: none; letter-spacing: normal; font-size: 13px; font-weight: 650; color: #33415c;
+}
+
+/* Dilema Destacado del estudiante: tarjeta blanca; la imagen del caso se conserva a la derecha. */
+.inicio-est.marco-claro .inicio-destacado {
+  background: #fff; color: var(--claro-tinta); border: 1px solid var(--claro-borde); border-radius: 14px;
+  box-shadow: var(--claro-sombra); height: auto; max-height: none; min-height: 280px;
+}
+.inicio-est.marco-claro .destacado-texto { padding: 22px 24px; }
+.inicio-est.marco-claro .destacado-texto h2 { font-size: 18px; color: var(--claro-tinta); }
+.inicio-est.marco-claro .destacado-texto p { color: var(--claro-gris); }
+.inicio-est.marco-claro .destacado-texto .chip-estrella { background: #e8f0ff; color: var(--claro-azul) !important; }
+.inicio-est.marco-claro .sub.claro { color: var(--claro-gris) !important; }
+.inicio-est.marco-claro .inicio-progreso { padding: 20px; height: auto; max-height: none; }
+.inicio-est.marco-claro .inicio-fila { height: auto; max-height: none; flex: none; overflow: visible; }
+
+/* Piezas compartidas de las pantallas de los tres roles. */
+.inicio-est.marco-claro .adm-boton-chico { height: 32px; min-height: 32px; padding: 0 14px; font-size: 13px; }
+.marco-claro .adm-columna { display: grid; gap: 16px; align-content: start; min-width: 0; }
+.marco-claro .adm-fila-acciones { flex: none; display: inline-flex; align-items: center; gap: 8px; }
+.marco-claro .adm-hora { flex: none; width: 66px; font-size: 13px; font-weight: 700; color: var(--claro-tinta); }
+.marco-claro .adm-resumen { margin: 0; color: var(--claro-gris); font-size: 14px; font-weight: 600; }
+.inicio-est.marco-claro .adm-seccion-titulo { margin: 6px 0 -4px; font-size: 16px; font-weight: 700; color: var(--claro-tinta); }
+.marco-claro .adm-seccion-titulo span { color: var(--claro-gris); font-weight: 600; }
+/* Estados: lo único con color. */
+.marco-claro .adm-estado-pill {
+  display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; white-space: nowrap;
+  font-size: 12.5px; font-weight: 650; background: #eef1f6; color: #4a5670;
+}
+.marco-claro .adm-estado-pill[data-estado="EN_CURSO"], .marco-claro .adm-estado-pill[data-estado="BORRADOR"],
+.marco-claro .adm-estado-pill[data-estado="SIN_LEER"] { background: #e8f0ff; color: #1a4fc4; }
+.marco-claro .adm-estado-pill[data-estado="FINALIZADO"], .marco-claro .adm-estado-pill[data-estado="FINALIZADA"],
+.marco-claro .adm-estado-pill[data-estado="PUBLICADO"] { background: #e2f5ea; color: #136c3c; }
+.marco-claro .adm-estado-pill[data-estado="AUSENTE"] { background: #fdeceb; color: #a4271b; }
+/* Avance: barra fina con porcentaje. */
+.marco-claro .adm-avance { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.marco-claro .adm-avance-barra { width: 84px; height: 6px; border-radius: 999px; background: #e8edf6; overflow: hidden; }
+.marco-claro .adm-avance-barra i { display: block; height: 100%; background: #2563eb; border-radius: 999px; }
+/* Cifras pequeñas (ficha de cohorte, perfil). */
+.marco-claro .adm-cifras { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.marco-claro .adm-cifras > div { padding: 10px 6px; border: 1px solid var(--claro-borde); border-radius: 10px; text-align: center; background: #fafcff; }
+.marco-claro .adm-cifras small { display: block; color: var(--claro-gris); font-size: 12px; font-weight: 650; }
+.marco-claro .adm-cifras strong { display: block; font-size: 18px; color: var(--claro-tinta); }
+.marco-claro .adm-acciones-fila { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+/* Texto largo (cuerpo de un aviso): puede ocupar varias líneas dentro de su celda. */
+.inicio-est.marco-claro .adm-tabla td.adm-celda-texto { white-space: normal; min-width: 320px; }
+.marco-claro .adm-celda-texto .adm-celda-doble small { white-space: normal; line-height: 1.4; }
+/* Campo de fecha y selectores dentro de la fila de herramientas. */
+.inicio-est.marco-claro .adm-fecha input {
+  height: 40px; padding: 0 12px; border: 1px solid var(--claro-borde); border-radius: 999px; background: #fff; box-shadow: none;
+  font-family: inherit; font-size: 13.5px; color: var(--claro-tinta);
+}
+.inicio-est.marco-claro .adm-orden select.adm-selector-ancho { max-width: 320px; }
+/* Reportes: tabla a la izquierda y ficha de cohorte (resumen real) a la derecha. */
+.marco-claro .rp-cuerpo { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; align-items: start; }
+.marco-claro .rp-ficha { display: grid; gap: 14px; }
+.marco-claro .rp-niveles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.marco-claro .rp-niveles span { display: grid; gap: 2px; text-align: center; font-weight: 700; color: var(--claro-tinta); }
+.marco-claro .rp-niveles small { color: var(--claro-gris); font-size: 12px; font-weight: 600; }
+.inicio-est.marco-claro .rp-intento { height: 30px; padding: 0 28px 0 10px; border-radius: 999px; border: 1px solid var(--claro-borde); font-size: 12.5px; }
+
+@media (max-width: 1180px) {
+  .marco-claro .rp-cuerpo { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .marco-claro .adm-cifras { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .inicio-est.marco-claro .inicio-destacado { grid-template-columns: 1fr; }
+  .marco-claro .adm-fila-acciones { flex-wrap: wrap; justify-content: flex-end; }
 }

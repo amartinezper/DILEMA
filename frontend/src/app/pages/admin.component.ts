@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MarcoDocenteComponent } from '../shared/marco-docente.component';
+import { FILAS_POR_PAGINA, PaginacionTablaComponent } from '../shared/paginacion-tabla.component';
 import { AuthService } from '../core/auth.service';
 import { BusquedaService } from '../core/busqueda.service';
 import { Usuario, mensajeError } from '../core/api.service';
@@ -16,11 +17,19 @@ const enlaces = [
   { href: '/admin/perfil', texto: 'Perfil' }
 ];
 
+/** Filas por página en las tablas de Docentes y Grupos. */
+const POR_PAGINA = FILAS_POR_PAGINA;
+
+function inicialesDe(nombre: string) {
+  const partes = nombre.trim().split(/\s+/).filter(Boolean);
+  return ((partes[0]?.[0] ?? '') + (partes[1]?.[0] ?? '')).toUpperCase() || 'D';
+}
+
 @Component({
   selector: 'app-panel-admin',
   imports: [MarcoDocenteComponent, RouterLink],
   template: `
-    <app-marco-docente [enlaces]="enlaces" inicio="/admin" [claro]="true"
+    <app-marco-docente [enlaces]="enlaces" inicio="/admin"
       descripcion="Gestiona docentes, permisos y la configuración del sistema.">
       <section class="adm-kpis" aria-label="Resumen">
         <article class="adm-tarjeta adm-kpi">
@@ -28,11 +37,11 @@ const enlaces = [
           <div><small>Docentes</small><strong>{{ docentes().length }}</strong><span>cuentas con rol docente</span></div>
         </article>
         <article class="adm-tarjeta adm-kpi">
-          <span class="adm-kpi-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5.5h9.5A2.5 2.5 0 0 1 17 8v11H8.5A2.5 2.5 0 0 1 6 16.5V6.5A1 1 0 0 0 5 5.5z"/><path d="m9.5 12.5 2 2 3.5-4"/></svg></span>
+          <span class="adm-kpi-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 19l1-4L15.5 5.5a2.1 2.1 0 0 1 3 3L9 18z"/><path d="m13.5 7.5 3 3"/></svg></span>
           <div><small>Pueden editar</small><strong>{{ conEditar() }}</strong><span>crean y publican casos</span></div>
         </article>
         <article class="adm-tarjeta adm-kpi">
-          <span class="adm-kpi-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 11.5 12 5l8 6.5V20H4z"/><path d="M10 20v-5h4v5"/></svg></span>
+          <span class="adm-kpi-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 11.5 12 5l8 6.5V20H4z"/></svg></span>
           <div><small>Gestionan espacios</small><strong>{{ conEspacios() }}</strong><span>pueden abrir grupos</span></div>
         </article>
       </section>
@@ -44,12 +53,12 @@ const enlaces = [
             <a class="adm-enlace" routerLink="/admin/usuarios">Ver todos <span aria-hidden="true">›</span></a>
           </div>
           <ul class="adm-lista">
-            @for (usuario of docentes().slice(0, 8); track usuario.id) {
+            @for (usuario of directorio(); track usuario.id) {
               <li>
                 <a class="adm-fila" [routerLink]="['/admin/usuarios', usuario.id]">
-                  <span class="inicio-avatar" aria-hidden="true">{{ iniciales(usuario.nombre) }}</span>
+                  <span class="adm-iniciales" aria-hidden="true">{{ iniciales(usuario.nombre) }}</span>
                   <span class="adm-fila-texto"><strong>{{ usuario.nombre }}</strong><small>{{ usuario.email }}</small></span>
-                  <span class="adm-pildora azul">{{ etiquetaPermisos(usuario.permisos) }}</span>
+                  <span class="adm-fila-dato">{{ etiquetaPermisos(usuario.permisos) }}</span>
                 </a>
               </li>
             } @empty { <li class="adm-vacio">Todavía no hay docentes. Crea la primera cuenta.</li> }
@@ -68,7 +77,7 @@ const enlaces = [
               <span class="adm-fila-texto"><strong>Asignar permisos</strong><small>Editar casos y gestionar espacios académicos</small></span>
               <span class="adm-flecha" aria-hidden="true">›</span></a></li>
             <li><a class="adm-fila" routerLink="/admin/grupos">
-              <span class="adm-tarea-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 5.5h9.5A2.5 2.5 0 0 1 17 8v11H8.5A2.5 2.5 0 0 1 6 16.5V6.5A1 1 0 0 0 5 5.5z"/></svg></span>
+              <span class="adm-tarea-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></span>
               <span class="adm-fila-texto"><strong>Grupos</strong><small>Espacios académicos de todos los docentes</small></span>
               <span class="adm-flecha" aria-hidden="true">›</span></a></li>
             <li><a class="adm-fila" routerLink="/admin/configuracion">
@@ -92,16 +101,14 @@ export class PanelAdminComponent {
     return completo.trim().split(/\s+/)[0] || 'administración';
   }
   docentes() { return this.usuarios().filter((usuario) => usuario.rol === 'PROFESOR'); }
+  /** Primeros 5 docentes en orden alfabético. */
+  directorio() { return [...this.docentes()].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es') || a.id - b.id).slice(0, 5); }
   admins() { return this.usuarios().filter((usuario) => usuario.rol === 'ADMIN'); }
   conEditar() { return this.docentes().filter((usuario) => usuario.permisos.includes('EDITAR')).length; }
   conEspacios() { return this.docentes().filter((usuario) => usuario.permisos.includes('GESTIONAR_ESPACIOS_ACADEMICOS')).length; }
-  iniciales(nombre: string) {
-    const partes = nombre.trim().split(/\s+/).filter(Boolean);
-    return ((partes[0]?.[0] ?? '') + (partes[1]?.[0] ?? '')).toUpperCase() || 'D';
-  }
+  iniciales(nombre: string) { return inicialesDe(nombre); }
   etiquetaPermisos(permisos: string[]) {
-    if (permisos.includes('EDITAR') && permisos.includes('GESTIONAR_ESPACIOS_ACADEMICOS')) return 'Editar y espacios';
-    if (permisos.includes('EDITAR')) return 'Puede editar';
+    if (permisos.includes('EDITAR')) return 'Edita casos';
     if (permisos.includes('GESTIONAR_ESPACIOS_ACADEMICOS')) return 'Gestiona espacios';
     return 'Solo visualizar';
   }
@@ -111,60 +118,84 @@ type FiltroCuenta = 'todos' | 'docentes' | 'admin' | 'inactivos';
 
 @Component({
   selector: 'app-usuarios',
-  imports: [MarcoDocenteComponent, RouterLink],
+  imports: [MarcoDocenteComponent, RouterLink, PaginacionTablaComponent],
+  host: { '(document:click)': 'menu.set(null)', '(document:keydown.escape)': 'menu.set(null)' },
   template: `
-    <app-marco-docente [enlaces]="enlaces" inicio="/admin" [claro]="true"
+    <app-marco-docente [enlaces]="enlaces" inicio="/admin"
       descripcion="Crea cuentas y asigna permisos. Los estudiantes los matricula cada docente.">
       <div class="adm-herramientas">
         <div class="adm-filtros" role="group" aria-label="Filtrar cuentas">
           @for (f of filtros; track f.id) {
             <button type="button" class="adm-filtro" [class.activo]="filtro() === f.id" [attr.aria-pressed]="filtro() === f.id"
-              (click)="filtro.set(f.id)">{{ f.texto }} <span>({{ cuantos(f.id) }})</span></button>
+              (click)="elegirFiltro(f.id)">{{ f.texto }} <span>({{ cuantos(f.id) }})</span></button>
           }
         </div>
         <div class="adm-barra">
           <label class="adm-buscar">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
             <span class="solo-lector">Buscar cuenta</span>
-            <input type="search" placeholder="Buscar por nombre o correo" [value]="busqueda()" (input)="busqueda.set($any($event.target).value)" />
+            <input type="search" placeholder="Buscar por nombre o correo" [value]="busqueda()" (input)="buscar($any($event.target).value)" />
           </label>
           <label class="adm-orden">
             <span class="solo-lector">Ordenar</span>
-            <select [value]="orden()" (change)="orden.set($any($event.target).value)">
+            <select [value]="orden()" (change)="ordenar($any($event.target).value)">
               <option value="az">Nombre A–Z</option>
               <option value="za">Nombre Z–A</option>
               <option value="recientes">Más recientes</option>
             </select>
           </label>
-          <a class="adm-boton" routerLink="/admin/usuarios/nuevo"><span aria-hidden="true">+</span> Nuevo usuario</a>
+          <a class="adm-boton" routerLink="/admin/usuarios/nuevo"><span aria-hidden="true">+</span> Nuevo docente</a>
         </div>
       </div>
       @if (error()) { <p class="error">{{ error() }}</p> }
-      <div class="adm-rejilla">
-        @for (usuario of visibles(); track usuario.id) {
-          <article class="adm-tarjeta adm-cuenta">
-            <div class="adm-pildoras">
-              <span class="adm-pildora" [class.azul]="usuario.rol === 'PROFESOR'" [class.violeta]="usuario.rol !== 'PROFESOR'">{{ usuario.rol === 'PROFESOR' ? 'Docente' : 'Administración' }}</span>
-              <span class="adm-pildora" [class.verde]="usuario.activo !== false" [class.gris]="usuario.activo === false">{{ usuario.activo === false ? 'Inactiva' : 'Activa' }}</span>
-            </div>
-            <h3>{{ usuario.nombre }}</h3>
-            <p class="adm-dato">{{ usuario.email }}</p>
-            <p class="adm-dato adm-permisos">{{ etiquetaPermisos(usuario.permisos) }}</p>
-            <div class="adm-pie">
-              @if (usuario.rol === 'PROFESOR') {
-                <a class="adm-enlace" [routerLink]="['/admin/usuarios', usuario.id]">Permisos <span aria-hidden="true">›</span></a>
-              } @else { <span></span> }
-              @if (usuario.id !== yo()) {
-                @if (usuario.activo === false) {
-                  <button class="adm-enlace" type="button" (click)="activo(usuario.id, true)">Activar</button>
-                } @else {
-                  <button class="adm-enlace adm-enlace-suave" type="button" (click)="activo(usuario.id, false)">Desactivar</button>
-                }
-              } @else { <span class="adm-dato">Tu cuenta</span> }
-            </div>
-          </article>
-        } @empty { <p class="adm-vacio">No hay cuentas para mostrar.</p> }
-      </div>
+      <article class="adm-tarjeta adm-tabla-tarjeta">
+        <div class="adm-tabla-caja">
+          <table class="adm-tabla">
+            <thead>
+              <tr><th scope="col">Cuenta</th><th scope="col">Rol</th><th scope="col">Permisos</th><th scope="col">Estado</th><th scope="col" class="derecha">Acciones</th></tr>
+            </thead>
+            <tbody>
+              @for (usuario of filas(); track usuario.id) {
+                <tr>
+                  <td>
+                    <div class="adm-cuenta-celda">
+                      <span class="adm-iniciales" aria-hidden="true">{{ iniciales(usuario.nombre) }}</span>
+                      <div class="adm-celda-doble"><strong>{{ usuario.nombre }}</strong><small>{{ usuario.email }}</small></div>
+                    </div>
+                  </td>
+                  <td>{{ usuario.rol === 'PROFESOR' ? 'Docente' : 'Administración' }}</td>
+                  <td class="gris">{{ etiquetaPermisos(usuario.permisos) }}</td>
+                  <td><span class="adm-estado" [class.inactiva]="usuario.activo === false"><i aria-hidden="true"></i>{{ usuario.activo === false ? 'Inactiva' : 'Activa' }}</span></td>
+                  <td class="derecha">
+                    @if (usuario.id === yo()) {
+                      <span class="gris">Tu cuenta</span>
+                    } @else {
+                      <div class="adm-acciones-celda">
+                        @if (usuario.rol === 'PROFESOR') {
+                          <a class="adm-enlace" [routerLink]="['/admin/usuarios', usuario.id]">Permisos <span aria-hidden="true">›</span></a>
+                        }
+                        <div class="adm-menu">
+                          <button type="button" class="adm-mas" aria-haspopup="menu" [attr.aria-expanded]="menu() === usuario.id"
+                            [attr.aria-label]="'Más acciones para ' + usuario.nombre" (click)="alternarMenu(usuario.id, $event)">⋯</button>
+                          @if (menu() === usuario.id) {
+                            <div class="adm-menu-lista" role="menu">
+                              <button type="button" role="menuitem" (click)="activo(usuario.id, usuario.activo === false)">
+                                {{ usuario.activo === false ? 'Activar' : 'Desactivar' }}</button>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </td>
+                </tr>
+              } @empty { <tr><td colspan="5" class="adm-vacio">No hay cuentas para mostrar.</td></tr> }
+            </tbody>
+          </table>
+        </div>
+        @if (lista().length) {
+          <app-paginacion-tabla [total]="lista().length" [pagina]="paginaActual()" (cambiar)="pagina.set($event)" />
+        }
+      </article>
     </app-marco-docente>
   `
 })
@@ -177,15 +208,31 @@ export class UsuariosComponent {
   filtro = signal<FiltroCuenta>('todos');
   busqueda = signal('');
   orden = signal('az');
+  pagina = signal(1);
+  /** Cuenta cuyo menú "⋯" está abierto. */
+  menu = signal<number | null>(null);
   private http = inject(HttpClient);
   private filtroGlobal = inject(BusquedaService);
   private auth = inject(AuthService);
   usuarios = signal<Usuario[]>([]);
   error = signal('');
+  /** Filtro, búsqueda y orden sobre TODA la lista; la página solo corta lo que se muestra. */
+  lista = computed(() => {
+    const q = (this.busqueda() || this.filtroGlobal.texto()).trim().toLowerCase();
+    const filtrada = this.usuarios().filter((usuario) => this.pasaFiltro(usuario, this.filtro())
+      && (!q || usuario.nombre.toLowerCase().includes(q) || usuario.email.toLowerCase().includes(q)));
+    const orden = this.orden();
+    if (orden === 'recientes') return [...filtrada].sort((a, b) => b.id - a.id);
+    const az = [...filtrada].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es') || a.id - b.id);
+    return orden === 'za' ? az.reverse() : az;
+  });
+  paginaActual = computed(() => Math.min(this.pagina(), Math.max(1, Math.ceil(this.lista().length / POR_PAGINA))));
+  filas = computed(() => this.lista().slice((this.paginaActual() - 1) * POR_PAGINA, this.paginaActual() * POR_PAGINA));
   constructor() {
     this.cargar();
   }
   yo() { return this.auth.usuario()?.id; }
+  iniciales(nombre: string) { return inicialesDe(nombre); }
   etiquetaPermisos(permisos: string[]) {
     const etiquetas = [];
     if (permisos.includes('VISUALIZAR')) etiquetas.push('Visualizar');
@@ -200,16 +247,15 @@ export class UsuariosComponent {
     return true;
   }
   cuantos(filtro: FiltroCuenta) { return this.usuarios().filter((usuario) => this.pasaFiltro(usuario, filtro)).length; }
-  visibles() {
-    const q = (this.busqueda() || this.filtroGlobal.texto()).trim().toLowerCase();
-    const lista = this.usuarios().filter((usuario) => this.pasaFiltro(usuario, this.filtro())
-      && (!q || usuario.nombre.toLowerCase().includes(q) || usuario.email.toLowerCase().includes(q)));
-    const orden = this.orden();
-    if (orden === 'recientes') return [...lista].sort((a, b) => b.id - a.id);
-    const az = [...lista].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es') || a.id - b.id);
-    return orden === 'za' ? az.reverse() : az;
+  elegirFiltro(filtro: FiltroCuenta) { this.filtro.set(filtro); this.pagina.set(1); }
+  buscar(texto: string) { this.busqueda.set(texto); this.pagina.set(1); }
+  ordenar(orden: string) { this.orden.set(orden); this.pagina.set(1); }
+  alternarMenu(id: number, evento: Event) {
+    evento.stopPropagation();
+    this.menu.set(this.menu() === id ? null : id);
   }
   activo(id: number, activo: boolean) {
+    this.menu.set(null);
     this.http.post<Usuario>(`/api/admin/usuarios/${id}/activo`, { activo }).subscribe({
       next: () => this.cargar(),
       error: (falla) => this.error.set(mensajeError(falla))
@@ -224,31 +270,42 @@ export class UsuariosComponent {
   selector: 'app-crear-usuario',
   imports: [MarcoDocenteComponent, FormsModule, RouterLink],
   template: `
-    <app-marco-docente [enlaces]="enlaces" inicio="/admin" [claro]="true"
+    <app-marco-docente [enlaces]="enlaces" inicio="/admin"
       descripcion="La cuenta nace con el rol elegido y solo el permiso Visualizar.">
-      <article class="adm-tarjeta adm-form">
-        <h2>Datos de la cuenta</h2>
-        <div class="adm-campos">
-          <label class="adm-campo"><span>Nombre completo</span><input [(ngModel)]="nombre" placeholder="Nombre y apellido" /></label>
-          <label class="adm-campo"><span>Correo electrónico</span><input [(ngModel)]="email" placeholder="docente@institucion.edu" /></label>
-          <label class="adm-campo"><span>Rol</span>
-            <select [(ngModel)]="rol">
-              <option value="PROFESOR">Docente</option>
-              <option value="ADMIN">Administración</option>
-            </select>
+      <a class="adm-volver" routerLink="/admin/usuarios"><span aria-hidden="true">‹</span> Volver a docentes</a>
+      <div class="adm-ficha">
+        <article class="adm-tarjeta adm-form">
+          <h2>Datos de la cuenta</h2>
+          <div class="adm-campos">
+            <label class="adm-campo"><span>Nombre completo</span><input [(ngModel)]="nombre" placeholder="Nombre y apellido" /></label>
+            <label class="adm-campo"><span>Correo electrónico</span><input [(ngModel)]="email" placeholder="docente@institucion.edu" /></label>
+            <label class="adm-campo"><span>Rol</span>
+              <select [(ngModel)]="rol">
+                <option value="PROFESOR">Docente</option>
+                <option value="ADMIN">Administración</option>
+              </select>
+            </label>
+            <label class="adm-campo"><span>Contraseña</span><input [(ngModel)]="clave" type="password" autocomplete="new-password" /></label>
+          </div>
+          <label class="adm-check">
+            <input type="checkbox" disabled [checked]="true" />
+            <span>Visualizar queda activo desde el primer ingreso.</span>
           </label>
-          <label class="adm-campo"><span>Contraseña</span><input [(ngModel)]="clave" type="password" autocomplete="new-password" /></label>
-        </div>
-        <label class="adm-check">
-          <input type="checkbox" disabled [checked]="true" />
-          <span>Visualizar queda activo desde el primer ingreso.</span>
-        </label>
-        @if (error()) { <p class="error">{{ error() }}</p> }
-        <div class="adm-form-pie">
-          <a class="adm-enlace" routerLink="/admin/usuarios">Cancelar</a>
-          <button class="adm-boton" type="button" (click)="crear()">Guardar</button>
-        </div>
-      </article>
+          @if (error()) { <p class="error">{{ error() }}</p> }
+          <div class="adm-form-pie">
+            <a class="adm-boton-contorno" routerLink="/admin/usuarios">Cancelar</a>
+            <button class="adm-boton" type="button" (click)="crear()">Guardar</button>
+          </div>
+        </article>
+        <aside class="adm-tarjeta adm-pasos">
+          <h2>Después de crearla</h2>
+          <ol>
+            <li><span class="adm-paso-numero" aria-hidden="true">1</span><p>La persona ingresa con el correo y la contraseña.</p></li>
+            <li><span class="adm-paso-numero" aria-hidden="true">2</span><p>Asigna permisos desde <strong>Docentes › Permisos</strong>: Visualizar, Editar casos y Gestionar espacios.</p></li>
+            <li><span class="adm-paso-numero" aria-hidden="true">3</span><p>Cada docente matricula a sus estudiantes.</p></li>
+          </ol>
+        </aside>
+      </div>
     </app-marco-docente>
   `
 })
@@ -273,7 +330,8 @@ export class CrearUsuarioComponent {
   selector: 'app-permisos-docente',
   imports: [MarcoDocenteComponent, FormsModule, RouterLink],
   template: `
-    <app-marco-docente [enlaces]="enlaces" inicio="/admin" [claro]="true" [descripcion]="descripcion()">
+    <app-marco-docente [enlaces]="enlaces" inicio="/admin" [descripcion]="descripcion()">
+      <a class="adm-volver" routerLink="/admin/usuarios"><span aria-hidden="true">‹</span> Volver a docentes</a>
       <article class="adm-tarjeta adm-form">
         <h2>Permisos{{ nombre() ? ' de ' + nombre() : '' }}</h2>
         <div class="adm-checks">
@@ -292,7 +350,7 @@ export class CrearUsuarioComponent {
         </div>
         @if (error()) { <p class="error">{{ error() }}</p> }
         <div class="adm-form-pie">
-          <a class="adm-enlace" routerLink="/admin/usuarios">Cancelar</a>
+          <a class="adm-boton-contorno" routerLink="/admin/usuarios">Cancelar</a>
           <button class="adm-boton" type="button" (click)="guardar()">Guardar permisos</button>
         </div>
       </article>
@@ -342,26 +400,26 @@ type FiltroGrupo = 'todos' | 'con' | 'sin';
 
 @Component({
   selector: 'app-grupos-admin',
-  imports: [MarcoDocenteComponent],
+  imports: [MarcoDocenteComponent, PaginacionTablaComponent],
   template: `
-    <app-marco-docente [enlaces]="enlaces" inicio="/admin" [claro]="true"
+    <app-marco-docente [enlaces]="enlaces" inicio="/admin"
       descripcion="Espacios académicos de todos los docentes y los estudiantes matriculados.">
       <div class="adm-herramientas">
         <div class="adm-filtros" role="group" aria-label="Filtrar grupos">
           @for (f of filtros; track f.id) {
             <button type="button" class="adm-filtro" [class.activo]="filtro() === f.id" [attr.aria-pressed]="filtro() === f.id"
-              (click)="filtro.set(f.id)">{{ f.texto }} <span>({{ cuantos(f.id) }})</span></button>
+              (click)="elegirFiltro(f.id)">{{ f.texto }} <span>({{ cuantos(f.id) }})</span></button>
           }
         </div>
         <div class="adm-barra">
           <label class="adm-buscar">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
             <span class="solo-lector">Buscar grupo</span>
-            <input type="search" placeholder="Buscar grupo o docente" [value]="busqueda()" (input)="busqueda.set($any($event.target).value)" />
+            <input type="search" placeholder="Buscar grupo o docente" [value]="busqueda()" (input)="buscar($any($event.target).value)" />
           </label>
           <label class="adm-orden">
             <span class="solo-lector">Ordenar</span>
-            <select [value]="orden()" (change)="orden.set($any($event.target).value)">
+            <select [value]="orden()" (change)="ordenar($any($event.target).value)">
               <option value="az">Nombre A–Z</option>
               <option value="estudiantes">Más estudiantes</option>
               <option value="recientes">Más recientes</option>
@@ -369,28 +427,47 @@ type FiltroGrupo = 'todos' | 'con' | 'sin';
           </label>
         </div>
       </div>
-      <div class="adm-rejilla">
-        @for (grupo of visibles(); track grupo.id) {
-          <article class="adm-tarjeta adm-grupo">
-            <div class="adm-pildoras">
-              <span class="adm-pildora azul">{{ grupo.espacioAcademico }}</span>
-              <span class="adm-pildora" [class.verde]="grupo.estudiantes.length" [class.gris]="!grupo.estudiantes.length">{{ grupo.estudiantes.length }} {{ grupo.estudiantes.length === 1 ? 'estudiante' : 'estudiantes' }}</span>
-            </div>
-            <h3>{{ grupo.nombre }}</h3>
-            <p class="adm-dato">Docente: {{ grupo.docente.nombre }}</p>
-            @if (grupo.estudiantes.length) {
-              <details class="adm-detalle">
-                <summary>Ver estudiantes</summary>
-                <ul>
-                  @for (estudiante of grupo.estudiantes; track estudiante.id) {
-                    <li><strong>{{ estudiante.nombre }}</strong><small>{{ estudiante.email }}</small></li>
-                  }
-                </ul>
-              </details>
-            } @else { <p class="adm-dato">Todavía sin estudiantes.</p> }
-          </article>
-        } @empty { <p class="adm-vacio">{{ grupos().length ? 'Ningún grupo coincide con la búsqueda.' : 'Todavía no hay grupos.' }}</p> }
-      </div>
+      <article class="adm-tarjeta adm-tabla-tarjeta">
+        <div class="adm-tabla-caja">
+          <table class="adm-tabla">
+            <thead>
+              <tr><th scope="col">Grupo</th><th scope="col">Docente</th><th scope="col">Estudiantes</th><th scope="col" class="derecha">Acciones</th></tr>
+            </thead>
+            <tbody>
+              @for (grupo of filas(); track grupo.id) {
+                <tr>
+                  <td><div class="adm-celda-doble"><strong>{{ grupo.nombre }}</strong><small>{{ grupo.espacioAcademico }}</small></div></td>
+                  <td>{{ grupo.docente.nombre }}</td>
+                  <td>{{ grupo.estudiantes.length }}</td>
+                  <td class="derecha">
+                    @if (grupo.estudiantes.length) {
+                      <button type="button" class="adm-enlace" [attr.aria-expanded]="abierto() === grupo.id" (click)="alternar(grupo.id)">
+                        {{ abierto() === grupo.id ? 'Ocultar estudiantes' : 'Ver estudiantes' }} <span aria-hidden="true">{{ abierto() === grupo.id ? '⌄' : '›' }}</span></button>
+                    } @else { <span class="gris">Sin estudiantes</span> }
+                  </td>
+                </tr>
+                @if (abierto() === grupo.id) {
+                  <tr class="adm-fila-detalle">
+                    <td colspan="4">
+                      <ul>
+                        @for (estudiante of grupo.estudiantes; track estudiante.id) {
+                          <li><span class="adm-iniciales" aria-hidden="true">{{ iniciales(estudiante.nombre) }}</span>
+                            <span class="adm-celda-doble"><strong>{{ estudiante.nombre }}</strong><small>{{ estudiante.email }}</small></span></li>
+                        }
+                      </ul>
+                    </td>
+                  </tr>
+                }
+              } @empty {
+                <tr><td colspan="4" class="adm-vacio">{{ grupos().length ? 'Ningún grupo coincide con la búsqueda.' : 'Todavía no hay grupos.' }}</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (lista().length) {
+          <app-paginacion-tabla [total]="lista().length" [pagina]="paginaActual()" (cambiar)="irPagina($event)" />
+        }
+      </article>
     </app-marco-docente>
   `
 })
@@ -402,34 +479,46 @@ export class GruposAdminComponent {
   filtro = signal<FiltroGrupo>('todos');
   busqueda = signal('');
   orden = signal('az');
+  pagina = signal(1);
+  /** Grupo con la lista de estudiantes desplegada. */
+  abierto = signal<number | null>(null);
   private http = inject(HttpClient);
   grupos = signal<GrupoAdmin[]>([]);
+  /** Filtro, búsqueda y orden sobre TODA la lista; la página solo corta lo que se muestra. */
+  lista = computed(() => {
+    const q = this.busqueda().trim().toLowerCase();
+    const filtrada = this.grupos().filter((grupo) => this.pasaFiltro(grupo, this.filtro())
+      && (!q || grupo.nombre.toLowerCase().includes(q) || grupo.docente.nombre.toLowerCase().includes(q)
+        || grupo.espacioAcademico.toLowerCase().includes(q)));
+    const orden = this.orden();
+    if (orden === 'recientes') return [...filtrada].sort((a, b) => b.id - a.id);
+    if (orden === 'estudiantes') return [...filtrada].sort((a, b) => b.estudiantes.length - a.estudiantes.length || a.nombre.localeCompare(b.nombre, 'es'));
+    return [...filtrada].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es') || a.id - b.id);
+  });
+  paginaActual = computed(() => Math.min(this.pagina(), Math.max(1, Math.ceil(this.lista().length / POR_PAGINA))));
+  filas = computed(() => this.lista().slice((this.paginaActual() - 1) * POR_PAGINA, this.paginaActual() * POR_PAGINA));
   constructor() {
     this.http.get<GrupoAdmin[]>('/api/admin/grupos').subscribe((dato) => this.grupos.set(dato));
   }
+  iniciales(nombre: string) { return inicialesDe(nombre); }
   private pasaFiltro(grupo: GrupoAdmin, filtro: FiltroGrupo) {
     if (filtro === 'con') return grupo.estudiantes.length > 0;
     if (filtro === 'sin') return grupo.estudiantes.length === 0;
     return true;
   }
   cuantos(filtro: FiltroGrupo) { return this.grupos().filter((grupo) => this.pasaFiltro(grupo, filtro)).length; }
-  visibles() {
-    const q = this.busqueda().trim().toLowerCase();
-    const lista = this.grupos().filter((grupo) => this.pasaFiltro(grupo, this.filtro())
-      && (!q || grupo.nombre.toLowerCase().includes(q) || grupo.docente.nombre.toLowerCase().includes(q)
-        || grupo.espacioAcademico.toLowerCase().includes(q)));
-    const orden = this.orden();
-    if (orden === 'recientes') return [...lista].sort((a, b) => b.id - a.id);
-    if (orden === 'estudiantes') return [...lista].sort((a, b) => b.estudiantes.length - a.estudiantes.length || a.nombre.localeCompare(b.nombre, 'es'));
-    return [...lista].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es') || a.id - b.id);
-  }
+  elegirFiltro(filtro: FiltroGrupo) { this.filtro.set(filtro); this.irPagina(1); }
+  buscar(texto: string) { this.busqueda.set(texto); this.irPagina(1); }
+  ordenar(orden: string) { this.orden.set(orden); this.irPagina(1); }
+  irPagina(n: number) { this.pagina.set(n); this.abierto.set(null); }
+  alternar(id: number) { this.abierto.set(this.abierto() === id ? null : id); }
 }
 
 @Component({
   selector: 'app-configuracion',
   imports: [MarcoDocenteComponent, FormsModule],
   template: `
-    <app-marco-docente [enlaces]="enlaces" inicio="/admin" [claro]="true"
+    <app-marco-docente [enlaces]="enlaces" inicio="/admin"
       descripcion="Valores generales del sistema. Se guardan en este navegador.">
       <article class="adm-tarjeta adm-form">
         <h2>Configuración global</h2>
@@ -485,43 +574,20 @@ const enlacesDocente = [
   selector: 'app-perfil',
   imports: [MarcoDocenteComponent],
   template: `
-    <!-- El docente sigue con el estilo anterior hasta que se apruebe el rediseño; el administrador usa el claro. -->
-    <app-marco-docente [enlaces]="menu()" [inicio]="inicio()" [claro]="esAdmin()" descripcion="Tus datos de cuenta.">
-      @if (esAdmin()) {
-        <article class="adm-tarjeta adm-perfil">
-          <span class="inicio-avatar adm-avatar-grande" aria-hidden="true">{{ iniciales() }}</span>
-          <div>
-            <h2>{{ auth.usuario()?.nombre }}</h2>
-            <p class="adm-dato">{{ auth.usuario()?.email }}</p>
-            <span class="adm-pildora violeta">{{ etiquetaRol() }}</span>
-          </div>
-        </article>
-      } @else {
-        <section class="tablero ficha-tablero pagina-perfil">
-          <header class="saludo">
-            <h1>Mi perfil</h1>
-            <p>Tus datos de cuenta.</p>
-          </header>
-          <article class="dash-panel ficha-form">
-            <div class="perfil-vista">
-              <div class="perfil-cabeza">
-                <span class="inicio-avatar">{{ iniciales() }}</span>
-                <div>
-                  <h2>{{ auth.usuario()?.nombre }}</h2>
-                  <p class="sub">{{ auth.usuario()?.email }}</p>
-                  <p class="sub">{{ etiquetaRol() }}</p>
-                </div>
-              </div>
-            </div>
-          </article>
-        </section>
-      }
+    <app-marco-docente [enlaces]="menu()" [inicio]="inicio()" descripcion="Tus datos de cuenta.">
+      <article class="adm-tarjeta adm-perfil">
+        <span class="adm-iniciales adm-iniciales-grande" aria-hidden="true">{{ iniciales() }}</span>
+        <div>
+          <h2>{{ auth.usuario()?.nombre }}</h2>
+          <p class="adm-dato">{{ auth.usuario()?.email }}</p>
+          <p class="adm-dato">{{ etiquetaRol() }}</p>
+        </div>
+      </article>
     </app-marco-docente>
   `
 })
 export class PerfilComponent {
   auth = inject(AuthService);
-  esAdmin = computed(() => this.auth.rol() === 'ADMIN');
   menu = computed(() => this.auth.rol() === 'ADMIN' ? enlaces : enlacesDocente);
   inicio = computed(() => this.auth.rol() === 'ADMIN' ? '/admin' : '/docente');
   etiquetaRol() {
@@ -529,8 +595,5 @@ export class PerfilComponent {
     if (this.auth.rol() === 'PROFESOR') return 'Docente';
     return 'Estudiante';
   }
-  iniciales() {
-    const partes = (this.auth.usuario()?.nombre ?? '').trim().split(/\s+/).filter(Boolean);
-    return ((partes[0]?.[0] ?? '') + (partes[1]?.[0] ?? '')).toUpperCase() || 'D';
-  }
+  iniciales() { return inicialesDe(this.auth.usuario()?.nombre ?? ''); }
 }

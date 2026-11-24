@@ -15,6 +15,7 @@ import { MusicaNovelaService } from '../shared/novela/musica-novela.service';
 import { ResultadosNovelaComponent } from '../shared/novela/resultados-novela.component';
 import { resultadosDeParticipacion } from '../shared/novela/resultados';
 import { EscenaService } from '../shared/novela/escena.service';
+import { PaginacionTablaComponent, paginaDe, paginaValida } from '../shared/paginacion-tabla.component';
 
 const enlaces = [
   { href: '/estudiante', texto: 'Casos asignados', exacto: true },
@@ -80,42 +81,35 @@ function resumenDesarrollo(html: string, max = 200): string {
   return `${resumen} …`;
 }
 
+type FiltroDilema = 'todos' | 'pendientes' | 'en_curso' | 'finalizados';
+
 @Component({
   selector: 'app-panel-estudiante',
-  imports: [RouterLink, MarcoEstudianteComponent],
+  imports: [RouterLink, MarcoEstudianteComponent, PaginacionTablaComponent],
   template: `
-    <app-marco-estudiante [activa]="seccion()" [sinLeer]="sinLeer()">
-        @if (seccion() === 'inicio') {
-          <section class="inicio-stats">
-            <article>
-              <span class="stat-icono juego">
-                <svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="10" rx="4"/><path d="M8 13h4M10 11v4M16.2 12h.01M18.2 14h.01"/></svg>
-              </span>
-              <div>
-                <small>Dilemas Resueltos</small>
-                <strong>{{ finalizados() }}</strong>
-              </div>
-            </article>
-            <article>
-              <span class="stat-icono copa">
-                <svg viewBox="0 0 24 24"><path d="M8 5h8v4a4 4 0 0 1-8 0V5z"/><path d="M8 7H5.5A2.5 2.5 0 0 0 8 11M16 7h2.5A2.5 2.5 0 0 1 16 11"/><path d="M12 13v3M9 20h6M10 17h4"/></svg>
-              </span>
-              <div>
-                <small>Tu Puntaje</small>
-                <strong>{{ promedio() }} <em>/ 5,0</em></strong>
-              </div>
-            </article>
-          </section>
-        }
-
+    <app-marco-estudiante [activa]="seccion()" [sinLeer]="sinLeer()" [descripcion]="descripcionSeccion()">
         @if (error()) { <p class="error">{{ error() }}</p> }
 
         @if (seccion() === 'inicio') {
-          <div class="inicio-home">
+          <section class="adm-kpis" aria-label="Resumen">
+            <article class="adm-tarjeta adm-kpi">
+              <span class="adm-kpi-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="10" rx="4"/><path d="M8 13h4M10 11v4M16.2 12h.01M18.2 14h.01"/></svg></span>
+              <div><small>Dilemas resueltos</small><strong>{{ finalizados() }}</strong><span>de {{ (panel()?.sesiones ?? []).length }} convocatorias</span></div>
+            </article>
+            <article class="adm-tarjeta adm-kpi">
+              <span class="adm-kpi-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5h8v4a4 4 0 0 1-8 0V5z"/><path d="M8 7H5.5A2.5 2.5 0 0 0 8 11M16 7h2.5A2.5 2.5 0 0 1 16 11"/><path d="M12 13v3M9 20h6M10 17h4"/></svg></span>
+              <div><small>Tu puntaje</small><strong>{{ promedio() }}</strong><span>promedio sobre 5,0</span></div>
+            </article>
+            <article class="adm-tarjeta adm-kpi">
+              <span class="adm-kpi-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/></svg></span>
+              <div><small>Pendientes</small><strong>{{ pendientes() }}</strong><span>{{ enCurso() }} en curso</span></div>
+            </article>
+          </section>
+
           <section class="inicio-fila">
             <article class="inicio-destacado">
               <div class="destacado-texto">
-                <p class="chip-estrella">★ Dilema Destacado</p>
+                <p class="chip-estrella">★ Dilema destacado</p>
                 @if (destacado(); as caso) {
                   <h2>{{ caso.caso }}</h2>
                   @if (caso.sensible) {
@@ -123,7 +117,7 @@ function resumenDesarrollo(html: string, max = 200): string {
                   }
                   @if (textoDestacado()) { <p>{{ textoDestacado() }}</p> }
                   @if (caso.repeticionAutorizada || caso.participacionEstado === 'EN_CURSO' || !caso.participacionEstado) {
-                    <button class="btn-resolver" type="button" (click)="iniciarCaso(caso)">▶ Resolver Dilema</button>
+                    <button class="btn-resolver" type="button" (click)="iniciarCaso(caso)">▶ Resolver dilema</button>
                   } @else if (caso.participacionEstado === 'FINALIZADA' && caso.participacionId) {
                     <a class="btn-resolver" [routerLink]="['/estudiante/participacion', caso.participacionId]">Ver resultados</a>
                   } @else if (caso.estado === 'SIN_INICIAR') {
@@ -131,7 +125,7 @@ function resumenDesarrollo(html: string, max = 200): string {
                   } @else if (caso.estado === 'FINALIZADO' && !caso.participacionId) {
                     <p class="sub claro">No participaste. Ausencia 0,0.</p>
                   } @else {
-                    <button class="btn-resolver" type="button" (click)="iniciarCaso(caso)">▶ Resolver Dilema</button>
+                    <button class="btn-resolver" type="button" (click)="iniciarCaso(caso)">▶ Resolver dilema</button>
                   }
                 } @else if (panel()) {
                   <h2>Aún no tienes casos asignados</h2>
@@ -149,7 +143,7 @@ function resumenDesarrollo(html: string, max = 200): string {
             </article>
 
             <article class="inicio-progreso">
-              <h3><span class="progreso-ico">📊</span> Tu Progreso</h3>
+              <h3>Tu progreso</h3>
               <div class="aro" [style.--p]="'' + progresoGeneral()">
                 <span>{{ progresoGeneral() }}%</span>
               </div>
@@ -157,101 +151,140 @@ function resumenDesarrollo(html: string, max = 200): string {
               <p class="progreso-tip">{{ mensajeProgreso() }}</p>
             </article>
           </section>
-
-          </div>
         }
 
         @if (seccion() === 'dilemas') {
-          <section class="inicio-lista">
-            <h2>Mis Dilemas</h2>
-            <div class="rejilla-casos">
-              @for (sesion of listaSeccion(); track sesion.id; let i = $index) {
-                <article class="curso">
-                  <div class="franja" [attr.data-tono]="i % 3"></div>
-                  <span class="estado-pill">{{ etiqueta(sesion) }}</span>
-                  <h3>{{ sesion.caso }}</h3>
-                  <p class="sub">{{ sesion.grupo }} · {{ sesion.espacio }}</p>
-                  @if (sesion.nota != null) { <p class="sub">Puntaje {{ sesion.nota }} / 5,0</p> }
-                  @if (sesion.repeticionAutorizada) { <p class="sub">El docente autorizó un nuevo intento.</p> }
-                  <div class="progreso"><div [style.width.%]="barra(sesion)"></div></div>
-                  <small class="avance">{{ barra(sesion) }}% de avance</small>
-                  <div class="curso-acciones">
-                    @if (sesion.repeticionAutorizada || sesion.participacionEstado === 'EN_CURSO' || !sesion.participacionEstado) {
-                      <button class="btn-oscuro" type="button" (click)="iniciarCaso(sesion)">Ingresar al caso</button>
-                    } @else if (sesion.participacionEstado === 'FINALIZADA' && sesion.participacionId) {
-                      <a class="btn-suave" [routerLink]="['/estudiante/participacion', sesion.participacionId]">Ver resultados</a>
-                    } @else if (sesion.estado === 'SIN_INICIAR') {
-                      <p class="sub">Esperando a que el docente inicie la sesión.</p>
-                    } @else if (sesion.estado === 'FINALIZADO' && !sesion.participacionId) {
-                      <p class="sub">No participaste. Ausencia 0,0.</p>
-                    } @else {
-                      <button class="btn-oscuro" type="button" (click)="iniciarCaso(sesion)">Ingresar al caso</button>
-                    }
-                  </div>
-                </article>
-              } @empty { <p class="sub">No hay casos en esta vista.</p> }
+          <div class="adm-herramientas">
+            <div class="adm-filtros" role="group" aria-label="Filtrar dilemas">
+              @for (f of filtrosDilemas; track f.id) {
+                <button type="button" class="adm-filtro" [class.activo]="filtroDilemas() === f.id" [attr.aria-pressed]="filtroDilemas() === f.id"
+                  (click)="filtroDilemas.set(f.id); paginaDilemas.set(1)">{{ f.texto }} <span>({{ cuantosDilemas(f.id) }})</span></button>
+              }
             </div>
-          </section>
+            <div class="adm-barra">
+              <label class="adm-buscar">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+                <span class="solo-lector">Buscar dilema</span>
+                <input type="search" placeholder="Buscar caso o grupo" [value]="busquedaDilemas()" (input)="busquedaDilemas.set(valorCampo($event)); paginaDilemas.set(1)" />
+              </label>
+              <label class="adm-orden">
+                <span class="solo-lector">Ordenar</span>
+                <select [value]="ordenDilemas()" (change)="ordenDilemas.set(valorCampo($event)); paginaDilemas.set(1)">
+                  <option value="recientes">Más recientes</option>
+                  <option value="nombre">Nombre A–Z</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <article class="adm-tarjeta adm-tabla-tarjeta">
+            <div class="adm-tabla-caja">
+              <table class="adm-tabla">
+                <thead>
+                  <tr><th scope="col">Caso</th><th scope="col">Estado</th><th scope="col">Avance</th><th scope="col">Puntaje</th><th scope="col" class="derecha">Acción</th></tr>
+                </thead>
+                <tbody>
+                  @for (sesion of dilemasPagina(); track sesion.id) {
+                    <tr>
+                      <td><div class="adm-celda-doble"><strong>{{ sesion.caso }}</strong><small>{{ sesion.grupo }} · {{ sesion.espacio }}</small></div></td>
+                      <td><span class="adm-estado-pill" [attr.data-estado]="sesion.participacionEstado ?? 'PENDIENTE'">{{ etiqueta(sesion) }}</span></td>
+                      <td><span class="adm-avance"><span class="adm-avance-barra"><i [style.width.%]="barra(sesion)"></i></span>{{ barra(sesion) }}%</span></td>
+                      <td>{{ sesion.nota != null ? sesion.nota + ' / 5,0' : '—' }}</td>
+                      <td class="derecha">
+                        @if (sesion.repeticionAutorizada || sesion.participacionEstado === 'EN_CURSO' || !sesion.participacionEstado) {
+                          <button class="adm-enlace" type="button" (click)="iniciarCaso(sesion)">Ingresar al caso <span aria-hidden="true">›</span></button>
+                        } @else if (sesion.participacionEstado === 'FINALIZADA' && sesion.participacionId) {
+                          <a class="adm-enlace" [routerLink]="['/estudiante/participacion', sesion.participacionId]">Ver resultados <span aria-hidden="true">›</span></a>
+                        } @else if (sesion.estado === 'SIN_INICIAR') {
+                          <span class="gris">Esperando inicio</span>
+                        } @else if (sesion.estado === 'FINALIZADO' && !sesion.participacionId) {
+                          <span class="gris">No participaste</span>
+                        } @else {
+                          <button class="adm-enlace" type="button" (click)="iniciarCaso(sesion)">Ingresar al caso <span aria-hidden="true">›</span></button>
+                        }
+                      </td>
+                    </tr>
+                  } @empty { <tr><td colspan="5" class="adm-vacio">No hay casos en esta vista.</td></tr> }
+                </tbody>
+              </table>
+            </div>
+            <app-paginacion-tabla [total]="dilemasFiltrados().length" [pagina]="paginaDilemasActual()" (cambiar)="paginaDilemas.set($event)" />
+          </article>
         }
 
         @if (seccion() === 'avisos') {
-          <section class="inicio-lista">
-            <div class="tarjeta-cabeza">
-              <h2>Avisos</h2>
+          <div class="adm-herramientas">
+            <div class="adm-filtros" role="group" aria-label="Filtrar avisos">
+              <button type="button" class="adm-filtro" [class.activo]="!soloNoLeidos()" [attr.aria-pressed]="!soloNoLeidos()"
+                (click)="soloNoLeidos.set(false); paginaAvisos.set(1)">Todos <span>({{ avisos().length }})</span></button>
+              <button type="button" class="adm-filtro" [class.activo]="soloNoLeidos()" [attr.aria-pressed]="soloNoLeidos()"
+                (click)="soloNoLeidos.set(true); paginaAvisos.set(1)">Sin leer <span>({{ sinLeer() }})</span></button>
+            </div>
+            <div class="adm-barra">
+              <label class="adm-fecha">
+                <span class="solo-lector">Fecha</span>
+                <input type="date" [value]="diaFiltro()" (input)="diaFiltro.set(valorFecha($event)); paginaAvisos.set(1)" />
+              </label>
               @if (sinLeer()) {
-                <button class="btn-oscuro" type="button" (click)="marcarAvisos()">Marcar como leídos</button>
+                <button class="adm-boton-contorno" type="button" (click)="marcarAvisos()">Marcar como leídos</button>
               }
             </div>
-            <div class="aviso-filtros">
-              <button class="btn-suave" type="button" [attr.aria-pressed]="soloNoLeidos()" (click)="soloNoLeidos.set(!soloNoLeidos())">Sin leer</button>
-              <label class="field">
-                <span>Fecha</span>
-                <input type="date" [value]="diaFiltro()" (input)="diaFiltro.set(valorFecha($event))" />
-              </label>
+          </div>
+          <article class="adm-tarjeta adm-tabla-tarjeta">
+            <div class="adm-tabla-caja">
+              <table class="adm-tabla">
+                <thead>
+                  <tr><th scope="col">Fecha</th><th scope="col">Canal</th><th scope="col">Aviso</th><th scope="col">Estado</th></tr>
+                </thead>
+                <tbody>
+                  @for (aviso of avisosPagina(); track aviso.id) {
+                    <tr>
+                      <td class="gris">{{ fechaAviso(aviso.fecha) }}</td>
+                      <td class="gris">{{ canalAviso(aviso.canal) }}</td>
+                      <td class="adm-celda-texto"><div class="adm-celda-doble"><strong>{{ aviso.titulo }}</strong><small>{{ aviso.cuerpo }}</small></div></td>
+                      <td><span class="adm-estado-pill" [attr.data-estado]="aviso.leida ? 'LEIDO' : 'SIN_LEER'">{{ aviso.leida ? 'Leído' : 'Sin leer' }}</span></td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="4" class="adm-vacio">{{ avisos().length ? 'No hay avisos con ese criterio.' : 'No hay avisos todavía.' }}</td></tr>
+                  }
+                </tbody>
+              </table>
             </div>
-            @if (!avisos().length) {
-              <p class="sub">No hay avisos todavía.</p>
-            } @else {
-              @for (aviso of avisosVisibles(); track aviso.id; let i = $index) {
-                <article class="aviso-card" [class.sin-leer]="!aviso.leida">
-                  <span class="punto" [attr.data-tono]="i % 3"></span>
-                  <div>
-                    <div class="aviso-meta">
-                      <span class="aviso-canal">{{ aviso.canal }}</span>
-                      <span>{{ fechaAviso(aviso.fecha) }}</span>
-                      @if (!aviso.leida) { <em class="aviso-pill">Sin leer</em> }
-                    </div>
-                    <h3>{{ aviso.titulo }}</h3>
-                    <p class="sub">{{ aviso.cuerpo }}</p>
-                  </div>
-                </article>
-              } @empty { <p class="sub">No hay avisos con ese criterio.</p> }
-            }
-          </section>
+            <app-paginacion-tabla [total]="avisosVisibles().length" [pagina]="paginaAvisosActual()" (cambiar)="paginaAvisos.set($event)" />
+          </article>
         }
 
         @if (seccion() === 'perfil') {
-          <section class="inicio-perfil">
-            <div class="perfil-cabeza">
-              <span class="inicio-avatar">{{ iniciales() }}</span>
-              <div>
-                <h2>{{ nombreCompleto() }}</h2>
-                <p class="sub">{{ auth.usuario()?.email }}</p>
-                <p class="sub">Estudiante</p>
+          <article class="adm-tarjeta adm-perfil">
+            <span class="adm-iniciales adm-iniciales-grande" aria-hidden="true">{{ iniciales() }}</span>
+            <div>
+              <h2>{{ nombreCompleto() }}</h2>
+              <p class="adm-dato">{{ auth.usuario()?.email }}</p>
+              <p class="adm-dato">Estudiante</p>
+            </div>
+          </article>
+          <section class="adm-dos">
+            <article class="adm-tarjeta">
+              <div class="adm-cabeza"><h2>Tu avance</h2></div>
+              <div class="adm-cifras">
+                <div><small>Resueltos</small><strong>{{ finalizados() }}</strong></div>
+                <div><small>Puntaje</small><strong>{{ promedio() }}</strong></div>
+                <div><small>Avisos sin leer</small><strong>{{ sinLeer() }}</strong></div>
               </div>
-            </div>
-            <div class="perfil-kpis">
-              <article><small>Resueltos</small><strong>{{ finalizados() }}</strong></article>
-              <article><small>Puntaje</small><strong>{{ promedio() }}</strong><span class="sub">sobre 5,0</span></article>
-              <article><small>Avisos</small><strong>{{ sinLeer() }}</strong><span class="sub">sin leer</span></article>
-            </div>
-            <h3>Convocatorias</h3>
-            @for (sesion of (panel()?.sesiones ?? []).slice(0, 5); track sesion.id) {
-              <article class="perfil-caso">
-                <strong>{{ sesion.caso }}</strong>
-                <p class="sub">{{ etiqueta(sesion) }} · {{ sesion.grupo }}@if (sesion.nota != null) { · {{ sesion.nota }} / 5,0 }</p>
-              </article>
-            } @empty { <p class="sub">Aún no tienes convocatorias.</p> }
+            </article>
+            <article class="adm-tarjeta">
+              <div class="adm-cabeza">
+                <h2>Convocatorias</h2>
+                <a class="adm-enlace" [routerLink]="['/estudiante']" [queryParams]="{ vista: 'dilemas' }">Ver todas <span aria-hidden="true">›</span></a>
+              </div>
+              <ul class="adm-lista">
+                @for (sesion of (panel()?.sesiones ?? []).slice(0, 5); track sesion.id) {
+                  <li class="adm-fila">
+                    <span class="adm-fila-texto"><strong>{{ sesion.caso }}</strong><small>{{ sesion.grupo }}@if (sesion.nota != null) { · {{ sesion.nota }} / 5,0 }</small></span>
+                    <span class="adm-estado-pill" [attr.data-estado]="sesion.participacionEstado ?? 'PENDIENTE'">{{ etiqueta(sesion) }}</span>
+                  </li>
+                } @empty { <li class="adm-vacio">Aún no tienes convocatorias.</li> }
+              </ul>
+            </article>
           </section>
         }
     </app-marco-estudiante>
@@ -269,6 +302,43 @@ export class PanelEstudianteComponent {
   seccion = signal<'inicio' | 'dilemas' | 'avisos' | 'perfil'>('inicio');
   soloNoLeidos = signal(false);
   diaFiltro = signal('');
+  /** Mis dilemas: filtro, búsqueda, orden y página (sobre TODA la lista; la página solo corta lo que se ve). */
+  readonly filtrosDilemas: { id: FiltroDilema; texto: string }[] = [
+    { id: 'todos', texto: 'Todos' }, { id: 'pendientes', texto: 'Pendientes' },
+    { id: 'en_curso', texto: 'En curso' }, { id: 'finalizados', texto: 'Finalizados' }
+  ];
+  filtroDilemas = signal<FiltroDilema>('todos');
+  busquedaDilemas = signal('');
+  ordenDilemas = signal('recientes');
+  paginaDilemas = signal(1);
+  paginaAvisos = signal(1);
+  readonly dilemasFiltrados = computed(() => {
+    const q = (this.busquedaDilemas() + ' ' + this.busqueda.texto()).trim().toLowerCase();
+    const lista = (this.panel()?.sesiones ?? []).filter((s) => this.pasaFiltroDilema(s, this.filtroDilemas())
+      && (!q || q.split(/\s+/).every((t) => `${s.caso} ${s.grupo} ${s.espacio}`.toLowerCase().includes(t))));
+    if (this.ordenDilemas() === 'nombre') return [...lista].sort((a, b) => a.caso.localeCompare(b.caso, 'es') || a.id - b.id);
+    return [...lista].sort((a, b) => (Date.parse(b.inicio) || 0) - (Date.parse(a.inicio) || 0) || b.id - a.id);
+  });
+  paginaDilemasActual() { return paginaValida(this.paginaDilemas(), this.dilemasFiltrados().length); }
+  dilemasPagina() { return paginaDe(this.dilemasFiltrados(), this.paginaDilemasActual()); }
+  paginaAvisosActual() { return paginaValida(this.paginaAvisos(), this.avisosVisibles().length); }
+  avisosPagina() { return paginaDe(this.avisosVisibles(), this.paginaAvisosActual()); }
+  private pasaFiltroDilema(s: Sesion, filtro: FiltroDilema) {
+    if (filtro === 'pendientes') return !s.participacionEstado;
+    if (filtro === 'en_curso') return s.participacionEstado === 'EN_CURSO';
+    if (filtro === 'finalizados') return s.participacionEstado === 'FINALIZADA' || s.participacionEstado === 'AUSENTE';
+    return true;
+  }
+  cuantosDilemas(filtro: FiltroDilema) { return (this.panel()?.sesiones ?? []).filter((s) => this.pasaFiltroDilema(s, filtro)).length; }
+  valorCampo(evento: Event) { return (evento.target as HTMLInputElement | HTMLSelectElement).value; }
+  canalAviso(canal: string) { return canal === 'CORREO' ? 'Correo' : canal === 'SISTEMA' ? 'Sistema' : canal; }
+  descripcionSeccion() {
+    const s = this.seccion();
+    if (s === 'dilemas') return 'Los casos a los que te convocaron y tu avance en cada uno.';
+    if (s === 'avisos') return 'Convocatorias, resultados y mensajes de tus docentes.';
+    if (s === 'perfil') return 'Tus datos y tu avance.';
+    return 'Bienvenido a Dilema, donde cada decisión cuenta.';
+  }
   constructor() {
     inject(ActivatedRoute).queryParamMap.subscribe((params) => {
       const vista = params.get('vista');

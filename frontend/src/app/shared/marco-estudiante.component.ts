@@ -1,13 +1,14 @@
 import { Component, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../core/auth.service';
+import { EncabezadoOlaComponent } from './encabezado-ola.component';
 
 @Component({
   selector: 'app-marco-estudiante',
-  imports: [RouterLink],
+  imports: [RouterLink, EncabezadoOlaComponent],
   styles: [`:host { display: block; width: 100%; height: 100%; }`],
   template: `
-    <div class="inicio-est" [class.menu-abierto]="menuAbierto()">
+    <div class="inicio-est marco-claro" [class.menu-abierto]="menuAbierto()">
       <button class="inicio-menu-btn" type="button" (click)="alternarMenu()" [attr.aria-expanded]="menuAbierto()" aria-label="Menú">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg>
       </button>
@@ -52,77 +53,12 @@ import { AuthService } from '../core/auth.service';
       </aside>
 
       <main class="inicio-cuerpo">
-        <div class="inicio-fondo" aria-hidden="true">
-          <div class="inicio-cielo"></div>
-          <div class="inicio-marca-hero">
-            <svg class="inicio-orbita" viewBox="0 0 500 250" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-              <defs>
-                <linearGradient id="anillo-est-logo" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stop-color="#dbeafe" stop-opacity=".15"/>
-                  <stop offset=".45" stop-color="#93c5fd"/>
-                  <stop offset="1" stop-color="#3b82f6" stop-opacity=".2"/>
-                </linearGradient>
-              </defs>
-              <g fill="#fff">
-                <polygon points="140,28 144,42 160,46 144,50 140,64 136,50 120,46 136,42"/>
-                <polygon points="250,8 254,22 270,26 254,30 250,44 246,30 230,26 246,22"/>
-                <polygon points="380,48 384,60 398,64 384,68 380,80 376,68 362,64 376,60"/>
-                <circle cx="200" cy="40" r="1.8"/>
-                <circle cx="250" cy="18" r="1.5"/>
-                <circle cx="400" cy="70" r="1.6"/>
-              </g>
-              <ellipse cx="250" cy="125" rx="250" ry="118" fill="none" stroke="url(#anillo-est-logo)" stroke-width="10" transform="rotate(-18 250 125)"/>
-              <ellipse cx="250" cy="125" rx="210" ry="96" fill="none" stroke="#e0f2fe" stroke-width="2.2" transform="rotate(-18 250 125)" opacity=".8"/>
-            </svg>
-            <img class="inicio-cerebro" src="/dilema-cerebro.jpg" alt="" />
-          </div>
-          <svg class="inicio-deco" viewBox="0 0 1440 420" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="anillo-est" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stop-color="#dbeafe" stop-opacity=".15"/>
-                <stop offset=".45" stop-color="#93c5fd"/>
-                <stop offset="1" stop-color="#3b82f6" stop-opacity=".2"/>
-              </linearGradient>
-            </defs>
-            <g fill="#fff">
-              <polygon points="860,18 864,32 880,36 864,40 860,54 856,40 840,36 856,32"/>
-              <polygon points="1088,10 1092,24 1108,28 1092,32 1088,46 1084,32 1068,28 1084,24"/>
-              <polygon points="1260,42 1264,54 1278,58 1264,62 1260,74 1256,62 1242,58 1256,54"/>
-              <circle cx="940" cy="28" r="1.8"/>
-              <circle cx="1188" cy="16" r="1.5"/>
-              <circle cx="1336" cy="70" r="1.6"/>
-              <circle cx="1012" cy="54" r="1.2"/>
-            </g>
-            <ellipse cx="1188" cy="128" rx="250" ry="118" fill="none" stroke="url(#anillo-est)" stroke-width="10" transform="rotate(-18 1188 128)"/>
-            <ellipse cx="1188" cy="128" rx="210" ry="96" fill="none" stroke="#e0f2fe" stroke-width="2.2" transform="rotate(-18 1188 128)" opacity=".8"/>
-            <path fill="#1e3a8a" d="M430,0 C650,22 800,118 980,250 C1148,368 1290,400 1460,355 L1460,273 C1290,318 1148,286 980,168 C800,36 650,-38 430,-48 Z"/>
-            <path fill="#3b82f6" d="M430,0 C650,22 800,118 980,250 C1148,368 1290,400 1460,355 L1460,313 C1290,358 1148,326 980,208 C800,76 650,-14 430,-24 Z"/>
-            <path fill="#ffffff" d="M430,0 C650,22 800,118 980,250 C1148,368 1290,400 1460,355 L1460,337 C1290,382 1148,350 980,232 C800,100 650,8 430,-10 Z"/>
-            <path fill="#eef2ff" d="M0,0 H430 C650,22 800,118 980,250 C1148,368 1290,400 1440,355 L1440,420 L0,420 Z"/>
-          </svg>
-          <svg class="inicio-deco-movil" viewBox="0 0 1440 300" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="anillo-est-m" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stop-color="#dbeafe" stop-opacity=".18"/>
-                <stop offset=".45" stop-color="#93c5fd"/>
-                <stop offset="1" stop-color="#3b82f6" stop-opacity=".22"/>
-              </linearGradient>
-              <clipPath id="cielo-est-m">
-                <path d="M0,0 L0,34 C560,16 1040,198 1440,188 L1440,0 Z"/>
-              </clipPath>
-            </defs>
-            <g clip-path="url(#cielo-est-m)"></g>
-            <path fill="#eef2ff" d="M0,20 C560,2 1040,184 1440,174 L1440,300 L0,300 Z"/>
-            <path fill="#1e3a8a" d="M0,34 C560,16 1040,198 1480,188 L1480,156 C1040,166 560,-16 0,2 Z"/>
-            <path fill="#3b82f6" d="M0,34 C560,16 1040,198 1480,188 L1480,172 C1040,182 560,0 0,18 Z"/>
-            <path fill="#ffffff" d="M0,34 C560,16 1040,198 1480,188 L1480,180 C1040,190 560,8 0,26 Z"/>
-          </svg>
-        </div>
+        <app-encabezado-ola />
         <header class="inicio-hero">
           <div class="inicio-hero-copy">
             <div class="inicio-saludo">
-              <h1>¡Hola, {{ primerNombre() }}! <span aria-hidden="true">👋</span></h1>
-              <p>Bienvenido a <strong>Dilema</strong>, donde cada decisión cuenta.</p>
+              <h1>¡Hola, {{ primerNombre() }}!</h1>
+              @if (descripcion()) { <p class="marco-descripcion">{{ descripcion() }}</p> }
             </div>
           </div>
         </header>
@@ -138,6 +74,8 @@ export class MarcoEstudianteComponent {
   private router = inject(Router);
   activa = input<string | null>(null);
   sinLeer = input(0);
+  /** Texto gris bajo el saludo: qué se hace en la sección actual. */
+  descripcion = input('Bienvenido a Dilema, donde cada decisión cuenta.');
   menuAbierto = signal(false);
   alternarMenu() { this.menuAbierto.update((abierto) => !abierto); }
   cerrarMenu() { this.menuAbierto.set(false); }
