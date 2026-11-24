@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{baseUrl}}/api/participaciones/{{ausenteParticipacionId}}"
+method: GET
+headers:
+  Authorization: Bearer {{tokenDocente}}
+scripts:
+  - type: afterResponse
+    code: |-
+      const juego = pm.response.json();
+      pm.test("el ausente tiene 0 en cada pregunta del caso", function () {
+        pm.response.to.have.status(200);
+        pm.expect(juego.estado).to.eql("AUSENTE");
+        pm.expect(juego.nota).to.eql(0);
+        pm.expect(juego.preguntas).to.have.lengthOf(juego.total);
+        pm.expect(juego.preguntas.every(p => p.puntaje === 0)).to.eql(true);
+      });
+    language: text/javascript
+order: 33000

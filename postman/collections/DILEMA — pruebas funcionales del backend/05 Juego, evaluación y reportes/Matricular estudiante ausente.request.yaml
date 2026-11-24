@@ -1,0 +1,28 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/grupos/{{grupoId}}/estudiantes"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenDocente}}
+body:
+  type: text
+  content: |-
+    {
+      "nombre": "Estudiante ausente",
+      "email": "{{emailAusente}}"
+    }
+scripts:
+  - type: beforeRequest
+    code: pm.collectionVariables.set("emailAusente", "ausente" + pm.collectionVariables.get("sello") + "@psicosim.edu");
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      const grupo = pm.response.json();
+      pm.test("el estudiante ausente queda en el grupo", function () {
+        pm.response.to.have.status(200);
+        const ausente = grupo.estudiantes.find(e => e.email === pm.collectionVariables.get("emailAusente"));
+        pm.expect(ausente).to.be.an("object");
+        pm.collectionVariables.set("estudianteAusenteId", String(ausente.id));
+      });
+    language: text/javascript
+order: 29000

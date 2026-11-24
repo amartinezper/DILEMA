@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/sesiones/{{sesionId}}/reporte.csv"
+method: GET
+headers:
+  Authorization: Bearer {{tokenDocente}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("el CSV trae el intento completo en nivel superior", function () {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.headers.get("Content-Disposition")).to.include("reporte-sesion-");
+        const texto = pm.response.text();
+        pm.expect(texto).to.include("estudiante,estado,puntaje,aciertos,totalPreguntas,nivel,valoracionGeneral");
+        pm.expect(texto).to.include("COMPLETA,5.0,1,1,SUPERIOR");
+        pm.expect(texto).to.include("Estudiante Postman");
+      });
+    language: text/javascript
+order: 18000

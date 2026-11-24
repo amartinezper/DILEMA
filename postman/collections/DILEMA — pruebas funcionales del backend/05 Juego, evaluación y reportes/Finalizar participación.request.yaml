@@ -1,0 +1,26 @@
+$kind: http-request
+url: "{{baseUrl}}/api/participaciones/{{participacionId}}/finalizar"
+method: POST
+headers:
+  Authorization: Bearer {{tokenEstudiante}}
+scripts:
+  - type: afterResponse
+    code: |-
+      const juego = pm.response.json();
+      pm.test("cierra con 5,0 y revela la explicación", function () {
+        pm.response.to.have.status(200);
+        pm.expect(juego.estado).to.eql("FINALIZADA");
+        pm.expect(juego.nota).to.eql(5);
+        const correcta = juego.preguntas[0].opciones.find(o => o.id === Number(pm.collectionVariables.get("opcionCorrectaId")));
+        pm.expect(correcta.correcta).to.eql(true);
+        pm.expect(correcta.explicacion).to.eql("El permiso abre la relación.");
+        pm.expect(correcta.fundamento).to.eql("El encuadre pide consentimiento.");
+      });
+      pm.test("resumen de resultados: 1 acierto, 0 errores, 0 sin responder", function () {
+        pm.expect(juego.aciertos).to.eql(1);
+        pm.expect(juego.errores).to.eql(0);
+        pm.expect(juego.sinResponder).to.eql(0);
+        pm.expect(juego.total).to.eql(1);
+      });
+    language: text/javascript
+order: 13000

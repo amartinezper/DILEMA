@@ -1,0 +1,28 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/sesiones"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenDocente}}
+body:
+  type: text
+  content: |-
+    {
+      "casoId": {{casoId}},
+      "grupoId": {{grupoId}},
+      "inicio": "{{inicio}}",
+      "fin": "{{fin}}",
+      "tiempoMaxMin": 41,
+      "toleranciaMin": 180,
+      "lugar": "Aula 3",
+      "mensaje": "Supera el estimado."
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("responde 400", function () {
+        pm.response.to.have.status(400);
+        pm.expect(pm.response.json().mensaje).to.eql("RF-18: el tiempo máximo no puede superar el estimado del caso.");
+      });
+    language: text/javascript
+order: 10000

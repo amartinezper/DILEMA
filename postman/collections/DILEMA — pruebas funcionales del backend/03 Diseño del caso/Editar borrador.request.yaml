@@ -1,0 +1,68 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/casos/{{casoId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenDocente}}
+body:
+  type: text
+  content: |-
+    {
+      "nombre": "Caso Postman {{sello}} editado",
+      "desarrolloSituacional": "El grupo debe acordar cómo abrir la conversación.",
+      "contexto": "Práctica en el aula.",
+      "tiempoEstimadoMin": 40,
+      "sensible": false,
+      "advertencia": "",
+      "repartoRubrica": "PONDERADA",
+      "bloques": [
+        {
+          "nombre": "Encuadre",
+          "contexto": "El grupo acaba de llegar.",
+          "preguntas": [
+            {
+              "enunciado": "¿Cuál es el primer paso?",
+              "pista": "Piensa en el permiso.",
+              "criterio": "Encuadre ético",
+              "peso": 5.0,
+              "opciones": [
+                {
+                  "texto": "Pedir permiso para conversar.",
+                  "correcta": true,
+                  "explicacion": "El permiso abre la relación.",
+                  "fundamento": "El encuadre pide consentimiento."
+                },
+                {
+                  "texto": "Dar la instrucción de inmediato.",
+                  "correcta": false,
+                  "explicacion": "Saltarse el permiso concentra la voz.",
+                  "fundamento": "Dirigir sin permiso desplaza al grupo."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "personajes": [
+        { "nombre": "Ana", "descripcion": "Participa en el caso.", "escenarios": [0] }
+      ],
+      "rubrica": []
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const caso = pm.response.json();
+      pm.test("sigue en borrador y trae la pregunta", function () {
+        pm.response.to.have.status(200);
+        pm.expect(caso.estado).to.eql("BORRADOR");
+        pm.expect(caso.nombre).to.include("editado");
+        pm.expect(caso.bloques[0].preguntas[0].opciones).to.have.lengthOf(2);
+      });
+      const pregunta = caso.bloques[0].preguntas[0];
+      const correcta = pregunta.opciones.find(o => o.correcta);
+      const incorrecta = pregunta.opciones.find(o => !o.correcta);
+      pm.collectionVariables.set("preguntaId", String(pregunta.id));
+      pm.collectionVariables.set("opcionCorrectaId", String(correcta.id));
+      pm.collectionVariables.set("opcionIncorrectaId", String(incorrecta.id));
+    language: text/javascript
+order: 6000

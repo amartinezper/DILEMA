@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/casos"
+method: GET
+headers:
+  Authorization: Bearer {{tokenDocente}}
+scripts:
+  - type: afterResponse
+    code: |-
+      const lista = pm.response.json();
+      pm.test("la semilla incluye el caso publicado", function () {
+        pm.response.to.have.status(200);
+        pm.expect(lista.some(c => c.estado === "PUBLICADO")).to.eql(true);
+      });
+    language: text/javascript
+order: 1000

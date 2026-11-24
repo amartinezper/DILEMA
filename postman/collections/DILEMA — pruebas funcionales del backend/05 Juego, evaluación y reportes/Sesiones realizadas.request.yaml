@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/seguimiento/sesiones"
+method: GET
+headers:
+  Authorization: Bearer {{tokenDocente}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("la convocatoria finalizada ya se puede recorrer", function () {
+        pm.response.to.have.status(200);
+        const id = Number(pm.collectionVariables.get("sesionId"));
+        const encontrada = pm.response.json().find(s => s.id === id);
+        pm.expect(encontrada).to.be.an("object");
+        pm.expect(encontrada.caso).to.include("Caso Postman");
+        pm.expect(encontrada.grupo).to.include(pm.collectionVariables.get("sello"));
+      });
+    language: text/javascript
+order: 37000

@@ -1,0 +1,3 @@
+$kind: collection
+description: Revoca un token y comprueba que ya no entra.
+order: 6000

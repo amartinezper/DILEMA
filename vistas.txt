@@ -1,0 +1,555 @@
+ id | caso_id | grupo_id | codigo_autorizacion |     inicio_programado      |       fin_programado       |        inicio_real         |        cierre_real         |   estado    
+----+---------+----------+---------------------+----------------------------+----------------------------+----------------------------+----------------------------+-------------
+ 29 |      97 |        1 | DL-FQ3V             | 2026-11-20 21:26:00        | 2026-11-30 21:26:00        | 2026-11-21 02:26:15.202964 |                            | EN_CURSO
+ 30 |      97 |        1 | DL-V2DC             | 2026-11-20 21:57:00        | 2026-11-30 21:55:00        |                            |                            | SIN_INICIAR
+ 31 |      97 |        1 | DL-74ER             | 2026-11-20 22:00:00        | 2026-11-29 21:59:00        |                            |                            | SIN_INICIAR
+ 32 |      97 |        1 | DL-7FEP             | 2026-11-20 22:00:00        | 2026-11-29 21:59:00        |                            |                            | SIN_INICIAR
+ 33 |      97 |        1 | DL-7MW5             | 2026-11-20 22:00:00        | 2026-11-29 21:59:00        |                            |                            | SIN_INICIAR
+ 34 |      97 |        1 | DL-Z57R             | 2026-11-20 22:00:00        | 2026-11-29 21:59:00        |                            |                            | SIN_INICIAR
+ 35 |      97 |        1 | DL-8VJ4             | 2026-11-20 22:00:00        | 2026-11-29 21:59:00        |                            |                            | SIN_INICIAR
+ 36 |      97 |        1 | DL-TYD7             | 2026-11-20 22:00:00        | 2026-11-29 21:59:00        | 2026-11-21 03:02:04.988741 |                            | EN_CURSO
+ 37 |     101 |        1 | DL-BFCR             | 2026-11-20 22:04:00        | 2026-11-22 22:02:00        |                            |                            | SIN_INICIAR
+ 38 |     101 |        1 | DL-NZXN             | 2026-11-20 22:04:00        | 2026-11-22 22:02:00        |                            |                            | SIN_INICIAR
+ 39 |     101 |        1 | DL-EC42             | 2026-11-21 13:12:00        | 2026-11-30 14:11:00        |                            |                            | SIN_INICIAR
+ 40 |     101 |        1 | DL-UTST             | 2026-11-21 13:12:00        | 2026-11-30 14:11:00        |                            |                            | SIN_INICIAR
+ 41 |     101 |        1 | DL-VT6A             | 2026-11-21 13:12:00        | 2026-11-30 14:11:00        |                            |                            | SIN_INICIAR
+ 42 |     101 |        1 | DL-BNMN             | 2026-11-21 13:12:00        | 2026-11-30 14:11:00        |                            |                            | SIN_INICIAR
+ 43 |     101 |        1 | DL-XR4N             | 2026-11-21 13:12:00        | 2026-11-30 14:11:00        |                            |                            | SIN_INICIAR
+ 44 |     101 |        1 | DL-6BHS             | 2026-11-21 13:12:00        | 2026-11-30 14:11:00        |                            |                            | SIN_INICIAR
+ 45 |     101 |        1 | DL-9GNT             | 2026-11-21 13:12:00        | 2026-11-30 14:11:00        |                            |                            | SIN_INICIAR
+ 46 |     101 |        1 | DL-F5S9             | 2026-11-21 13:12:00        | 2026-11-30 14:11:00        |                            |                            | SIN_INICIAR
+ 47 |     101 |        1 | DL-PMSS             | 2026-11-21 13:12:00        | 2026-11-30 14:11:00        |                            |                            | SIN_INICIAR
+ 48 |     101 |        1 | DL-VUXP             | 2026-11-21 13:12:00        | 2026-11-30 14:11:00        |                            |                            | SIN_INICIAR
+ 51 |     101 |        1 | DL-HP6K             | 2026-11-21 13:12:00        | 2026-11-30 14:11:00        |                            |                            | SIN_INICIAR
+ 52 |     101 |        1 | DL-WSGT             | 2026-11-21 13:12:00        | 2026-11-30 14:11:00        |                            |                            | SIN_INICIAR
+ 53 |     101 |        1 | DL-ADM5             | 2026-11-21 13:12:00        | 2026-11-30 14:11:00        |                            |                            | SIN_INICIAR
+ 54 |     101 |        1 | DL-GYED             | 2026-11-21 13:12:00        | 2026-11-30 14:11:00        |                            |                            | SIN_INICIAR
+ 55 |     101 |        1 | DL-YRSF             | 2026-11-21 13:12:00        | 2026-11-30 14:11:00        |                            |                            | SIN_INICIAR
+ 56 |     101 |        1 | DL-LKAE             | 2026-11-21 13:12:00        | 2026-11-30 14:11:00        |                            |                            | SIN_INICIAR
+ 57 |     101 |        1 | DL-QGCH             | 2026-11-21 13:12:00        | 2026-11-30 14:11:00        | 2026-11-21 18:11:47.014612 |                            | EN_CURSO
+ 58 |     101 |        1 | DL-9YRT             | 2026-11-21 13:12:00        | 2026-11-30 14:11:00        | 2026-11-21 18:11:50.349714 |                            | EN_CURSO
+ 27 |      97 |        1 | DL-LQCW             | 2026-11-20 11:16:00        | 2026-12-20 11:16:00        | 2026-11-20 16:16:46.798797 |                            | EN_CURSO
+ 59 |     102 |       29 | DL-9PLS             | 2026-11-21 15:43:00        | 2026-11-22 15:43:00        | 2026-11-21 20:43:02.783405 |                            | EN_CURSO
+ 28 |      97 |        1 | DL-3ZX8             | 2026-11-21 17:45:00        | 2026-11-26 17:45:00        | 2026-11-21 02:24:36.359151 |                            | EN_CURSO
+ 61 |     102 |        1 | DL-5U9L             | 2026-11-21 15:57:00        | 2026-11-28 15:56:00        |                            |                            | SIN_INICIAR
+ 62 |     102 |        1 | DL-EB3N             | 2026-11-21 15:57:00        | 2026-11-28 15:56:00        |                            |                            | SIN_INICIAR
+ 63 |     102 |        1 | DL-QUGK             | 2026-11-21 15:57:00        | 2026-11-28 15:56:00        |                            |                            | SIN_INICIAR
+ 64 |     102 |        1 | DL-LRSS             | 2026-11-21 15:57:00        | 2026-11-28 15:56:00        |                            |                            | SIN_INICIAR
+ 65 |     102 |        1 | DL-86EA             | 2026-11-21 15:57:00        | 2026-11-28 15:56:00        |                            |                            | SIN_INICIAR
+ 66 |     102 |        1 | DL-PHWW             | 2026-11-21 15:57:00        | 2026-11-28 15:56:00        |                            |                            | SIN_INICIAR
+ 67 |     102 |        1 | DL-LEVP             | 2026-11-21 15:57:00        | 2026-11-28 15:56:00        |                            |                            | SIN_INICIAR
+ 68 |     102 |        1 | DL-4MLZ             | 2026-11-21 15:57:00        | 2026-11-28 15:56:00        |                            |                            | SIN_INICIAR
+ 69 |     102 |        1 | DL-XE2Q             | 2026-11-21 15:57:00        | 2026-11-28 15:56:00        |                            |                            | SIN_INICIAR
+ 70 |     102 |        1 | DL-56WP             | 2026-11-21 15:57:00        | 2026-11-28 15:56:00        |                            |                            | SIN_INICIAR
+ 71 |     102 |        1 | DL-XSVL             | 2026-11-21 15:57:00        | 2026-11-28 15:56:00        |                            |                            | SIN_INICIAR
+ 72 |     102 |        1 | DL-57VA             | 2026-11-21 15:57:00        | 2026-11-28 15:56:00        |                            |                            | SIN_INICIAR
+ 73 |     102 |        1 | DL-YM8Y             | 2026-11-21 15:57:00        | 2026-11-28 15:56:00        |                            |                            | SIN_INICIAR
+ 74 |     102 |        1 | DL-2F4D             | 2026-11-21 15:57:00        | 2026-11-28 15:56:00        |                            |                            | SIN_INICIAR
+ 75 |     102 |        1 | DL-2K8L             | 2026-11-21 15:57:00        | 2026-11-28 15:56:00        |                            |                            | SIN_INICIAR
+ 60 |     102 |        1 | DL-CLXH             | 2026-11-21 18:50:00        | 2026-11-28 15:56:00        |                            |                            | SIN_INICIAR
+ 50 |     101 |        1 | DL-TWPY             | 2026-11-21 18:53:00        | 2026-11-30 14:11:00        | 2026-11-21 23:54:34.974415 |                            | EN_CURSO
+ 76 |     102 |        1 | DL-DNKZ             | 2026-11-21 17:50:00        | 2026-11-28 15:56:00        | 2026-11-21 22:48:39.408206 |                            | EN_CURSO
+ 77 |     102 |        1 | DL-BRSH             | 2026-11-21 15:57:00        | 2026-11-28 15:56:00        | 2026-11-21 20:57:19.820367 | 2026-11-21 21:15:26.928897 | FINALIZADO
+ 79 |     101 |       31 | DILEMA-2026         | 2026-11-22 17:26:05.227285 | 2027-11-22 17:36:05.227285 | 2026-11-22 17:31:05.227285 |                            | EN_CURSO
+ 78 |     102 |       29 | DL-4UWS             | 2026-11-21 18:00:00        | 2026-11-22 17:00:00        | 2026-11-21 22:00:23.118076 | 2026-11-21 22:00:24.195456 | FINALIZADO
+ 49 |     101 |        1 | DL-3F2Y             | 2026-11-21 18:29:00        | 2026-11-30 14:11:00        | 2026-11-21 23:31:29.164776 |                            | EN_CURSO
+(53 rows)
+
+ id | sesion_id | estudiante_id | caso_id | numero_intento |           inicio           |            fin             |   estado   | minutos_corridos 
+----+-----------+---------------+---------+----------------+----------------------------+----------------------------+------------+------------------
+ 82 |        49 |             4 |     101 |              1 | 2026-11-21 23:34:52.254224 | 2026-11-21 23:39:10.999672 | FINALIZADA |              4.3
+ 83 |        50 |             4 |     101 |              1 | 2026-11-21 23:56:30.160825 | 2026-11-22 00:00:30.205242 | FINALIZADA |              4.0
+ 71 |        59 |             3 |     102 |              1 | 2026-11-21 20:43:29.354501 | 2026-11-21 20:44:09.819555 | FINALIZADA |              0.7
+ 72 |        77 |             4 |     102 |              1 |                            |                            | AUSENTE    |                 
+ 73 |        77 |             3 |     102 |              1 |                            |                            | AUSENTE    |                 
+ 74 |        77 |             3 |     102 |              1 |                            |                            | AUSENTE    |                 
+ 75 |        77 |            98 |     102 |              1 |                            |                            | AUSENTE    |                 
+ 76 |        77 |             4 |     102 |              1 |                            |                            | AUSENTE    |                 
+ 77 |        77 |            98 |     102 |              1 |                            |                            | AUSENTE    |                 
+ 78 |        77 |             3 |     102 |              1 |                            |                            | AUSENTE    |                 
+ 79 |        77 |            98 |     102 |              1 |                            |                            | AUSENTE    |                 
+ 80 |        77 |             4 |     102 |              1 |                            |                            | AUSENTE    |                 
+ 81 |        78 |             3 |     102 |              1 |                            |                            | AUSENTE    |                 
+(13 rows)
+
+ participacion_id | puntaje | nivel  
+------------------+---------+--------
+               71 |     3.3 | BASICO
+               72 |     0.0 | BAJO
+               73 |     0.0 | BAJO
+               74 |     0.0 | BAJO
+               75 |     0.0 | BAJO
+               76 |     0.0 | BAJO
+               77 |     0.0 | BAJO
+               78 |     0.0 | BAJO
+               79 |     0.0 | BAJO
+               80 |     0.0 | BAJO
+               81 |     0.0 | BAJO
+               82 |     0.0 | BAJO
+               83 |     0.0 | BAJO
+(13 rows)
+
+ caso_id |                         caso                          | pregunta_id | orden |                 criterio                 | peso | suma_pesos 
+---------+-------------------------------------------------------+-------------+-------+------------------------------------------+------+------------
+      97 | Santiago: señales de alerta en el colegio             |         166 |     0 | Protección inmediata del niño            |  1.5 |        5.0
+      97 | Santiago: señales de alerta en el colegio             |         167 |     0 | Escucha y activación de la ruta          |  2.0 |        5.0
+      97 | Santiago: señales de alerta en el colegio             |         168 |     0 | Trabajo con la familia                   |  1.5 |        5.0
+      98 | Camilo: consumo de sustancias y familia               |         181 |     0 | Manejo de la crisis familiar             |  1.5 |        5.0
+      98 | Camilo: consumo de sustancias y familia               |         182 |     0 | Encuadre y alianza terapéutica           |  2.0 |        5.0
+      98 | Camilo: consumo de sustancias y familia               |         183 |     0 | Factores de protección                   |  1.5 |        5.0
+      99 | Diana: atención en la comisaría de familia            |         184 |     0 | Atención sin revictimización             |  2.0 |        5.0
+      99 | Diana: atención en la comisaría de familia            |         185 |     0 | Verificación de derechos y red de apoyo  |  1.5 |        5.0
+      99 | Diana: atención en la comisaría de familia            |         186 |     0 | Seguimiento y acompañamiento psicosocial |  1.5 |        5.0
+     100 | Don Álvaro: un adulto mayor solo en casa              |         187 |     0 | Primer contacto respetuoso               |  1.5 |        5.0
+     100 | Don Álvaro: un adulto mayor solo en casa              |         188 |     0 | Corresponsabilidad familiar y autonomía  |  2.0 |        5.0
+     100 | Don Álvaro: un adulto mayor solo en casa              |         189 |     0 | Seguimiento                              |  1.5 |        5.0
+     101 | Valentina: crisis de ansiedad en la universidad       |         190 |     0 | Primeros auxilios psicológicos           |  1.5 |        5.0
+     101 | Valentina: crisis de ansiedad en la universidad       |         191 |     0 | Continuidad de la atención               |  1.5 |        5.0
+     101 | Valentina: crisis de ansiedad en la universidad       |         192 |     0 | Plan de intervención                     |  2.0 |        5.0
+     102 | Caso 1. Violencia familiar y tentativa de feminicidio |         193 |     0 | Decisión de intervención                 |  0.8 |        5.0
+     102 | Caso 1. Violencia familiar y tentativa de feminicidio |         194 |     1 | Marco normativo                          |  0.7 |        5.0
+     102 | Caso 1. Violencia familiar y tentativa de feminicidio |         195 |     2 | Actuación técnica y ética                |  1.0 |        5.0
+     102 | Caso 1. Violencia familiar y tentativa de feminicidio |         196 |     0 | Decisión de intervención                 |  0.8 |        5.0
+     102 | Caso 1. Violencia familiar y tentativa de feminicidio |         197 |     1 | Marco normativo                          |  0.7 |        5.0
+     102 | Caso 1. Violencia familiar y tentativa de feminicidio |         198 |     2 | Actuación técnica y ética                |  1.0 |        5.0
+     103 | [PRUEBA] Caso temporal                                |         199 |     0 |                                          |  0.0 |        0.0
+     104 | [PRUEBA] Caso temporal (copia)                        |         200 |     0 |                                          |  0.0 |        0.0
+(23 rows)
+
+ participacion_id | pregunta_id | caso_id | opcion_id |      fecha_respuesta       |                                            enunciado                                            |                                                                                                                                                                                                                            opcion                                                                                                                                                                                                                            | es_correcta |                                                                                                                              explicacion                                                                                                                              |                                                                           fundamento                                                                           
+------------------+-------------+---------+-----------+----------------------------+-------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+               71 |         193 |     102 |       427 | 2026-11-21 20:43:59.643929 | <p>El estudiante debe decidir: ¿En qué centrar la intervención inmediata?</p>                   | Contención emocional a la familia, acompañamiento en el duelo inicial y estabilización de la crisis (Primeros Auxilios Psicológicos - PAP).                                                                                                                                                                                                                                                                                                                  | t           | [Propuesta, validar con la docente] Es correcta: mientras el equipo médico atiende a la sobreviviente, la prioridad psicológica es contener a la familia, acompañar el duelo inicial y estabilizar la crisis.                                                         | Primeros Auxilios Psicológicos (PAP) y Resolución 459 de 2012 (protocolo de atención integral en salud a víctimas de violencias sexuales y basadas en género).
+               71 |         194 |     102 |       430 | 2026-11-21 20:43:44.95831  | <p>El estudiante debe tener claro: ¿Qué marco normativo y técnico debe seguir?</p>              | Resolución 459 de 2012 (Protocolo de atención integral a violencias sexuales y basadas en género) y Ley 1257 de 2008.                                                                                                                                                                                                                                                                                                                                        | t           | [Propuesta, validar con la docente] Es correcta: combina el protocolo de atención en salud (Resolución 459 de 2012) con la ley que protege a las mujeres frente a la violencia y les garantiza atención integral (Ley 1257 de 2008).                                  | Resolución 459 de 2012 y Ley 1257 de 2008.
+               71 |         195 |     102 |       435 | 2026-11-21 20:43:46.333273 | <p>El estudiante debe actuar técnica y éticamente: ¿Qué se debe hacer y qué se debe evitar?</p> | Primeros auxilios psicológicos para la familia, escucha activa y sin juicios a la víctima (cuando esté consciente), activar protocolo EPICEE (SPIKES en inglés) para dar la noticia del fallecimiento de la menor, evaluación psicosocial de la familia para reconocer factores protectores y de riesgo en el afrontamiento del duelo. Manejo del caso de manera interdisciplinar para la toma de decisiones (como derivación a psiquiatría y psicoterapia). | t           | [Propuesta, validar con la docente] Es correcta: atiende a la familia y a la víctima cuando está consciente, comunica el fallecimiento con el protocolo EPICEE, evalúa los factores protectores y de riesgo para el duelo y maneja el caso de forma interdisciplinar. | Primeros Auxilios Psicológicos, protocolo EPICEE (SPIKES) y Resolución 459 de 2012.
+               71 |         196 |     102 |       437 | 2026-11-21 20:43:56.220127 | <p>El estudiante debe decidir: ¿Cuál es la prioridad en la asesoría psicosocial?</p>            | Valoración del riesgo de feminicidio, activación de medidas de protección y asesoría sobre sus derechos económicos y de justicia.                                                                                                                                                                                                                                                                                                                            | t           | [Propuesta, validar con la docente] Es correcta: tras una tentativa de feminicidio la prioridad es valorar el riesgo, activar las medidas de protección y orientar a la mujer sobre sus derechos.                                                                     | Ley 1257 de 2008 (medidas de protección y derechos de las mujeres víctimas) y Ley 2126 de 2021 (comisarías de familia).
+               71 |         197 |     102 |       440 | 2026-11-21 20:44:08.491571 | <p>El estudiante debe tener claro: ¿Qué marco normativo y técnico debe seguir?</p>              | Ley 1098 de 2006, Ley 1257 de 2008.                                                                                                                                                                                                                                                                                                                                                                                                                          | f           | [Propuesta, validar con la docente] Es incompleta: omite la Ley 2126 de 2021, que regula la actuación de la comisaría de familia.                                                                                                                                     | Ley 2126 de 2021.
+(5 rows)
+
+ usuario_id |         nombre         |               email                | sin_leer 
+------------+------------------------+------------------------------------+----------
+         87 | Estudiante extra       | extra1794255993443@psicosim.edu    |        0
+         71 | Estudiante Rúbrica A   | rubricaa1794254487690@psicosim.edu |        1
+         68 | Estudiante Postman     | postman1794254476929@psicosim.edu  |        4
+         51 | Estudiante extra       | extra1794253714153@psicosim.edu    |        0
+         80 | Estudiante Postman     | postman1794255897114@psicosim.edu  |        4
+         70 | Estudiante ausente     | ausente1794254476929@psicosim.edu  |        2
+         52 | Estudiante ausente     | ausente1794253714153@psicosim.edu  |        2
+         84 | Estudiante Rúbrica B   | rubricab1794255914256@psicosim.edu |        1
+         92 | Estudiante Postman     | postman1794256061468@psicosim.edu  |        4
+         69 | Estudiante extra       | extra1794254476929@psicosim.edu    |        0
+         60 | Estudiante Rúbrica B   | rubricab1794253992453@psicosim.edu |        0
+         97 | kevin                  | kebindd@gmail.com                  |        0
+         22 | Estudiante extra       | extra1794071738188@psicosim.edu    |        0
+         59 | Estudiante Rúbrica A   | rubricaa1794253992453@psicosim.edu |        0
+         65 | Estudiante Rúbrica A   | rubricaa1794254360001@psicosim.edu |        1
+         98 | mery                   | cluzmeri85@gmail.com               |        3
+         73 | Docente Postman        | docente1794255860935@psicosim.edu  |        0
+         11 | Estudiante extra       | extra1794068647528@psicosim.edu    |        0
+         44 | Estudiante ausente     | ausente1794252146751@psicosim.edu  |        2
+         42 | Estudiante Postman     | postman1794252146751@psicosim.edu  |        4
+         88 | Estudiante ausente     | ausente1794255993443@psicosim.edu  |        2
+         82 | Estudiante ausente     | ausente1794255897114@psicosim.edu  |        2
+         40 | Estudiante ausente     | ausente1794074853290@psicosim.edu  |        2
+         43 | Estudiante extra       | extra1794252146751@psicosim.edu    |        0
+          9 | Docente Postman        | docente1794068647528@psicosim.edu  |        0
+         15 | Estudiante ausente     | ausente1794071401006@psicosim.edu  |        2
+         79 | Docente Postman        | docente1794255897114@psicosim.edu  |        0
+         26 | Estudiante extra       | extra1794073485746@psicosim.edu    |        0
+         48 | Estudiante ausente     | ausente1794252587327@psicosim.edu  |        2
+         85 | Docente Postman        | docente1794255993443@psicosim.edu  |        0
+         72 | Estudiante Rúbrica B   | rubricab1794254487690@psicosim.edu |        1
+         95 | Estudiante Rúbrica A   | rubricaa1794256094963@psicosim.edu |        1
+         57 | Estudiante extra       | extra1794253981928@psicosim.edu    |        0
+         61 | Docente Postman        | docente1794254350211@psicosim.edu  |        0
+         81 | Estudiante extra       | extra1794255897114@psicosim.edu    |        0
+         19 | Estudiante ausente     | ausente1794071603694@psicosim.edu  |        2
+         77 | Estudiante Rúbrica A   | rubricaa1794255873996@psicosim.edu |        1
+         30 | Estudiante extra       | extra1794074613998@psicosim.edu    |        0
+         21 | Estudiante Postman     | postman1794071738188@psicosim.edu  |        4
+          3 | Estudiante de práctica | estudiante@psicosim.edu            |       70
+         17 | Estudiante Postman     | postman1794071603694@psicosim.edu  |        4
+         28 | Docente Postman        | docente1794074613998@psicosim.edu  |        0
+         37 | Docente Postman        | docente1794074853290@psicosim.edu  |        0
+          5 | Docente Postman        | docente1794068608628@psicosim.edu  |        0
+         56 | Estudiante Postman     | postman1794253981928@psicosim.edu  |        4
+         91 | Docente Postman        | docente1794256061468@psicosim.edu  |        0
+         74 | Estudiante Postman     | postman1794255860935@psicosim.edu  |        4
+         54 | Estudiante Rúbrica B   | rubricab1794253714153@psicosim.edu |        0
+         29 | Estudiante Postman     | postman1794074613998@psicosim.edu  |        4
+          4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co      |       66
+         34 | Estudiante Postman     | postman1794074706448@psicosim.edu  |        4
+         96 | Estudiante Rúbrica B   | rubricab1794256094963@psicosim.edu |        1
+         67 | Docente Postman        | docente1794254476929@psicosim.edu  |        0
+         83 | Estudiante Rúbrica A   | rubricaa1794255914256@psicosim.edu |        1
+         63 | Estudiante extra       | extra1794254350211@psicosim.edu    |        0
+         90 | Estudiante Rúbrica B   | rubricab1794256012242@psicosim.edu |        1
+         10 | Estudiante Postman     | postman1794068647528@psicosim.edu  |        4
+         35 | Estudiante extra       | extra1794074706448@psicosim.edu    |        0
+         45 | Docente Postman        | docente1794252587327@psicosim.edu  |        0
+          6 | Estudiante Postman     | postman1794068608628@psicosim.edu  |        4
+         86 | Estudiante Postman     | postman1794255993443@psicosim.edu  |        4
+         39 | Estudiante extra       | extra1794074853290@psicosim.edu    |        0
+         93 | Estudiante extra       | extra1794256061468@psicosim.edu    |        0
+         89 | Estudiante Rúbrica A   | rubricaa1794256012242@psicosim.edu |        1
+         36 | Estudiante ausente     | ausente1794074706448@psicosim.edu  |        2
+         31 | Estudiante ausente     | ausente1794074613998@psicosim.edu  |        2
+         50 | Estudiante Postman     | postman1794253714153@psicosim.edu  |        4
+         14 | Estudiante extra       | extra1794071401006@psicosim.edu    |        0
+         66 | Estudiante Rúbrica B   | rubricab1794254360001@psicosim.edu |        1
+         13 | Estudiante Postman     | postman1794071401006@psicosim.edu  |        4
+          2 | Docente de práctica    | docente@psicosim.edu               |        0
+         16 | Docente Postman        | docente1794071603694@psicosim.edu  |        0
+         62 | Estudiante Postman     | postman1794254350211@psicosim.edu  |        4
+         75 | Estudiante extra       | extra1794255860935@psicosim.edu    |        0
+         41 | Docente Postman        | docente1794252146751@psicosim.edu  |        0
+         46 | Estudiante Postman     | postman1794252587327@psicosim.edu  |        4
+         53 | Estudiante Rúbrica A   | rubricaa1794253714153@psicosim.edu |        0
+         32 | Estudiante ausente     | ausente1794074670887@psicosim.edu  |        0
+          7 | Estudiante extra       | extra1794068608628@psicosim.edu    |        0
+         38 | Estudiante Postman     | postman1794074853290@psicosim.edu  |        4
+         12 | Docente Postman        | docente1794071401006@psicosim.edu  |        0
+         78 | Estudiante Rúbrica B   | rubricab1794255873996@psicosim.edu |        1
+         24 | Docente Postman        | docente1794073485746@psicosim.edu  |        0
+         25 | Estudiante Postman     | postman1794073485746@psicosim.edu  |        4
+         94 | Estudiante ausente     | ausente1794256061468@psicosim.edu  |        2
+         49 | Docente Postman        | docente1794253714153@psicosim.edu  |        0
+         47 | Estudiante extra       | extra1794252587327@psicosim.edu    |        0
+         20 | Docente Postman        | docente1794071738188@psicosim.edu  |        0
+         33 | Docente Postman        | docente1794074706448@psicosim.edu  |        0
+          1 | Administración DILEMA  | admin@psicosim.edu                 |        0
+         76 | Estudiante ausente     | ausente1794255860935@psicosim.edu  |        2
+         18 | Estudiante extra       | extra1794071603694@psicosim.edu    |        0
+         64 | Estudiante ausente     | ausente1794254350211@psicosim.edu  |        2
+         55 | Docente Postman        | docente1794253981928@psicosim.edu  |        0
+         27 | Estudiante ausente     | ausente1794073485746@psicosim.edu  |        2
+         23 | Estudiante ausente     | ausente1794071738188@psicosim.edu  |        2
+         58 | Estudiante ausente     | ausente1794253981928@psicosim.edu  |        2
+          8 | Estudiante ausente     | ausente1794068608628@psicosim.edu  |        2
+(98 rows)
+
+ sesion_id | estudiante_id |       estudiante       |             email             | grupo_id | participacion_id | numero_intento |   estado    
+-----------+---------------+------------------------+-------------------------------+----------+------------------+----------------+-------------
+        49 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |               82 |              1 | FINALIZADA
+        50 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |               83 |              1 | FINALIZADA
+        59 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |       29 |               71 |              1 | FINALIZADA
+        77 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |               72 |              1 | AUSENTE
+        77 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |               73 |              1 | AUSENTE
+        77 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |               74 |              1 | AUSENTE
+        77 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |               75 |              1 | AUSENTE
+        77 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |               76 |              1 | AUSENTE
+        77 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |               77 |              1 | AUSENTE
+        77 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |               78 |              1 | AUSENTE
+        77 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |               79 |              1 | AUSENTE
+        77 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |               80 |              1 | AUSENTE
+        78 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |       29 |               81 |              1 | AUSENTE
+        32 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        27 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        61 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        43 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        63 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        38 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        55 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        37 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        65 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        35 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        68 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        52 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        30 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        63 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        43 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        48 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        28 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        61 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        32 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        62 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        68 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        52 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        65 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        35 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        37 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        55 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        38 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        47 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        54 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        74 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        64 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        58 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        41 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        49 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        71 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        29 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        72 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        42 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        53 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        40 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        56 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        60 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        34 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        44 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        45 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        70 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        36 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        75 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        46 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        73 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        66 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        50 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        33 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        58 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        31 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        76 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        69 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        54 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        47 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        57 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        51 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        73 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        39 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        46 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        75 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        36 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        45 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        70 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        67 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        44 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        60 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        53 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        40 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        56 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        42 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        60 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        70 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        45 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        34 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        67 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        79 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |       31 |                  |                | SIN_INTENTO
+        75 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        39 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        51 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        57 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        74 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        64 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        31 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        58 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        69 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        76 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        41 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        49 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        71 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        33 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        72 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        66 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        29 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        39 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        73 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        46 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        36 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        44 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        34 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        67 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        40 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        56 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        53 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        42 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        29 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        72 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        66 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        33 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        50 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        71 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        41 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        69 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        76 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        31 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        64 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        54 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        74 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        51 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        57 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        47 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        38 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        55 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        68 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        62 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        27 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        32 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        28 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        63 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        48 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        30 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        65 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        35 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        52 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        37 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        30 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        48 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        43 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        28 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+        61 |            98 | mery                   | cluzmeri85@gmail.com          |        1 |                  |                | SIN_INTENTO
+        27 |             4 | sofia ruiz             | asruiz_740@unihumboldt.edu.co |        1 |                  |                | SIN_INTENTO
+        62 |             3 | Estudiante de práctica | estudiante@psicosim.edu       |        1 |                  |                | SIN_INTENTO
+(159 rows)
+
+ sesion_id | caso_id | estudiante_id |       estudiante       | numero_intento | participacion_id | estado  | puntaje | aciertos | total_preguntas | nivel  
+-----------+---------+---------------+------------------------+----------------+------------------+---------+---------+----------+-----------------+--------
+        29 |      97 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        30 |      97 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        31 |      97 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        32 |      97 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        33 |      97 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        34 |      97 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        35 |      97 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        36 |      97 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        37 |     101 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        38 |     101 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        27 |      97 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        28 |      97 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        39 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        40 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        39 |     101 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        41 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        42 |     101 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        40 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        44 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        43 |     101 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        41 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        39 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        42 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        40 |     101 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        44 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        43 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        41 |     101 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        45 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        42 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        46 |     101 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        44 |     101 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        43 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        47 |     101 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        45 |     101 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        48 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        49 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        46 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        50 |     101 |             4 | sofia ruiz             |              1 |               83 | PARCIAL |     0.0 |        0 |               3 | BAJO
+        45 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        47 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        48 |     101 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        49 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        46 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        51 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        50 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        47 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        49 |     101 |             4 | sofia ruiz             |              1 |               82 | PARCIAL |     0.0 |        0 |               3 | BAJO
+        48 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        27 |      97 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        52 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        50 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        28 |      97 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        51 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        53 |     101 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        29 |      97 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        54 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        55 |     101 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        52 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        54 |     101 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        53 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        51 |     101 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        56 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        30 |      97 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        52 |     101 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        55 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        29 |      97 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        30 |      97 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        27 |      97 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        28 |      97 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        53 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        31 |      97 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        31 |      97 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        32 |      97 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        32 |      97 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        54 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        57 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        33 |      97 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        33 |      97 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        34 |      97 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        55 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        34 |      97 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        58 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        35 |      97 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        35 |      97 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        56 |     101 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        36 |      97 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        36 |      97 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        37 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        37 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        38 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        38 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        57 |     101 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        58 |     101 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        56 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        57 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        58 |     101 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+        59 |     102 |             3 | Estudiante de práctica |              1 |               71 | PARCIAL |     3.3 |        4 |               6 | BASICO
+        60 |     102 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        61 |     102 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        62 |     102 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        63 |     102 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        60 |     102 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        64 |     102 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        65 |     102 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        61 |     102 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        63 |     102 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        62 |     102 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        65 |     102 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        60 |     102 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        64 |     102 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        63 |     102 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        61 |     102 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        62 |     102 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        65 |     102 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        64 |     102 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        66 |     102 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        67 |     102 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        69 |     102 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        68 |     102 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        70 |     102 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        66 |     102 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        71 |     102 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        67 |     102 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        68 |     102 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        69 |     102 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        66 |     102 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        71 |     102 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        70 |     102 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        67 |     102 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        68 |     102 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        69 |     102 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        72 |     102 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        70 |     102 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        71 |     102 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        74 |     102 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        73 |     102 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        75 |     102 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        76 |     102 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        72 |     102 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        77 |     102 |             3 | Estudiante de práctica |              1 |               78 | AUSENTE |     0.0 |        0 |               6 | BAJO
+        77 |     102 |             3 | Estudiante de práctica |              1 |               74 | AUSENTE |     0.0 |        0 |               6 | BAJO
+        77 |     102 |             3 | Estudiante de práctica |              1 |               73 | AUSENTE |     0.0 |        0 |               6 | BAJO
+        74 |     102 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        73 |     102 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        75 |     102 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        72 |     102 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        76 |     102 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        74 |     102 |            98 | mery                   |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        77 |     102 |            98 | mery                   |              1 |               79 | AUSENTE |     0.0 |        0 |               6 | BAJO
+        77 |     102 |            98 | mery                   |              1 |               77 | AUSENTE |     0.0 |        0 |               6 | BAJO
+        77 |     102 |            98 | mery                   |              1 |               75 | AUSENTE |     0.0 |        0 |               6 | BAJO
+        73 |     102 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        75 |     102 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        76 |     102 |             4 | sofia ruiz             |              0 |                  | AUSENTE |     0.0 |        0 |               6 | BAJO
+        77 |     102 |             4 | sofia ruiz             |              1 |               80 | AUSENTE |     0.0 |        0 |               6 | BAJO
+        77 |     102 |             4 | sofia ruiz             |              1 |               76 | AUSENTE |     0.0 |        0 |               6 | BAJO
+        77 |     102 |             4 | sofia ruiz             |              1 |               72 | AUSENTE |     0.0 |        0 |               6 | BAJO
+        78 |     102 |             3 | Estudiante de práctica |              1 |               81 | AUSENTE |     0.0 |        0 |               6 | BAJO
+        79 |     101 |             3 | Estudiante de práctica |              0 |                  | AUSENTE |     0.0 |        0 |               3 | BAJO
+(159 rows)
+

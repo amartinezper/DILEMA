@@ -1,0 +1,3 @@
+$kind: collection
+description: Comprueba el servicio y separa el ingreso por clave del ingreso por código.
+order: 1000

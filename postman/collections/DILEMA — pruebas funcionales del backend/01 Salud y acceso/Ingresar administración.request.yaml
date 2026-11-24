@@ -1,0 +1,28 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/ingresar"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "email": "admin@psicosim.edu",
+      "clave": "admin123",
+      "codigoAutorizacion": "",
+      "rol": "ADMIN"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const cuerpo = pm.response.json();
+      pm.test("entra la administración", function () {
+        pm.response.to.have.status(200);
+        pm.expect(cuerpo.usuario.rol).to.eql("ADMIN");
+        pm.expect(cuerpo.usuario.email).to.eql("admin@psicosim.edu");
+        pm.expect(cuerpo.sesionId).to.eql(null);
+        pm.expect(cuerpo.token).to.be.a("string").and.not.empty;
+      });
+      pm.collectionVariables.set("tokenAdmin", cuerpo.token);
+    language: text/javascript
+order: 3000

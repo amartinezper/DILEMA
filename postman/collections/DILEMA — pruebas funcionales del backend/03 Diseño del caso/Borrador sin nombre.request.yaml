@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/casos"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenDocente}}
+body:
+  type: text
+  content: '{"nombre":"  ","bloques":[],"personajes":[],"rubrica":[]}'
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("responde 400", function () {
+        pm.response.to.have.status(400);
+        pm.expect(pm.response.json().mensaje).to.eql("El borrador necesita al menos un nombre.");
+      });
+    language: text/javascript
+order: 2000

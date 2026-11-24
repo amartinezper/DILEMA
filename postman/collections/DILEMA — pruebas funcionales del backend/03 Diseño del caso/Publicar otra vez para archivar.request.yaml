@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/casos/{{casoEstadoId}}/publicar"
+method: POST
+headers:
+  Authorization: Bearer {{tokenDocente}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("publicado de nuevo", function () {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.json().estado).to.eql("PUBLICADO");
+      });
+    language: text/javascript
+order: 15000

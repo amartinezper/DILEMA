@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/grupos/{{grupoId}}/estudiantes/{{estudianteExtraId}}"
+method: DELETE
+headers:
+  Authorization: Bearer {{tokenDocente}}
+scripts:
+  - type: afterResponse
+    code: |-
+      const grupo = pm.response.json();
+      pm.test("sale el segundo y se queda el primero", function () {
+        pm.response.to.have.status(200);
+        const correos = grupo.estudiantes.map(e => e.email);
+        pm.expect(correos).to.include(pm.collectionVariables.get("emailEstudiante"));
+        pm.expect(correos).to.not.include(pm.collectionVariables.get("emailExtra"));
+      });
+    language: text/javascript
+order: 8000

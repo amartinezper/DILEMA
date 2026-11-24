@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/grupos/{{grupoId}}/estudiantes"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenDocente}}
+body:
+  type: text
+  content: |-
+    {
+      "nombre": "Estudiante extra",
+      "email": "{{emailExtra}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const grupo = pm.response.json();
+      pm.test("entra el segundo", function () {
+        pm.response.to.have.status(200);
+        const extra = grupo.estudiantes.find(e => e.email === pm.collectionVariables.get("emailExtra"));
+        pm.expect(extra).to.be.an("object");
+        pm.collectionVariables.set("estudianteExtraId", String(extra.id));
+      });
+    language: text/javascript
+order: 7000

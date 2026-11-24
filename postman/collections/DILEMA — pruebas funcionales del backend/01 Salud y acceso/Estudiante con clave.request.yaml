@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/ingresar"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "email": "estudiante@psicosim.edu",
+      "clave": "cualquiera",
+      "codigoAutorizacion": "",
+      "rol": "ESTUDIANTE"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("responde 400", function () {
+        pm.response.to.have.status(400);
+        pm.expect(pm.response.json().mensaje).to.eql("El estudiante ingresa con el código de autorización de la convocatoria.");
+      });
+    language: text/javascript
+order: 6000

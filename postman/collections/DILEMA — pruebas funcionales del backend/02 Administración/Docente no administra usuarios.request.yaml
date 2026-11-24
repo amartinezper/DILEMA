@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/usuarios"
+method: GET
+headers:
+  Authorization: Bearer {{tokenDocente}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("responde 403", function () {
+        pm.response.to.have.status(403);
+        pm.expect(pm.response.json().mensaje).to.eql("No tienes permiso para esta operación.");
+      });
+    language: text/javascript
+order: 2000

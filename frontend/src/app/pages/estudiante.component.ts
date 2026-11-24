@@ -16,6 +16,7 @@ import { ResultadosNovelaComponent } from '../shared/novela/resultados-novela.co
 import { resultadosDeParticipacion } from '../shared/novela/resultados';
 import { EscenaService } from '../shared/novela/escena.service';
 import { PaginacionTablaComponent, paginaDe, paginaValida } from '../shared/paginacion-tabla.component';
+import { IconoComponent } from '../shared/icono.component';
 
 const enlaces = [
   { href: '/estudiante', texto: 'Casos asignados', exacto: true },
@@ -85,58 +86,58 @@ type FiltroDilema = 'todos' | 'pendientes' | 'en_curso' | 'finalizados';
 
 @Component({
   selector: 'app-panel-estudiante',
-  imports: [RouterLink, MarcoEstudianteComponent, PaginacionTablaComponent],
+  imports: [RouterLink, MarcoEstudianteComponent, PaginacionTablaComponent, IconoComponent],
   template: `
     <app-marco-estudiante [activa]="seccion()" [sinLeer]="sinLeer()" [descripcion]="descripcionSeccion()">
         @if (error()) { <p class="error">{{ error() }}</p> }
 
         @if (seccion() === 'inicio') {
-          <section class="adm-kpis" aria-label="Resumen">
-            <article class="adm-tarjeta adm-kpi">
-              <span class="adm-kpi-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="10" rx="4"/><path d="M8 13h4M10 11v4M16.2 12h.01M18.2 14h.01"/></svg></span>
-              <div><small>Dilemas resueltos</small><strong>{{ finalizados() }}</strong><span>de {{ (panel()?.sesiones ?? []).length }} convocatorias</span></div>
+          <section class="est-kpis" aria-label="Resumen">
+            <article class="est-kpi">
+              <span class="est-kpi-icono"><app-icono nombre="birrete" [tamano]="28" /></span>
+              <div><h2>Dilemas resueltos</h2><strong>{{ resueltos() }}</strong><span>de {{ asignados() }} asignados</span></div>
             </article>
-            <article class="adm-tarjeta adm-kpi">
-              <span class="adm-kpi-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5h8v4a4 4 0 0 1-8 0V5z"/><path d="M8 7H5.5A2.5 2.5 0 0 0 8 11M16 7h2.5A2.5 2.5 0 0 1 16 11"/><path d="M12 13v3M9 20h6M10 17h4"/></svg></span>
-              <div><small>Tu puntaje</small><strong>{{ promedio() }}</strong><span>promedio sobre 5,0</span></div>
+            <article class="est-kpi">
+              <span class="est-kpi-icono"><app-icono nombre="trofeo" [tamano]="28" /></span>
+              <div><h2>Tu puntaje</h2><strong>{{ promedio() }}</strong><span><app-icono class="est-kpi-estrella" nombre="estrella" [tamano]="14" /> Promedio sobre 5.0</span></div>
             </article>
-            <article class="adm-tarjeta adm-kpi">
-              <span class="adm-kpi-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/></svg></span>
-              <div><small>Pendientes</small><strong>{{ pendientes() }}</strong><span>{{ enCurso() }} en curso</span></div>
+            <article class="est-kpi">
+              <span class="est-kpi-icono"><app-icono nombre="check" [tamano]="28" /></span>
+              <div><h2>Pendientes</h2><strong>{{ pendientes() }}</strong><span>{{ enCurso() === 1 ? '1 en curso' : enCurso() + ' en curso' }}</span></div>
             </article>
           </section>
 
           <section class="inicio-fila">
             <article class="inicio-destacado">
               <div class="destacado-texto">
-                <p class="chip-estrella">★ Dilema destacado</p>
+                <p class="chip-estrella"><app-icono nombre="estrella" [tamano]="18" /> Dilema destacado</p>
                 @if (destacado(); as caso) {
                   <h2>{{ caso.caso }}</h2>
                   @if (caso.sensible) {
                     <p class="destacado-sensible" role="note">⚠ {{ (caso.advertencia || '').trim() || 'Este caso trata temas sensibles.' }}</p>
                   }
-                  @if (textoDestacado()) { <p>{{ textoDestacado() }}</p> }
+                  @if (textoDestacado()) { <p class="destacado-resumen">{{ textoDestacado() }}</p> }
                   @if (caso.repeticionAutorizada || caso.participacionEstado === 'EN_CURSO' || !caso.participacionEstado) {
-                    <button class="btn-resolver" type="button" (click)="iniciarCaso(caso)">▶ Resolver dilema</button>
+                    <button class="btn-resolver" type="button" (click)="iniciarCaso(caso)">{{ caso.participacionEstado === 'EN_CURSO' ? 'Continuar' : 'Comenzar' }} <app-icono nombre="flecha" [tamano]="20" /></button>
                   } @else if (caso.participacionEstado === 'FINALIZADA' && caso.participacionId) {
-                    <a class="btn-resolver" [routerLink]="['/estudiante/participacion', caso.participacionId]">Ver resultados</a>
+                    <a class="btn-resolver" [routerLink]="['/estudiante/participacion', caso.participacionId]">Ver resultados <app-icono nombre="flecha" [tamano]="20" /></a>
                   } @else if (caso.estado === 'SIN_INICIAR') {
                     <p class="sub claro">Esperando a que el docente inicie la sesión.</p>
                   } @else if (caso.estado === 'FINALIZADO' && !caso.participacionId) {
                     <p class="sub claro">No participaste. Ausencia 0,0.</p>
                   } @else {
-                    <button class="btn-resolver" type="button" (click)="iniciarCaso(caso)">▶ Resolver dilema</button>
+                    <button class="btn-resolver" type="button" (click)="iniciarCaso(caso)">Comenzar <app-icono nombre="flecha" [tamano]="20" /></button>
                   }
                 } @else if (panel()) {
                   <h2>Aún no tienes casos asignados</h2>
-                  <p>Cuando tu docente te convoque a una sesión, el caso aparecerá aquí.</p>
+                  <p class="destacado-resumen">Cuando tu docente te convoque a una sesión, el caso aparecerá aquí.</p>
                 }
               </div>
               <figure class="destacado-figura">
                 @if (fondoDestacado(); as fondo) {
                   <img [src]="fondo.ruta" [alt]="altDestacado()" />
                   @if (fondo.escenario) {
-                    <figcaption class="letrero-escena">Escena 1 · {{ fondo.escenario }}</figcaption>
+                    <figcaption class="letrero-escena"><app-icono nombre="play" [tamano]="20" /> <span>Escena 1 · {{ fondo.escenario }}</span></figcaption>
                   }
                 }
               </figure>
@@ -144,11 +145,29 @@ type FiltroDilema = 'todos' | 'pendientes' | 'en_curso' | 'finalizados';
 
             <article class="inicio-progreso">
               <h3>Tu progreso</h3>
-              <div class="aro" [style.--p]="'' + progresoGeneral()">
+              <div class="est-aro" role="img" [attr.aria-label]="'Progreso: ' + progresoGeneral() + '% (' + resueltos() + ' de ' + asignados() + ' dilemas resueltos)'">
+                <svg viewBox="0 0 140 140" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="est-aro-azul" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0" stop-color="#1a73ff"/><stop offset="1" stop-color="#0b50d8"/>
+                    </linearGradient>
+                  </defs>
+                  <circle cx="70" cy="70" r="58" fill="none" stroke="#e3edff" stroke-width="14"/>
+                  @if (progresoGeneral() > 0) {
+                    <circle cx="70" cy="70" r="58" fill="none" stroke="url(#est-aro-azul)" stroke-width="14" stroke-linecap="round"
+                      pathLength="100" [attr.stroke-dasharray]="progresoGeneral() + ' 100'" transform="rotate(-90 70 70)"/>
+                  }
+                </svg>
                 <span>{{ progresoGeneral() }}%</span>
               </div>
-              <p class="nivel">★ {{ nivel() }}</p>
-              <p class="progreso-tip">{{ mensajeProgreso() }}</p>
+              <p class="nivel"><app-icono nombre="sube" [tamano]="18" /> {{ nivel() }}</p>
+              <div class="est-progreso-tip">
+                <app-icono class="est-progreso-trofeo" nombre="trofeo" [tamano]="22" />
+                <p>Revisa tus resultados y sigue con los demás casos en Mis dilemas.</p>
+                <a class="est-progreso-ir" [routerLink]="['/estudiante']" [queryParams]="{ vista: 'dilemas' }" aria-label="Ir a Mis dilemas">
+                  <app-icono nombre="flecha" [tamano]="20" />
+                </a>
+              </div>
             </article>
           </section>
         }
@@ -163,7 +182,7 @@ type FiltroDilema = 'todos' | 'pendientes' | 'en_curso' | 'finalizados';
             </div>
             <div class="adm-barra">
               <label class="adm-buscar">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+                <app-icono nombre="buscar" [tamano]="20" />
                 <span class="solo-lector">Buscar dilema</span>
                 <input type="search" placeholder="Buscar caso o grupo" [value]="busquedaDilemas()" (input)="busquedaDilemas.set(valorCampo($event)); paginaDilemas.set(1)" />
               </label>
@@ -266,7 +285,7 @@ type FiltroDilema = 'todos' | 'pendientes' | 'en_curso' | 'finalizados';
             <article class="adm-tarjeta">
               <div class="adm-cabeza"><h2>Tu avance</h2></div>
               <div class="adm-cifras">
-                <div><small>Resueltos</small><strong>{{ finalizados() }}</strong></div>
+                <div><small>Resueltos</small><strong>{{ resueltos() }}</strong></div>
                 <div><small>Puntaje</small><strong>{{ promedio() }}</strong></div>
                 <div><small>Avisos sin leer</small><strong>{{ sinLeer() }}</strong></div>
               </div>
@@ -368,6 +387,10 @@ export class PanelEstudianteComponent {
   pendientes() { return (this.panel()?.sesiones ?? []).filter((s) => !s.participacionEstado).length; }
   enCurso() { return (this.panel()?.sesiones ?? []).filter((s) => s.participacionEstado === 'EN_CURSO').length; }
   finalizados() { return (this.panel()?.sesiones ?? []).filter((s) => s.participacionEstado === 'FINALIZADA' || s.participacionEstado === 'AUSENTE').length; }
+  /** Sesiones asignadas al estudiante (las que trae su panel). */
+  asignados() { return (this.panel()?.sesiones ?? []).length; }
+  /** Dilemas resueltos: los que el estudiante terminó (una ausencia no cuenta como resuelto). */
+  resueltos() { return (this.panel()?.sesiones ?? []).filter((s) => s.participacionEstado === 'FINALIZADA').length; }
   promedio() {
     const notas = (this.panel()?.sesiones ?? []).map((s) => s.nota).filter((n): n is number => n !== null);
     if (!notas.length) return '—';
@@ -407,32 +430,16 @@ export class PanelEstudianteComponent {
       .then((f) => { if (pedido === this.pedidoFondo) this.fondoDestacado.set({ ruta: f.ruta, escenario }); })
       .catch(() => { if (pedido === this.pedidoFondo) this.fondoDestacado.set({ ruta: FONDO_NEUTRO, escenario }); });
   }
+  /** Tu progreso: dilemas resueltos sobre los asignados, en porcentaje. */
   progresoGeneral() {
-    const lista = this.panel()?.sesiones ?? [];
-    if (!lista.length) return 0;
-    const total = lista.reduce((acc, s) => acc + this.barra(s), 0);
-    return Math.round(total / lista.length);
+    const total = this.asignados();
+    return total ? Math.round((this.resueltos() / total) * 100) : 0;
   }
   nivel() {
     const p = this.progresoGeneral();
     if (p >= 80) return 'Nivel Avanzado';
     if (p >= 40) return 'Nivel Explorador';
     return 'Nivel Inicial';
-  }
-  /** Mensaje de "Tu Progreso", coherente con lo que muestra la tarjeta destacada. */
-  mensajeProgreso() {
-    if (this.progresoGeneral() >= 70) return 'Vas muy bien. Sigue resolviendo dilemas para alcanzar el siguiente nivel.';
-    const caso = this.destacado();
-    if (!caso) return 'Cuando tu docente te asigne un caso, aquí verás tu avance.';
-    const nombre = `«${caso.caso}»`;
-    if (caso.participacionEstado === 'EN_CURSO') return `Retoma ${nombre} donde lo dejaste para subir tu progreso.`;
-    if (caso.repeticionAutorizada || !caso.participacionEstado) {
-      if (caso.estado === 'SIN_INICIAR') return `${nombre} estará disponible cuando tu docente abra la sesión.`;
-      return this.finalizados()
-        ? `Sigue con ${nombre} para subir tu progreso.`
-        : `Empieza ${nombre} para registrar tu primer avance.`;
-    }
-    return 'Revisa tus resultados y sigue con los demás casos en Mis Dilemas.';
   }
   listaSeccion() { return this.visibles(); }
   visibles() {

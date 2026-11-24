@@ -1,0 +1,16 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/yo"
+method: GET
+headers:
+  Authorization: Bearer {{tokenDocente}}
+scripts:
+  - type: afterResponse
+    code: |-
+      const cuerpo = pm.response.json();
+      pm.test("el token corresponde al docente", function () {
+        pm.response.to.have.status(200);
+        pm.expect(cuerpo.email).to.eql("docente@psicosim.edu");
+        pm.expect(cuerpo.rol).to.eql("PROFESOR");
+      });
+    language: text/javascript
+order: 7000

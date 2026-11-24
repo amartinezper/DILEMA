@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/participaciones/{{participacionId}}/retroalimentacion"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenDocente}}
+body:
+  type: text
+  content: '{"texto":"Valoración de la prueba funcional."}'
+scripts:
+  - type: afterResponse
+    code: pm.test("responde 200", function () { pm.response.to.have.status(200); });
+    language: text/javascript
+order: 23000

@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/api/estudiante/panel"
+method: GET
+headers:
+  Authorization: Bearer {{tokenEstudiante}}
+scripts:
+  - type: afterResponse
+    code: |-
+      const panel = pm.response.json();
+      pm.test("ve la convocatoria y el aviso", function () {
+        pm.response.to.have.status(200);
+        const id = Number(pm.collectionVariables.get("sesionId"));
+        pm.expect(panel.sesiones.some(s => s.id === id && s.estado === "EN_CURSO")).to.eql(true);
+        const aviso = panel.avisos.find(a => a.titulo === "Caso asignado");
+        pm.expect(aviso).to.be.an("object");
+        pm.collectionVariables.set("avisoId", String(aviso.id));
+      });
+    language: text/javascript
+order: 3000

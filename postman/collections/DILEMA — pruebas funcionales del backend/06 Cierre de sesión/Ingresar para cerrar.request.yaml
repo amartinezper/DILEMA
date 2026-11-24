@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/ingresar"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "email": "admin@psicosim.edu",
+      "clave": "admin123",
+      "codigoAutorizacion": "",
+      "rol": "ADMIN"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const cuerpo = pm.response.json();
+      pm.test("token de un solo uso", function () {
+        pm.response.to.have.status(200);
+        pm.expect(cuerpo.token).to.be.a("string").and.not.empty;
+      });
+      pm.collectionVariables.set("tokenCierre", cuerpo.token);
+    language: text/javascript
+order: 1000

@@ -1,0 +1,20 @@
+$kind: http-request
+description: Público. Confirma que el backend está arriba.
+url: "{{baseUrl}}/api/salud"
+method: GET
+scripts:
+  - type: beforeRequest
+    code: |-
+      const sello = String(Date.now());
+      pm.collectionVariables.set("sello", sello);
+      pm.collectionVariables.set("emailEstudiante", "postman" + sello + "@psicosim.edu");
+      pm.collectionVariables.set("emailExtra", "extra" + sello + "@psicosim.edu");
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test("el servicio responde ok", function () {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.json().estado).to.eql("ok");
+      });
+    language: text/javascript
+order: 1000

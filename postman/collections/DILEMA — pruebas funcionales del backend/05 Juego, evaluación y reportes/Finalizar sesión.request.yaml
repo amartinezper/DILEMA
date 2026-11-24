@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/sesiones/{{sesionId}}/finalizar"
+method: POST
+headers:
+  Authorization: Bearer {{tokenDocente}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("la sesión queda finalizada", function () {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.json().estado).to.eql("FINALIZADO");
+      });
+    language: text/javascript
+order: 31000

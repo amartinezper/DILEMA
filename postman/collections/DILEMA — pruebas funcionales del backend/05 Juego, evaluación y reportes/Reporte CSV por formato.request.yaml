@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/sesiones/{{sesionId}}/reporte?formato=csv"
+method: GET
+headers:
+  Authorization: Bearer {{tokenDocente}}
+queryParams:
+  formato: csv
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("CSV descargable", function () {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.headers.get("Content-Type")).to.include("text/csv");
+        pm.expect(pm.response.headers.get("Content-Disposition")).to.include(".csv");
+      });
+    language: text/javascript
+order: 19000

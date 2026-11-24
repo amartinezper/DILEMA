@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/participaciones/{{participacionId}}"
+method: GET
+headers:
+  Authorization: Bearer {{tokenEstudiante}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("el estudiante ve su intento", function () {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.json().id).to.eql(Number(pm.collectionVariables.get("participacionId")));
+      });
+    language: text/javascript
+order: 6000

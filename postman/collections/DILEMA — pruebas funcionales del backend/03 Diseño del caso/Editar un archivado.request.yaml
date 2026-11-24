@@ -1,0 +1,59 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/casos/{{casoEstadoId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenDocente}}
+body:
+  type: text
+  content: |-
+    {
+      "nombre": "Caso estados {{sello}} tocado",
+      "desarrolloSituacional": "El grupo debe acordar cómo abrir la conversación.",
+      "contexto": "Práctica en el aula.",
+      "tiempoEstimadoMin": 40,
+      "sensible": false,
+      "advertencia": "",
+      "repartoRubrica": "PONDERADA",
+      "bloques": [
+        {
+          "nombre": "Encuadre",
+          "contexto": "El grupo acaba de llegar.",
+          "preguntas": [
+            {
+              "enunciado": "¿Cuál es el primer paso?",
+              "pista": "Piensa en el permiso.",
+              "criterio": "Encuadre ético",
+              "peso": 5.0,
+              "opciones": [
+                {
+                  "texto": "Pedir permiso para conversar.",
+                  "correcta": true,
+                  "explicacion": "El permiso abre la relación.",
+                  "fundamento": "El encuadre pide consentimiento."
+                },
+                {
+                  "texto": "Dar la instrucción de inmediato.",
+                  "correcta": false,
+                  "explicacion": "Saltarse el permiso concentra la voz.",
+                  "fundamento": "Dirigir sin permiso desplaza al grupo."
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "personajes": [
+        { "nombre": "Ana", "descripcion": "Participa en el caso.", "escenarios": [0] }
+      ],
+      "rubrica": []
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("responde 400", function () {
+        pm.response.to.have.status(400);
+        pm.expect(pm.response.json().mensaje).to.eql("RF-09: solo se edita un caso en borrador.");
+      });
+    language: text/javascript
+order: 18000

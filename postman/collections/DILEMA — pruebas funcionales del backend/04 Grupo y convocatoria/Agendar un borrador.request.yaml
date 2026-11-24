@@ -1,0 +1,36 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/sesiones"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenDocente}}
+body:
+  type: text
+  content: |-
+    {
+      "casoId": {{casoCopiaId}},
+      "grupoId": {{grupoId}},
+      "inicio": "{{inicio}}",
+      "fin": "{{fin}}",
+      "tiempoMaxMin": 30,
+      "toleranciaMin": 180,
+      "lugar": "Aula 3",
+      "mensaje": "No debe crearse."
+    }
+scripts:
+  - type: beforeRequest
+    code: |-
+      const inicio = new Date();
+      const fin = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
+      const iso = (fecha) => fecha.toISOString().slice(0, 19);
+      pm.collectionVariables.set("inicio", iso(inicio));
+      pm.collectionVariables.set("fin", iso(fin));
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test("responde 400", function () {
+        pm.response.to.have.status(400);
+        pm.expect(pm.response.json().mensaje).to.eql("INV-17: el caso debe estar publicado para agendarlo.");
+      });
+    language: text/javascript
+order: 9000

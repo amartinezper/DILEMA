@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/casos/{{casoId}}/despublicar"
+method: POST
+headers:
+  Authorization: Bearer {{tokenDocente}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("responde 400", function () {
+        pm.response.to.have.status(400);
+        pm.expect(pm.response.json().mensaje).to.eql("RF-09: un borrador no se despublica.");
+      });
+    language: text/javascript
+order: 7000

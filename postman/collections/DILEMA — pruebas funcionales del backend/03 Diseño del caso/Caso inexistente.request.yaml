@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/casos/999999999"
+method: GET
+headers:
+  Authorization: Bearer {{tokenDocente}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("responde 404", function () {
+        pm.response.to.have.status(404);
+        pm.expect(pm.response.json().mensaje).to.eql("Caso no encontrado.");
+      });
+    language: text/javascript
+order: 5000

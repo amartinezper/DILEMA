@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{baseUrl}}/api/participaciones/{{participacionId}}/responder"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenEstudiante}}
+body:
+  type: text
+  content: '{ "preguntaId": {{preguntaId}}, "opcionId": {{opcionIncorrectaId}} }'
+scripts:
+  - type: afterResponse
+    code: |-
+      const juego = pm.response.json();
+      pm.test("queda seleccionada y no revela si era correcta", function () {
+        pm.response.to.have.status(200);
+        pm.expect(juego.progreso).to.eql(100);
+        pm.expect(juego.preguntas[0].seleccionId).to.eql(Number(pm.collectionVariables.get("opcionIncorrectaId")));
+        pm.expect(juego.preguntas[0].opciones.every(o => o.correcta === null)).to.eql(true);
+      });
+    language: text/javascript
+order: 8000

@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/casos/{{casoId}}"
+method: GET
+headers:
+  Authorization: Bearer {{tokenDocente}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("devuelve el caso creado", function () {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.json().id).to.eql(Number(pm.collectionVariables.get("casoId")));
+      });
+    language: text/javascript
+order: 4000

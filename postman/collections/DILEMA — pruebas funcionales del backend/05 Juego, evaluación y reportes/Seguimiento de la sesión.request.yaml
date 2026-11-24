@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/sesiones/{{sesionId}}/seguimiento"
+method: GET
+headers:
+  Authorization: Bearer {{tokenDocente}}
+scripts:
+  - type: afterResponse
+    code: |-
+      const filas = pm.response.json();
+      pm.test("el estudiante aparece finalizado con 5,0", function () {
+        pm.response.to.have.status(200);
+        const fila = filas.find(f => f.email === pm.collectionVariables.get("emailEstudiante"));
+        pm.expect(fila.estado).to.eql("FINALIZADA");
+        pm.expect(fila.nota).to.eql(5);
+        pm.expect(fila.participacionId).to.eql(Number(pm.collectionVariables.get("participacionId")));
+      });
+    language: text/javascript
+order: 15000

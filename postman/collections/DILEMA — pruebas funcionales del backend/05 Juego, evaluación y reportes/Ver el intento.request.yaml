@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/seguimiento/participaciones/{{participacionId}}"
+method: GET
+headers:
+  Authorization: Bearer {{tokenDocente}}
+scripts:
+  - type: afterResponse
+    code: |-
+      const consulta = pm.response.json();
+      pm.test("muestra la respuesta vigente y todavía sin valoración", function () {
+        pm.response.to.have.status(200);
+        pm.expect(consulta.numeroIntento).to.eql(1);
+        pm.expect(consulta.valoracionGeneral).to.eql("");
+        pm.expect(consulta.respuestas[0].acertada).to.eql(true);
+        pm.expect(consulta.respuestas[0].explicacion).to.eql("El permiso abre la relación.");
+      });
+    language: text/javascript
+order: 17000

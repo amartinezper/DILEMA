@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/grupos"
+method: GET
+headers:
+  Authorization: Bearer {{tokenAdmin}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("responde 200", function () { pm.response.to.have.status(200); });
+      pm.test("devuelve una lista", function () { pm.expect(pm.response.json()).to.be.an("array"); });
+    language: text/javascript
+order: 6000

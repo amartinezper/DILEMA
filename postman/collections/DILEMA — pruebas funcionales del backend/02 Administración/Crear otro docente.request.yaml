@@ -1,0 +1,26 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/usuarios"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenAdmin}}
+body:
+  type: text
+  content: |-
+    {
+      "nombre": "Docente Postman",
+      "email": "docente{{sello}}@psicosim.edu",
+      "clave": "docente1",
+      "rol": "DOCENTE"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const cuerpo = pm.response.json();
+      pm.test("nace docente y solo puede visualizar", function () {
+        pm.response.to.have.status(200);
+        pm.expect(cuerpo.rol).to.eql("PROFESOR");
+        pm.expect(cuerpo.permisos).to.eql(["VISUALIZAR"]);
+      });
+    language: text/javascript
+order: 5000

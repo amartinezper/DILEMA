@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/api/estudiante/panel"
+method: GET
+headers:
+  Authorization: Bearer {{tokenEstudiante}}
+scripts:
+  - type: afterResponse
+    code: |-
+      const panel = pm.response.json();
+      pm.test("el aviso marcado queda leído y sinLeer solo cuenta los no leídos", function () {
+        pm.response.to.have.status(200);
+        const id = Number(pm.collectionVariables.get("avisoId"));
+        const aviso = panel.avisos.find(a => a.id === id);
+        pm.expect(aviso).to.be.an("object");
+        pm.expect(aviso.leida).to.eql(true);
+        pm.expect(panel.sinLeer).to.eql(panel.avisos.filter(a => !a.leida).length);
+      });
+    language: text/javascript
+order: 14000

@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/ingresar"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "email": "{{emailEstudiante}}",
+      "clave": null,
+      "codigoAutorizacion": "{{codigo}}",
+      "rol": "ESTUDIANTE"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("responde 400", function () {
+        pm.response.to.have.status(400);
+        pm.expect(pm.response.json().mensaje).to.eql("La sesión todavía no ha sido iniciada por el docente.");
+      });
+    language: text/javascript
+order: 13000

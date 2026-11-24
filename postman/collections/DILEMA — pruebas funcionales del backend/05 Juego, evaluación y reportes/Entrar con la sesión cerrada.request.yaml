@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/estudiante/sesiones/{{sesionId}}/participaciones"
+method: POST
+headers:
+  Authorization: Bearer {{tokenEstudiante}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("responde 400", function () {
+        pm.response.to.have.status(400);
+        pm.expect(pm.response.json().mensaje).to.eql("RF-25: la sesión ya finalizó y no admite participación.");
+      });
+    language: text/javascript
+order: 35000

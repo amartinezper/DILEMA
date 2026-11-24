@@ -22,7 +22,7 @@ import { mensajeError } from '../core/api.service';
         <span class="chispa c2" aria-hidden="true"></span>
         <span class="chispa c3" aria-hidden="true"></span>
         <span class="chispa c4" aria-hidden="true"></span>
-        <img class="cerebro" src="dilema-cerebro.jpg" alt="" />
+        <img class="cerebro" src="dilema-cerebro-luz.webp" alt="" />
         <h1>Dilema</h1>
         <p>Piensa. Decide. Aprende.</p>
       </aside>
@@ -106,7 +106,7 @@ import { mensajeError } from '../core/api.service';
       min-height: 100%;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      background: #eef3fb;
+      background: linear-gradient(180deg, #eaf2ff, #f5f9ff);
     }
     .dilema-marca {
       position: relative;
@@ -117,19 +117,19 @@ import { mensajeError } from '../core/api.service';
       padding: 48px 32px;
       overflow: hidden;
       background:
-        radial-gradient(520px 360px at 50% 42%, rgba(37, 99, 235, 0.28), transparent 70%),
-        #071428;
+        radial-gradient(ellipse 330px 230px at -2% -4%, rgba(125, 185, 255, 0.34) 97%, transparent 100%),
+        radial-gradient(ellipse 300px 260px at -6% 104%, rgba(125, 185, 255, 0.30) 97%, transparent 100%),
+        radial-gradient(ellipse 260px 330px at 106% 102%, rgba(125, 185, 255, 0.26) 97%, transparent 100%),
+        radial-gradient(480px 360px at 50% 40%, rgba(120, 205, 255, 0.30), transparent 70%),
+        linear-gradient(165deg, #1e6cf5, #0b50d8);
       color: white;
       text-align: center;
     }
     .cerebro {
-      width: min(520px, 88%);
+      width: min(718px, 90%);
       height: auto;
-      margin: -12px 0 -8px;
+      margin: -20px 0 44px;
       animation: flotar 5.5s ease-in-out infinite;
-      filter: drop-shadow(0 18px 40px rgba(37, 99, 235, 0.35));
-      -webkit-mask-image: radial-gradient(ellipse at 50% 46%, #000 42%, transparent 70%);
-      mask-image: radial-gradient(ellipse at 50% 46%, #000 42%, transparent 70%);
     }
     .dilema-marca h1 {
       margin: 0;
@@ -143,7 +143,7 @@ import { mensajeError } from '../core/api.service';
       font-size: 22px;
       font-weight: 400;
       letter-spacing: 0.01em;
-      color: rgba(255, 255, 255, 0.82);
+      color: #dbe9ff;
     }
     .chispa {
       position: absolute;
@@ -162,13 +162,20 @@ import { mensajeError } from '../core/api.service';
       display: grid;
       place-items: center;
       padding: 32px 24px;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse 300px 220px at 0% -4%, rgba(255, 255, 255, 0.45) 97%, transparent 100%),
+        radial-gradient(ellipse 280px 340px at 104% 4%, rgba(255, 255, 255, 0.35) 97%, transparent 100%),
+        radial-gradient(ellipse 320px 240px at -4% 104%, rgba(255, 255, 255, 0.4) 97%, transparent 100%),
+        radial-gradient(ellipse 260px 280px at 104% 104%, rgba(255, 255, 255, 0.35) 97%, transparent 100%),
+        linear-gradient(180deg, #eaf2ff, #f5f9ff);
     }
     .dilema-caja {
       width: min(440px, 100%);
       background: white;
       border-radius: 28px;
       padding: 40px 36px 32px;
-      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.08);
+      box-shadow: 0 24px 60px rgba(30, 108, 245, 0.14), 0 4px 14px rgba(30, 108, 245, 0.06);
       animation: subir .5s ease both;
     }
     .dilema-caja h2 {
@@ -178,7 +185,7 @@ import { mensajeError } from '../core/api.service';
       line-height: 1.15;
       font-weight: 700;
       letter-spacing: -0.03em;
-      color: #0f172a;
+      color: #0b1b3f;
     }
     .lead {
       margin: 10px 0 0;
@@ -187,20 +194,20 @@ import { mensajeError } from '../core/api.service';
       font-size: 15px;
       line-height: 1.5;
     }
-    .lead strong { color: #2563eb; font-weight: 700; }
+    .lead strong { color: #1a6cf0; font-weight: 700; }
     .modo {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 4px;
       margin: 22px 0 18px;
       padding: 4px;
-      background: #eef3f8;
+      background: #e3eeff;
       border-radius: 999px;
     }
     .modo button {
       border: 0;
       background: transparent;
-      color: #64748b;
+      color: #1a6cf0;
       border-radius: 999px;
       padding: 10px 8px;
       font-weight: 600;
@@ -209,8 +216,8 @@ import { mensajeError } from '../core/api.service';
     }
     .modo button.activo {
       background: white;
-      color: #0f172a;
-      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+      color: #0b1b3f;
+      box-shadow: 0 6px 16px rgba(30, 108, 245, 0.14);
     }
     form { display: grid; gap: 14px; animation: subir .35s ease both; }
     .field { display: grid; gap: 8px; }
@@ -227,14 +234,14 @@ import { mensajeError } from '../core/api.service';
       gap: 8px;
       min-height: 48px;
       padding: 0 12px;
-      background: #f5f8fc;
-      border: 1px solid #e2e8f0;
+      background: #f1f6fd;
+      border: 1px solid #d6e4fa;
       border-radius: 12px;
-      color: #94a3b8;
+      color: #6b7f9e;
     }
     .control:focus-within {
-      border-color: #2563eb;
-      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
+      border-color: #1a73ff;
+      box-shadow: 0 0 0 4px rgba(26, 115, 255, 0.14);
       background: white;
     }
     .control svg { width: 18px; height: 18px; flex: 0 0 auto; }
@@ -248,7 +255,7 @@ import { mensajeError } from '../core/api.service';
       border-radius: 0;
     }
     .control input:focus { outline: none; box-shadow: none; }
-    .control input::placeholder { color: #94a3b8; }
+    .control input::placeholder { color: #8394ad; }
     .ojo {
       border: 0;
       background: transparent;
@@ -264,27 +271,28 @@ import { mensajeError } from '../core/api.service';
       margin-top: 6px;
       border: 0;
       border-radius: 999px;
-      background: linear-gradient(180deg, #3b82f6, #2563eb);
+      background: linear-gradient(180deg, #1a73ff, #0b5ce0);
       color: white;
       font-size: 16px;
       font-weight: 650;
       padding: 14px 16px;
       cursor: pointer;
-      box-shadow: 0 10px 22px rgba(37, 99, 235, 0.28);
+      box-shadow: 0 2px 6px rgba(11, 92, 224, 0.18);
     }
-    .btn-entrar:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 14px 28px rgba(37, 99, 235, 0.34); }
+    .btn-entrar:hover:not(:disabled) { transform: translateY(-1px); background: linear-gradient(180deg, #2a7dff, #0a55d2); }
     .btn-entrar:disabled { background: #93c5fd; box-shadow: none; cursor: wait; }
     .error { margin: 0; color: #9b1c1c; font-size: 14px; }
     .rellenos {
       display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center;
-      margin-top: 18px; padding-top: 16px; border-top: 1px solid #e2e8f0;
+      margin-top: 18px; padding-top: 16px; border-top: 1px solid #e3ecf9;
     }
     .rellenos > span { color: #64748b; font-size: 13px; }
     .btn-demo {
-      border: 1px solid #e2e8f0; background: white; color: #0f172a; border-radius: 999px;
+      border: 1px solid #d9e6fb; background: white; color: #0b1b3f; border-radius: 999px;
+      box-shadow: 0 2px 6px rgba(30, 108, 245, 0.06);
       padding: 8px 12px; cursor: pointer; font-weight: 650; font-size: 13px;
     }
-    .btn-demo:hover { border-color: #2563eb; color: #2563eb; }
+    .btn-demo:hover { border-color: #1a73ff; color: #1a6cf0; }
     .brillo {
       position: absolute;
       right: 28px;
@@ -310,10 +318,25 @@ import { mensajeError } from '../core/api.service';
     }
     @media (max-width: 900px) {
       .dilema-ingreso { grid-template-columns: 1fr; min-height: 100%; }
-      .dilema-marca { min-height: 360px; padding: 32px 20px; }
+      .dilema-marca {
+        min-height: 360px;
+        padding: 32px 20px;
+        background:
+          radial-gradient(ellipse 170px 120px at -4% -6%, rgba(125, 185, 255, 0.34) 97%, transparent 100%),
+          radial-gradient(ellipse 150px 110px at -6% 106%, rgba(125, 185, 255, 0.30) 97%, transparent 100%),
+          radial-gradient(ellipse 140px 130px at 106% 104%, rgba(125, 185, 255, 0.26) 97%, transparent 100%),
+          radial-gradient(260px 200px at 50% 36%, rgba(120, 205, 255, 0.30), transparent 70%),
+          linear-gradient(165deg, #1e6cf5, #0b50d8);
+      }
       .dilema-marca h1 { font-size: 52px; }
-      .cerebro { width: min(280px, 70%); }
-      .dilema-lado { padding: 32px 24px 40px; }
+      .cerebro { width: min(372px, 96%); margin: -12px 0 4px; }
+      .dilema-lado {
+        padding: 32px 24px 40px;
+        background:
+          radial-gradient(ellipse 170px 130px at -4% -2%, rgba(255, 255, 255, 0.45) 97%, transparent 100%),
+          radial-gradient(ellipse 160px 140px at 106% 102%, rgba(255, 255, 255, 0.4) 97%, transparent 100%),
+          linear-gradient(180deg, #eaf2ff, #f5f9ff);
+      }
     }
     @media (prefers-reduced-motion: reduce) {
       .cerebro, .chispa, .brillo, .dilema-caja, form { animation: none; }

@@ -1,0 +1,27 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/usuarios/{{docenteId}}/permisos"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenAdmin}}
+body:
+  type: text
+  content: |-
+    {
+      "permisos": [
+        "EDITAR",
+        "GESTIONAR_ESPACIOS_ACADEMICOS"
+      ]
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const cuerpo = pm.response.json();
+      pm.test("conserva Visualizar y suma los dos permisos", function () {
+        pm.response.to.have.status(200);
+        pm.expect(cuerpo.permisos).to.include("VISUALIZAR");
+        pm.expect(cuerpo.permisos).to.include("EDITAR");
+        pm.expect(cuerpo.permisos).to.include("GESTIONAR_ESPACIOS_ACADEMICOS");
+      });
+    language: text/javascript
+order: 3000

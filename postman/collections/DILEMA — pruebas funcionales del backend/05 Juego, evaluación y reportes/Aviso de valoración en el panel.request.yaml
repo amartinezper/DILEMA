@@ -1,0 +1,23 @@
+$kind: http-request
+url: "{{baseUrl}}/api/estudiante/panel"
+method: GET
+headers:
+  Authorization: Bearer {{tokenEstudiante}}
+scripts:
+  - type: afterResponse
+    code: |-
+      const panel = pm.response.json();
+      pm.test("aparece el aviso de la valoración del docente sin leer", function () {
+        pm.response.to.have.status(200);
+        const aviso = panel.avisos.find(a => a.titulo === "Retroalimentación del docente");
+        pm.expect(aviso).to.be.an("object");
+        pm.expect(aviso.cuerpo).to.include("Valoración de la prueba funcional.");
+        pm.expect(aviso.leida).to.eql(false);
+      });
+      pm.test("aparece el aviso de la nota", function () {
+        const aviso = panel.avisos.find(a => a.titulo === "Nota del caso");
+        pm.expect(aviso).to.be.an("object");
+        pm.expect(aviso.cuerpo).to.match(/5[.,]0/);
+      });
+    language: text/javascript
+order: 24000

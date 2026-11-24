@@ -1,0 +1,20 @@
+$kind: http-request
+description: El docente del grupo puede ver el intento. La opción correcta se marca, y la explicación espera a que el intento termine.
+url: "{{baseUrl}}/api/participaciones/{{participacionId}}"
+method: GET
+headers:
+  Authorization: Bearer {{tokenDocente}}
+scripts:
+  - type: afterResponse
+    code: |-
+      const juego = pm.response.json();
+      pm.test("ve cuál es la correcta y todavía no la explicación", function () {
+        pm.response.to.have.status(200);
+        pm.expect(juego.id).to.eql(Number(pm.collectionVariables.get("participacionId")));
+        const correcta = juego.preguntas[0].opciones.find(o => o.id === Number(pm.collectionVariables.get("opcionCorrectaId")));
+        pm.expect(correcta.correcta).to.eql(true);
+        pm.expect(correcta.explicacion).to.eql(null);
+        pm.expect(correcta.fundamento).to.eql(null);
+      });
+    language: text/javascript
+order: 7000

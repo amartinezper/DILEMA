@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/sesiones/{{sesionId}}/iniciar"
+method: POST
+headers:
+  Authorization: Bearer {{tokenDocente}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("responde 400", function () {
+        pm.response.to.have.status(400);
+        pm.expect(pm.response.json().mensaje).to.eql("RF-19: solo se inicia una sesión sin iniciar.");
+      });
+    language: text/javascript
+order: 15000

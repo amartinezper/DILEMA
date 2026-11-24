@@ -1,0 +1,34 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/sesiones"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenDocente}}
+body:
+  type: text
+  content: |-
+    {
+      "casoId": {{casoId}},
+      "grupoId": {{grupoId}},
+      "inicio": "{{inicio}}",
+      "fin": "{{fin}}",
+      "tiempoMaxMin": 30,
+      "toleranciaMin": 180,
+      "lugar": "Aula 3",
+      "mensaje": "Convocatoria de la prueba funcional."
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const sesion = pm.response.json();
+      pm.test("queda sin iniciar y trae código", function () {
+        pm.response.to.have.status(200);
+        pm.expect(sesion.estado).to.eql("SIN_INICIAR");
+        pm.expect(sesion.codigo).to.be.a("string").and.not.empty;
+        pm.expect(sesion.casoId).to.eql(Number(pm.collectionVariables.get("casoId")));
+        pm.expect(sesion.grupoId).to.eql(Number(pm.collectionVariables.get("grupoId")));
+      });
+      pm.collectionVariables.set("sesionId", String(sesion.id));
+      pm.collectionVariables.set("codigo", sesion.codigo);
+    language: text/javascript
+order: 11000

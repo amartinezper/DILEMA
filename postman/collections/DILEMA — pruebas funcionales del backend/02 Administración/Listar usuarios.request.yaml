@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/usuarios"
+method: GET
+headers:
+  Authorization: Bearer {{tokenAdmin}}
+scripts:
+  - type: afterResponse
+    code: |-
+      const lista = pm.response.json();
+      pm.test("incluye al docente de la semilla", function () {
+        pm.response.to.have.status(200);
+        pm.expect(lista.some(u => u.email === "docente@psicosim.edu")).to.eql(true);
+      });
+    language: text/javascript
+order: 1000

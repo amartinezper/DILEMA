@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/grupos"
+method: GET
+headers:
+  Authorization: Bearer {{tokenDocente}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("incluye el grupo nuevo", function () {
+        pm.response.to.have.status(200);
+        const id = Number(pm.collectionVariables.get("grupoId"));
+        pm.expect(pm.response.json().some(g => g.id === id)).to.eql(true);
+      });
+    language: text/javascript
+order: 3000

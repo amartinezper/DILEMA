@@ -1,0 +1,16 @@
+$kind: http-request
+url: "{{baseUrl}}/api/participaciones/{{participacionId}}/deshacer"
+method: POST
+headers:
+  Authorization: Bearer {{tokenEstudiante}}
+scripts:
+  - type: afterResponse
+    code: |-
+      const juego = pm.response.json();
+      pm.test("la selección vuelve a vacía", function () {
+        pm.response.to.have.status(200);
+        pm.expect(juego.progreso).to.eql(0);
+        pm.expect(juego.preguntas[0].seleccionId).to.eql(null);
+      });
+    language: text/javascript
+order: 9000

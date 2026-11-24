@@ -1,0 +1,26 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/grupos"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenDocente}}
+body:
+  type: text
+  content: |-
+    {
+      "nombre": "Grupo {{sello}}",
+      "espacioAcademico": "2026-I"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const grupo = pm.response.json();
+      pm.test("grupo del docente", function () {
+        pm.response.to.have.status(200);
+        pm.expect(grupo.nombre).to.include(pm.collectionVariables.get("sello"));
+        pm.expect(grupo.espacioAcademico).to.eql("2026-I");
+        pm.expect(grupo.estudiantes).to.eql([]);
+      });
+      pm.collectionVariables.set("grupoId", String(grupo.id));
+    language: text/javascript
+order: 2000

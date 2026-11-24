@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{baseUrl}}/api/participaciones/{{participacionId}}/responder"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenEstudiante}}
+body:
+  type: text
+  content: '{ "preguntaId": {{preguntaId}}, "opcionId": {{opcionCorrectaId}} }'
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("selecciona la opción correcta", function () {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.json().preguntas[0].seleccionId).to.eql(Number(pm.collectionVariables.get("opcionCorrectaId")));
+      });
+    language: text/javascript
+order: 11000

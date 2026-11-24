@@ -1,0 +1,15 @@
+$kind: http-request
+description: El endpoint existe y responde. Hoy la lista sale vacía.
+url: "{{baseUrl}}/api/admin/auditoria"
+method: GET
+headers:
+  Authorization: Bearer {{tokenAdmin}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("responde lista vacía", function () {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.json()).to.eql([]);
+      });
+    language: text/javascript
+order: 7000

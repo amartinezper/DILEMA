@@ -1994,3 +1994,189 @@ html.novela-agrandada .inicio-menu-btn { display: none !important; }
   .inicio-est.marco-claro .inicio-destacado { grid-template-columns: 1fr; }
   .marco-claro .adm-fila-acciones { flex-wrap: wrap; justify-content: flex-end; }
 }
+
+/* =====================================================================
+ * Marco del estudiante (.marco-est, shared/marco-estudiante.component.ts).
+ * Menú azul brillante con formas onduladas, fondo azul muy claro con ondas arriba y abajo,
+ * tarjetas blancas con borde suave y botones azules con degradado. Solo afecta al estudiante.
+ * ===================================================================== */
+.inicio-est.marco-est {
+  --est-tinta: #0b1b3f; --est-gris: #4a5b7c; --est-azul: #1f5cf0; --est-azul-claro: #e3edff;
+  --est-borde: #e1ebfb; --est-sombra: 0 10px 30px rgba(30, 108, 245, .08);
+  --est-degradado: linear-gradient(180deg, #1a73ff, #0b5ce0);
+  grid-template-columns: 260px 1fr; background: #0b50d8;
+}
+
+/* Menú lateral */
+.inicio-est.marco-est .inicio-menu {
+  background: linear-gradient(170deg, #1e6cf5 0%, #0b50d8 100%); color: #fff; padding: 18px 16px 18px;
+}
+.marco-est .est-menu-ondas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+.marco-est .inicio-logo { margin: 0 0 18px; gap: 0; }
+.inicio-est.marco-est .inicio-logo-icono {
+  width: 210px; max-width: 100%; margin: -22px 0 -16px; filter: none; -webkit-mask-image: none; mask-image: none;
+}
+.marco-est .inicio-logo span { font-size: 36px; font-weight: 800; letter-spacing: -.03em; color: #fff; }
+.inicio-est.marco-est .inicio-menu nav { gap: 6px; }
+.inicio-est.marco-est .inicio-menu nav button, .inicio-est.marco-est .inicio-salir {
+  gap: 14px; padding: 12px 18px; color: #fff; font-size: 16px; font-weight: 600; border: 1px solid transparent;
+}
+.inicio-est.marco-est .inicio-menu nav button:hover { background: rgba(255, 255, 255, .1); transform: none; }
+.inicio-est.marco-est .inicio-menu nav button.activa {
+  background: rgba(255, 255, 255, .22); border-color: rgba(255, 255, 255, .32); color: #fff; font-weight: 700;
+  box-shadow: 0 8px 20px rgba(6, 40, 130, .18);
+}
+.marco-est .est-lema {
+  position: relative; z-index: 1; margin-top: auto; flex: 0 0 auto;
+  display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 8px 12px;
+  padding: 16px; border-radius: 22px; color: #fff;
+  background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .18);
+}
+.marco-est .est-lema-cohete { grid-row: span 2; color: #fff; }
+.inicio-est.marco-est .est-lema p { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.3; color: #fff; }
+.inicio-est.marco-est .est-lema-boton {
+  justify-self: start; display: inline-flex; align-items: center; gap: 4px; height: 38px; padding: 0 12px 0 16px;
+  border: 0; border-radius: 999px; background: #d6e6ff; color: #0b50d8; font-family: inherit; font-size: 15px; font-weight: 800;
+  cursor: pointer; box-shadow: 0 6px 14px rgba(6, 40, 130, .2);
+}
+.inicio-est.marco-est .est-lema-boton:hover { background: #fff; transform: none; }
+.inicio-est.marco-est .inicio-salir { margin-top: 12px; }
+.inicio-est.marco-est .inicio-salir:hover { background: rgba(255, 255, 255, .1); transform: none; }
+.marco-est .inicio-menu nav button:focus-visible, .marco-est .inicio-salir:focus-visible,
+.marco-est .est-lema-boton:focus-visible, .marco-est .inicio-logo:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+
+/* Fondo, encabezado y saludo */
+.inicio-est.marco-est .inicio-cuerpo { background: linear-gradient(180deg, #eaf2ff 0%, #f3f8ff 45%, #eef5ff 100%); padding: 0 36px 48px; }
+.marco-est .est-fondo-ondas { position: fixed; top: 0; bottom: 0; left: 260px; right: 0; width: calc(100% - 260px); height: 100%; pointer-events: none; z-index: 0; }
+.inicio-est.marco-est .inicio-cuerpo .inicio-hero { min-height: 150px; padding: 8px 0 0; }
+.marco-est .inicio-hero-copy { max-width: min(640px, 56%); }
+.inicio-est.marco-est .inicio-saludo h1 { font-size: 42px; font-weight: 800; letter-spacing: -.035em; color: var(--est-tinta); }
+.inicio-est.marco-est .marco-descripcion { margin-top: 6px; font-size: 18px; color: var(--est-gris); }
+.inicio-est.marco-est .inicio-saludo strong { color: #1a6cf0; font-weight: 800; }
+.inicio-est.marco-est .inicio-est-cuerpo { gap: 22px; padding-top: 4px; }
+
+/* Tarjetas de resumen */
+.marco-est .est-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
+.marco-est .est-kpi {
+  position: relative; overflow: hidden; display: flex; align-items: center; gap: 18px; min-width: 0;
+  padding: 20px 22px; border-radius: 22px; background: #fff; border: 1px solid var(--est-borde); box-shadow: var(--est-sombra);
+}
+.marco-est .est-kpi::after {
+  content: ""; position: absolute; right: -36px; bottom: -52px; width: 170px; height: 110px; border-radius: 50%;
+  background: linear-gradient(135deg, #e8f0ff, #cfe0ff); opacity: .85; pointer-events: none;
+}
+.marco-est .est-kpi > * { position: relative; z-index: 1; }
+.marco-est .est-kpi-icono {
+  flex: none; width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--est-azul-claro); color: var(--est-azul);
+}
+.inicio-est.marco-est .est-kpi h2 { margin: 0; font-size: 16px; font-weight: 650; color: var(--est-tinta); }
+.marco-est .est-kpi strong { display: block; font-size: 34px; font-weight: 800; line-height: 1.15; color: var(--est-tinta); }
+.marco-est .est-kpi div > span { display: inline-flex; align-items: center; gap: 5px; font-size: 13.5px; color: var(--est-gris); }
+.marco-est .est-kpi-estrella { color: var(--est-azul); }
+
+/* Dilema destacado */
+.inicio-est.marco-est .inicio-fila { grid-template-columns: minmax(0, 1fr) 320px; gap: 22px; }
+.inicio-est.marco-est .inicio-destacado {
+  grid-template-columns: minmax(0, .92fr) minmax(0, 1.25fr); gap: 12px; padding: 14px; min-height: 380px;
+  background: #fff; border: 1px solid var(--est-borde); border-radius: 26px; box-shadow: var(--est-sombra);
+}
+.inicio-est.marco-est .destacado-texto { padding: 12px 10px 12px 14px; align-content: start; gap: 18px; grid-auto-rows: max-content; }
+.inicio-est.marco-est .destacado-texto .chip-estrella {
+  display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 8px 18px;
+  background: var(--est-azul-claro); color: #0b50d8 !important; font-size: 15px; font-weight: 750;
+}
+.inicio-est.marco-est .destacado-texto h2 { margin: 0; font-size: 28px; font-weight: 800; line-height: 1.15; letter-spacing: -.02em; color: var(--est-tinta); }
+.inicio-est.marco-est .destacado-texto p.destacado-resumen {
+  margin: 0; max-width: none; font-size: 15.5px; line-height: 1.55; color: var(--est-gris);
+  display: -webkit-box; -webkit-line-clamp: 4; line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+}
+.inicio-est.marco-est .btn-resolver, .inicio-est.marco-est .btn-resolver:hover {
+  justify-self: start; gap: 10px; min-height: 52px; padding: 0 22px 0 28px; margin-top: 6px;
+  border-radius: 999px; background: var(--est-degradado); color: #fff; font-size: 17px; font-weight: 750;
+  box-shadow: 0 10px 22px rgba(26, 115, 255, .28);
+}
+.inicio-est.marco-est .btn-resolver:hover { filter: brightness(1.06); transform: translateY(-1px); }
+.inicio-est.marco-est .destacado-figura { position: relative; margin: 0; min-height: 300px; border-radius: 22px; overflow: hidden; background: #dbe7fb; }
+.inicio-est.marco-est .inicio-destacado img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.inicio-est.marco-est .letrero-escena {
+  left: 16px; bottom: 16px; display: inline-flex; align-items: center; gap: 10px; max-width: calc(100% - 32px);
+  padding: 8px 16px 8px 10px; border-radius: 999px; background: rgba(8, 18, 40, .82); border: 1px solid rgba(255, 255, 255, .18);
+  font-size: 15px; font-weight: 650; color: #fff;
+}
+.marco-est .letrero-escena span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Tu progreso */
+.inicio-est.marco-est .inicio-progreso {
+  padding: 22px 20px 20px; gap: 14px; align-content: start; justify-items: center;
+  background: #fff; border: 1px solid var(--est-borde); border-radius: 26px; box-shadow: var(--est-sombra);
+}
+.inicio-est.marco-est .inicio-progreso h3 { margin: 0; font-size: 22px; font-weight: 800; color: var(--est-tinta); }
+.marco-est .est-aro { position: relative; width: 170px; height: 170px; display: grid; place-items: center; }
+.marco-est .est-aro svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.marco-est .est-aro span { position: relative; font-size: 40px; font-weight: 800; letter-spacing: -.03em; color: var(--est-tinta); }
+.inicio-est.marco-est .inicio-progreso .nivel {
+  display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 8px 18px; border-radius: 999px;
+  background: var(--est-azul-claro); color: #0b50d8; font-size: 15px; font-weight: 750;
+}
+.marco-est .est-progreso-tip {
+  width: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px;
+  padding: 14px 12px 14px 16px; border-radius: 18px; background: #f1f6ff;
+}
+.marco-est .est-progreso-trofeo { color: var(--est-azul); align-self: start; }
+.inicio-est.marco-est .est-progreso-tip p { margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--est-gris); }
+.marco-est .est-progreso-ir {
+  width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: var(--est-azul); text-decoration: none;
+}
+.marco-est .est-progreso-ir:hover { background: var(--est-azul-claro); }
+.marco-est .est-progreso-ir:focus-visible { outline: 3px solid #7aa7ff; outline-offset: 2px; }
+
+/* Mis dilemas, Avisos y Perfil: misma estética. */
+.marco-est .adm-tarjeta { border-radius: 22px; border-color: var(--est-borde); box-shadow: var(--est-sombra); }
+.marco-est .adm-tabla-tarjeta { border-radius: 22px; }
+.inicio-est.marco-est .adm-tabla th { background: #f5f9ff; color: #5b6b8c; }
+.marco-est .adm-filtros { background: #dde9ff; }
+.inicio-est.marco-est .adm-filtro { color: #1f4fc9; }
+.inicio-est.marco-est .adm-filtro.activo { background: var(--est-degradado); color: #fff; }
+.inicio-est.marco-est .adm-boton { background: var(--est-degradado); }
+.inicio-est.marco-est .adm-boton:hover { background: var(--est-degradado); filter: brightness(1.06); }
+.inicio-est.marco-est .adm-boton-contorno { border-color: #1a73ff; color: #0b5ce0; }
+.inicio-est.marco-est .adm-enlace { color: #0b5ce0; }
+.inicio-est.marco-est .adm-pagina.actual { background: var(--est-degradado); border-color: #0b5ce0; }
+.marco-est .adm-buscar { color: #5b6b8c; border-color: var(--est-borde); }
+.inicio-est.marco-est .adm-orden select, .inicio-est.marco-est .adm-fecha input { border-color: var(--est-borde); }
+.marco-est .adm-avance-barra { background: var(--est-azul-claro); }
+.marco-est .adm-avance-barra i { background: var(--est-degradado); }
+.marco-est .adm-iniciales { background: var(--est-azul-claro); color: var(--est-azul); }
+.marco-est .adm-cifras > div { border-color: var(--est-borde); background: #f5f9ff; }
+.inicio-est.marco-est .btn-oscuro, .inicio-est.marco-est a.btn-oscuro { background: var(--est-degradado); }
+
+/* Pantallas medianas: el menú pasa al desplegable que ya existe. */
+@media (max-width: 1100px) {
+  .inicio-est.marco-est { grid-template-columns: 1fr; }
+  .marco-est .est-fondo-ondas { left: 0; width: 100%; }
+  .inicio-est.marco-est .inicio-menu-btn { background: linear-gradient(180deg, #1e6cf5, #0b50d8); color: #fff; }
+  .inicio-est.marco-est .inicio-fila { grid-template-columns: 1fr; }
+}
+
+/* Celular: tarjetas apiladas y la imagen del destacado arriba del texto. */
+@media (max-width: 768px) {
+  .inicio-est.marco-est { background: #eef5ff; }
+  .inicio-est.marco-est .inicio-cuerpo { padding: 0 14px 32px; }
+  .inicio-est.marco-est .inicio-cuerpo .inicio-hero { min-height: 0; padding: 112px 0 0; }
+  .inicio-est.marco-est .inicio-menu-btn { top: 14px; left: 14px; }
+  .marco-est .inicio-hero-copy { max-width: 100%; }
+  .inicio-est.marco-est .inicio-saludo h1 { font-size: 30px; }
+  .inicio-est.marco-est .marco-descripcion { font-size: 15.5px; }
+  .marco-est .est-kpis { grid-template-columns: 1fr; gap: 12px; }
+  .marco-est .est-kpi { padding: 16px 18px; }
+  .marco-est .est-kpi-icono { width: 56px; height: 56px; }
+  .marco-est .est-kpi strong { font-size: 28px; }
+  .inicio-est.marco-est .inicio-destacado { grid-template-columns: 1fr; min-height: 0; padding: 12px; }
+  .inicio-est.marco-est .destacado-figura { order: -1; min-height: 190px; }
+  .inicio-est.marco-est .destacado-texto { padding: 4px 6px 8px; gap: 14px; }
+  .inicio-est.marco-est .destacado-texto h2 { font-size: 23px; }
+  .inicio-est.marco-est .letrero-escena { font-size: 13.5px; left: 10px; bottom: 10px; max-width: calc(100% - 20px); }
+  .inicio-est.marco-est .btn-resolver { min-height: 48px; font-size: 16px; }
+  .inicio-est.marco-est .inicio-progreso { padding: 18px 16px; }
+}

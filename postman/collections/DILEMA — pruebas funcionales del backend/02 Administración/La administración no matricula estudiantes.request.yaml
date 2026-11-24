@@ -1,0 +1,24 @@
+$kind: http-request
+url: "{{baseUrl}}/api/admin/usuarios"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenAdmin}}
+body:
+  type: text
+  content: |-
+    {
+      "nombre": "Alguien",
+      "email": "alguien{{sello}}@psicosim.edu",
+      "clave": "secreto1",
+      "rol": "ESTUDIANTE"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("responde 400", function () {
+        pm.response.to.have.status(400);
+        pm.expect(pm.response.json().mensaje).to.eql("El docente registra y matricula a los estudiantes.");
+      });
+    language: text/javascript
+order: 4000

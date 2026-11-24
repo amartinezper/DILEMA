@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/api/estudiante/sesiones/{{sesionId}}/participaciones"
+method: POST
+headers:
+  Authorization: Bearer {{tokenEstudiante}}
+scripts:
+  - type: afterResponse
+    code: |-
+      const juego = pm.response.json();
+      pm.test("empieza sin nota y sin revelar la respuesta", function () {
+        pm.response.to.have.status(200);
+        pm.expect(juego.estado).to.eql("EN_CURSO");
+        pm.expect(juego.total).to.eql(1);
+        pm.expect(juego.progreso).to.eql(0);
+        pm.expect(juego.nota).to.eql(null);
+        pm.expect(juego.preguntas[0].opciones[0].correcta).to.eql(null);
+      });
+      pm.collectionVariables.set("participacionId", String(juego.id));
+    language: text/javascript
+order: 5000

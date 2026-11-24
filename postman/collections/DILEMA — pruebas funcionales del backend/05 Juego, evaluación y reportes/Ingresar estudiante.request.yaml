@@ -1,0 +1,27 @@
+$kind: http-request
+url: "{{baseUrl}}/api/auth/ingresar"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "email": "{{emailEstudiante}}",
+      "clave": null,
+      "codigoAutorizacion": "{{codigo}}",
+      "rol": "ESTUDIANTE"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      const cuerpo = pm.response.json();
+      pm.test("entra con el código de la convocatoria", function () {
+        pm.response.to.have.status(200);
+        pm.expect(cuerpo.usuario.rol).to.eql("ESTUDIANTE");
+        pm.expect(cuerpo.usuario.email).to.eql(pm.collectionVariables.get("emailEstudiante"));
+        pm.expect(cuerpo.sesionId).to.eql(Number(pm.collectionVariables.get("sesionId")));
+      });
+      pm.collectionVariables.set("tokenEstudiante", cuerpo.token);
+    language: text/javascript
+order: 1000

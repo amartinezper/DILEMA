@@ -1,64 +1,78 @@
 import { Component, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../core/auth.service';
-import { EncabezadoOlaComponent } from './encabezado-ola.component';
+import { EncabezadoEstudianteComponent } from './encabezado-estudiante.component';
+import { IconoComponent } from './icono.component';
 
+/**
+ * Marco del estudiante: menú lateral azul brillante con el cerebro, encabezado con la ola azul y el
+ * cerebro a la derecha, saludo y el contenido sobre fondo azul muy claro (estilos .marco-est).
+ */
 @Component({
   selector: 'app-marco-estudiante',
-  imports: [RouterLink, EncabezadoOlaComponent],
+  imports: [RouterLink, EncabezadoEstudianteComponent, IconoComponent],
   styles: [`:host { display: block; width: 100%; height: 100%; }`],
   template: `
-    <div class="inicio-est marco-claro" [class.menu-abierto]="menuAbierto()">
+    <div class="inicio-est marco-claro marco-est" [class.menu-abierto]="menuAbierto()">
       <button class="inicio-menu-btn" type="button" (click)="alternarMenu()" [attr.aria-expanded]="menuAbierto()" aria-label="Menú">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14"/></svg>
+        <app-icono nombre="menu" [tamano]="22" />
       </button>
       <div class="inicio-menu-fondo" (click)="cerrarMenu()" aria-hidden="true"></div>
       <aside class="inicio-menu">
+        <svg class="est-menu-ondas" viewBox="0 0 260 900" preserveAspectRatio="none" aria-hidden="true">
+          <path fill="#ffffff" opacity=".07" d="M0,0 H260 V120 C200,170 120,150 60,190 C30,210 10,230 0,250 Z"/>
+          <path fill="#ffffff" opacity=".06" d="M0,470 C70,430 160,460 260,400 V560 C180,610 90,560 0,610 Z"/>
+          <path fill="#ffffff" opacity=".08" d="M0,900 V720 C80,690 170,740 260,700 V900 Z"/>
+        </svg>
         <a class="inicio-logo" routerLink="/estudiante" (click)="ir('inicio')">
-          <img class="inicio-logo-icono" src="/dilema-cerebro.jpg" alt="" />
+          <img class="inicio-logo-icono" src="/dilema-cerebro-luz.webp" alt="" />
           <span>Dilema</span>
         </a>
         <nav (click)="cerrarMenu()">
-          <button type="button" [class.activa]="marca() === 'inicio'" (click)="ir('inicio')">
-            <svg viewBox="0 0 24 24"><path d="M4 11.5 12 5l8 6.5V20H4z"/></svg>
-            Inicio
+          <button type="button" [class.activa]="marca() === 'inicio'" [attr.aria-current]="marca() === 'inicio' ? 'page' : null" (click)="ir('inicio')">
+            <app-icono nombre="casa" [tamano]="22" /> Inicio
           </button>
-          <button type="button" [class.activa]="marca() === 'dilemas'" (click)="ir('dilemas')">
-            <svg viewBox="0 0 24 24"><path d="M5 5.5h9.5A2.5 2.5 0 0 1 17 8v11H8.5A2.5 2.5 0 0 1 6 16.5V6.5A1 1 0 0 0 5 5.5z"/></svg>
-            Mis Dilemas
+          <button type="button" [class.activa]="marca() === 'dilemas'" [attr.aria-current]="marca() === 'dilemas' ? 'page' : null" (click)="ir('dilemas')">
+            <app-icono nombre="dialogo" [tamano]="22" /> Mis dilemas
           </button>
-          <button type="button" [class.activa]="marca() === 'avisos'" (click)="ir('avisos')">
-            <svg viewBox="0 0 24 24"><path d="M12 4a6 6 0 0 1 6 6v3l1.5 2.5H4.5L6 13V10a6 6 0 0 1 6-6zM9 18a3 3 0 0 0 6 0"/></svg>
-            Avisos
-            @if (sinLeer()) { <em class="badge">{{ sinLeer() }}</em> }
+          <button type="button" [class.activa]="marca() === 'avisos'" [attr.aria-current]="marca() === 'avisos' ? 'page' : null" (click)="ir('avisos')">
+            <app-icono nombre="campana" [tamano]="22" /> Avisos
+            @if (sinLeer()) { <em class="badge" [attr.aria-label]="sinLeer() + ' sin leer'">{{ sinLeer() }}</em> }
           </button>
-          <button type="button" [class.activa]="marca() === 'perfil'" (click)="ir('perfil')">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M5 19c.8-3.2 3.4-5 7-5s6.2 1.8 7 5"/></svg>
-            Perfil
+          <button type="button" [class.activa]="marca() === 'perfil'" [attr.aria-current]="marca() === 'perfil' ? 'page' : null" (click)="ir('perfil')">
+            <app-icono nombre="persona" [tamano]="22" /> Perfil
           </button>
         </nav>
-        <p class="inicio-lema">
-          <svg class="inicio-lema-onda" viewBox="0 0 210 120" preserveAspectRatio="none" aria-hidden="true">
-            <path fill="#091830" d="M0,120 V48 C52,8 158,72 210,38 V120 Z"/>
-            <ellipse cx="105" cy="58" rx="96" ry="34" fill="none" stroke="#16345c" stroke-width="6" opacity=".55" transform="rotate(12 105 58)"/>
-            <ellipse cx="105" cy="58" rx="80" ry="26" fill="none" stroke="#1d4a7a" stroke-width="1.6" opacity=".35" transform="rotate(12 105 58)"/>
-          </svg>
-          <span>Piensa. Decide. Aprende.</span>
-          <span class="lema-cierre">A decidir.</span>
-        </p>
+        <div class="est-lema">
+          <app-icono class="est-lema-cohete" nombre="cohete" [tamano]="34" />
+          <p>Piensa. Decide.<br />Aprende.</p>
+          <button type="button" class="est-lema-boton" (click)="ir('dilemas')">
+            ¡A decidir! <app-icono nombre="flecha" [tamano]="18" />
+          </button>
+        </div>
         <button class="inicio-salir" type="button" (click)="auth.salir()">
-          <svg viewBox="0 0 24 24"><path d="M10 7V5H5v14h5v-2M10 12h10M16 8l4 4-4 4"/></svg>
-          Cerrar Sesión
+          <app-icono nombre="salir" [tamano]="22" /> Cerrar sesión
         </button>
       </aside>
 
       <main class="inicio-cuerpo">
-        <app-encabezado-ola />
+        <svg class="est-fondo-ondas" viewBox="0 0 1200 800" preserveAspectRatio="none" aria-hidden="true">
+          <path fill="#dbe8ff" opacity=".7" d="M0,0 H520 C430,40 300,70 160,70 C90,70 40,60 0,50 Z"/>
+          <path fill="#cfe0ff" opacity=".55" d="M0,800 V720 C160,670 320,700 470,740 C620,780 760,760 900,720 C1020,686 1120,690 1200,710 V800 Z"/>
+          <path fill="#b9d2ff" opacity=".45" d="M0,800 V770 C200,740 380,770 560,790 C700,805 820,790 1000,770 C1100,760 1160,765 1200,770 V800 Z"/>
+        </svg>
+        <app-encabezado-estudiante />
         <header class="inicio-hero">
           <div class="inicio-hero-copy">
             <div class="inicio-saludo">
               <h1>¡Hola, {{ primerNombre() }}!</h1>
-              @if (descripcion()) { <p class="marco-descripcion">{{ descripcion() }}</p> }
+              @if (descripcion(); as texto) {
+                @if (texto === bienvenida) {
+                  <p class="marco-descripcion">Bienvenido a <strong>Dilema</strong>, donde cada decisión cuenta.</p>
+                } @else {
+                  <p class="marco-descripcion">{{ texto }}</p>
+                }
+              }
             </div>
           </div>
         </header>
@@ -72,6 +86,8 @@ import { EncabezadoOlaComponent } from './encabezado-ola.component';
 export class MarcoEstudianteComponent {
   auth = inject(AuthService);
   private router = inject(Router);
+  /** Texto de bienvenida: se muestra con "Dilema" en azul. */
+  readonly bienvenida = 'Bienvenido a Dilema, donde cada decisión cuenta.';
   activa = input<string | null>(null);
   sinLeer = input(0);
   /** Texto gris bajo el saludo: qué se hace en la sección actual. */

@@ -1,0 +1,22 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/grupos/{{grupoId}}/estudiantes"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{tokenDocente}}
+body:
+  type: text
+  content: |-
+    {
+      "nombre": "Estudiante Postman",
+      "email": "{{emailEstudiante}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("responde 400", function () {
+        pm.response.to.have.status(400);
+        pm.expect(pm.response.json().mensaje).to.eql("El estudiante ya está en el grupo.");
+      });
+    language: text/javascript
+order: 6000

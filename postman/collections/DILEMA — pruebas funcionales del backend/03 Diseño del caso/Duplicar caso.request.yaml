@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/casos/{{casoId}}/duplicar"
+method: POST
+headers:
+  Authorization: Bearer {{tokenDocente}}
+scripts:
+  - type: afterResponse
+    code: |-
+      const copia = pm.response.json();
+      pm.test("la copia nace en borrador", function () {
+        pm.response.to.have.status(200);
+        pm.expect(copia.estado).to.eql("BORRADOR");
+        pm.expect(copia.nombre).to.include("(copia)");
+        pm.expect(copia.id).to.not.eql(Number(pm.collectionVariables.get("casoId")));
+      });
+      pm.collectionVariables.set("casoCopiaId", String(copia.id));
+    language: text/javascript
+order: 11000

@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/sesiones"
+method: GET
+headers:
+  Authorization: Bearer {{tokenDocente}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("incluye la convocatoria", function () {
+        pm.response.to.have.status(200);
+        const id = Number(pm.collectionVariables.get("sesionId"));
+        pm.expect(pm.response.json().some(s => s.id === id)).to.eql(true);
+      });
+    language: text/javascript
+order: 12000

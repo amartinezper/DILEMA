@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/seguimiento/participaciones/{{participacionId}}"
+method: GET
+headers:
+  Authorization: Bearer {{tokenDocente}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("guarda la valoración general", function () {
+        pm.response.to.have.status(200);
+        pm.expect(pm.response.json().valoracionGeneral).to.eql("Valoración de la prueba funcional.");
+      });
+    language: text/javascript
+order: 25000

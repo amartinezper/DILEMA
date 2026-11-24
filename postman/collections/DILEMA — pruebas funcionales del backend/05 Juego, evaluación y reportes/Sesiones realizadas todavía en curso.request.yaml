@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/api/docente/seguimiento/sesiones"
+method: GET
+headers:
+  Authorization: Bearer {{tokenDocente}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("la convocatoria en curso no aparece como realizada", function () {
+        pm.response.to.have.status(200);
+        const id = Number(pm.collectionVariables.get("sesionId"));
+        pm.expect(pm.response.json().some(s => s.id === id)).to.eql(false);
+      });
+    language: text/javascript
+order: 28000

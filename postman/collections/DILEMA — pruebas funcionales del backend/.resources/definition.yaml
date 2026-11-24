@@ -1,0 +1,21 @@
+$kind: collection
+description: |-
+  Recorre el API de main (http://localhost:8080/api) con administración, docente y estudiante.
+
+  Importa este archivo y ejecútalo con el Collection Runner, de arriba a abajo, en una sola corrida. El orden importa: cada petición guarda el id que usa la siguiente.
+
+  La primera petición genera un sello de tiempo, así que se puede correr otra vez sin chocar con correos ni grupos anteriores.
+
+  Cuentas de la semilla: admin@psicosim.edu / admin123 y docente@psicosim.edu / docente123. El estudiante de la prueba lo matricula el docente durante la corrida.
+
+  El backend tiene que estar levantado. Si corre en Docker, las fechas se envían en UTC, que es el reloj del contenedor.
+
+  Deja en paz el caso de estudio inicial y el código DILEMA-2026. Esta colección crea su propio caso, grupo y convocatoria.
+variables:
+  baseUrl: http://localhost:8080
+  sello: ""
+  emailEstudiante: ""
+  emailExtra: ""
+  inicio: ""
+  fin: ""
+  emailAusente: ""
