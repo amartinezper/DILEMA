@@ -1,6 +1,6 @@
 {
   "nombre": "Caso 1. Violencia familiar y tentativa de feminicidio",
-  "desarrolloSituacional": "<p>Son las 11 de la noche en un barrio con altas condiciones de vulnerabilidad como: pobreza, violencias urbanas (robos, expendio de drogas, presencia de grupos armados ilegales, riñas callejeras entre vecinos) un hombre de aproximadamente 28 años de edad, entra a su domicilio donde reside con su actual pareja que tiene 22 años de edad, ella tiene una hija de 3 años de edad. Este hombre en horas de la tarde había tenido un altercado verbal con su pareja en el cual hubo presencia de groserías, maltrato psicológico de él hacia ella y chantaje emocional, donde usó expresiones relativas a que ella sin él no era nadie, que era una mujer mantenida y que adicionalmente él estaba seguro que ella le era infiel. En ese momento de la noche, a la entrada del hombre en la residencia, la mujer le hace el reclamo de llegar tarde y de haberse perdido toda la tarde, el hombre sin mediar palabra saca una navaja y hiere a la menor de edad propinándole la muerte de manera inmediata y luego procede a herir (un total de 28 heridas con armas cortopunzantes) a la mujer quien queda muy mal herida.</p>",
+  "desarrolloSituacional": "<p>Son las 11 de la noche en un barrio con altas condiciones de vulnerabilidad: pobreza y violencias urbanas como robos, expendio de drogas, presencia de grupos armados ilegales y riñas callejeras entre vecinos.</p><p>Un hombre de aproximadamente 28 años entra al domicilio donde vive con su actual compañera, una mujer de 22 años, y con la niña de ella, de 3 años.</p><p>En horas de la tarde, los dos habían tenido un altercado verbal. Él la trató con groserías, la maltrató psicológicamente y la chantajeó emocionalmente: le dijo que sin él ella no era nadie, que era una mujer mantenida y que estaba seguro de que ella le era infiel.</p><p>Esa noche, cuando él entra a la casa, la mujer le reclama que haya llegado tarde y que se haya perdido toda la tarde.</p><p>Sin mediar palabra, el hombre saca una navaja, ataca a la niña, que muere de inmediato, y luego ataca a la mujer, que queda gravemente herida, con 28 heridas de arma cortopunzante.</p>",
   "contexto": "<p><strong>Advertencia de contenido:</strong> Este caso contiene violencia intrafamiliar, tentativa de feminicidio y la muerte de una menor de edad. Puede resultar perturbador.</p><p>Este diseño de juego de roles está estructurado para desafiar el juicio clínico y ético de los estudiantes de psicología, integrando la normativa colombiana (Ley 1257 de 2008, Ley 1098 de 2006 y el Protocolo de Atención Integral en Salud para víctimas de violencia sexual y de género).</p>",
   "tiempoEstimadoMin": 30,
   "sensible": true,
@@ -10,7 +10,7 @@
   "bloques": [
     {
       "nombre": "Atención en Hospital (Urgencia Vital y Crisis)",
-      "contexto": "La sobreviviente está en shock hipovolémico y emocional. La familia (madre y hermanos) llega al hospital en estado de alteración, exigiendo ver a la niña (quien ha fallecido, pero ellos aún no lo saben con certeza).",
+      "contexto": "<p>Pasada la medianoche, en urgencias del hospital, el equipo médico atiende a la mujer herida: llegó en shock hipovolémico y emocional, y la están preparando para cirugía.</p><p>Las puertas de la entrada se abren. La madre y el hermano de la sobreviviente llegan alterados. Todavía nadie les ha dicho con certeza qué pasó con la niña.</p><p>Madre: ¿Dónde está la niña? ¡Señorita, dígame dónde está mi nieta!</p><p>La madre se agarra del mostrador, le tiemblan las manos y llora.</p><p>Hermano: ¡Queremos ver a mi hermana y a la niña! ¿Por qué nadie nos dice nada?</p><p>El hermano aprieta los puños y camina de un lado a otro del pasillo, con rabia.</p><p>Madre: ¿Mi hija está viva? ¡Díganme si está viva!</p><p>Hermano: ¿Y si él viene para acá? ¿Y si nos está buscando?</p><p>El hermano mira hacia la puerta cada vez que alguien entra, asustado.</p><p>Hermano: Mamá, mírame… Ella va a estar bien, ¿cierto?</p><p>La madre rompe en llanto y el hermano la abraza.</p><p>Madre: No me la escondan. ¡Quiero ver a la niña!</p><p>Hermano: ¡Nadie sale a decirnos nada! ¡Queremos verlas!</p><p>La madre levanta la cabeza y el hermano se acerca. Los dos miran a quien tienen enfrente, esperando una respuesta.</p>",
       "preguntas": [
         {
           "enunciado": "<p>El estudiante debe decidir: ¿En qué centrar la intervención inmediata?</p>",
@@ -70,7 +70,7 @@
     },
     {
       "nombre": "Comisaría de Familia (Restablecimiento de Derechos)",
-      "contexto": "Han pasado 15 días. La mujer ha sido dada de alta, pero tiene secuelas físicas y trauma complejo. Se debe definir la medida de protección y el apoyo psicológico a largo plazo.",
+      "contexto": "<p>Han pasado 15 días. La mujer fue dada de alta, pero tiene secuelas físicas y un trauma complejo. Hoy está en la Comisaría de Familia, donde se debe definir la medida de protección y el apoyo psicológico a largo plazo.</p><p>La sobreviviente entra despacio, con los hombros encogidos, y se sienta en la orilla de la silla. Le tiemblan las manos y se ve asustada.</p><p>Comisaria: Buenos días. Aquí está segura. Tómese el tiempo que necesite.</p><p>Sobreviviente: No duermo. Cierro los ojos y vuelvo a ver esa noche.</p><p>La sobreviviente baja la mirada y llora en silencio.</p><p>Sobreviviente: Todavía oigo su voz diciéndome que sin él no soy nadie.</p><p>Comisaria: ¿Cómo se ha sentido estos días?</p><p>Sobreviviente: Con miedo. Miedo de que él aparezca y miedo de la familia de él. Me da miedo salir a la calle.</p><p>Sobreviviente: Y la culpa… Si esa noche yo no le hubiera reclamado nada, la niña estaría viva.</p><p>La sobreviviente rompe en llanto y se cubre la cara con las manos.</p><p>Sobreviviente: No sé qué hacer. No sé si voy a poder con esto.</p><p>La comisaria le acerca un vaso de agua, espera en silencio y luego mira al equipo psicosocial que acompaña la diligencia.</p><p>Sobreviviente: ¿Y ahora qué va a pasar conmigo?</p><p>La pregunta queda en el aire. La sobreviviente aprieta las manos sobre las piernas y espera una respuesta.</p>",
       "preguntas": [
         {
           "enunciado": "<p>El estudiante debe decidir: ¿Cuál es la prioridad en la asesoría psicosocial?</p>",
@@ -127,9 +127,9 @@
     }
   ],
   "personajes": [
-    { "nombre": "La sobreviviente", "descripcion": "Mujer, 22 años, víctima", "escenarios": [1] },
-    { "nombre": "Madre de la sobreviviente", "descripcion": "Mujer, 50 años, madre", "escenarios": [0] },
-    { "nombre": "Hermano de la sobreviviente", "descripcion": "Hombre, 25 años, hermano", "escenarios": [0] },
-    { "nombre": "Comisaria de familia", "descripcion": "Mujer, 40 años, comisaria de familia", "escenarios": [1] }
+    { "nombre": "Sobreviviente", "descripcion": "Mujer, 22 años, sobreviviente", "escenarios": [1] },
+    { "nombre": "Madre", "descripcion": "Mujer, 47 años, madre de la sobreviviente", "escenarios": [0] },
+    { "nombre": "Hermano", "descripcion": "Hombre, 25 años, hermano de la sobreviviente", "escenarios": [0] },
+    { "nombre": "Comisaria", "descripcion": "Mujer, 40 años, comisaria de familia", "escenarios": [1] }
   ]
 }
