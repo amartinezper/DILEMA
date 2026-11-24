@@ -34,10 +34,11 @@ public abstract class CierreSesion {
         this.bitacora = bitacora;
     }
 
-    public final void cerrar(SesionCaso sesion) {
+    public final void cerrar(SesionCaso sesion, List<Usuario> convocados) {
         if (!puedeCerrar(sesion)) return;
         if (sesion.estado() == Catalogo.EstadoSesion.FINALIZADO) return;
-        for (Usuario estudiante : new ArrayList<>(sesion.grupo.estudiantes)) {
+        List<Usuario> citados = convocados == null ? List.of() : convocados;
+        for (Usuario estudiante : new ArrayList<>(citados)) {
             List<Participacion> propias = participaciones.findByEstudianteIdAndSesionId(estudiante.id, sesion.id);
             Participacion enCurso = propias.stream().filter(Participacion::enCurso).findFirst().orElse(null);
             if (enCurso != null) {

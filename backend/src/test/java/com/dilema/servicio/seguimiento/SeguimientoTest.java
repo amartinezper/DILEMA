@@ -23,6 +23,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -135,7 +136,8 @@ class SeguimientoTest {
         Participacion parcial = intento(escenario, escenario.ana, 2, false);
 
         GeneradorReporte generador = new GeneradorReporte();
-        DatosReporte datos = generador.recolectarDatos(escenario.sesion, List.of(parcial, completo));
+        DatosReporte datos = generador.recolectarDatos(escenario.sesion, List.of(parcial, completo),
+                new ArrayList<>(escenario.sesion.grupo.estudiantes));
 
         assertEquals(3, datos.lineas().size());
         LineaReporte primera = datos.lineas().get(0);
@@ -187,8 +189,8 @@ class SeguimientoTest {
         generador.setFormato(formato);
 
         ReglaNegocio error = assertThrows(ReglaNegocio.class,
-                () -> generador.generar(escenario.profesor, escenario.sesion, List.of()));
-        assertTrue(error.getMessage().contains("no tiene convocados"));
+                () -> generador.generar(escenario.profesor, escenario.sesion, List.of(), List.of()));
+        assertTrue(error.getMessage().contains("estudiantes convocados"));
         assertFalse(formato.exporto);
     }
 
@@ -201,8 +203,9 @@ class SeguimientoTest {
         generador.setFormato(formato);
 
         AccesoDenegado error = assertThrows(AccesoDenegado.class,
-                () -> generador.generar(usuario(9L, "Ajeno"), escenario.sesion, List.of()));
-        assertTrue(error.getMessage().contains("no diriges"));
+                () -> generador.generar(usuario(9L, "Ajeno"), escenario.sesion, List.of(),
+                        new ArrayList<>(escenario.sesion.grupo.estudiantes)));
+        assertTrue(error.getMessage().contains("a tu cargo"));
         assertFalse(formato.exporto);
     }
 

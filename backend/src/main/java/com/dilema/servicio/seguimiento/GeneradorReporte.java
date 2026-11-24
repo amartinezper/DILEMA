@@ -27,15 +27,16 @@ public final class GeneradorReporte {
         this.formato = formato;
     }
 
-    public ArchivoReporte generar(Usuario profesor, SesionCaso sesion, List<Participacion> participaciones) {
+    public ArchivoReporte generar(Usuario profesor, SesionCaso sesion, List<Participacion> participaciones,
+                                  List<Usuario> convocados) {
         if (formato == null) {
             throw new ReglaNegocio("Elige si el reporte va en PDF, Excel o CSV.");
         }
         verificarGrupoDelProfesor(profesor, sesion);
-        if (sesion.grupo.estudiantes == null || sesion.grupo.estudiantes.isEmpty()) {
+        if (convocados == null || convocados.isEmpty()) {
             throw new ReglaNegocio("Esta sesión no tiene estudiantes convocados, así que no hay un reporte para descargar.");
         }
-        return formato.exportar(recolectarDatos(sesion, participaciones));
+        return formato.exportar(recolectarDatos(sesion, participaciones, convocados));
     }
 
     /** INV-22: solo reporta los grupos que dirige. */
@@ -45,7 +46,7 @@ public final class GeneradorReporte {
         }
     }
 
-    DatosReporte recolectarDatos(SesionCaso sesion, List<Participacion> participaciones) {
+    DatosReporte recolectarDatos(SesionCaso sesion, List<Participacion> participaciones, List<Usuario> convocados) {
         List<Participacion> deLaSesion = new ArrayList<>();
         if (participaciones != null) {
             for (Participacion participacion : participaciones) {
@@ -55,11 +56,11 @@ public final class GeneradorReporte {
                 }
             }
         }
-        List<Usuario> convocados = new ArrayList<>(sesion.grupo.estudiantes);
-        convocados.sort(Comparator.comparing(u -> u.nombre == null ? "" : u.nombre));
+        List<Usuario> citados = new ArrayList<>(convocados);
+        citados.sort(Comparator.comparing(u -> u.nombre == null ? "" : u.nombre));
         int total = totalPreguntas(sesion);
         List<LineaReporte> lineas = new ArrayList<>();
-        for (Usuario estudiante : convocados) {
+        for (Usuario estudiante : citados) {
             List<Participacion> intentos = deLaSesion.stream()
                     .filter(p -> p.estudiante != null && p.estudiante.id != null && p.estudiante.id.equals(estudiante.id))
                     .sorted(Comparator.comparingInt((Participacion p) -> p.numeroIntento)

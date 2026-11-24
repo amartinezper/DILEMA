@@ -24,7 +24,7 @@ class PadronConvocatoriaTest {
     @BeforeEach
     void preparar() {
         repo = mock(SesionEstudianteRepo.class);
-        padron = new PadronConvocatoria(repo);
+        padron = new PadronConvocatoria(repo, mock(com.dilema.repo.UsuarioRepo.class));
     }
 
     @Test

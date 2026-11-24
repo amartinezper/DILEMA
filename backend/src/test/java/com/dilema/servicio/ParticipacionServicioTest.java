@@ -193,6 +193,7 @@ class ParticipacionServicioTest {
     void seguimiento() {
         sesion.cierreReal = LocalDateTime.now();
         sesion.grupo.estudiantes.add(estudiante);
+        when(padron.convocados(sesion)).thenReturn(List.of(estudiante));
         when(participaciones.findByEstudianteIdAndSesionId(2L, 4L)).thenReturn(List.of());
 
         List<Contratos.FilaSeguimiento> filas = servicio.seguimiento(docente, 4L);

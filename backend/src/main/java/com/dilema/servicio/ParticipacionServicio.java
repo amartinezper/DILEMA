@@ -219,7 +219,8 @@ public class ParticipacionServicio {
         SesionCaso sesion = sesiones.findById(sesionId).orElseThrow(() -> new NoEncontrado("Sesión no encontrada."));
         if (!sesion.grupo.esDirigidoPor(docente)) throw new AccesoDenegado("La sesión no está a tu cargo.");
         List<Contratos.FilaSeguimiento> filas = new ArrayList<>();
-        IteradorCohorte iterador = new IteradorCohorte(sesion.grupo.estudiantes);
+        List<Usuario> citados = padron.convocados(sesion);
+        IteradorCohorte iterador = new IteradorCohorte(citados == null ? List.of() : citados);
         while (iterador.hasNext()) {
             Usuario estudiante = iterador.next();
             Participacion ultima = participaciones.findByEstudianteIdAndSesionId(estudiante.id, sesion.id).stream()

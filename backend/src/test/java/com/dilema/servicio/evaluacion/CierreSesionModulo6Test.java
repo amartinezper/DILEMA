@@ -96,7 +96,7 @@ class CierreSesionModulo6Test {
         when(participaciones.findByEstudianteIdAndSesionId(enCursoEstudiante.id, sesion.id)).thenReturn(List.of(enCurso));
         when(participaciones.findByEstudianteIdAndSesionId(ausenteEstudiante.id, sesion.id)).thenReturn(List.of());
 
-        new CierrePorDocente(servicio, participaciones).cerrar(sesion);
+        new CierrePorDocente(servicio, participaciones).cerrar(sesion, List.of(enCursoEstudiante, ausenteEstudiante));
 
         assertNotNull(enCurso.fin);
         assertEquals(3.0, enCurso.nota(), "la nota parcial solo suma el peso de lo respondido correctamente");
@@ -125,7 +125,7 @@ class CierreSesionModulo6Test {
         Usuario ausente = sesion.grupo.estudiantes.iterator().next();
         when(participaciones.findByEstudianteIdAndSesionId(ausente.id, sesion.id)).thenReturn(List.of());
 
-        new CierrePorDocente(servicio, participaciones, bitacora).cerrar(sesion);
+        new CierrePorDocente(servicio, participaciones, bitacora).cerrar(sesion, List.of(ausente));
 
         verify(bitacora).avisar(eq(ausente), eq("CORREO"), eq("Nota del caso"), contains("0.0"));
         verify(bitacora).avisar(eq(ausente), eq("SISTEMA"), eq("Nota del caso"), contains("0.0"));
@@ -141,7 +141,7 @@ class CierreSesionModulo6Test {
         SesionCaso sesion = sesionConAusente();
         when(participaciones.findByEstudianteIdAndSesionId(any(), any())).thenReturn(List.of());
 
-        new CierrePorDocente(servicio, participaciones).cerrar(sesion);
+        new CierrePorDocente(servicio, participaciones).cerrar(sesion, new java.util.ArrayList<>(sesion.grupo.estudiantes));
 
         verify(participaciones).save(any(Participacion.class));
         verify(bitacora, never()).avisar(any(), any(), any(), any());

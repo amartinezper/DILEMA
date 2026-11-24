@@ -41,7 +41,7 @@ class CierreSesionTest {
         when(repo.findByEstudianteIdAndSesionId(2L, 4L)).thenReturn(List.of(enCurso));
         when(repo.findByEstudianteIdAndSesionId(3L, 4L)).thenReturn(List.of());
 
-        new CierrePorDocente(servicio, repo).cerrar(sesion);
+        new CierrePorDocente(servicio, repo).cerrar(sesion, List.of(presente, ausente));
 
         verify(servicio).cerrarPorTiempo(enCurso);
         ArgumentCaptor<Participacion> captor = ArgumentCaptor.forClass(Participacion.class);
@@ -55,7 +55,7 @@ class CierreSesionTest {
     @DisplayName("RF-19 no finaliza una sesión que todavía no inició")
     void noFinalizaSesionSinIniciar() {
         assertThrows(ReglaNegocio.class, () -> new CierrePorDocente(mock(ParticipacionServicio.class), mock(ParticipacionRepo.class))
-                .cerrar(new SesionCaso()));
+                .cerrar(new SesionCaso(), List.of()));
     }
 
     @Test
@@ -68,7 +68,7 @@ class CierreSesionTest {
         when(repo.findByEstudianteIdAndSesionId(2L, 4L)).thenReturn(List.of());
         sesion.grupo.estudiantes.add(estudiante(2L));
 
-        new CierrePorFecha(servicio, repo).cerrar(sesion);
+        new CierrePorFecha(servicio, repo).cerrar(sesion, List.of(estudiante(2L)));
 
         verify(repo).save(org.mockito.ArgumentMatchers.any());
         assertNotNull(sesion.cierreReal);
@@ -81,7 +81,7 @@ class CierreSesionTest {
         ParticipacionRepo repo = mock(ParticipacionRepo.class);
         SesionCaso sesion = sesionEnCurso();
         sesion.fin = LocalDateTime.now().plusHours(2);
-        new CierrePorFecha(servicio, repo).cerrar(sesion);
+        new CierrePorFecha(servicio, repo).cerrar(sesion, List.of());
         verify(repo, never()).save(org.mockito.ArgumentMatchers.any());
         assertNull(sesion.cierreReal);
     }

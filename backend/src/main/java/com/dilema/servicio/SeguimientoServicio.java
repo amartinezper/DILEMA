@@ -6,6 +6,7 @@ import com.dilema.modelo.SesionCaso;
 import com.dilema.modelo.Usuario;
 import com.dilema.repo.ParticipacionRepo;
 import com.dilema.repo.SesionRepo;
+import com.dilema.servicio.programacion.PadronConvocatoria;
 import com.dilema.servicio.seguimiento.ArchivoReporte;
 import com.dilema.servicio.seguimiento.ConsultaSeguimiento;
 import com.dilema.servicio.seguimiento.ExportadorCSV;
@@ -28,12 +29,15 @@ import java.util.List;
 public class SeguimientoServicio {
     private final SesionRepo sesiones;
     private final ParticipacionRepo participaciones;
+    private final PadronConvocatoria padron;
     private final ProxyOperacion proxy;
     private final ConsultaSeguimiento consulta = new ConsultaSeguimiento();
 
-    public SeguimientoServicio(SesionRepo sesiones, ParticipacionRepo participaciones, ProxyOperacion proxy) {
+    public SeguimientoServicio(SesionRepo sesiones, ParticipacionRepo participaciones,
+                               PadronConvocatoria padron, ProxyOperacion proxy) {
         this.sesiones = sesiones;
         this.participaciones = participaciones;
+        this.padron = padron;
         this.proxy = proxy;
     }
 
@@ -84,7 +88,9 @@ public class SeguimientoServicio {
         GeneradorReporte generador = new GeneradorReporte();
         generador.setFormato(formatoDe(formato));
         List<Participacion> deLaSesion = participaciones.findBySesion_Id(sesion.id);
-        return generador.generar(docente, sesion, deLaSesion == null ? List.of() : deLaSesion);
+        List<Usuario> citados = padron.convocados(sesion);
+        return generador.generar(docente, sesion, deLaSesion == null ? List.of() : deLaSesion,
+                citados == null ? List.of() : citados);
     }
 
     private SesionCaso exigirSesion(Usuario docente, Long sesionId) {
