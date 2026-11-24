@@ -100,7 +100,7 @@ export class MarcoDocenteComponent {
     if (href.includes('/grupos') || href.includes('/usuarios')) return 'grupos';
     if (href.includes('/programar')) return 'calendario';
     if (href.includes('/seguimiento')) return 'reporte';
-    if (href.includes('/configuracion') || href.includes('/perfil')) return 'ajuste';
+    if (href.includes('/perfil')) return 'ajuste';
     return 'inicio';
   }
 }

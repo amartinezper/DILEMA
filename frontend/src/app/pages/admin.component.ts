@@ -11,9 +11,7 @@ import { Usuario, mensajeError } from '../core/api.service';
 const enlaces = [
   { href: '/admin', texto: 'Inicio', exacto: true },
   { href: '/admin/usuarios', texto: 'Docentes', exacto: true },
-  { href: '/admin/usuarios/nuevo', texto: 'Nuevo docente', exacto: true },
   { href: '/admin/grupos', texto: 'Grupos', exacto: true },
-  { href: '/admin/configuracion', texto: 'Configuración global', exacto: true },
   { href: '/admin/perfil', texto: 'Perfil' }
 ];
 
@@ -30,7 +28,7 @@ function inicialesDe(nombre: string) {
   imports: [MarcoDocenteComponent, RouterLink],
   template: `
     <app-marco-docente [enlaces]="enlaces" inicio="/admin"
-      descripcion="Gestiona docentes, permisos y la configuración del sistema.">
+      descripcion="Gestiona docentes, permisos y los grupos del sistema.">
       <section class="adm-kpis" aria-label="Resumen">
         <article class="adm-tarjeta adm-kpi">
           <span class="adm-kpi-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="16.2" cy="9" r="2.4"/><path d="M4 19c.7-3.2 2.8-5.2 5-5.2s4.3 2 5 5.2M13.4 19c.4-2.2 1.7-3.6 3.2-3.6 1.6 0 3 1.5 3.4 3.6"/></svg></span>
@@ -79,10 +77,6 @@ function inicialesDe(nombre: string) {
             <li><a class="adm-fila" routerLink="/admin/grupos">
               <span class="adm-tarea-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg></span>
               <span class="adm-fila-texto"><strong>Grupos</strong><small>Espacios académicos de todos los docentes</small></span>
-              <span class="adm-flecha" aria-hidden="true">›</span></a></li>
-            <li><a class="adm-fila" routerLink="/admin/configuracion">
-              <span class="adm-tarea-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM12 3.5v2M12 18.5v2M4.8 6.2l1.5 1.5M17.7 16.3l1.5 1.5M3.5 12h2M18.5 12h2M4.8 17.8l1.5-1.5M17.7 7.7l1.5-1.5"/></svg></span>
-              <span class="adm-fila-texto"><strong>Configurar</strong><small>Valores generales del sistema</small></span>
               <span class="adm-flecha" aria-hidden="true">›</span></a></li>
           </ul>
         </article>
@@ -512,53 +506,6 @@ export class GruposAdminComponent {
   ordenar(orden: string) { this.orden.set(orden); this.irPagina(1); }
   irPagina(n: number) { this.pagina.set(n); this.abierto.set(null); }
   alternar(id: number) { this.abierto.set(this.abierto() === id ? null : id); }
-}
-
-@Component({
-  selector: 'app-configuracion',
-  imports: [MarcoDocenteComponent, FormsModule],
-  template: `
-    <app-marco-docente [enlaces]="enlaces" inicio="/admin"
-      descripcion="Valores generales del sistema. Se guardan en este navegador.">
-      <article class="adm-tarjeta adm-form">
-        <h2>Configuración global</h2>
-        <div class="adm-campos">
-          <label class="adm-campo"><span>Nombre del sistema</span><input [(ngModel)]="config.nombre" /></label>
-          <label class="adm-campo"><span>Correo de soporte</span><input [(ngModel)]="config.soporte" /></label>
-          <label class="adm-campo"><span>Zona horaria</span><input [(ngModel)]="config.zona" /></label>
-          <label class="adm-campo"><span>Inactividad máxima (min)</span><input type="number" [(ngModel)]="config.inactividad" /></label>
-        </div>
-        <div class="adm-checks">
-          <label class="adm-check">
-            <input type="checkbox" name="notificar" [(ngModel)]="config.notificar" />
-            <span>Avisos por correo</span>
-          </label>
-          <label class="adm-check">
-            <input type="checkbox" name="docentePublica" [(ngModel)]="config.docentePublica" />
-            <span>El docente puede publicar sin aprobación previa</span>
-          </label>
-        </div>
-        @if (ok()) { <p class="ok">{{ ok() }}</p> }
-        <div class="adm-form-pie">
-          <button class="adm-boton" type="button" (click)="guardar()">Guardar configuración</button>
-        </div>
-      </article>
-    </app-marco-docente>
-  `
-})
-export class ConfiguracionComponent {
-  enlaces = enlaces;
-  ok = signal('');
-  config = this.leer();
-  guardar() {
-    localStorage.setItem('dilema-config', JSON.stringify(this.config));
-    this.ok.set('Configuración guardada en este navegador.');
-  }
-  private leer() {
-    const base = { nombre: 'Simulador de Psicología Social', soporte: 'soporte.academico@universidad.edu', zona: 'America/Bogota', inactividad: 30, notificar: true, docentePublica: true, escalaMin: 0, escalaMax: 5 };
-    try { return { ...base, ...JSON.parse(localStorage.getItem('dilema-config') || '{}') }; }
-    catch { return base; }
-  }
 }
 
 const enlacesDocente = [
