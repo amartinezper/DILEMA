@@ -71,6 +71,7 @@ function casoVacio(): Caso {
       @if (aviso()) { <p class="error">{{ aviso() }}</p> }
 
       <section class="adm-dos">
+        <div class="adm-columna">
         <article class="adm-tarjeta">
           <div class="adm-cabeza">
             <h2>Agenda de hoy</h2>
@@ -101,23 +102,6 @@ function casoVacio(): Caso {
           </ul>
         </article>
 
-        <div class="adm-columna">
-          <article class="adm-tarjeta">
-            <div class="adm-cabeza">
-              <h2>Próximas</h2>
-              <a class="adm-enlace" routerLink="/docente/programar">Ver todas <span aria-hidden="true">›</span></a>
-            </div>
-            <ul class="adm-lista">
-              @for (sesion of proximas(); track sesion.id) {
-                <li class="adm-fila">
-                  <span class="adm-fila-texto"><strong>{{ sesion.caso }}</strong><small>{{ cuando(sesion.inicio) }} · {{ sesion.grupo }}</small></span>
-                </li>
-              } @empty {
-                <li class="adm-vacio">No hay sesiones por delante.</li>
-              }
-            </ul>
-          </article>
-
           <article class="adm-tarjeta">
             <div class="adm-cabeza"><h2>Flujo de trabajo</h2></div>
             <ul class="adm-lista">
@@ -137,6 +121,24 @@ function casoVacio(): Caso {
                 <span class="adm-tarea-icono" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 19V10M10 19V5M15 19v-7M20 19V8"/></svg></span>
                 <span class="adm-fila-texto"><strong>Seguir</strong><small>Bitácora en vivo y reportes</small></span>
                 <span class="adm-flecha" aria-hidden="true">›</span></a></li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="adm-columna">
+          <article class="adm-tarjeta">
+            <div class="adm-cabeza">
+              <h2>Próximas</h2>
+              <a class="adm-enlace" routerLink="/docente/programar">Ver todas <span aria-hidden="true">›</span></a>
+            </div>
+            <ul class="adm-lista">
+              @for (sesion of proximas(); track sesion.id) {
+                <li class="adm-fila">
+                  <span class="adm-fila-texto"><strong>{{ sesion.caso }}</strong><small>{{ cuando(sesion.inicio) }} · {{ sesion.grupo }}</small></span>
+                </li>
+              } @empty {
+                <li class="adm-vacio">No hay sesiones por delante.</li>
+              }
             </ul>
           </article>
         </div>
