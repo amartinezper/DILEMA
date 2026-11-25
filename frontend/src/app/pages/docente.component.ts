@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MarcoDocenteComponent } from '../shared/marco-docente.component';
-import { IconoComponent } from '../shared/icono.component';
+import { IconoComponent, NombreIcono } from '../shared/icono.component';
 import { EditorTextoComponent } from '../shared/editor-texto.component';
 import { Bloque, Caso, CasoResumen, Fila, Grupo, IntentoConsultado, OpcionJuego, Participacion, ParticipacionConsultada, Persona, PreguntaJuego, Sesion, SesionRealizada, mensajeError } from '../core/api.service';
 import { MatButtonModule } from '@angular/material/button';
@@ -56,97 +56,116 @@ function casoVacio(): Caso {
   imports: [IconoComponent, MarcoDocenteComponent, RouterLink],
   template: `
     <app-marco-docente [enlaces]="enlaces" descripcion="Coordina casos, grupos y sesiones desde un solo lugar.">
-      <section class="dl-kpis" aria-label="Resumen">
-        <article class="dl-kpi">
-          <span class="dl-kpi-icono"><app-icono nombre="documento" [tamano]="28" /></span>
-          <div><h2>Casos</h2><strong>{{ casos().length }}</strong><span>{{ publicados() }} publicados</span></div>
-        </article>
-        <article class="dl-kpi">
-          <span class="dl-kpi-icono"><app-icono nombre="personas" [tamano]="28" /></span>
-          <div><h2>Grupos a tu cargo</h2><strong>{{ grupos().length }}</strong><span>{{ estudiantesEnGrupos() === 1 ? '1 estudiante' : estudiantesEnGrupos() + ' estudiantes' }}</span></div>
-        </article>
-        <article class="dl-kpi">
-          <span class="dl-kpi-icono"><app-icono nombre="calendario" [tamano]="28" /></span>
-          <div><h2>Sesiones de hoy</h2><strong>{{ hoy().length }}</strong><span>{{ hoyEnCurso() }} en curso</span></div>
-        </article>
-      </section>
-      @if (aviso()) { <p class="error">{{ aviso() }}</p> }
-
-      <section class="adm-dos">
-        <div class="adm-columna">
-        <article class="adm-tarjeta">
-          <div class="adm-cabeza">
-            <h2>Agenda de hoy</h2>
-            <a class="adm-enlace" routerLink="/docente/programar">Programar <span aria-hidden="true">›</span></a>
-          </div>
-          <ul class="adm-lista">
-            @for (sesion of hoy(); track sesion.id) {
-              <li class="adm-fila">
-                <span class="adm-hora">{{ hora(sesion.inicio) }}</span>
-                <span class="adm-fila-texto"><strong>{{ sesion.caso }}</strong><small>{{ sesion.grupo }} · código {{ sesion.codigo }}</small></span>
-                <span class="adm-estado-pill" [attr.data-estado]="sesion.estado">{{ etiquetaEstado(sesion.estado) }}</span>
-                <span class="adm-fila-acciones">
-                  @if (sesion.estado === 'SIN_INICIAR') {
-                    <button class="adm-boton adm-boton-chico" type="button" (click)="moverSesion(sesion.id, 'iniciar')">Iniciar</button>
-                  }
-                  @if (sesion.estado === 'EN_CURSO') {
-                    <button class="adm-boton-contorno adm-boton-chico" type="button" (click)="moverSesion(sesion.id, 'finalizar')">Finalizar</button>
-                    <a class="adm-enlace" routerLink="/docente/seguimiento">Bitácora <span aria-hidden="true">›</span></a>
-                  }
-                  @if (sesion.estado === 'FINALIZADO') {
-                    <a class="adm-enlace" routerLink="/docente/seguimiento">Ver reporte <span aria-hidden="true">›</span></a>
-                  }
-                </span>
-              </li>
-            } @empty {
-              <li class="adm-vacio">No hay sesiones hoy. Convoca un grupo cuando el caso esté listo.</li>
-            }
-          </ul>
-        </article>
-
-          <article class="adm-tarjeta">
-            <div class="adm-cabeza"><h2>Flujo de trabajo</h2></div>
-            <ul class="adm-lista">
-              <li><a class="adm-fila" routerLink="/docente/casos/nuevo">
-                <span class="adm-tarea-icono"><app-icono nombre="documento" [tamano]="20" /></span>
-                <span class="adm-fila-texto"><strong>Diseñar</strong><small>Crea un caso con su historia y sus decisiones</small></span>
-                <span class="adm-flecha" aria-hidden="true">›</span></a></li>
-              <li><a class="adm-fila" routerLink="/docente/grupos">
-                <span class="adm-tarea-icono"><app-icono nombre="personas" [tamano]="20" /></span>
-                <span class="adm-fila-texto"><strong>Agrupar</strong><small>Abre grupos y matricula estudiantes</small></span>
-                <span class="adm-flecha" aria-hidden="true">›</span></a></li>
-              <li><a class="adm-fila" routerLink="/docente/programar">
-                <span class="adm-tarea-icono"><app-icono nombre="calendario" [tamano]="20" /></span>
-                <span class="adm-fila-texto"><strong>Convocar</strong><small>Agenda un caso publicado con un grupo</small></span>
-                <span class="adm-flecha" aria-hidden="true">›</span></a></li>
-              <li><a class="adm-fila" routerLink="/docente/seguimiento">
-                <span class="adm-tarea-icono"><app-icono nombre="grafica" [tamano]="20" /></span>
-                <span class="adm-fila-texto"><strong>Seguir</strong><small>Bitácora en vivo y reportes</small></span>
-                <span class="adm-flecha" aria-hidden="true">›</span></a></li>
-            </ul>
+      <div class="pd-inicio">
+        <section class="pd-kpis" aria-label="Resumen">
+          <article class="pd-kpi">
+            <span class="pd-icono"><app-icono nombre="documento" [tamano]="20" /></span>
+            <div class="pd-kpi-texto"><h2>Casos</h2><p><strong>{{ casos().length }}</strong><span>{{ publicados() }} publicados</span></p></div>
           </article>
-        </div>
+          <article class="pd-kpi">
+            <span class="pd-icono"><app-icono nombre="personas" [tamano]="20" /></span>
+            <div class="pd-kpi-texto"><h2>Grupos a tu cargo</h2><p><strong>{{ grupos().length }}</strong><span>{{ estudiantesEnGrupos() === 1 ? '1 estudiante' : estudiantesEnGrupos() + ' estudiantes' }}</span></p></div>
+          </article>
+          <article class="pd-kpi">
+            <span class="pd-icono"><app-icono nombre="calendario" [tamano]="20" /></span>
+            <div class="pd-kpi-texto"><h2>Sesiones de hoy</h2><p><strong>{{ hoy().length }}</strong><span>{{ hoyEnCurso() }} en curso</span></p></div>
+          </article>
+        </section>
+        @if (aviso()) { <p class="error">{{ aviso() }}</p> }
 
-        <div class="adm-columna">
-          <article class="adm-tarjeta">
-            <div class="adm-cabeza">
-              <h2>Próximas</h2>
-              <a class="adm-enlace" routerLink="/docente/programar">Ver todas <span aria-hidden="true">›</span></a>
+        <div class="pd-columnas">
+          <section class="pd-tarjeta" aria-labelledby="pd-titulo-proximas">
+            <div class="pd-cabeza">
+              <h2 id="pd-titulo-proximas">Próximas sesiones</h2>
+              <a class="pd-enlace" routerLink="/docente/programar">Ver todas <span aria-hidden="true">›</span></a>
             </div>
-            <ul class="adm-lista">
-              @for (sesion of proximas(); track sesion.id) {
-                <li class="adm-fila">
-                  <span class="adm-fila-texto"><strong>{{ sesion.caso }}</strong><small>{{ cuando(sesion.inicio) }} · {{ sesion.grupo }}</small></span>
-                </li>
-              } @empty {
-                <li class="adm-vacio">No hay sesiones por delante.</li>
+            @if (proximas().length) {
+              <ul class="pd-lista">
+                @for (sesion of proximas(); track sesion.id) {
+                  <li><a class="pd-fila pd-sesion" routerLink="/docente/programar">
+                    <span class="pd-fecha" aria-hidden="true"><b>{{ dia(sesion.inicio) }}</b><small>{{ mes(sesion.inicio) }}</small></span>
+                    <span class="pd-sesion-cuerpo">
+                      <span class="pd-texto"><strong [title]="sesion.caso">{{ sesion.caso }}</strong><small>{{ sesion.grupo }}</small></span>
+                      <span class="pd-hora">{{ horaSesion(sesion.inicio) }}</span>
+                    </span>
+                    <span class="solo-lector">{{ cuando(sesion.inicio) }}</span>
+                  </a></li>
+                }
+              </ul>
+            } @else {
+              <p class="pd-vacio">No tienes sesiones próximas <a class="pd-enlace" routerLink="/docente/programar">Programar <span aria-hidden="true">›</span></a></p>
+            }
+          </section>
+
+          <section class="pd-tarjeta" aria-labelledby="pd-titulo-flujo">
+            <div class="pd-cabeza"><h2 id="pd-titulo-flujo">Flujo de trabajo</h2></div>
+            <ul class="pd-lista">
+              @for (paso of pasos; track paso.titulo) {
+                <li><a class="pd-fila pd-paso" [routerLink]="paso.enlace">
+                  <span class="pd-icono"><app-icono [nombre]="paso.icono" [tamano]="20" /></span>
+                  <span class="pd-texto"><strong>{{ paso.titulo }}</strong><small>{{ paso.frase }}</small></span>
+                  <span class="pd-flecha" aria-hidden="true">›</span>
+                </a></li>
               }
             </ul>
-          </article>
+          </section>
         </div>
-      </section>
+      </div>
     </app-marco-docente>
-  `
+  `,
+  styles: [`
+    .pd-inicio { position: relative; z-index: 1; display: grid; gap: 20px; container-type: inline-size; min-width: 0; }
+    .pd-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .pd-kpi { display: flex; align-items: center; gap: 14px; min-height: 72px; min-width: 0; box-sizing: border-box; padding: 14px 18px;
+      background: #fff; border: 1px solid #e6edf8; border-radius: 18px; box-shadow: 0 1px 2px rgba(16, 24, 40, .03); }
+    .pd-icono { flex: none; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; background: #eef4ff; color: #1f5cf0; }
+    .pd-icono app-icono { display: grid; }
+    .pd-kpi-texto { min-width: 0; }
+    .pd-kpi h2 { margin: 0; font-size: 12.5px; font-weight: 600; line-height: 1.3; color: #7a86a3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pd-kpi p { margin: 0; display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+    .pd-kpi strong { font-size: 24px; font-weight: 800; line-height: 1.15; color: var(--dl-tinta); }
+    .pd-kpi p span { font-size: 12.5px; color: #7a86a3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .pd-columnas { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: stretch; }
+    .pd-tarjeta { min-width: 0; padding: 18px 18px 10px; background: #fff; border: 1px solid #e6edf8; border-radius: 18px;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, .03); }
+    .pd-cabeza { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+    .pd-cabeza h2 { margin: 0; font-size: 16px; font-weight: 800; color: var(--dl-tinta); }
+    .pd-enlace { flex: none; color: #1f5cf0; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+    .pd-enlace:hover { text-decoration: underline; }
+    .pd-lista { list-style: none; margin: 0; padding: 0; }
+    .pd-lista li + li { border-top: 1px solid #f0f4fa; }
+    .pd-fila { display: flex; align-items: center; gap: 14px; min-width: 0; padding: 12px 8px; margin: 0 -8px; border-radius: 12px;
+      color: inherit; text-decoration: none; }
+    .pd-fila:hover { background: #f8fbff; }
+    .pd-fila:focus-visible, .pd-enlace:focus-visible { outline: 3px solid #7aa7ff; outline-offset: 2px; }
+    .pd-texto { flex: 1; min-width: 0; display: grid; gap: 2px; }
+    .pd-texto strong { font-size: 14px; color: var(--dl-tinta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pd-texto small { font-size: 12.5px; color: #7a86a3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pd-sesion-cuerpo { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+    .pd-sesion-cuerpo .pd-texto { flex: 1 1 150px; }
+    .pd-sesion strong { font-weight: 600; }
+    .pd-paso strong { font-weight: 700; }
+    .pd-fecha { flex: none; width: 52px; height: 52px; display: grid; place-content: center; justify-items: center; border-radius: 14px; background: #f3f7fe; }
+    .pd-fecha b { font-size: 18px; font-weight: 800; line-height: 1.1; color: var(--dl-tinta); }
+    .pd-fecha small { font-size: 11px; font-weight: 700; letter-spacing: .04em; color: #1f5cf0; }
+    .pd-hora { flex: none; padding: 5px 10px; border-radius: 999px; background: #eef4ff; color: #1747c2; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+    .pd-flecha { flex: none; font-size: 22px; line-height: 1; color: #b3c0da; }
+    .pd-paso:hover .pd-flecha { color: #1f5cf0; }
+    .pd-vacio { margin: 0; padding: 22px 0 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 13.5px; color: #6b7690; }
+
+    @container (max-width: 640px) {
+      .pd-kpis, .pd-columnas { grid-template-columns: minmax(0, 1fr); }
+    }
+    @media (max-width: 767.98px) {
+      .pd-kpis { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+      .pd-columnas { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+      .pd-tarjeta { padding: 16px 14px 8px; }
+      .pd-sesion-cuerpo .pd-texto { flex-basis: 220px; }
+      .pd-hora { padding: 3px 9px; }
+      .pd-paso small { white-space: normal; }
+    }
+  `]
 })
 export class PanelDocenteComponent {
   enlaces = enlaces;
@@ -157,6 +176,12 @@ export class PanelDocenteComponent {
   sesiones = signal<Sesion[]>([]);
   grupos = signal<Grupo[]>([]);
   aviso = signal('');
+  readonly pasos: { titulo: string; frase: string; icono: NombreIcono; enlace: string }[] = [
+    { titulo: 'Diseñar', frase: 'Crea un caso con su historia y sus decisiones', icono: 'documento', enlace: '/docente/casos/nuevo' },
+    { titulo: 'Agrupar', frase: 'Abre grupos y matricula estudiantes', icono: 'personas', enlace: '/docente/grupos' },
+    { titulo: 'Convocar', frase: 'Agenda un caso publicado con un grupo', icono: 'calendario', enlace: '/docente/programar' },
+    { titulo: 'Seguir', frase: 'Bitácora en vivo y reportes', icono: 'grafica', enlace: '/docente/seguimiento' }
+  ];
   constructor() { this.refrescar(); }
   refrescar() {
     this.http.get<CasoResumen[]>('/api/docente/casos').subscribe((dato) => this.casos.set(dato));
@@ -204,6 +229,22 @@ export class PanelDocenteComponent {
     if (Number.isNaN(fecha.getTime())) return iso;
     return fecha.toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   }
+  /** Cuadrito de fecha de "Próximas sesiones": "25" y "NOV". */
+  dia(iso: string) {
+    const fecha = new Date(iso);
+    return Number.isNaN(fecha.getTime()) ? '—' : String(fecha.getDate());
+  }
+  mes(iso: string) {
+    const fecha = new Date(iso);
+    if (Number.isNaN(fecha.getTime())) return '';
+    return fecha.toLocaleString('es-CO', { month: 'short' }).replace('.', '').toUpperCase();
+  }
+  /** "5:26 p. m." */
+  horaSesion(iso: string) {
+    const fecha = new Date(iso);
+    if (Number.isNaN(fecha.getTime())) return '';
+    return fecha.toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit', hour12: true }).replace(/\s+/g, '\u00a0');
+  }
   private mismoDia(iso: string) {
     const fecha = new Date(iso);
     if (Number.isNaN(fecha.getTime())) return false;
@@ -218,22 +259,26 @@ export class PanelDocenteComponent {
   imports: [IconoComponent],
   template: `
     @if (total() > 0) {
-      <nav class="gp-paginacion" [attr.aria-label]="'Paginación de ' + que()">
+      <nav class="gp-paginacion" [class.simple]="simple()" [attr.aria-label]="'Paginación de ' + que()">
         <p class="gp-pag-texto">{{ prefijo() }}{{ desde() }}–{{ hasta() }} de {{ total() }}{{ sufijo() }}</p>
         @if (paginas() > 1) {
           <div class="gp-pag-botones">
-            <button type="button" class="gp-pag" [disabled]="pagina() === 1" (click)="cambiar.emit(pagina() - 1)"
-              [attr.aria-label]="'Página anterior de ' + que()">
-              <app-icono nombre="atras" [tamano]="18" />
-            </button>
+            @if (flechas()) {
+              <button type="button" class="gp-pag" [disabled]="pagina() === 1" (click)="cambiar.emit(pagina() - 1)"
+                [attr.aria-label]="'Página anterior de ' + que()">
+                <app-icono nombre="atras" [tamano]="18" />
+              </button>
+            }
             @for (n of numeros(); track n) {
               <button type="button" class="gp-pag" [class.actual]="n === pagina()" [attr.aria-current]="n === pagina() ? 'page' : null"
                 [attr.aria-label]="'Página ' + n" (click)="cambiar.emit(n)">{{ n }}</button>
             }
-            <button type="button" class="gp-pag" [disabled]="pagina() === paginas()" (click)="cambiar.emit(pagina() + 1)"
-              [attr.aria-label]="'Página siguiente de ' + que()">
-              <app-icono nombre="flecha" [tamano]="18" />
-            </button>
+            @if (flechas()) {
+              <button type="button" class="gp-pag" [disabled]="pagina() === paginas()" (click)="cambiar.emit(pagina() + 1)"
+                [attr.aria-label]="'Página siguiente de ' + que()">
+                <app-icono nombre="flecha" [tamano]="18" />
+              </button>
+            }
           </div>
         }
       </nav>
@@ -250,6 +295,12 @@ export class PanelDocenteComponent {
     .gp-pag.actual { background: var(--dl-degradado); border-color: var(--dl-azul-fuerte); color: #fff; }
     .gp-pag:disabled { opacity: .45; cursor: default; }
     .gp-pag:focus-visible { outline: 3px solid rgba(59,108,255,.35); outline-offset: 2px; }
+    .simple .gp-pag-texto { font-size: 12.5px; color: #7a86a3; }
+    .simple .gp-pag-botones { gap: 4px; }
+    .simple .gp-pag { width: 30px; height: 30px; border-color: transparent; background: transparent; color: #4d5b7c; font-size: 13px; transform: none; }
+    .simple .gp-pag:hover:not(.actual):not(:disabled) { border-color: transparent; background: #f3f6fc; }
+    .simple .gp-pag svg { width: 13px; height: 13px; }
+    .simple .gp-pag.actual { background: var(--gp-pag-activa, #fff); border-color: var(--gp-pag-activa-borde, #e3eaf6); color: #1f5cf0; }
   `]
 })
 export class PaginacionGpComponent {
@@ -262,6 +313,9 @@ export class PaginacionGpComponent {
   readonly sufijo = input('');
   /** Cuántos números de página se ven a la vez (en la columna angosta de grupos, 3). */
   readonly maxNumeros = input(5);
+  /** Números sin cajas: la página activa en blanco con el número azul (Mis casos y Grupos). */
+  readonly simple = input(false);
+  readonly flechas = input(true);
   readonly cambiar = output<number>();
   readonly paginas = computed(() => Math.max(1, Math.ceil(this.total() / this.porPagina())));
   readonly desde = computed(() => this.total() ? (this.pagina() - 1) * this.porPagina() + 1 : 0);
@@ -329,22 +383,11 @@ const ESTILOS_GP = `
 `;
 
 type FiltroCaso = 'TODOS' | 'BORRADOR' | 'PUBLICADO' | 'ARCHIVADO';
-type OrdenCaso = 'recientes' | 'nombre' | 'estado';
 const ETIQUETA_CASO: Record<string, string> = { BORRADOR: 'Borrador', PUBLICADO: 'Publicado', ARCHIVADO: 'Archivado' };
-/** Grupos de "Todos" en Mis casos: título, nota y plural para "Ver todos los …". */
-const GRUPOS_CASO: { estado: FiltroCaso; titulo: string; nota: string; plural: string }[] = [
-  { estado: 'PUBLICADO', titulo: 'Publicados', nota: 'los ven los estudiantes', plural: 'publicados' },
-  { estado: 'BORRADOR', titulo: 'Borradores', nota: 'solo los ves tú', plural: 'borradores' },
-  { estado: 'ARCHIVADO', titulo: 'Archivados', nota: 'no se pueden programar', plural: 'archivados' }
-];
-
-function leerVistaCasos(): 'tarjetas' | 'lista' {
-  try { return sessionStorage.getItem('dilema-vista-casos') === 'tarjetas' ? 'tarjetas' : 'lista'; } catch { return 'lista'; }
-}
 
 @Component({
   selector: 'app-casos',
-  imports: [IconoComponent, MarcoDocenteComponent, RouterLink, FormsModule, NgTemplateOutlet],
+  imports: [IconoComponent, MarcoDocenteComponent, RouterLink, FormsModule, PaginacionGpComponent],
   host: { '(document:click)': 'cerrarMenu()', '(document:keydown.escape)': 'cerrarMenu(true)' },
   template: `
     <app-marco-docente [enlaces]="enlaces" [compacto]="true" descripcion="Diseña, publica y reabre el editor de cada caso.">
@@ -354,214 +397,113 @@ function leerVistaCasos(): 'tarjetas' | 'lista' {
       @if (error()) { <p class="gp-error" role="alert">{{ error() }}</p> }
       @if (ok()) { <p class="gp-ok" role="status">{{ ok() }}</p> }
 
-      <!-- Herramientas: buscador a la izquierda; estado, orden, vista y "+ Crear caso" a la derecha. -->
-      <div class="mc-herramientas">
-        <label class="adm-buscar mc-buscar">
-          <app-icono nombre="buscar" [tamano]="20" />
-          <span class="solo-lector">Buscar caso por nombre</span>
-          <input type="search" placeholder="Buscar caso por nombre" [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event); reiniciarLimites()" />
-        </label>
-        <div class="mc-derecha">
-          <label class="adm-orden">
-            <span class="solo-lector">Estado</span>
-            <select [ngModel]="filtroEstado()" (ngModelChange)="filtrar($event)">
-              @for (f of filtros; track f.valor) { <option [value]="f.valor">{{ f.texto }}</option> }
-            </select>
-          </label>
-          <label class="adm-orden">
-            <span class="solo-lector">Ordenar</span>
-            <select [ngModel]="orden()" (ngModelChange)="orden.set($event); reiniciarLimites()">
-              <option value="recientes">Más recientes</option>
-              <option value="nombre">Nombre A–Z</option>
-              <option value="estado">Estado</option>
-            </select>
-          </label>
-          <div class="mc-vistas" role="group" aria-label="Vista">
-            <button type="button" [class.activa]="vista() === 'tarjetas'" [attr.aria-pressed]="vista() === 'tarjetas'" aria-label="Ver como tarjetas"
-              title="Tarjetas" (click)="cambiarVista('tarjetas')">
-              <app-icono nombre="cuadricula" [tamano]="20" />
-            </button>
-            <button type="button" [class.activa]="vista() === 'lista'" [attr.aria-pressed]="vista() === 'lista'" aria-label="Ver como lista"
-              title="Lista" (click)="cambiarVista('lista')">
-              <app-icono nombre="lista" [tamano]="20" />
-            </button>
-          </div>
-          <a class="adm-boton mc-crear" routerLink="/docente/casos/nuevo"><app-icono nombre="mas" [tamano]="20" /> Crear caso</a>
-        </div>
-      </div>
-
-      <ng-template #menuCaso let-caso>
-        <div class="mc-menu-ancla" (click)="$event.stopPropagation()">
-          <button type="button" class="mc-mas" [id]="'mc-mas-' + caso.id" aria-haspopup="menu"
-            [attr.aria-expanded]="menuAbierto() === caso.id" [attr.aria-label]="'Más acciones de ' + caso.nombre"
-            (click)="alternarMenu(caso.id, $event)">
-            <app-icono nombre="puntos" [tamano]="20" />
-          </button>
-          @if (menuAbierto() === caso.id) {
-            <div class="mc-menu" role="menu" [attr.aria-label]="'Acciones de ' + caso.nombre" (keydown)="teclaMenu($event)"
-              [style.top.px]="menuPos().top" [style.bottom.px]="menuPos().bottom" [style.right.px]="menuPos().right">
-              <a role="menuitem" [routerLink]="['/docente/casos', caso.id]">Abrir editor</a>
-              <button type="button" role="menuitem" (click)="duplicar(caso)">Duplicar</button>
-              @if (puedePublicar(caso)) { <button type="button" role="menuitem" (click)="transicion(caso, 'publicar')">Publicar</button> }
-              @if (puedeVolverBorrador(caso)) { <button type="button" role="menuitem" (click)="transicion(caso, 'despublicar')">Volver a borrador</button> }
-              @if (puedeArchivar(caso)) { <button type="button" role="menuitem" class="peligro" (click)="transicion(caso, 'archivar')">Archivar</button> }
-            </div>
-          }
-        </div>
-      </ng-template>
-
-      <!-- Filas de un grupo (vista de lista, la de por defecto). Clic en la fila: abre el editor; el "⋯" no. -->
-      <ng-template #filas let-lista>
-        <ul class="mc-filas">
-          @for (caso of lista; track caso.id) {
-            <li class="mc-fila" [attr.data-estado]="caso.estado" (click)="abrir(caso)">
-              <span class="mc-doc" [attr.data-estado]="caso.estado"><app-icono nombre="documento" [tamano]="20" /></span>
-              <div class="mc-fila-texto">
-                <strong [title]="caso.nombre">{{ caso.nombre }}</strong>
-                <small>{{ caso.bloques }} {{ caso.bloques === 1 ? 'escenario' : 'escenarios' }} · {{ caso.preguntas }} {{ caso.preguntas === 1 ? 'pregunta' : 'preguntas' }}<span class="mc-dur-movil"> · {{ caso.tiempoEstimadoMin }} min</span></small>
-              </div>
-              <span class="mc-dur"><app-icono nombre="reloj" [tamano]="16" /> {{ caso.tiempoEstimadoMin }} min</span>
-              <a class="mc-editar" [routerLink]="['/docente/casos', caso.id]" (click)="$event.stopPropagation()" [attr.aria-label]="'Editar ' + caso.nombre">Editar</a>
-              <ng-container *ngTemplateOutlet="menuCaso; context: { $implicit: caso }" />
-            </li>
-          }
-        </ul>
-      </ng-template>
-
-      <!-- Tarjetas de un grupo (opción del botón de vista). -->
-      <ng-template #tarjetas let-lista>
-        <ul class="mc-rejilla">
-          @for (caso of lista; track caso.id) {
-            <li class="mc-caso" [class.archivado]="caso.estado === 'ARCHIVADO'">
-              <div class="mc-cabeza">
-                <h3 [title]="caso.nombre">{{ caso.nombre }}</h3>
-                <div class="mc-cabeza-der"><ng-container *ngTemplateOutlet="menuCaso; context: { $implicit: caso }" /></div>
-              </div>
-              <div class="mc-pie">
-                <p class="mc-meta">
-                  <span [title]="caso.bloques + (caso.bloques === 1 ? ' escenario' : ' escenarios')"><app-icono nombre="imagen" [tamano]="16" />{{ caso.bloques }}<span class="solo-lector">{{ caso.bloques === 1 ? ' escenario' : ' escenarios' }}</span></span>
-                  <span [title]="caso.preguntas + (caso.preguntas === 1 ? ' pregunta' : ' preguntas')"><app-icono nombre="pregunta" [tamano]="16" />{{ caso.preguntas }}<span class="solo-lector">{{ caso.preguntas === 1 ? ' pregunta' : ' preguntas' }}</span></span>
-                  <span><app-icono nombre="reloj" [tamano]="16" />{{ caso.tiempoEstimadoMin }} min</span>
-                </p>
-                <a class="mc-abrir" [routerLink]="['/docente/casos', caso.id]" [attr.aria-label]="'Abrir editor de ' + caso.nombre">Abrir editor <app-icono nombre="flecha" [tamano]="16" /></a>
-              </div>
-            </li>
-          }
-        </ul>
-      </ng-template>
-
-      <!-- Un grupo: encabezado, sus casos (10 a la vez) y "Ver más (N)". -->
-      <ng-template #grupo let-g>
-        <section class="mc-grupo" [attr.aria-label]="g.titulo + ': ' + g.casos.length">
-          <h2 class="mc-grupo-fila"><span class="mc-grupo-punto" [attr.data-estado]="g.estado" aria-hidden="true"></span>
-            {{ g.titulo }} · {{ g.casos.length }} <span class="mc-grupo-nota">· {{ g.nota }}</span></h2>
-          <ng-container *ngTemplateOutlet="vista() === 'lista' ? filas : tarjetas; context: { $implicit: g.casos.slice(0, limite(g.estado)) }" />
-          @if (g.casos.length > limite(g.estado)) {
-            <button type="button" class="mc-ver-mas" (click)="verMas(g.estado)">Ver más ({{ g.casos.length - limite(g.estado) }})</button>
-          }
-        </section>
-      </ng-template>
-
-      @if (!grupos().length && !archivados().length) {
-        <p class="mc-vacio">{{ cargando() ? 'Cargando casos…' : busqueda().trim() || filtro.texto().trim() ? 'Ningún caso coincide con la búsqueda.' : filtroEstado() === 'TODOS' ? 'Todavía no tienes casos.' : 'No hay casos en este estado.' }}</p>
-      } @else {
-        <!-- Un solo panel blanco con los grupos; los archivados, plegados al final. -->
-        <div class="mc-panel" [class.mc-panel-tarjetas]="vista() === 'tarjetas'">
-          @for (g of grupos(); track g.estado) {
-            <ng-container *ngTemplateOutlet="grupo; context: { $implicit: g }" />
-          }
-          @if (archivados().length) {
-            @if (mostrarArchivados()) {
-              <ng-container *ngTemplateOutlet="grupo; context: { $implicit: grupoArchivados() }" />
+      <div class="mc-contenido">
+        <!-- Pestañas de estado a la izquierda; buscador y "+ Crear caso" a la derecha. -->
+        <div class="mc-barra">
+          <div class="mc-pestanas" role="group" aria-label="Filtrar por estado">
+            @for (f of filtros; track f.valor) {
+              <button type="button" class="mc-pestana" [class.activa]="filtroEstado() === f.valor" [attr.aria-pressed]="filtroEstado() === f.valor"
+                (click)="filtrar(f.valor)">
+                {{ f.texto }} <span class="mc-cuenta">{{ conteo(f.valor) }}</span>
+              </button>
             }
-            <button type="button" class="mc-franja" [attr.aria-expanded]="mostrarArchivados()" (click)="mostrarArchivados.set(!mostrarArchivados())">
-              {{ mostrarArchivados() ? 'Ocultar archivados' : 'Ver archivados' }} ({{ archivados().length }})
-              <app-icono class="mc-franja-flecha" nombre="flecha" [tamano]="18" />
-            </button>
-          }
+          </div>
+          <div class="mc-acciones">
+            <label class="mc-buscar">
+              <app-icono nombre="buscar" [tamano]="16" />
+              <span class="solo-lector">Buscar caso por nombre</span>
+              <input type="search" placeholder="Buscar" [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event); pagina.set(1)" />
+            </label>
+            <a class="adm-boton mc-crear" routerLink="/docente/casos/nuevo"><app-icono nombre="mas" [tamano]="18" /> Crear caso</a>
+          </div>
         </div>
-      }
+
+        @if (!visibles().length) {
+          <p class="mc-vacio">{{ cargando() ? 'Cargando casos…' : busqueda().trim() || filtro.texto().trim() ? 'Ningún caso coincide con la búsqueda.' : filtroEstado() === 'TODOS' ? 'Todavía no tienes casos.' : 'No hay casos en este estado.' }}</p>
+        } @else {
+          <!-- Clic en la fila: abre el editor; el "⋯" no. -->
+          <ul class="mc-filas">
+            @for (caso of paginaCasos(); track caso.id) {
+              <li class="mc-fila" [attr.data-estado]="caso.estado" (click)="abrir(caso)">
+                <div class="mc-fila-texto">
+                  <a class="mc-nombre" [routerLink]="['/docente/casos', caso.id]" (click)="$event.stopPropagation()" [title]="caso.nombre">{{ caso.nombre }}</a>
+                  <small>{{ caso.bloques }} {{ caso.bloques === 1 ? 'escenario' : 'escenarios' }} · {{ caso.preguntas }} {{ caso.preguntas === 1 ? 'pregunta' : 'preguntas' }} · {{ caso.tiempoEstimadoMin }} min</small>
+                </div>
+                <span class="mc-estado" [attr.data-estado]="caso.estado"><i aria-hidden="true"></i>{{ etiqueta(caso.estado) }}</span>
+                <div class="mc-menu-ancla" (click)="$event.stopPropagation()">
+                  <button type="button" class="mc-mas" [id]="'mc-mas-' + caso.id" aria-haspopup="menu"
+                    [attr.aria-expanded]="menuAbierto() === caso.id" [attr.aria-label]="'Más acciones de ' + caso.nombre"
+                    (click)="alternarMenu(caso.id, $event)">
+                    <app-icono nombre="puntos" [tamano]="20" />
+                  </button>
+                  @if (menuAbierto() === caso.id) {
+                    <div class="mc-menu" role="menu" [attr.aria-label]="'Acciones de ' + caso.nombre" (keydown)="teclaMenu($event)"
+                      [style.top.px]="menuPos().top" [style.bottom.px]="menuPos().bottom" [style.right.px]="menuPos().right">
+                      <a role="menuitem" [routerLink]="['/docente/casos', caso.id]">Abrir editor</a>
+                      <button type="button" role="menuitem" (click)="duplicar(caso)">Duplicar</button>
+                      @if (puedePublicar(caso)) { <button type="button" role="menuitem" (click)="transicion(caso, 'publicar')">Publicar</button> }
+                      @if (puedeVolverBorrador(caso)) { <button type="button" role="menuitem" (click)="transicion(caso, 'despublicar')">Volver a borrador</button> }
+                      @if (puedeArchivar(caso)) { <button type="button" role="menuitem" class="peligro" (click)="transicion(caso, 'archivar')">Archivar</button> }
+                    </div>
+                  }
+                </div>
+                <span class="mc-flecha" aria-hidden="true"><app-icono nombre="flecha" [tamano]="18" /></span>
+              </li>
+            }
+          </ul>
+          <app-paginacion-gp class="mc-paginacion" [total]="visibles().length" [pagina]="paginaActual()" [porPagina]="porPagina"
+            [simple]="true" [flechas]="false" prefijo="Mostrando " que="casos" (cambiar)="pagina.set($event)" />
+        }
+      </div>
     </app-marco-docente>
   `,
   styles: [ESTILOS_GP + `
-    /* Herramientas: una sola fila (en celular puede pasar a dos). */
-    .mc-herramientas { display: flex; align-items: center; justify-content: space-between; gap: 12px 16px; flex-wrap: wrap; }
-    .mc-herramientas .mc-buscar { flex: 1 1 280px; max-width: 400px; width: auto; height: 48px; padding: 0 18px; gap: 10px; }
-    .mc-herramientas .mc-buscar input { font-size: 15px; }
-    .mc-derecha { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; flex-wrap: wrap; }
-    .mc-derecha .adm-orden select { height: 48px; font-size: 15px; padding-left: 20px; }
-    .mc-crear { height: 48px; padding: 0 22px; font-size: 15px; }
-    .mc-vistas { display: inline-flex; gap: 2px; padding: 4px; border-radius: 14px; background: #e3ebf9; }
-    .mc-vistas button { width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 10px;
-      background: transparent; color: #5b6782; cursor: pointer; }
-    .mc-vistas button.activa { background: #fff; color: var(--dl-tinta); box-shadow: 0 1px 3px rgba(16, 24, 40, .1); }
-    .mc-vistas button:focus-visible { outline: 3px solid #7aa7ff; outline-offset: 1px; }
+    .mc-contenido { position: relative; z-index: 1; display: grid; gap: 8px; min-width: 0; }
 
-    /* Un solo panel blanco; queda por encima de las ondas del fondo. */
-    .mc-panel { position: relative; z-index: 1; background: #fff; border: 1px solid #e3eaf6; border-radius: 22px; overflow: hidden;
-      box-shadow: 0 10px 30px rgba(30, 108, 245, .06); }
-    .mc-grupo + .mc-grupo { border-top: 1px solid #e3eaf6; }
-    .mc-grupo-fila { margin: 0; display: flex; align-items: center; gap: 8px; padding: 14px 24px; background: #fafcff;
-      border-bottom: 1px solid #edf2fa; font-size: 15px; font-weight: 700; color: #1f2f50; }
-    .mc-grupo-nota { font-weight: 500; color: #6b7894; }
-    .mc-grupo-punto { width: 9px; height: 9px; border-radius: 50%; flex: none; display: inline-block; margin-right: 6px; background: #9aa4b8; }
-    .mc-grupo-punto[data-estado="PUBLICADO"] { background: #16a34a; }
-    .mc-grupo-punto[data-estado="BORRADOR"] { background: var(--dl-azul); }
+    /* Barra: pestañas, buscador y "+ Crear caso" en una sola línea, con la línea fina debajo. */
+    .mc-barra { display: flex; align-items: center; gap: 16px; min-width: 0; border-bottom: 1px solid #e3eaf6; }
+    .mc-pestanas { align-self: stretch; display: flex; gap: 28px; min-width: 0; }
+    .mc-pestana { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 -1px; padding: 0; border: 0; border-bottom: 2px solid transparent;
+      background: none; color: #4d5b7c; font: inherit; font-size: 13.5px; font-weight: 600; white-space: nowrap; cursor: pointer; box-shadow: none; }
+    .mc-pestana:hover, .mc-pestana:active { color: var(--dl-tinta); transform: none; }
+    .mc-pestana.activa { color: var(--dl-tinta); border-bottom-color: #1f5cf0; }
+    .mc-cuenta { min-width: 18px; padding: 1px 6px; box-sizing: border-box; border-radius: 999px; font-size: 11.5px; font-weight: 700;
+      line-height: 16px; text-align: center; color: #9aa6c0; background: #edf1f8; }
+    .mc-pestana.activa .mc-cuenta { color: #fff; background: #1f5cf0; }
+    .mc-acciones { margin-left: auto; display: flex; align-items: center; gap: 20px; padding-bottom: 8px; flex: 0 0 auto; }
+    .mc-buscar { display: flex; align-items: center; gap: 8px; width: 170px; height: 40px; color: #7a86a3; border-bottom: 1px solid transparent; }
+    .mc-buscar:focus-within { border-bottom-color: #1f5cf0; }
+    .mc-buscar svg { flex: none; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+    .mc-barra .mc-buscar input[type="search"] { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; border-radius: 0; background: transparent;
+      box-shadow: none; outline: none; font: inherit; font-size: 13.5px; color: var(--dl-tinta); }
+    .mc-barra .mc-buscar input[type="search"]::placeholder { color: #7a86a3; }
+    .mc-crear { flex: none; }
 
-    /* Filas: ícono, título en una línea con su detalle, duración, "Editar" y "⋯". */
+    /* Filas sin tarjeta: nombre y datos, estado, "⋯" y "›". */
     .mc-filas { list-style: none; margin: 0; padding: 0; }
-    .mc-fila { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto auto; align-items: center; gap: 16px;
-      padding: 16px 24px; cursor: pointer; transition: background .12s ease; }
-    .mc-fila + .mc-fila { border-top: 1px solid #edf2fa; }
-    .mc-fila:hover { background: #f3f7ff; }
-    .mc-doc { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: var(--dl-azul-claro); color: var(--dl-azul); }
-    .mc-doc[data-estado="PUBLICADO"] { background: #e3f6ea; color: #16803c; }
-    .mc-doc[data-estado="ARCHIVADO"] { background: #eef1f6; color: #8a94a8; }
-    .mc-fila-texto { display: grid; gap: 3px; min-width: 0; }
-    .mc-fila-texto strong { font-size: 16.5px; font-weight: 700; color: var(--dl-tinta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .mc-fila-texto small { font-size: 14px; color: #5b6782; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .mc-dur-movil { display: none; }
-    .mc-dur { display: inline-flex; align-items: center; gap: 6px; min-width: 84px; font-size: 14.5px; color: #5b6782; white-space: nowrap; }
-    .mc-editar { padding: 6px 12px; border-radius: 9px; color: var(--dl-azul); font-size: 15px; font-weight: 700; text-decoration: underline;
-      text-underline-offset: 3px; white-space: nowrap; }
-    .mc-fila:hover .mc-editar, .mc-editar:hover { background: var(--dl-azul-claro); }
-    .mc-fila[data-estado="ARCHIVADO"] .mc-fila-texto strong, .mc-fila[data-estado="ARCHIVADO"] .mc-fila-texto small,
-    .mc-fila[data-estado="ARCHIVADO"] .mc-dur { color: #8a94a8; }
-    .mc-fila[data-estado="ARCHIVADO"] .mc-editar { color: #6b7894; }
+    .mc-fila { display: grid; grid-template-columns: minmax(0, 1fr) 96px auto auto; grid-template-areas: "texto estado mas flecha";
+      align-items: center; gap: 8px 12px; padding: 15px 8px 15px 6px; border-bottom: 1px solid #eaf0f8; border-radius: 12px; cursor: pointer;
+      transition: background .12s ease; }
+    .mc-fila:hover { background: #fff; }
+    .mc-fila-texto { grid-area: texto; display: grid; gap: 3px; min-width: 0; }
+    .mc-nombre { min-width: 0; font-size: 14.5px; font-weight: 700; line-height: 1.35; color: var(--dl-tinta); text-decoration: none;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mc-fila-texto small { font-size: 12.5px; color: #7a86a3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mc-estado { grid-area: estado; display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600; color: #5b6b8c; white-space: nowrap; }
+    .mc-estado i { width: 7px; height: 7px; border-radius: 50%; flex: none; background: #9fb2d6; }
+    .mc-estado[data-estado="PUBLICADO"] { color: #17683d; }
+    .mc-estado[data-estado="PUBLICADO"] i { background: #22a55a; }
+    .mc-flecha { grid-area: flecha; display: grid; place-items: center; color: #b3c0da; transition: color .12s ease; }
+    .mc-flecha svg { width: 16px; height: 16px; }
+    .mc-fila:hover .mc-flecha { color: #1f5cf0; }
+    .mc-paginacion { display: block; padding-top: 14px; }
+    .mc-nombre:focus-visible, .mc-mas:focus-visible, .mc-menu a:focus-visible, .mc-pestana:focus-visible, .mc-crear:focus-visible {
+      outline: 3px solid #7aa7ff; outline-offset: 2px; border-radius: 6px; }
 
-    .mc-ver-mas { width: 100%; padding: 12px; border: 0; border-top: 1px solid #edf2fa; background: #fff; color: var(--dl-azul);
-      font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; }
-    .mc-ver-mas:hover { background: #f3f7ff; transform: none; }
-    .mc-franja { width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 16px; border: 0;
-      border-top: 1px solid #e3eaf6; background: #fafcff; color: #33415c; font: inherit; font-size: 15.5px; font-weight: 600; cursor: pointer; }
-    .mc-franja:hover { background: #f3f7ff; transform: none; }
-    .mc-franja-flecha { transition: transform .15s ease; }
-    .mc-franja[aria-expanded="true"] .mc-franja-flecha { transform: rotate(-90deg); }
-    .mc-editar:focus-visible, .mc-mas:focus-visible, .mc-menu a:focus-visible, .mc-ver-mas:focus-visible, .mc-franja:focus-visible,
-    .mc-abrir:focus-visible { outline: 3px solid #7aa7ff; outline-offset: -3px; border-radius: 8px; }
-
-    /* Vista de tarjetas (opción): las tarjetas van dentro del panel, 3 por fila. */
-    .mc-panel-tarjetas .mc-grupo-fila { border-bottom: 0; }
-    .mc-rejilla { list-style: none; margin: 0; padding: 4px 24px 20px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; background: #fafcff; }
-    .mc-caso { display: flex; flex-direction: column; gap: 16px; padding: 18px 20px 16px; border: 1px solid #e6ecf6; border-radius: 16px;
-      background: #fff; transition: border-color .15s ease, box-shadow .15s ease; }
-    .mc-caso:hover { border-color: #b7cdf7; box-shadow: 0 10px 26px rgba(30, 108, 245, .12); }
-    .mc-cabeza { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-    .mc-caso h3 { margin: 0; min-width: 0; height: 2.6em; font-size: 16.5px; font-weight: 700; line-height: 1.3; color: var(--dl-tinta);
-      display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .mc-cabeza-der { flex: none; margin: -6px -8px 0 0; }
-    .mc-pie { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-    .mc-meta { margin: 0; display: flex; align-items: center; gap: 14px; font-size: 14px; color: #5b6782; white-space: nowrap; }
-    .mc-meta > span { display: inline-flex; align-items: center; gap: 6px; }
-    .mc-abrir { flex: none; display: inline-flex; align-items: center; gap: 2px; color: var(--dl-azul); font-size: 14.5px; font-weight: 700; text-decoration: none; white-space: nowrap; }
-    .mc-abrir:hover { text-decoration: underline; }
-    .mc-caso.archivado { background: #f7f9fc; }
-    .mc-caso.archivado h3, .mc-caso.archivado .mc-meta { color: #8a94a8; }
-
-    .mc-menu-ancla { position: relative; }
-    .mc-mas { width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 9px; background: transparent;
-      color: #5b6782; cursor: pointer; }
-    .mc-mas:hover, .mc-mas[aria-expanded="true"] { background: #e6eefc; color: var(--dl-tinta); }
+    .mc-menu-ancla { grid-area: mas; position: relative; }
+    .mc-mas { width: 32px; height: 32px; display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent;
+      color: #8a97b4; cursor: pointer; box-shadow: none; }
+    .mc-mas:hover, .mc-mas[aria-expanded="true"] { background: #e6eefc; color: var(--dl-tinta); transform: none; }
     /* Fijo a la ventana: no lo recorta el panel. */
     .mc-menu { position: fixed; z-index: 50; min-width: 180px; padding: 4px; display: grid; gap: 2px; cursor: default;
       background: #fff; border: 1px solid #e6ecf6; border-radius: 10px; box-shadow: 0 8px 20px rgba(16, 24, 40, .10); }
@@ -571,25 +513,20 @@ function leerVistaCasos(): 'tarjetas' | 'lista' {
     .mc-menu .peligro { color: #a4271b; }
     .mc-menu .peligro:hover { background: #fdf1f0; }
     .mc-vacio { margin: 0; padding: 36px 12px; text-align: center; color: #5b6782; border: 1px dashed #d6deec; border-radius: 14px; background: #fff; }
-    @media (max-width: 1200px) { .mc-rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 720px) {
-      .mc-herramientas .mc-buscar { flex: 1 1 100%; max-width: none; }
-      /* Celular: buscador; luego estado y orden a la mitad cada uno; luego vista y "+ Crear caso". */
-      .mc-derecha { flex: 1 1 100%; gap: 8px; }
-      .mc-derecha .adm-orden { flex: 1 1 calc(50% - 4px); min-width: 0; }
-      .mc-derecha .adm-orden select { width: 100%; height: 44px; padding: 0 28px 0 12px; font-size: 13.5px; background-position: right 9px center; }
-      .mc-vistas { padding: 3px; }
-      .mc-vistas button { width: 36px; height: 36px; }
-      .mc-crear { flex: 1 1 auto; height: 44px; padding: 0 12px; font-size: 14px; gap: 4px; }
-      /* Fila en celular: ícono, título y "⋯"; duración y escenarios · preguntas en la línea gris. */
-      .mc-fila { grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; padding: 14px 12px 14px 16px; }
-      .mc-dur, .mc-editar { display: none; }
-      .mc-dur-movil { display: inline; }
-      .mc-doc { width: 42px; height: 42px; border-radius: 12px; }
-      .mc-fila-texto strong { font-size: 15.5px; }
-      .mc-fila-texto small { font-size: 13px; }
-      .mc-grupo-fila { padding: 12px 16px; flex-wrap: wrap; font-size: 14.5px; }
-      .mc-rejilla { grid-template-columns: minmax(0, 1fr); padding: 4px 12px 14px; }
+    @media (max-width: 767.98px) {
+      /* Celular: pestañas deslizables con la línea fina; debajo, buscador y "+ Crear caso" a lo ancho. */
+      .mc-barra { flex-direction: column; align-items: stretch; gap: 10px; border-bottom: 0; }
+      .mc-pestanas { gap: 22px; height: 42px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; border-bottom: 1px solid #e3eaf6; }
+      .mc-pestanas::-webkit-scrollbar { display: none; }
+      .mc-pestana { flex: none; margin-bottom: 0; }
+      .mc-acciones { margin-left: 0; flex-direction: column; align-items: stretch; gap: 10px; padding-bottom: 0; }
+      .mc-buscar { width: 100%; border-bottom-color: #e3eaf6; }
+      .mc-crear { width: 100%; }
+      /* Fila: nombre (hasta 2 líneas) y datos; el estado en otra línea; "⋯" y "›" a la derecha. */
+      .mc-fila { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "texto mas flecha" "estado mas flecha";
+        gap: 6px 4px; padding: 14px 4px 14px 6px; }
+      .mc-nombre { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; }
+      .mc-fila-texto small { white-space: normal; }
     }
   `]
 })
@@ -603,61 +540,36 @@ export class CasosComponent {
   cargando = signal(true);
   error = signal('');
   ok = signal('');
-  /** Estado, búsqueda, orden y menú "⋯" (en el navegador, con lo que ya llegó del backend). */
+  /** Pestañas de estado, búsqueda y menú "⋯" (en el navegador, con lo que ya llegó del backend). */
   readonly filtros: { valor: FiltroCaso; texto: string }[] = [
-    { valor: 'TODOS', texto: 'Todos los estados' }, { valor: 'PUBLICADO', texto: 'Publicados' },
+    { valor: 'TODOS', texto: 'Todos' }, { valor: 'PUBLICADO', texto: 'Publicados' },
     { valor: 'BORRADOR', texto: 'Borradores' }, { valor: 'ARCHIVADO', texto: 'Archivados' }
   ];
-  /** Casos que se ven por grupo; "Ver más" muestra 10 más. */
-  readonly porGrupo = 10;
-  private limites = signal<Record<string, number>>({});
-  /** "Ver archivados" al final del panel (empieza plegado). */
-  mostrarArchivados = signal(false);
+  readonly porPagina = 7;
+  pagina = signal(1);
   filtroEstado = signal<FiltroCaso>('TODOS');
   busqueda = signal('');
-  orden = signal<OrdenCaso>('recientes');
   menuAbierto = signal<number | null>(null);
-  /** Posición del menú "⋯" (fijo a la ventana, para que el panel no lo recorte). */
+  /** Posición del menú "⋯" (fijo a la ventana, para que la lista no lo recorte). */
   menuPos = signal<{ top: number | null; bottom: number | null; right: number }>({ top: null, bottom: null, right: 0 });
-  /** Lista (por defecto) o tarjetas; se recuerda mientras el docente navega (sesión del navegador). */
-  vista = signal<'tarjetas' | 'lista'>(leerVistaCasos());
-  /** Búsqueda y orden sobre toda la lista; luego cada grupo toma los de su estado. */
-  readonly ordenados = computed(() => {
+  /** "Todos" son publicados y borradores; los archivados solo salen en su pestaña. */
+  private delEstado(c: CasoResumen, estado: FiltroCaso) { return estado === 'TODOS' ? c.estado !== 'ARCHIVADO' : c.estado === estado; }
+  conteo(estado: FiltroCaso) { return this.casos().filter((c) => this.delEstado(c, estado)).length; }
+  /** Pestaña y búsqueda por nombre; siempre los más recientes primero (el backend no envía fecha: el id más alto es el último creado). */
+  readonly visibles = computed(() => {
     const q = (this.busqueda() + ' ' + this.filtro.texto()).trim().toLowerCase();
-    const lista = this.casos().filter((c) =>
-      !q || q.split(/\s+/).every((t) => c.nombre.toLowerCase().includes(t) || (ETIQUETA_CASO[c.estado] ?? c.estado).toLowerCase().includes(t)));
-    const rango: Record<string, number> = { PUBLICADO: 0, BORRADOR: 1, ARCHIVADO: 2 };
-    const porNombre = (a: CasoResumen, b: CasoResumen) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' });
-    // "Más recientes": el backend no envía fecha; el id más alto es el último creado.
-    if (this.orden() === 'nombre') return [...lista].sort(porNombre);
-    if (this.orden() === 'estado') return [...lista].sort((a, b) => (rango[a.estado] ?? 9) - (rango[b.estado] ?? 9) || porNombre(a, b));
-    return [...lista].sort((a, b) => b.id - a.id);
-  });
-  /**
-   * Grupos del panel. Con "Todos los estados": publicados y borradores (los archivados van plegados al final).
-   * Con un solo estado: solo ese grupo (también si es Archivados).
-   */
-  readonly grupos = computed(() => {
     const estado = this.filtroEstado();
-    const visibles = estado === 'TODOS' ? GRUPOS_CASO.filter((g) => g.estado !== 'ARCHIVADO') : GRUPOS_CASO.filter((g) => g.estado === estado);
-    return visibles.map((g) => ({ ...g, casos: this.ordenados().filter((c) => c.estado === g.estado) })).filter((g) => g.casos.length);
+    return this.casos()
+      .filter((c) => this.delEstado(c, estado) && (!q || q.split(/\s+/).every((t) => c.nombre.toLowerCase().includes(t))))
+      .sort((a, b) => b.id - a.id);
   });
-  /** Archivados para la franja "Ver archivados" (solo con "Todos los estados"). */
-  readonly archivados = computed(() => this.filtroEstado() === 'TODOS' ? this.ordenados().filter((c) => c.estado === 'ARCHIVADO') : []);
-  grupoArchivados() { return { ...GRUPOS_CASO.find((g) => g.estado === 'ARCHIVADO')!, casos: this.archivados() }; }
-  limite(estado: string) { return this.limites()[estado] ?? this.porGrupo; }
-  verMas(estado: string) { this.limites.update((l) => ({ ...l, [estado]: this.limite(estado) + this.porGrupo })); }
-  reiniciarLimites() { this.limites.set({}); }
-  cambiarVista(vista: 'tarjetas' | 'lista') {
-    this.vista.set(vista);
-    this.menuAbierto.set(null);
-    try { sessionStorage.setItem('dilema-vista-casos', vista); } catch { /* sin almacenamiento: solo dura esta pantalla */ }
-  }
+  readonly paginaActual = computed(() => paginaValida(this.pagina(), this.visibles().length, this.porPagina));
+  readonly paginaCasos = computed(() => paginaDe(this.visibles(), this.paginaActual(), this.porPagina));
   puedeEditar() { return this.auth.puede('EDITAR'); }
   constructor() { this.cargar(); }
   etiqueta(estado: string) { return ETIQUETA_CASO[estado] ?? estado; }
-  filtrar(estado: FiltroCaso) { this.filtroEstado.set(estado); this.reiniciarLimites(); }
-  /** Clic en la fila: abre el editor (el "⋯" y "Editar" detienen el clic). */
+  filtrar(estado: FiltroCaso) { this.filtroEstado.set(estado); this.pagina.set(1); }
+  /** Clic en la fila: abre el editor (el "⋯" y el nombre detienen el clic). */
   abrir(caso: CasoResumen) { this.router.navigate(['/docente/casos', caso.id]); }
   // Mismas reglas que los botones del editor.
   puedePublicar(c: CasoResumen) { return this.auth.puede('EDITAR') && (c.estado === 'BORRADOR' || c.estado === 'ARCHIVADO'); }
@@ -1486,17 +1398,6 @@ export class EditorCasoComponent {
   template: `
     <app-marco-docente [enlaces]="enlaces" descripcion="Elige un grupo para ver y asignar a sus estudiantes.">
       <section class="gp">
-        <div class="adm-herramientas">
-          <p class="adm-resumen">{{ filtrados().length }} {{ filtrados().length === 1 ? 'grupo' : 'grupos' }}</p>
-          <div class="adm-barra">
-            <label class="adm-buscar">
-              <app-icono nombre="buscar" [tamano]="20" />
-              <span class="solo-lector">Buscar grupo</span>
-              <input type="search" placeholder="Buscar grupo" [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event); pagina.set(1)" />
-            </label>
-            <button class="adm-boton" type="button" (click)="alternarNuevo()" [attr.aria-expanded]="nuevo()"><span aria-hidden="true">+</span> Nuevo grupo</button>
-          </div>
-        </div>
         @if (!puedeGestionar()) {
           <p class="gp-error">La administración debe asignarte el permiso de gestionar espacios académicos para crear grupos y asignar estudiantes.</p>
         }
@@ -1516,14 +1417,20 @@ export class EditorCasoComponent {
         }
 
         <div class="gp-grupos">
-          <section class="gp-tarjeta gp-lista" aria-labelledby="titulo-mis-grupos">
+          <section class="gp-panel gp-lista" aria-labelledby="titulo-mis-grupos">
             <div class="gp-lista-cabeza">
-              <h2 id="titulo-mis-grupos">Mis grupos</h2>
+              <h2 id="titulo-mis-grupos">Mis grupos <span>{{ filtrados().length }}</span></h2>
+              <button class="gp-enlace" type="button" (click)="alternarNuevo()" [attr.aria-expanded]="nuevo()"><span aria-hidden="true">+</span> Nuevo grupo</button>
             </div>
+            <label class="gp-buscar-suave">
+              <app-icono nombre="buscar" [tamano]="16" />
+              <span class="solo-lector">Buscar grupo</span>
+              <input type="search" placeholder="Buscar grupo" [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event); pagina.set(1)" />
+            </label>
             <ul class="gp-filas">
               @for (grupo of paginaGrupos(); track grupo.id) {
                 <li class="gp-fila" [class.activa]="seleccionado() === grupo.id">
-                  <button type="button" class="gp-fila-boton" (click)="elegir(grupo.id)" [attr.aria-current]="seleccionado() === grupo.id ? 'true' : null">
+                  <button type="button" class="gp-fila-boton" (click)="elegirDeLista(grupo.id)" [attr.aria-current]="seleccionado() === grupo.id ? 'true' : null">
                     <strong>{{ grupo.nombre }}</strong>
                     <span>{{ grupo.espacioAcademico }} · {{ grupo.estudiantes.length }} {{ grupo.estudiantes.length === 1 ? 'estudiante' : 'estudiantes' }}</span>
                   </button>
@@ -1545,11 +1452,16 @@ export class EditorCasoComponent {
                 <li class="gp-vacio gp-lista-vacia">{{ busqueda() ? 'Ningún grupo coincide con la búsqueda.' : 'Todavía no tienes grupos.' }}</li>
               }
             </ul>
-            <app-paginacion-gp [total]="filtrados().length" [pagina]="pagina()" [porPagina]="6" [maxNumeros]="3" que="grupos" (cambiar)="pagina.set($event)" />
+            @if (filtrados().length) {
+              <div class="gp-pie">
+                <app-paginacion-gp [total]="filtrados().length" [pagina]="pagina()" [porPagina]="6" [maxNumeros]="3" [simple]="true"
+                  que="grupos" (cambiar)="pagina.set($event)" />
+              </div>
+            }
           </section>
 
           @if (actual(); as grupo) {
-            <section class="gp-tarjeta gp-detalle" aria-labelledby="titulo-grupo">
+            <section class="gp-panel gp-detalle" id="gp-detalle" aria-labelledby="titulo-grupo">
               @if (editando() === grupo.id) {
                 <form class="gp-editar" (ngSubmit)="guardarEdicion(grupo.id)" aria-label="Editar grupo">
                   <p class="gp-etiqueta">Editar grupo</p>
@@ -1564,10 +1476,12 @@ export class EditorCasoComponent {
                 </form>
               } @else {
                 <div class="gp-detalle-cabeza">
-                  <div>
-                    <p class="gp-etiqueta">Grupo seleccionado</p>
+                  <div class="gp-detalle-titulo">
                     <h2 id="titulo-grupo">{{ grupo.nombre }}</h2>
-                    <p class="gp-periodo">Periodo {{ grupo.espacioAcademico }}</p>
+                    <p class="gp-chips">
+                      <span class="gp-chip"><i aria-hidden="true"></i>Periodo {{ grupo.espacioAcademico }}</span>
+                      <span class="gp-chip">{{ grupo.estudiantes.length }} {{ grupo.estudiantes.length === 1 ? 'estudiante' : 'estudiantes' }}</span>
+                    </p>
                   </div>
                   <div class="gp-detalle-acciones">
                     @if (confirmarBorrar() === grupo.id) {
@@ -1575,7 +1489,7 @@ export class EditorCasoComponent {
                       <button class="gp-btn gp-btn-borde gp-btn-pildora gp-btn-chico" type="button" (click)="confirmarBorrar.set(null)">No</button>
                       <button class="gp-btn gp-btn-peligro-solido gp-btn-pildora gp-btn-chico" type="button" (click)="borrarGrupo(grupo.id)">Confirmar</button>
                     } @else {
-                      <button class="gp-btn gp-btn-borde gp-btn-pildora gp-btn-chico" type="button" (click)="empezarEdicion(grupo)">Editar grupo</button>
+                      <button class="gp-btn gp-btn-claro" type="button" (click)="empezarEdicion(grupo)">Editar grupo</button>
                       <div class="gp-menu-ancla" (click)="$event.stopPropagation()">
                         <button type="button" class="gp-mas" [id]="'mas-' + (-grupo.id)" aria-haspopup="menu"
                           [attr.aria-expanded]="menuAbierto() === -grupo.id" [attr.aria-label]="'Más acciones del grupo ' + grupo.nombre"
@@ -1593,47 +1507,65 @@ export class EditorCasoComponent {
                 </div>
               }
 
-              @if (puedeGestionar()) {
-                <form class="gp-matricular" (ngSubmit)="agregar(grupo.id)" aria-labelledby="titulo-asignar">
-                  <h3 id="titulo-asignar">Asignar al grupo</h3>
-                  <div class="gp-matricular-fila">
-                    <label class="gp-campo"><span>Buscar</span>
-                      <input name="buscarEstudiante" type="search" [ngModel]="busquedaAsignar()"
-                        (ngModelChange)="busquedaAsignar.set($event)" placeholder="Nombre o correo" autocomplete="off" />
-                    </label>
-                    <label class="gp-campo"><span>Estudiante</span>
-                      <select name="correoEstudiante" [ngModel]="correoAsignar()" (ngModelChange)="correoAsignar.set($event)">
-                        <option value="">Elige una cuenta</option>
-                        @for (estudiante of disponibles(); track estudiante.id) {
-                          <option [value]="estudiante.email">{{ estudiante.nombre }} · {{ estudiante.email }}</option>
-                        }
-                      </select>
-                    </label>
-                    <button class="gp-btn gp-btn-oscuro" type="submit">Asignar</button>
-                  </div>
-                  <p class="gp-ayuda">La administración da de alta la cuenta. El código de acceso llega por correo al programar la sesión.</p>
-                </form>
-              }
-
-              <div class="gp-estudiantes-cabeza">
-                <h3>Estudiantes matriculados <span>({{ grupo.estudiantes.length }})</span></h3>
-                <label class="gp-buscar">
-                  <app-icono nombre="buscar" [tamano]="20" />
-                  <span class="solo-lector">Buscar estudiante por nombre o correo</span>
-                  <input type="search" placeholder="Buscar por nombre o correo" [ngModel]="busquedaEstudiante()"
-                    (ngModelChange)="busquedaEstudiante.set($event); paginaEstudiantes.set(1)" />
-                </label>
+              <div class="gp-est-barra">
+                <h3>Estudiantes <span>{{ grupo.estudiantes.length }}</span></h3>
+                <div class="gp-est-acciones">
+                  <label class="gp-buscar-suave">
+                    <app-icono nombre="buscar" [tamano]="16" />
+                    <span class="solo-lector">Buscar en el grupo por nombre o correo</span>
+                    <input type="search" placeholder="Buscar en el grupo" [ngModel]="busquedaEstudiante()"
+                      (ngModelChange)="busquedaEstudiante.set($event); paginaEstudiantes.set(1)" />
+                  </label>
+                  @if (puedeGestionar()) {
+                    <div class="gp-anadir-ancla" (click)="$event.stopPropagation()">
+                      <button class="gp-btn gp-btn-oscuro gp-anadir" id="gp-anadir" type="button" aria-haspopup="dialog"
+                        [attr.aria-expanded]="anadirAbierto()" (click)="alternarAnadir()">
+                        <app-icono nombre="mas" [tamano]="16" /> Añadir estudiante
+                      </button>
+                      @if (anadirAbierto()) {
+                        <div class="gp-anadir-fondo" aria-hidden="true" (click)="cerrarAnadir()"></div>
+                        <form class="gp-anadir-panel" role="dialog" aria-labelledby="titulo-asignar" (ngSubmit)="agregar(grupo.id)">
+                          <h3 id="titulo-asignar">Asignar al grupo</h3>
+                          @if (error()) { <p class="gp-error">{{ error() }}</p> }
+                          <label class="gp-campo"><span>Buscar</span>
+                            <input name="buscarEstudiante" type="search" [ngModel]="busquedaAsignar()"
+                              (ngModelChange)="busquedaAsignar.set($event)" placeholder="Nombre o correo" autocomplete="off" />
+                          </label>
+                          <label class="gp-campo"><span>Estudiante</span>
+                            <select name="correoEstudiante" [ngModel]="correoAsignar()" (ngModelChange)="correoAsignar.set($event)">
+                              <option value="">Elige una cuenta</option>
+                              @for (estudiante of disponibles(); track estudiante.id) {
+                                <option [value]="estudiante.email">{{ estudiante.nombre }} · {{ estudiante.email }}</option>
+                              }
+                            </select>
+                          </label>
+                          <button class="gp-btn gp-btn-oscuro" type="submit">Asignar</button>
+                          <p class="gp-ayuda">La administración da de alta la cuenta. El código de acceso llega por correo al programar la sesión.</p>
+                        </form>
+                      }
+                    </div>
+                  }
+                </div>
               </div>
-              <div class="gp-tabla-marco">
-                <div class="gp-tabla-scroll">
-                  <table class="gp-tabla">
-                    <thead><tr><th scope="col">Nombre</th><th scope="col">Correo</th><th scope="col" class="gp-dc">Acciones</th></tr></thead>
-                    <tbody>
+
+              @if (!grupo.estudiantes.length) {
+                <div class="gp-sin-estudiantes">
+                  <p>Este grupo aún no tiene estudiantes</p>
+                  @if (puedeGestionar()) {
+                    <button class="gp-btn gp-btn-oscuro gp-anadir" type="button" (click)="$event.stopPropagation(); alternarAnadir()">
+                      <app-icono nombre="mas" [tamano]="16" /> Añadir estudiante
+                    </button>
+                  }
+                </div>
+              } @else {
+                <table class="gp-est-tabla">
+                  <thead><tr><th scope="col">Estudiante</th><th scope="col">Correo</th><th scope="col"><span class="solo-lector">Acciones</span></th></tr></thead>
+                  <tbody>
                       @for (estudiante of paginaEstudiantesLista(); track estudiante.id) {
                         <tr>
-                          <td class="gp-nombre">{{ estudiante.nombre }}</td>
-                          <td class="gp-correo">{{ estudiante.email }}</td>
-                          <td class="gp-dc">
+                          <td class="gp-est-nombre"><div class="gp-est-persona"><span class="gp-iniciales" aria-hidden="true">{{ iniciales(estudiante.nombre) }}</span><span class="gp-est-texto">{{ estudiante.nombre }}</span></div></td>
+                          <td class="gp-est-correo">{{ estudiante.email }}</td>
+                          <td class="gp-est-acc">
                             @if (puedeGestionar()) {
                               <div class="gp-menu-ancla" (click)="$event.stopPropagation()">
                                 <button type="button" class="gp-mas" [id]="'mas-' + menuEstudiante(estudiante.id)" aria-haspopup="menu"
@@ -1651,14 +1583,21 @@ export class EditorCasoComponent {
                           </td>
                         </tr>
                       } @empty {
-                        <tr><td colspan="3" class="gp-vacio">{{ busquedaEstudiante() ? 'Nadie coincide con la búsqueda.' : 'Este grupo no tiene estudiantes matriculados.' }}</td></tr>
+                        <tr class="gp-est-vacio"><td colspan="3">Nadie coincide con la búsqueda.</td></tr>
                       }
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              <app-paginacion-gp [total]="estudiantesFiltrados().length" [pagina]="paginaEstudiantes()" [porPagina]="8"
-                que="estudiantes" prefijo="Mostrando " (cambiar)="paginaEstudiantes.set($event)" />
+                  </tbody>
+                </table>
+                @if (estudiantesFiltrados().length) {
+                  <div class="gp-pie gp-pie-detalle">
+                    <app-paginacion-gp [total]="estudiantesFiltrados().length" [pagina]="paginaEstudiantes()" [porPagina]="8" [simple]="true"
+                      que="estudiantes" prefijo="Mostrando " (cambiar)="paginaEstudiantes.set($event)" />
+                  </div>
+                }
+              }
+            </section>
+          } @else {
+            <section class="gp-panel gp-detalle gp-detalle-vacio">
+              <p>{{ grupos().length ? 'Elige un grupo para ver a sus estudiantes.' : 'Crea un grupo para empezar a asignar estudiantes.' }}</p>
             </section>
           }
         </div>
@@ -1666,33 +1605,57 @@ export class EditorCasoComponent {
     </app-marco-docente>
   `,
   styles: [ESTILOS_GP + `
-    .gp-nuevo {
-      min-height: 36px; padding: 0 16px; flex: 0 0 auto;
-      box-shadow: none; border: 3px solid rgba(255, 255, 255, .92) !important;
-    }
-    .gp-nuevo svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
     .gp-crear { padding: 20px 22px; display: grid; gap: 14px; }
     .gp-crear h2 { margin: 0; font-size: 16px; font-weight: 650; color: #0f1b3d; }
     .gp-crear-campos { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; gap: 12px; align-items: end; }
     .gp-crear-botones { display: flex; gap: 8px; }
-    .gp-grupos { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 22px; align-items: start; }
-    .gp-lista { padding: 22px 22px 18px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
-    .gp-lista-cabeza { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-    .gp-lista-cabeza h2 { margin: 0; font-size: 16px; font-weight: 650; color: #0f1b3d; }
-    .gp-lista-cabeza span { font-size: 13px; color: #6b7690; }
-    .gp-filas { list-style: none; margin: 0; padding: 0 0 12px; display: grid; gap: 6px; border-bottom: 1px solid #edf1f7; }
-    .gp-fila { position: relative; display: flex; align-items: center; gap: 6px; }
-    .gp-fila-boton { flex: 1; min-width: 0; min-height: 56px; display: grid; gap: 2px; text-align: left; padding: 9px 14px;
-      border: 1px solid transparent; border-radius: 12px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
-    .gp-fila-boton strong { font-size: 14px; font-weight: 600; color: #0f1b3d; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .gp-fila-boton span { font-size: 13px; color: #5b6680; }
-    .gp-fila-boton:hover { background: #f6f8fc; }
-    .gp-fila.activa .gp-fila-boton { background: #eaf1ff; border-color: #bccff7; }
+
+    /* Dos paneles blancos parejos: empiezan y terminan a la misma altura; el pie de cada uno queda abajo. */
+    .gp-grupos { position: relative; z-index: 1; display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 24px; align-items: stretch; }
+    .gp-panel { min-width: 0; min-height: 600px; display: flex; flex-direction: column; background: #fff; border: 1px solid #e6edf8;
+      border-radius: 18px; box-shadow: 0 1px 2px rgba(16, 24, 40, .03); }
+    .gp-pie { margin-top: auto; border-top: 1px solid #eef2f9; }
+
+    /* Buscadores grises sin borde, con la lupa dentro. */
+    .gp-buscar-suave { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; box-sizing: border-box; border-radius: 999px;
+      background: #f5f8fe; color: #7a86a3; }
+    .gp-buscar-suave:focus-within { box-shadow: 0 0 0 2px rgba(31, 92, 240, .35); }
+    .gp-buscar-suave svg { flex: none; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+    .gp-panel .gp-buscar-suave input[type="search"] { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; border-radius: 0;
+      background: transparent; box-shadow: none; outline: none; font: inherit; font-size: 13.5px; color: var(--dl-tinta); }
+    .gp-panel .gp-buscar-suave input[type="search"]::placeholder { color: #7a86a3; }
+
+    /* Panel izquierdo: Mis grupos. */
+    .gp-lista { padding: 20px 14px 0; gap: 12px; }
+    .gp-lista-cabeza { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 4px; }
+    .gp-lista-cabeza h2 { margin: 0; font-size: 15px; font-weight: 700; color: var(--dl-tinta); }
+    .gp-lista-cabeza h2 span { font-weight: 500; color: #9aa6c0; }
+    .gp-enlace { display: inline-flex; align-items: center; gap: 4px; padding: 4px 2px; border: 0; background: none; color: #1f5cf0;
+      font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: none; white-space: nowrap; }
+    .gp-enlace span { font-size: 16px; line-height: 1; }
+    .gp-enlace:hover { text-decoration: underline; transform: none; }
+    .gp-filas { list-style: none; margin: 0; padding: 0 0 12px; display: grid; gap: 2px; }
+    .gp-fila { position: relative; display: flex; align-items: center; gap: 2px; border-radius: 10px; }
+    .gp-fila:hover { background: #f7f9fe; }
+    .gp-fila.activa { background: #eef4ff; }
+    .gp-fila.activa::before { content: ""; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 3px; background: #1f5cf0; }
+    .gp-fila-boton { flex: 1; min-width: 0; display: grid; gap: 2px; text-align: left; padding: 9px 4px 9px 12px;
+      border: 0; border-radius: 10px; background: transparent; color: inherit; font: inherit; cursor: pointer; box-shadow: none; }
+    .gp-fila-boton:hover, .gp-fila-boton:active { transform: none; }
+    .gp-fila-boton strong { font-size: 14px; font-weight: 600; color: var(--dl-tinta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .gp-fila-boton span { font-size: 12.5px; color: #7a86a3; }
+    .gp-fila.activa .gp-fila-boton strong { color: #1747c2; font-weight: 700; }
+    .gp-lista .gp-pie { margin: auto -14px 0; padding: 12px 18px 14px; }
+    @media (hover: hover) and (min-width: 768px) {
+      .gp-fila .gp-mas { opacity: 0; }
+      .gp-fila:hover .gp-mas, .gp-fila:focus-within .gp-mas, .gp-fila .gp-mas[aria-expanded="true"] { opacity: 1; }
+    }
+
     .gp-menu-ancla { position: relative; flex: none; }
-    .gp-mas { width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 10px; background: transparent;
-      color: #5b6680; cursor: pointer; }
+    .gp-mas { width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent;
+      color: #8a96b2; cursor: pointer; box-shadow: none; }
     .gp-mas svg { width: 18px; height: 18px; fill: currentColor; }
-    .gp-mas:hover, .gp-mas[aria-expanded="true"] { background: #f1f4fa; color: #0f1b3d; }
+    .gp-mas:hover, .gp-mas[aria-expanded="true"] { background: #f1f4fa; color: #0f1b3d; transform: none; }
     .gp-menu { position: absolute; right: 0; top: 44px; z-index: 20; min-width: 150px; padding: 6px; display: grid; gap: 2px;
       background: #fff; border: 1px solid #e6ebf5; border-radius: 12px; box-shadow: 0 12px 28px rgba(16, 24, 40, .14); }
     .gp-menu button { min-height: 40px; padding: 0 12px; text-align: left; border: 0; border-radius: 8px; background: transparent;
@@ -1702,35 +1665,94 @@ export class EditorCasoComponent {
     .gp-menu-lado { top: 50%; right: calc(100% + 6px); transform: translateY(-50%); }
     .gp-detalle-acciones .gp-menu-ancla { display: inline-block; }
     .gp-lista-vacia { padding: 12px 4px; font-size: 14px; }
-    .gp-detalle { position: sticky; top: 16px; padding: 26px 28px 22px; display: grid; gap: 22px; }
-    .gp-detalle-cabeza { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px 16px; }
-    .gp-etiqueta { margin: 0 0 4px; font-size: 13px; font-weight: 650; color: var(--dl-azul); }
-    .gp-detalle h2 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--dl-tinta); }
-    .gp-periodo { margin: 4px 0 0; font-size: 14.5px; color: #5b6680; }
-    .gp-detalle-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+    /* Panel derecho: encabezado del grupo. */
+    .gp-detalle-cabeza, .gp-editar { padding: 22px 26px; border-bottom: 1px solid #eef2f9; }
+    .gp-detalle-cabeza { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px 16px; }
+    .gp-detalle-titulo { min-width: 0; }
+    .gp-detalle h2 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.01em; color: var(--dl-tinta); overflow-wrap: anywhere; }
+    .gp-chips { margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 6px; }
+    .gp-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; background: #f3f7fe;
+      font-size: 12.5px; color: #4d5b7c; white-space: nowrap; }
+    .gp-chip i { width: 6px; height: 6px; border-radius: 50%; background: #1f5cf0; }
+    .gp-detalle-acciones { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .gp-btn.gp-btn-claro { min-height: 34px; padding: 0 14px; background: #fff; color: #1f5cf0; border: 1px solid #cddcf8; font-weight: 650; }
+    .gp-btn.gp-btn-claro:hover { background: #f3f7ff; transform: none; }
     .gp-confirmar { font-size: 14px; color: #9b1c12; font-weight: 600; }
     .gp-editar { display: grid; gap: 10px; }
-    .gp-matricular { display: grid; gap: 12px; padding: 20px 20px 16px; border-radius: 18px; background: #f6f8fc; border: 1px solid #e6ebf5; }
-    .gp-matricular h3 { margin: 0; font-size: 16px; font-weight: 650; color: #0f1b3d; }
-    .gp-matricular-fila { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) auto; gap: 12px; align-items: end; }
-    .gp-matricular-fila .gp-btn { min-height: 48px; }
-    .gp-estudiantes-cabeza { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 4px; }
-    .gp-estudiantes-cabeza h3 { margin: 0; font-size: 16px; font-weight: 650; color: #0f1b3d; }
-    .gp-estudiantes-cabeza h3 span { font-weight: 500; color: #6b7690; }
-    .gp-estudiantes-cabeza .gp-buscar { width: min(290px, 100%); }
-    .gp-nombre { font-weight: 600; }
-    .gp-correo { color: #3d4a66; }
-    .gp-quitar { min-height: 40px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: #b42318;
-      font: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-    .gp-quitar:hover { background: #fff1f0; }
-    @media (max-width: 1100px) {
-      .gp-grupos { grid-template-columns: minmax(0, 1fr); }
-      .gp-detalle { position: static; }
-    }
-    @media (max-width: 720px) {
-      .gp-matricular-fila, .gp-crear-campos { grid-template-columns: minmax(0, 1fr); }
-      .gp-detalle { padding: 20px 16px; }
-      .gp-lista { padding: 18px 14px; }
+    .gp-etiqueta { margin: 0 0 4px; font-size: 13px; font-weight: 650; color: var(--dl-azul); }
+
+    /* Barra de estudiantes: título, buscador y "+ Añadir estudiante" en una línea. */
+    .gp-est-barra { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 26px; }
+    .gp-est-barra h3 { margin: 0; font-size: 15px; font-weight: 700; color: var(--dl-tinta); }
+    .gp-est-barra h3 span { font-weight: 500; color: #9aa6c0; }
+    .gp-est-acciones { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .gp-est-acciones .gp-buscar-suave { width: 240px; }
+    .gp-btn.gp-anadir { min-height: 38px; padding: 0 16px; gap: 6px; font-size: 13.5px; }
+    .gp-anadir svg { width: 16px; height: 16px; }
+
+    /* Panel desplegable de "+ Añadir estudiante" (en celular, hoja desde abajo). */
+    .gp-anadir-ancla { position: relative; flex: none; }
+    .gp-anadir-fondo { display: none; }
+    .gp-anadir-panel { position: absolute; top: calc(100% + 8px); right: 0; z-index: 30; width: 360px; box-sizing: border-box;
+      display: grid; gap: 12px; padding: 18px; background: #fff; border: 1px solid #e6edf8; border-radius: 16px;
+      box-shadow: 0 16px 40px rgba(16, 24, 40, .14); cursor: default; }
+    .gp-anadir-panel h3 { margin: 0; font-size: 15px; font-weight: 700; color: var(--dl-tinta); }
+    .gp-anadir-panel .gp-btn { min-height: 40px; }
+
+    /* Tabla de estudiantes a lo ancho del panel, sin caja propia. */
+    .gp-est-tabla { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 14px; }
+    .gp-est-tabla th { padding: 10px 26px; text-align: left; font-size: 12px; font-weight: 650; letter-spacing: .05em; text-transform: uppercase;
+      color: #8a96b2; background: #f8fbff; border-top: 1px solid #eef2f9; border-bottom: 1px solid #eef2f9; }
+    .gp-est-tabla th:first-child { width: 48%; }
+    .gp-est-tabla th:last-child { width: 72px; }
+    .gp-est-tabla td { height: 60px; padding: 0 26px; border-bottom: 1px solid #f0f4fa; vertical-align: middle; }
+    .gp-est-nombre { font-weight: 600; color: var(--dl-tinta); }
+    .gp-est-persona { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .gp-est-texto { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .gp-iniciales { flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: #eaf1ff;
+      color: #1747c2; font-size: 12.5px; font-weight: 700; letter-spacing: .02em; }
+    .gp-est-correo { font-size: 13px; color: #4d5b7c; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .gp-est-acc { text-align: right; }
+    .gp-est-tabla td.gp-est-acc { padding: 0 18px 0 0; }
+    .gp-est-vacio td { height: 80px; text-align: center; color: #6b7690; }
+    .gp-pie-detalle { padding: 14px 26px; }
+    .gp-sin-estudiantes { flex: 1; display: grid; place-content: center; justify-items: center; gap: 14px; padding: 40px 20px;
+      border-top: 1px solid #eef2f9; text-align: center; }
+    .gp-sin-estudiantes p { margin: 0; font-size: 14.5px; color: #4d5b7c; }
+    .gp-detalle-vacio { display: grid; place-content: center; text-align: center; padding: 40px 20px; }
+    .gp-detalle-vacio p { margin: 0; color: #6b7690; }
+
+    @media (max-width: 767.98px) {
+      .gp-crear-campos { grid-template-columns: minmax(0, 1fr); }
+      /* Un panel debajo del otro: primero Mis grupos y luego el grupo elegido. */
+      .gp-grupos { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+      .gp-panel { min-height: 0; }
+      .gp-detalle { scroll-margin-top: 12px; }
+      .gp-detalle-cabeza { flex-direction: column; align-items: stretch; padding: 18px 16px; }
+      .gp-editar { padding: 18px 16px; }
+      .gp-est-barra { flex-direction: column; align-items: stretch; padding: 14px 16px; }
+      .gp-est-acciones { flex-direction: column; align-items: stretch; }
+      .gp-est-acciones .gp-buscar-suave { width: 100%; }
+      .gp-btn.gp-anadir { width: 100%; }
+      .gp-sin-estudiantes .gp-btn.gp-anadir { width: auto; }
+      /* Estudiante en una fila: iniciales, nombre y debajo el correo; "⋯" a la derecha. */
+      .gp-est-tabla, .gp-est-tabla tbody { display: block; }
+      .gp-est-tabla thead { display: none; }
+      .gp-est-tabla tr { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; grid-template-areas: "av nombre acc" "av correo acc";
+        align-items: center; column-gap: 12px; row-gap: 2px; padding: 12px 8px 12px 16px; border-bottom: 1px solid #f0f4fa; }
+      .gp-est-tabla td { height: auto; padding: 0; border: 0; }
+      .gp-est-nombre, .gp-est-persona { display: contents; }
+      .gp-iniciales { grid-area: av; }
+      .gp-est-texto { grid-area: nombre; align-self: end; }
+      .gp-est-correo { grid-area: correo; align-self: start; }
+      .gp-est-tabla td.gp-est-acc { grid-area: acc; padding: 0; }
+      .gp-est-tabla tr.gp-est-vacio { display: block; padding: 24px 16px; }
+      .gp-pie-detalle { padding: 12px 16px; }
+      /* "Añadir estudiante": hoja desde abajo con fondo oscuro. */
+      .gp-anadir-fondo { display: block; position: fixed; inset: 0; z-index: 60; background: rgba(10, 23, 51, .4); }
+      .gp-anadir-panel { position: fixed; top: auto; left: 0; right: 0; bottom: 0; z-index: 61; width: auto; max-height: 85dvh; overflow-y: auto;
+        padding: 20px 16px calc(20px + env(safe-area-inset-bottom)); border-radius: 18px 18px 0 0; }
     }
   `]
 })
@@ -1784,13 +1806,41 @@ export class GruposComponent {
     if (this.puedeGestionar()) this.cargarCatalogo();
   }
   alternarNuevo() { this.nuevo.set(!this.nuevo()); }
+  /** Panel de "+ Añadir estudiante": el mismo formulario de asignar, desplegable. */
+  anadirAbierto = signal(false);
+  alternarAnadir() {
+    const abrir = !this.anadirAbierto();
+    this.menuAbierto.set(null);
+    this.anadirAbierto.set(abrir);
+    if (abrir) setTimeout(() => document.querySelector<HTMLElement>('.gp-anadir-panel input')?.focus());
+  }
+  cerrarAnadir(devolverFoco = false) {
+    if (!this.anadirAbierto()) return;
+    this.anadirAbierto.set(false);
+    if (devolverFoco) document.getElementById('gp-anadir')?.focus();
+  }
+  /** "Estudiante de práctica" → "EP": primera letra del primer y del último nombre. */
+  iniciales(nombre: string) {
+    const partes = nombre.trim().split(/\s+/).filter(Boolean);
+    if (!partes.length) return '?';
+    return ((partes[0][0] ?? '') + (partes.length > 1 ? partes[partes.length - 1][0] : '')).toUpperCase();
+  }
+  /** Elegir desde la lista; en celular la página baja sola hasta el panel del grupo. */
+  elegirDeLista(id: number) {
+    this.elegir(id);
+    if (matchMedia('(max-width: 767.98px)').matches) {
+      setTimeout(() => document.getElementById('gp-detalle')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    }
+  }
   alternarMenu(id: number) {
     const abrir = this.menuAbierto() !== id;
+    this.anadirAbierto.set(false);
     this.menuAbierto.set(abrir ? id : null);
     if (abrir) setTimeout(() => document.querySelector<HTMLElement>('.gp-menu [role="menuitem"]')?.focus());
   }
-  /** Cierra el menú "⋯" (clic afuera o Escape); con Escape el foco vuelve a su botón. */
+  /** Cierra el menú "⋯" y el panel de añadir (clic afuera o Escape); con Escape el foco vuelve a su botón. */
   cerrarMenu(devolverFoco = false) {
+    this.cerrarAnadir(devolverFoco);
     const id = this.menuAbierto();
     if (id === null) return;
     this.menuAbierto.set(null);
@@ -1841,7 +1891,7 @@ export class GruposComponent {
     const email = this.correoAsignar();
     if (!email) { this.error.set('Elige un estudiante dado de alta.'); return; }
     this.http.post(`/api/docente/grupos/${id}/estudiantes`, { nombre: '', email }).subscribe({
-      next: () => { this.correoAsignar.set(''); this.busquedaAsignar.set(''); this.error.set(''); this.cargar(); },
+      next: () => { this.correoAsignar.set(''); this.busquedaAsignar.set(''); this.error.set(''); this.anadirAbierto.set(false); this.cargar(); },
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }
@@ -1854,6 +1904,7 @@ export class GruposComponent {
       this.busquedaAsignar.set('');
       this.correoAsignar.set('');
       this.paginaEstudiantes.set(1);
+      this.anadirAbierto.set(false);
       if (this.confirmarBorrar() !== id) this.confirmarBorrar.set(null);
       if (this.editando() !== id) this.editando.set(null);
     }
@@ -1879,131 +1930,123 @@ type FiltroSesion = 'TODAS' | 'SIN_INICIAR' | 'EN_CURSO' | 'FINALIZADO';
 
 @Component({
   selector: 'app-programar',
-  host: { '(document:click)': 'menuAbierto.set(null)', '(document:keydown.escape)': 'cerrarMenu()' },
+  host: { '(document:click)': 'menuAbierto.set(null)', '(document:keydown.escape)': 'escape()' },
   imports: [IconoComponent, MarcoDocenteComponent, FormsModule, RouterLink, PaginacionGpComponent],
   template: `
     <app-marco-docente [enlaces]="enlaces" descripcion="Agenda un caso publicado con un grupo y abre la sesión cuando corresponda.">
       <section class="gp">
-        @if (error()) { <p class="gp-error" role="alert">{{ error() }}</p> }
-        @if (ok()) { <p class="gp-ok" role="status">{{ ok() }}</p> }
+        @if (error() && !panelAbierto()) { <p class="gp-error" role="alert">{{ error() }}</p> }
+        @if (ok() && !panelAbierto()) { <p class="gp-ok" role="status">{{ ok() }}</p> }
 
-        <div class="pg-arriba">
-          <form class="gp-tarjeta pg-form" (ngSubmit)="principal()" aria-label="Programar una sesión">
-            <fieldset class="pg-seccion">
-              <legend><span class="pg-num" aria-hidden="true">1</span> Caso y grupo</legend>
-              <div class="pg-dos">
-                <label class="gp-campo"><span>Caso publicado</span>
+        @if (panelAbierto()) {
+          <div class="pg-velo" aria-hidden="true" (click)="pedirCierre()"></div>
+          <form class="pg-panel" role="dialog" aria-modal="true" aria-labelledby="titulo-programar" (click)="$event.stopPropagation()"
+            (ngSubmit)="principal()" (input)="tocado = true" (change)="tocado = true">
+            <header class="pg-panel-cabeza">
+              <div>
+                <h2 id="titulo-programar">{{ editandoId() ? 'Editar convocatoria' : 'Programar sesión' }}</h2>
+                <p>Agenda un caso publicado con uno de tus grupos.</p>
+              </div>
+              <button type="button" class="pg-cerrar" aria-label="Cerrar" (click)="pedirCierre()">×</button>
+            </header>
+
+            <div class="pg-panel-cuerpo">
+              @if (error()) { <p class="gp-error" role="alert">{{ error() }}</p> }
+              @if (ok()) { <p class="gp-ok" role="status">{{ ok() }}</p> }
+              <fieldset class="pg-seccion">
+                <legend>Caso y grupo</legend>
+                <label class="pg-campo"><span>Caso publicado</span>
                   <select name="casoId" [(ngModel)]="casoId">
                     @if (!publicados().length) { <option [ngValue]="0">No tienes casos publicados</option> }
                     @for (caso of publicados(); track caso.id) { <option [ngValue]="caso.id">{{ caso.nombre }}</option> }
                   </select>
                 </label>
-                <label class="gp-campo"><span>Grupo</span>
+                <label class="pg-campo"><span>Grupo</span>
                   <select name="grupoId" [(ngModel)]="grupoId">
                     @for (grupo of grupos(); track grupo.id) { <option [ngValue]="grupo.id">{{ grupo.nombre }} · {{ grupo.espacioAcademico }}</option> }
                   </select>
                 </label>
-              </div>
-            </fieldset>
+              </fieldset>
 
-            <fieldset class="pg-seccion">
-              <legend><span class="pg-num" aria-hidden="true">2</span> Horario</legend>
-              <div class="pg-dos">
-                <label class="gp-campo"><span>Inicio</span><input name="inicio" type="datetime-local" [(ngModel)]="inicio" /></label>
-                <label class="gp-campo"><span>Fin</span><input name="fin" type="datetime-local" [(ngModel)]="fin" /></label>
-              </div>
-              <div class="pg-dos">
-                <div class="pg-con-ayuda">
-                  <label class="gp-campo"><span>Tiempo máximo (min)</span>
-                    <input name="tiempoMax" type="number" min="1" [(ngModel)]="tiempoMax" aria-describedby="ayuda-tiempo" />
-                  </label>
-                  <p class="gp-ayuda" id="ayuda-tiempo">No puede superar el tiempo estimado del caso.</p>
+              <fieldset class="pg-seccion">
+                <legend>Horario</legend>
+                <div class="pg-dos">
+                  <label class="pg-campo"><span>Inicio</span><input name="inicio" type="datetime-local" [(ngModel)]="inicio" /></label>
+                  <label class="pg-campo"><span>Fin</span><input name="fin" type="datetime-local" [(ngModel)]="fin" /></label>
                 </div>
-                <div class="pg-con-ayuda">
-                  <label class="gp-campo"><span>Tolerancia de ingreso (min)</span>
-                    <input name="tolerancia" type="number" min="0" [(ngModel)]="tolerancia" aria-describedby="ayuda-tolerancia" />
+                <div class="pg-dos">
+                  <label class="pg-campo"><span>Tiempo máximo</span>
+                    <span class="pg-unidad"><input name="tiempoMax" type="number" min="1" [(ngModel)]="tiempoMax" aria-describedby="ayuda-horario" /><i aria-hidden="true">min</i></span>
                   </label>
-                  <p class="gp-ayuda" id="ayuda-tolerancia">Después de este tiempo nadie puede iniciar.</p>
+                  <label class="pg-campo"><span>Tolerancia de ingreso</span>
+                    <span class="pg-unidad"><input name="tolerancia" type="number" min="0" [(ngModel)]="tolerancia" aria-describedby="ayuda-horario" /><i aria-hidden="true">min</i></span>
+                  </label>
                 </div>
-              </div>
-            </fieldset>
+                <p class="pg-ayuda" id="ayuda-horario">Máximo hasta {{ casoElegido()?.tiempoEstimadoMin ?? '—' }} min (lo que dura el caso). Pasada la tolerancia, nadie más puede iniciar.</p>
+              </fieldset>
 
-            <fieldset class="pg-seccion">
-              <legend><span class="pg-num" aria-hidden="true">3</span> Lugar y mensaje</legend>
-              <label class="gp-campo"><span>Lugar (si aplica)</span><input name="lugar" [(ngModel)]="lugar" placeholder="Ej. Aula 302 o Virtual" /></label>
-              <label class="gp-campo"><span>Mensaje para los estudiantes</span>
-                <textarea name="mensaje" [(ngModel)]="mensaje" placeholder="Opcional. Aparece en el correo y en la pantalla antes de iniciar."></textarea>
-              </label>
-            </fieldset>
-
-            <div class="pg-pie">
-              <p class="gp-ayuda">Al agendar, cada estudiante recibe por correo la URL y su código de acceso.
-                <button type="button" class="pg-enlace" (click)="borrador()">Guardar borrador</button></p>
-              <div class="pg-botones">
-                <button class="gp-btn gp-btn-borde gp-btn-pildora" type="button" (click)="limpiar()">{{ editandoId() ? 'Cancelar edición' : 'Limpiar' }}</button>
-                <button class="gp-btn gp-btn-oscuro gp-btn-pildora" type="submit">{{ editandoId() ? 'Guardar cambios' : 'Agendar y notificar' }}</button>
-              </div>
+              <fieldset class="pg-seccion">
+                <legend>Lugar y mensaje</legend>
+                <label class="pg-campo"><span>Lugar (si aplica)</span><input name="lugar" [(ngModel)]="lugar" placeholder="Ej. Aula 302 o Virtual" /></label>
+                <label class="pg-campo"><span>Mensaje para los estudiantes (opcional)</span>
+                  <textarea name="mensaje" [(ngModel)]="mensaje" placeholder="Aparece en el correo y antes de iniciar."></textarea>
+                </label>
+                <p class="pg-nota">Cada estudiante recibe por correo la URL y su <strong>código de acceso</strong>. La sesión queda “Sin iniciar” hasta que la abras.</p>
+              </fieldset>
             </div>
+
+            <footer class="pg-panel-pie">
+              @if (confirmarCierre()) {
+                <p class="pg-confirmar" role="alert">Tienes cambios sin guardar. ¿Cerrar de todos modos?</p>
+                <div class="pg-botones">
+                  <button class="gp-btn gp-btn-borde" type="button" (click)="confirmarCierre.set(false)">Seguir editando</button>
+                  <button class="gp-btn gp-btn-peligro-solido" type="button" (click)="cerrarPanel()">Cerrar sin guardar</button>
+                </div>
+              } @else {
+                <button class="pg-limpiar" type="button" (click)="limpiar(); tocado = false">{{ editandoId() ? 'Cancelar edición' : 'Limpiar' }}</button>
+                <div class="pg-botones">
+                  <button class="gp-btn gp-btn-borde" type="button" (click)="borrador(); tocado = false">Guardar borrador</button>
+                  <button class="gp-btn gp-btn-oscuro" type="submit">{{ editandoId() ? 'Guardar cambios' : 'Agendar y notificar' }}</button>
+                </div>
+              }
+            </footer>
           </form>
+        }
 
-          <aside class="gp-tarjeta pg-resumen" aria-labelledby="titulo-resumen">
-            <div class="pg-resumen-cabeza">
-              <h2 id="titulo-resumen">Resumen</h2>
-              <span class="pg-chip">{{ editandoId() ? 'Editando' : 'Por agendar' }}</span>
+        <section class="pg-convocatorias" aria-labelledby="titulo-convocatorias">
+          <div class="pg-conv-cabeza">
+            <h2 id="titulo-convocatorias">Convocatorias <span>{{ sesiones().length }}</span></h2>
+            <div class="pg-conv-herramientas">
+              <label class="pg-buscar">
+                <app-icono nombre="buscar" [tamano]="16" />
+                <span class="solo-lector">Buscar convocatoria por caso o código</span>
+                <input type="search" placeholder="Buscar caso o código" [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event); pagina.set(1)" />
+              </label>
+              <button class="gp-btn gp-btn-oscuro pg-programar" id="pg-programar" type="button" (click)="abrirPanel()">
+                <app-icono nombre="mas" [tamano]="16" /> Programar sesión
+              </button>
             </div>
-            <p class="pg-resumen-caso">{{ casoElegido()?.nombre ?? 'Sin caso seleccionado' }}</p>
-            <dl class="pg-datos">
-              <div><dt>Grupo</dt><dd>{{ grupoElegido()?.nombre ?? '—' }}</dd></div>
-              <div><dt>Lugar</dt><dd>{{ lugar || 'Virtual' }}</dd></div>
-              <div><dt>Inicio</dt><dd>{{ inicio ? fecha(inicio) : '—' }}</dd></div>
-              <div><dt>Fin</dt><dd>{{ fin ? fecha(fin) : '—' }}</dd></div>
-            </dl>
-            <div class="pg-cifras">
-              <div><small>Máx.</small><strong>{{ tiempoMax || '—' }} min</strong></div>
-              <div><small>Ingreso</small><strong>{{ tolerancia }} min</strong></div>
-              <div><small>Estimado</small><strong>{{ casoElegido()?.tiempoEstimadoMin ?? '—' }} min</strong></div>
-            </div>
-            <p class="pg-resumen-nota">La sesión queda “Sin iniciar” hasta que la abras. Si no la cierras, el sistema la finaliza un día después de la fecha de fin.</p>
-          </aside>
-        </div>
-
-        <h2 class="adm-seccion-titulo" id="titulo-convocatorias">Convocatorias <span>({{ sesiones().length }})</span></h2>
-        <div class="adm-herramientas">
-          <div class="adm-filtros" role="group" aria-label="Filtrar por estado">
+          </div>
+          <div class="pg-pestanas" role="group" aria-label="Filtrar por estado">
             @for (f of filtros; track f.valor) {
-              <button type="button" class="adm-filtro" [class.activo]="filtroEstado() === f.valor" [attr.aria-pressed]="filtroEstado() === f.valor"
-                (click)="filtroEstado.set(f.valor); pagina.set(1)">{{ f.texto }}</button>
+              <button type="button" class="pg-pestana" [class.activa]="filtroEstado() === f.valor" [attr.aria-pressed]="filtroEstado() === f.valor"
+                (click)="filtroEstado.set(f.valor); pagina.set(1)">{{ f.texto }} <span class="pg-cuenta">{{ conteo(f.valor) }}</span></button>
             }
           </div>
-          <div class="adm-barra">
-            <label class="adm-buscar">
-              <app-icono nombre="buscar" [tamano]="20" />
-              <span class="solo-lector">Buscar convocatoria por caso o código</span>
-              <input type="search" placeholder="Buscar caso o código" [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event); pagina.set(1)" />
-            </label>
-            <button class="adm-boton" type="button" (click)="irAlFormulario()"><span aria-hidden="true">+</span> Programar sesión</button>
-          </div>
-        </div>
-        <section class="gp-tarjeta pg-convocatorias" aria-labelledby="titulo-convocatorias">
-          <div class="adm-tabla-caja">
-            <table class="adm-tabla pg-tabla">
-              <colgroup>
-                <col class="pg-c-codigo" /><col class="pg-c-caso" /><col class="pg-c-grupo" /><col class="pg-c-inicio" />
-                <col class="pg-c-estado" /><col class="pg-c-acciones" />
-              </colgroup>
+            <table class="pg-tabla">
               <thead><tr>
-                <th scope="col">Código</th><th scope="col">Caso</th><th scope="col">Grupo</th><th scope="col">Inicio</th>
-                <th scope="col">Estado</th><th scope="col" class="derecha">Acciones</th>
+                <th scope="col" class="pg-c-caso">Caso · código</th><th scope="col" class="pg-c-grupo">Grupo</th><th scope="col" class="pg-c-inicio">Inicio</th>
+                <th scope="col" class="pg-c-estado">Estado</th><th scope="col" class="pg-c-acciones">Acción</th>
               </tr></thead>
               <tbody>
                 @for (sesion of paginaSesiones(); track sesion.id) {
+                  @let cuando = fecha(sesion.inicio).split(' · ');
                   <tr>
-                    <td class="pg-codigo">{{ sesion.codigo }}</td>
-                    <td><span class="pg-corte" [title]="sesion.caso">{{ sesion.caso }}</span></td>
-                    <td class="gris"><span class="pg-corte" [title]="sesion.grupo">{{ sesion.grupo }}</span></td>
-                    <td class="gris">{{ fecha(sesion.inicio) }}</td>
-                    <td><span class="adm-estado-pill" [attr.data-estado]="sesion.estado">{{ etiquetaEstadoSesion(sesion.estado) }}</span></td>
-                    <td class="derecha">
+                    <td class="pg-td-caso"><span class="pg-caso" [title]="sesion.caso">{{ sesion.caso }}</span><span class="pg-codigo">{{ sesion.codigo }}</span></td>
+                    <td class="pg-td-grupo"><span [title]="sesion.grupo">{{ sesion.grupo }}</span></td>
+                    <td class="pg-td-inicio"><span class="pg-dia">{{ cuando[0] }}</span><span class="pg-hora">{{ cuando[1] }}</span></td>
+                    <td class="pg-td-estado"><span class="pg-estado" [attr.data-estado]="sesion.estado"><i aria-hidden="true"></i>{{ etiquetaEstadoSesion(sesion.estado) }}</span></td>
+                    <td class="pg-td-acciones">
                       <div class="pg-acciones" (click)="$event.stopPropagation()">
                         @if (sesion.estado === 'SIN_INICIAR') {
                           <button class="pg-principal" type="button" (click)="accion(sesion.id, 'iniciar')"
@@ -2023,7 +2066,7 @@ type FiltroSesion = 'TODAS' | 'SIN_INICIAR' | 'EN_CURSO' | 'FINALIZADO';
                             <div class="pg-menu" role="menu" [attr.aria-label]="'Acciones de la sesión ' + sesion.codigo"
                               [style.top.px]="menuPos().top" [style.bottom.px]="menuPos().bottom" [style.right.px]="menuPos().right">
                               @if (sesion.estado === 'SIN_INICIAR') {
-                                <button type="button" role="menuitem" (click)="menuAbierto.set(null); cargarEdicion(sesion); irAlFormulario()">Editar</button>
+                                <button type="button" role="menuitem" (click)="menuAbierto.set(null); cargarEdicion(sesion); abrirPanel()">Editar</button>
                               } @else {
                                 <button type="button" role="menuitem" class="peligro" (click)="menuAbierto.set(null); accion(sesion.id, 'finalizar')">Finalizar</button>
                               }
@@ -2034,77 +2077,83 @@ type FiltroSesion = 'TODAS' | 'SIN_INICIAR' | 'EN_CURSO' | 'FINALIZADO';
                     </td>
                   </tr>
                 } @empty {
-                  <tr><td colspan="6" class="adm-vacio">{{ sesiones().length ? 'Ninguna convocatoria coincide con el filtro.' : 'Todavía no tienes convocatorias.' }}</td></tr>
+                  <tr class="pg-vacio"><td colspan="5">{{ sesiones().length ? 'Ninguna convocatoria coincide con el filtro.' : 'Todavía no tienes convocatorias.' }}</td></tr>
                 }
               </tbody>
             </table>
-          </div>
-          <app-paginacion-gp [total]="sesionesFiltradas().length" [pagina]="pagina()" [porPagina]="8"
-            que="convocatorias" prefijo="Mostrando " (cambiar)="pagina.set($event)" />
+          @if (sesionesFiltradas().length) {
+            <div class="pg-pie-lista">
+              <app-paginacion-gp [total]="sesionesFiltradas().length" [pagina]="pagina()" [porPagina]="porPagina" [simple]="true"
+                que="convocatorias" prefijo="Mostrando " (cambiar)="pagina.set($event)" />
+            </div>
+          }
         </section>
       </section>
     </app-marco-docente>
   `,
   styles: [ESTILOS_GP + `
-    .pg-arriba { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 22px; align-items: start; }
-    .pg-form { padding: 10px 28px 24px; display: grid; }
-    .pg-seccion { margin: 0; padding: 22px 0; border: 0; border-bottom: 1px solid #edf1f7; display: grid; gap: 14px; min-width: 0; }
-    .pg-seccion legend { float: left; width: 100%; padding: 0; margin: 0 0 4px; display: flex; align-items: center; gap: 12px;
-      font-size: 16px; font-weight: 650; color: #0f1b3d; }
-    .pg-seccion legend + * { clear: both; }
-    .pg-num { width: 28px; height: 28px; display: inline-grid; place-items: center; border-radius: 50%; background: #e8eefc;
-      color: #2f5bd3; font-size: 13px; font-weight: 800; }
-    .pg-dos { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
-    .pg-con-ayuda { display: grid; gap: 6px; align-content: start; }
-    .pg-pie { padding-top: 22px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
-    .pg-pie > .gp-ayuda { max-width: 380px; line-height: 1.45; }
-    .pg-enlace { margin-left: 4px; padding: 0; border: 0; background: none; color: #2f5bd3; font: inherit; font-weight: 600;
-      text-decoration: underline; cursor: pointer; }
-    .pg-enlace:focus-visible { outline: 3px solid rgba(59, 108, 255, .35); outline-offset: 2px; border-radius: 4px; }
-    .pg-botones { display: flex; gap: 10px; }
-    .pg-botones .gp-btn { min-height: 36px; padding: 0 16px; }
-    .pg-resumen { position: sticky; top: 16px; padding: 22px 22px 20px; display: grid; gap: 14px; }
-    .pg-resumen-cabeza { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-    .pg-resumen-cabeza h2 { margin: 0; font-size: 16px; font-weight: 650; color: #0f1b3d; }
-    .pg-chip { padding: 4px 10px; border-radius: 999px; background: #eef1f6; color: #3d4a66; font-size: 12.5px; font-weight: 650; }
-    .pg-resumen-caso { margin: 0; font-size: 15px; font-weight: 600; color: #3d4a66; }
-    .pg-datos { margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; }
-    .pg-datos dt { font-size: 12.5px; font-weight: 650; color: #5b6680; }
-    .pg-datos dd { margin: 2px 0 0; font-size: 14px; color: #0f1b3d; overflow-wrap: anywhere; }
-    .pg-cifras { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding-bottom: 16px; border-bottom: 1px solid #edf1f7; }
-    .pg-cifras div { display: grid; gap: 2px; justify-items: center; padding: 10px 4px; border: 1px solid #e6ebf5; border-radius: 12px; background: #f8fafd; }
-    .pg-cifras small { font-size: 12px; font-weight: 650; color: #5b6680; }
-    .pg-cifras strong { font-size: 17px; font-weight: 800; color: #0f1b3d; white-space: nowrap; }
-    .pg-resumen-nota { margin: 0; font-size: 13px; line-height: 1.5; color: #5b6680; }
-    .pg-convocatorias { padding: 0 0 14px; display: grid; gap: 14px; overflow: hidden; }
-    .pg-convocatorias app-paginacion-gp { padding: 0 16px; }
-    .pg-conv-cabeza { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; }
-    .pg-conv-cabeza h2 { margin: 0; font-size: 16px; font-weight: 650; color: #0f1b3d; }
-    .pg-conv-cabeza h2 span { font-weight: 500; color: #6b7690; font-size: 14px; }
-    .pg-conv-herramientas { display: flex; flex-direction: column; align-items: stretch; gap: 10px; width: 400px; max-width: 100%; flex: 0 0 auto; }
-    .pg-filtros { display: flex; width: 100%; gap: 2px; padding: 4px; border-radius: 999px; background: #f1f4fa; box-sizing: border-box; }
-    .pg-filtros button { flex: 1 1 0; min-width: 0; min-height: 36px; padding: 0 8px; border: 0; border-radius: 999px; background: transparent; color: #1a2744;
-      font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; }
-    .pg-filtros button[aria-pressed="true"] { background: var(--dl-degradado); color: #fff; font-weight: 700; }
-    .pg-filtros button:focus-visible { outline: 3px solid rgba(59, 108, 255, .35); outline-offset: 1px; }
-    .pg-buscar { width: 100%; }
-    /* Más específico que la regla global de .adm-tabla (min-width 760px): el caso nunca se queda sin ancho. */
-    .pg-convocatorias .adm-tabla.pg-tabla { table-layout: fixed; min-width: 1100px; }
-    .pg-c-codigo { width: 130px; } .pg-c-grupo { width: 200px; } .pg-c-inicio { width: 190px; }
-    .pg-c-estado { width: 120px; } .pg-c-acciones { width: 190px; }
-    .pg-tabla td { height: 64px; box-sizing: border-box; vertical-align: middle; }
-    .pg-codigo { font-weight: 700; color: var(--dl-tinta); }
-    .pg-corte { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-      white-space: normal; overflow-wrap: normal; word-break: normal; line-height: 1.35; }
+    /* Lista de convocatorias: un panel blanco a lo ancho. */
+    .pg-convocatorias { position: relative; z-index: 1; min-width: 0; background: #fff; border: 1px solid #e6edf8; border-radius: 18px;
+      box-shadow: 0 1px 2px rgba(16, 24, 40, .03); --gp-pag-activa: #eef4ff; --gp-pag-activa-borde: #eef4ff; }
+    .pg-conv-cabeza { display: flex; align-items: center; justify-content: space-between; gap: 12px 16px; padding: 18px 18px 6px; }
+    .pg-conv-cabeza h2 { margin: 0; font-size: 17px; font-weight: 800; color: var(--dl-tinta); }
+    .pg-conv-cabeza h2 span { font-weight: 500; color: #9aa6c0; }
+    .pg-conv-herramientas { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .pg-buscar { display: flex; align-items: center; gap: 8px; width: 230px; height: 38px; padding: 0 14px; box-sizing: border-box; border-radius: 999px;
+      background: #f5f8fe; color: #7a86a3; }
+    .pg-buscar:focus-within { box-shadow: 0 0 0 2px rgba(31, 92, 240, .35); }
+    .pg-buscar svg { flex: none; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+    .pg-convocatorias .pg-buscar input[type="search"] { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; border-radius: 0;
+      background: transparent; box-shadow: none; outline: none; font: inherit; font-size: 13px; color: var(--dl-tinta); }
+    .pg-convocatorias .pg-buscar input[type="search"]::placeholder { color: #7a86a3; }
+    .gp-btn.pg-programar { min-height: 38px; padding: 0 16px; gap: 6px; font-size: 13.5px; }
+    .pg-programar svg { width: 16px; height: 16px; }
+
+    /* Pestañas de texto subrayadas, con su número. */
+    .pg-pestanas { display: flex; gap: 22px; padding: 0 18px; overflow-x: auto; scrollbar-width: none; }
+    .pg-pestanas::-webkit-scrollbar { display: none; }
+    .pg-pestana { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0; border: 0; border-bottom: 2px solid transparent;
+      background: none; color: #4d5b7c; font: inherit; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; box-shadow: none; }
+    .pg-pestana:hover, .pg-pestana:active { color: var(--dl-tinta); transform: none; }
+    .pg-pestana.activa { color: var(--dl-tinta); border-bottom-color: #1f5cf0; }
+    .pg-cuenta { min-width: 18px; padding: 1px 6px; box-sizing: border-box; border-radius: 999px; font-size: 11px; font-weight: 700; line-height: 16px;
+      text-align: center; color: #9aa6c0; background: #edf1f8; }
+    .pg-pestana.activa .pg-cuenta { color: #fff; background: #1f5cf0; }
+    .pg-pestana:focus-visible { outline: 3px solid #7aa7ff; outline-offset: 2px; border-radius: 4px; }
+
+    /* Tabla dentro del panel, sin caja propia. */
+    .pg-tabla { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 14px; }
+    .pg-tabla th { padding: 10px 18px; text-align: left; font-size: 12px; font-weight: 650; letter-spacing: .05em; text-transform: uppercase;
+      color: #8a96b2; background: #f8fbff; border-top: 1px solid #eef2f9; border-bottom: 1px solid #eef2f9; white-space: nowrap; }
+    .pg-c-grupo { width: 18%; } .pg-c-inicio { width: 15%; } .pg-c-estado { width: 13%; } .pg-c-acciones { width: 200px; }
+    .pg-tabla th.pg-c-acciones { text-align: right; }
+    .pg-tabla td { height: 62px; padding: 0 18px; box-sizing: border-box; vertical-align: middle; border-bottom: 1px solid #f0f4fa; }
+    .pg-td-caso > span, .pg-td-inicio > span { display: block; }
+    .pg-caso { font-weight: 600; color: var(--dl-tinta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pg-codigo { margin-top: 2px; font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace; font-size: 12px; color: #8a96b2; }
+    .pg-td-grupo { font-size: 13.5px; color: #4d5b7c; }
+    .pg-td-grupo span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pg-dia { font-size: 13.5px; color: var(--dl-tinta); white-space: nowrap; }
+    .pg-hora { margin-top: 2px; font-size: 12px; color: #8a96b2; white-space: nowrap; }
+    .pg-estado { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #5b6b8c; white-space: nowrap; }
+    .pg-estado i { width: 7px; height: 7px; border-radius: 50%; flex: none; background: #9fb2d6; }
+    .pg-estado[data-estado="EN_CURSO"] { color: #1747c2; }
+    .pg-estado[data-estado="EN_CURSO"] i { background: #2a7bff; box-shadow: 0 0 0 3px rgba(42, 123, 255, .18); }
+    .pg-estado[data-estado="FINALIZADO"] { color: #17683d; }
+    .pg-estado[data-estado="FINALIZADO"] i { background: #22a55a; }
+    .pg-td-acciones { text-align: right; }
+    .pg-vacio td { height: 90px; text-align: center; color: #6b7690; }
+    .pg-pie-lista { padding: 14px 18px; }
+
     .pg-acciones { display: flex; flex-wrap: nowrap; align-items: center; justify-content: flex-end; gap: 6px; }
-    .pg-principal, .pg-suave { min-height: 34px; display: inline-flex; align-items: center; gap: 4px; padding: 0 14px; border-radius: 10px;
-      font: inherit; font-size: 13.5px; font-weight: 700; text-decoration: none; white-space: nowrap; cursor: pointer; }
+    .pg-principal, .pg-suave { min-height: 32px; display: inline-flex; align-items: center; gap: 4px; padding: 0 12px; border-radius: 999px;
+      font: inherit; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; cursor: pointer; }
     .pg-principal { border: 0; background: var(--dl-degradado); color: #fff; }
     .pg-principal:hover { filter: brightness(1.06); }
-    .pg-suave { border: 0; background: var(--dl-azul-claro); color: var(--dl-azul); }
-    .pg-suave:hover { background: #e1ebff; }
+    .pg-suave { padding: 0 8px; border: 0; border-radius: 8px; background: transparent; color: #1f5cf0; }
+    .pg-suave:hover { background: #eef4ff; }
     .pg-mas, .pg-mas-vacio { flex: none; width: 34px; height: 34px; }
-    .pg-mas { display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent; color: #33415c; cursor: pointer; }
+    .pg-mas { display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent; color: #8a96b2; cursor: pointer; box-shadow: none; }
     .pg-mas svg { width: 17px; height: 17px; fill: currentColor; }
     .pg-mas:hover, .pg-mas[aria-expanded="true"] { background: #eef2f9; }
     .pg-principal:focus-visible, .pg-suave:focus-visible, .pg-mas:focus-visible { outline: 3px solid #7aa7ff; outline-offset: 2px; }
@@ -2116,24 +2165,89 @@ type FiltroSesion = 'TODAS' | 'SIN_INICIAR' | 'EN_CURSO' | 'FINALIZADO';
     .pg-menu button:hover, .pg-menu button:focus-visible { background: #f2f6ff; outline: none; }
     .pg-menu .peligro { color: #a4271b; }
     .pg-menu .peligro:hover { background: #fdf1f0; }
-    .pg-tenue { color: #5b6680; }
-    .pg-fecha { white-space: nowrap; }
-    .pg-estado { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap;
-      background: #eef1f6; color: #3d4a66; }
-    .pg-estado[data-estado="EN_CURSO"] { background: #e6efff; color: #2753c9; }
-    .pg-estado[data-estado="FINALIZADO"] { background: #e3f5ea; color: #1b6f45; }
-    @media (max-width: 1100px) {
-      .pg-arriba { grid-template-columns: minmax(0, 1fr); }
-      .pg-resumen { position: static; }
-    }
-    @media (max-width: 720px) {
+
+    /* Formulario en panel lateral desde la derecha, con velo oscuro detrás. */
+    .pg-velo { position: fixed; inset: 0; z-index: 1000; background: rgba(15, 27, 61, .28); animation: pg-aparecer .2s ease; }
+    .pg-panel { position: fixed; top: 0; right: 0; bottom: 0; z-index: 1001; width: 480px; max-width: 100%; box-sizing: border-box;
+      display: flex; flex-direction: column; background: #fff; box-shadow: -12px 0 32px rgba(15, 27, 61, .12); animation: pg-entrar .24s ease-out; }
+    @keyframes pg-aparecer { from { opacity: 0; } }
+    @keyframes pg-entrar { from { transform: translateX(100%); } }
+    @media (prefers-reduced-motion: reduce) { .pg-velo, .pg-panel { animation: none; } }
+    .pg-panel-cabeza { flex: none; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 22px 16px;
+      border-bottom: 1px solid #eef2f9; }
+    .pg-panel-cabeza h2 { margin: 0; font-size: 18px; font-weight: 800; color: var(--dl-tinta); }
+    .pg-panel-cabeza p { margin: 2px 0 0; font-size: 13px; color: #7a86a3; }
+    .pg-cerrar { flex: none; width: 32px; height: 32px; display: grid; place-items: center; border: 0; border-radius: 10px; background: #f3f6fc;
+      color: #4d5b7c; font: inherit; font-size: 18px; line-height: 1; cursor: pointer; box-shadow: none; }
+    .pg-cerrar:hover { background: #e8eef9; transform: none; }
+    .pg-panel-cuerpo { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 22px 18px; }
+    .pg-panel-cuerpo > .gp-error, .pg-panel-cuerpo > .gp-ok { margin-top: 14px; }
+    .pg-seccion { margin: 0; padding: 18px 0; border: 0; border-bottom: 1px solid #eef2f9; display: grid; gap: 12px; min-width: 0; }
+    .pg-seccion:last-child { border-bottom: 0; }
+    .pg-seccion legend { float: left; width: 100%; padding: 0; margin: 0 0 2px; font-size: 12px; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; color: #8a96b2; }
+    .pg-seccion legend + * { clear: both; }
+    .pg-dos { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+    .pg-campo { display: grid; gap: 6px; min-width: 0; }
+    .pg-campo > span:first-child { font-size: 12.5px; font-weight: 600; color: #4d5b7c; text-transform: none; letter-spacing: 0; }
+    .pg-panel .pg-campo input:not([type="checkbox"]), .pg-panel .pg-campo select, .pg-panel .pg-campo textarea {
+      width: 100%; min-width: 0; box-sizing: border-box; height: 40px; padding: 0 12px; border: 1px solid #e1e9f6; border-radius: 12px; background-color: #f8fbff;
+      color: var(--dl-tinta); font: inherit; font-size: 13.5px; box-shadow: none; }
+    .pg-panel .pg-campo input[type="datetime-local"] { padding: 0 8px 0 10px; font-size: 13px; }
+    .pg-panel .pg-campo textarea { height: auto; min-height: 72px; padding: 10px 12px; resize: vertical; }
+    .pg-panel .pg-campo input:focus, .pg-panel .pg-campo select:focus, .pg-panel .pg-campo textarea:focus {
+      outline: none; border-color: #1f5cf0; box-shadow: 0 0 0 3px rgba(31, 92, 240, .15); background-color: #fff; }
+    .pg-panel .pg-campo input::placeholder, .pg-panel .pg-campo textarea::placeholder { color: #9aa6c0; }
+    .pg-unidad { position: relative; display: block; }
+    .pg-panel .pg-unidad input:not([type="checkbox"]) { padding-right: 44px; -moz-appearance: textfield; }
+    .pg-unidad input::-webkit-inner-spin-button, .pg-unidad input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .pg-unidad i { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-style: normal; font-size: 12.5px; color: #8a96b2; pointer-events: none; }
+    .pg-ayuda { margin: 0; font-size: 12px; line-height: 1.45; color: #7a86a3; }
+    .pg-nota { margin: 2px 0 0; padding: 10px 12px; border-radius: 12px; background: #f5f8fe; font-size: 12.5px; line-height: 1.45; color: #4d5b7c; }
+    .pg-nota strong { color: var(--dl-tinta); }
+    .pg-panel-pie { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 22px;
+      border-top: 1px solid #eef2f9; background: #fff; }
+    .pg-botones { display: flex; gap: 10px; }
+    .pg-botones .gp-btn { min-height: 40px; padding: 0 18px; font-size: 13.5px; white-space: nowrap; }
+    .pg-limpiar { padding: 8px 4px; border: 0; background: none; color: #33415c; font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer;
+      box-shadow: none; white-space: nowrap; }
+    .pg-limpiar:hover { color: var(--dl-tinta); text-decoration: underline; transform: none; }
+    .pg-confirmar { margin: 0; font-size: 13px; font-weight: 600; color: #9b1c12; }
+    .pg-cerrar:focus-visible, .pg-limpiar:focus-visible, .pg-botones .gp-btn:focus-visible { outline: 3px solid #7aa7ff; outline-offset: 2px; }
+
+    @media (max-width: 767.98px) {
+      /* Arriba de la lista: buscador y "+ Programar sesión" a lo ancho. */
+      .pg-conv-cabeza { flex-direction: column; align-items: stretch; padding: 16px 14px 4px; }
+      .pg-conv-herramientas { flex-direction: column; align-items: stretch; }
+      .pg-buscar { width: 100%; }
+      .pg-pestanas { padding: 0 14px; gap: 18px; }
+      /* Cada convocatoria apilada: caso y código; grupo · fecha y hora; estado y acción. */
+      .pg-tabla, .pg-tabla tbody { display: block; }
+      .pg-tabla thead { display: none; }
+      .pg-tabla tr { display: flex; flex-wrap: wrap; align-items: center; row-gap: 4px; padding: 12px 8px 10px 14px; border-top: 1px solid #f0f4fa; }
+      .pg-tabla tr::after { content: ""; order: 4; flex-basis: 100%; height: 0; }
+      .pg-tabla td { height: auto; padding: 0; border: 0; }
+      .pg-td-caso { order: 1; flex-basis: 100%; padding-right: 6px !important; }
+      .pg-caso { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; }
+      .pg-td-grupo { order: 2; flex: 0 1 auto; min-width: 0; max-width: calc(100% - 160px); font-size: 13px; }
+      .pg-td-inicio { order: 3; flex: none; padding-left: 5px !important; font-size: 13px; white-space: nowrap; }
+      .pg-td-inicio::before { content: "· "; color: #8a96b2; }
+      .pg-td-inicio > span { display: inline; }
+      .pg-dia { font-size: 13px; color: #4d5b7c; }
+      .pg-hora { margin: 0 0 0 4px; font-size: 13px; color: #8a96b2; }
+      .pg-td-estado { order: 5; margin-top: 4px; }
+      .pg-td-acciones { order: 6; margin: 4px 0 0 auto; }
+      .pg-tabla tr.pg-vacio { display: block; padding: 24px 14px; text-align: center; }
+      .pg-pie-lista { padding: 12px 14px; border-top: 1px solid #f0f4fa; }
+      /* El formulario ocupa toda la pantalla, con los botones fijos abajo y un campo debajo del otro. */
+      .pg-panel { width: 100%; }
+      .pg-panel-cabeza { padding: 16px 16px 14px; }
+      .pg-panel-cuerpo { padding: 4px 16px 16px; }
       .pg-dos { grid-template-columns: minmax(0, 1fr); }
-      .pg-form { padding: 6px 16px 18px; }
-      .pg-convocatorias { padding: 0 0 12px; }
-      .pg-conv-cabeza { flex-direction: column; align-items: stretch; }
-      .pg-conv-herramientas { width: 100%; }
-      .pg-botones { width: 100%; }
-      .pg-botones .gp-btn { flex: 1; }
+      .pg-panel-pie { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); }
+      .pg-limpiar { justify-self: start; padding: 4px 2px; }
+      .pg-botones { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+      .pg-botones .gp-btn { padding: 0 10px; }
     }
   `]
 })
@@ -2172,7 +2286,55 @@ export class ProgramarComponent {
     return this.sesiones().filter((s) => (estado === 'TODAS' || s.estado === estado)
       && (!q || q.split(/\s+/).every((t) => s.caso.toLowerCase().includes(t) || s.codigo.toLowerCase().includes(t) || s.grupo.toLowerCase().includes(t))));
   });
-  readonly paginaSesiones = computed(() => paginar(this.sesionesFiltradas(), this.pagina(), 8));
+  readonly porPagina = 7;
+  readonly paginaSesiones = computed(() => paginar(this.sesionesFiltradas(), this.pagina(), this.porPagina));
+  conteo(estado: FiltroSesion) {
+    return estado === 'TODAS' ? this.sesiones().length : this.sesiones().filter((s) => s.estado === estado).length;
+  }
+  /** Panel lateral con el formulario. "tocado": hay cambios sin guardar desde que se abrió. */
+  panelAbierto = signal(false);
+  confirmarCierre = signal(false);
+  tocado = false;
+  abrirPanel() {
+    this.menuAbierto.set(null);
+    this.confirmarCierre.set(false);
+    this.tocado = false;
+    this.error.set('');
+    if (!this.editandoId()) this.ok.set('');
+    this.panelAbierto.set(true);
+    setTimeout(() => document.querySelector<HTMLElement>('.pg-panel select')?.focus());
+  }
+  /** ×, Esc o clic en el velo: si hay cambios sin guardar, pregunta antes de cerrar. */
+  pedirCierre() {
+    if (this.tocado && !this.confirmarCierre()) {
+      this.confirmarCierre.set(true);
+      setTimeout(() => document.querySelector<HTMLElement>('.pg-panel-pie .gp-btn')?.focus());
+      return;
+    }
+    if (!this.tocado) this.cerrarPanel();
+  }
+  /** Cierra el panel. Si se descartan cambios o se termina una edición, el formulario vuelve al borrador guardado (o vacío). */
+  cerrarPanel(restablecer = this.tocado || !!this.editandoId()) {
+    this.panelAbierto.set(false);
+    this.confirmarCierre.set(false);
+    this.tocado = false;
+    if (restablecer) {
+      this.limpiar();
+      this.cargarBorrador();
+    }
+    this.error.set('');
+    setTimeout(() => document.getElementById('pg-programar')?.focus({ preventScroll: true }));
+  }
+  escape() {
+    if (this.menuAbierto() !== null) this.cerrarMenu();
+    else if (this.confirmarCierre()) this.confirmarCierre.set(false);
+    else if (this.panelAbierto()) this.pedirCierre();
+  }
+  /** Aviso corto de éxito en la página: se quita solo. */
+  private avisar(texto: string) {
+    this.ok.set(texto);
+    setTimeout(() => { if (this.ok() === texto) this.ok.set(''); }, 6000);
+  }
   /** Menú "⋯" de cada convocatoria; fijo a la ventana para que la tabla no lo recorte. */
   menuAbierto = signal<number | null>(null);
   menuPos = signal<{ top: number | null; bottom: number | null; right: number }>({ top: null, bottom: null, right: 0 });
@@ -2193,15 +2355,16 @@ export class ProgramarComponent {
     this.menuAbierto.set(null);
     document.getElementById('pg-mas-' + id)?.focus();
   }
-  /** "+ Programar sesión" y "Editar": lleva al formulario (la página se desplaza dentro de su marco). */
-  irAlFormulario() {
-    setTimeout(() => {
-      const formulario = document.querySelector<HTMLElement>('.pg-form');
-      formulario?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      formulario?.querySelector<HTMLElement>('select')?.focus({ preventScroll: true });
-    });
-  }
   constructor() {
+    this.cargarBorrador();
+    const caso = Number(this.route.snapshot.queryParamMap.get('caso') || 0);
+    const grupo = Number(this.route.snapshot.queryParamMap.get('grupo') || 0);
+    if (caso) this.casoId = caso;
+    if (grupo) this.grupoId = grupo;
+    if (caso || grupo) this.panelAbierto.set(true);
+    this.cargar();
+  }
+  private cargarBorrador() {
     const guardado = localStorage.getItem('dilema-agenda');
     if (guardado) {
       try {
@@ -2216,9 +2379,6 @@ export class ProgramarComponent {
         this.mensaje = dato.mensaje ?? '';
       } catch { localStorage.removeItem('dilema-agenda'); }
     }
-    const grupo = Number(this.route.snapshot.queryParamMap.get('grupo') || 0);
-    if (grupo) this.grupoId = grupo;
-    this.cargar();
   }
   casoElegido() { return this.casos().find((c) => c.id === Number(this.casoId)) ?? null; }
   grupoElegido() { return this.grupos().find((g) => g.id === Number(this.grupoId)) ?? null; }
@@ -2267,9 +2427,9 @@ export class ProgramarComponent {
   agendar() {
     this.http.post<Sesion>('/api/docente/sesiones', this.cuerpoAgenda()).subscribe({
       next: () => {
-        this.ok.set('Convocatoria registrada. Los estudiantes reciben el aviso sin que el código quede visible.');
-        this.error.set('');
         localStorage.removeItem('dilema-agenda');
+        this.cerrarPanel(true);
+        this.avisar('Convocatoria registrada. Los estudiantes reciben el aviso sin que el código quede visible.');
         this.cargar();
       },
       error: (falla) => this.error.set(mensajeError(falla))
@@ -2287,16 +2447,15 @@ export class ProgramarComponent {
     this.mensaje = sesion.mensaje || '';
     this.ok.set('Estás editando la convocatoria ' + sesion.codigo + '.');
     this.error.set('');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   guardarEdicion() {
     const id = this.editandoId();
     if (!id) return;
     this.http.put<Sesion>(`/api/docente/sesiones/${id}`, this.cuerpoAgenda()).subscribe({
       next: () => {
-        this.ok.set('Convocatoria actualizada. Los estudiantes reciben el aviso del cambio.');
-        this.error.set('');
         this.editandoId.set(null);
+        this.cerrarPanel(true);
+        this.avisar('Convocatoria actualizada. Los estudiantes reciben el aviso del cambio.');
         this.cargar();
       },
       error: (falla) => this.error.set(mensajeError(falla))
@@ -2334,51 +2493,113 @@ export class ProgramarComponent {
 
 @Component({
   selector: 'app-seguimiento',
+  host: { '(document:click)': 'exportarAbierto.set(false)', '(document:keydown.escape)': 'cerrarExportar()' },
   imports: [IconoComponent, MatButtonModule, MatCardModule, MarcoDocenteComponent, RouterLink, FormsModule, PaginacionTablaComponent],
   template: `
     <app-marco-docente [enlaces]="enlaces" descripcion="Bitácora en vivo y consulta de sesiones ya realizadas.">
-      <div class="adm-herramientas">
-        <div class="adm-filtros" role="group" aria-label="Qué convocatorias ver">
-          <button type="button" class="adm-filtro" [class.activo]="vista === 'todas'" [attr.aria-pressed]="vista === 'todas'"
-            (click)="vista = 'todas'; cambiarVista()">Todas las convocatorias</button>
-          <button type="button" class="adm-filtro" [class.activo]="vista === 'realizadas'" [attr.aria-pressed]="vista === 'realizadas'"
-            (click)="vista = 'realizadas'; cambiarVista()">Solo realizadas</button>
-        </div>
-        <div class="adm-barra">
-          <label class="adm-orden">
-            <span class="solo-lector">Convocatoria</span>
-            <select class="adm-selector-ancho" [(ngModel)]="sesionId" (ngModelChange)="ver($event)">
+      <div class="rp-pagina">
+        <div class="rp-barra">
+          <label class="rp-caso">
+            <span class="rp-caso-etiqueta">Caso</span>
+            <select class="rp-caso-select" [(ngModel)]="sesionId" (ngModelChange)="ver($event)" aria-label="Convocatoria">
               @for (sesion of sesionesVista(); track sesion.id) {
                 <option [ngValue]="sesion.id">{{ sesion.caso }} · {{ sesion.grupo }}</option>
               }
             </select>
+            <svg class="rp-caso-flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
           </label>
-          <label class="adm-buscar">
-            <app-icono nombre="buscar" [tamano]="20" />
-            <span class="solo-lector">Buscar estudiante</span>
-            <input type="search" [(ngModel)]="busqueda" (ngModelChange)="pagina.set(1)" placeholder="Buscar estudiante" />
-          </label>
+          <div class="rp-vista" role="group" aria-label="Qué convocatorias ver">
+            <button type="button" [class.activa]="vista === 'todas'" [attr.aria-pressed]="vista === 'todas'"
+              (click)="vista = 'todas'; cambiarVista()">Todas las convocatorias</button>
+            <button type="button" [class.activa]="vista === 'realizadas'" [attr.aria-pressed]="vista === 'realizadas'"
+              (click)="vista = 'realizadas'; cambiarVista()">Solo realizadas</button>
+          </div>
+          <div class="rp-exportar" (click)="$event.stopPropagation()">
+            <button type="button" class="rp-exportar-boton" id="rp-exportar" aria-haspopup="menu" [attr.aria-expanded]="exportarAbierto()"
+              [disabled]="!sesionId" (click)="alternarExportar()">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11" /><path d="m7 10 5 5 5-5" /><path d="M5 20h14" /></svg>
+              Exportar
+              <svg class="rp-exportar-flecha" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+            </button>
+            @if (exportarAbierto()) {
+              <div class="rp-menu" role="menu" aria-label="Exportar reporte">
+                <button type="button" role="menuitem" (click)="exportar('csv')">CSV</button>
+                <button type="button" role="menuitem" (click)="exportar('pdf')">PDF</button>
+                <button type="button" role="menuitem" (click)="exportar('xlsx')">Excel</button>
+              </div>
+            }
+          </div>
         </div>
-      </div>
-      @if (aviso()) { <p class="error">{{ aviso() }}</p> }
+        @if (aviso()) { <p class="error">{{ aviso() }}</p> }
 
-      <div class="rp-cuerpo">
-        <article class="adm-tarjeta adm-tabla-tarjeta">
-          <div class="adm-tabla-caja">
-            <table class="adm-tabla">
+        <section class="rp-resumen" aria-label="Resumen del grupo">
+          <article class="rp-cifra">
+            <h2>Promedio del grupo</h2>
+            <p><strong>{{ promedio() }}</strong><span>/ 5,0</span></p>
+          </article>
+          <article class="rp-cifra">
+            <h2>Completaron</h2>
+            <p><strong>{{ finalizados() }}</strong><span>de {{ filas().length }}</span></p>
+          </article>
+          <article class="rp-cifra">
+            <h2>Pendientes</h2>
+            <p><strong>{{ filas().length - finalizados() }}</strong></p>
+          </article>
+          <article class="rp-cifra rp-cifra-niveles">
+            <h2>Niveles</h2>
+            <div class="rp-barra-niveles" role="img"
+              [attr.aria-label]="'Superior ' + conteo('Superior') + ', Alto ' + conteo('Alto') + ', Básico ' + conteo('Básico') + ', Bajo ' + conteo('Bajo')">
+              @for (n of niveles; track n) {
+                @if (conteo(n)) { <span [attr.data-nivel]="n" [style.flex-grow]="conteo(n)"></span> }
+              }
+            </div>
+            <ul class="rp-leyenda">
+              @for (n of niveles; track n) {
+                <li><i [attr.data-nivel]="n" aria-hidden="true"></i>{{ n }} <b>{{ conteo(n) }}</b></li>
+              }
+            </ul>
+          </article>
+        </section>
+
+        <section class="rp-panel" aria-labelledby="rp-titulo-estudiantes">
+          <div class="rp-panel-cabeza">
+            <h2 id="rp-titulo-estudiantes">Estudiantes <span>{{ filas().length }}</span></h2>
+            <label class="rp-buscar">
+              <app-icono nombre="buscar" [tamano]="16" />
+              <span class="solo-lector">Buscar estudiante</span>
+              <input type="search" [(ngModel)]="busqueda" (ngModelChange)="pagina.set(1)" placeholder="Buscar estudiante" />
+            </label>
+          </div>
+          @if (!filas().length) {
+            <p class="rp-vacio">Aún no hay resultados para este caso</p>
+          } @else {
+            <table class="rp-tabla">
               <thead>
-                <tr><th scope="col">Estudiante</th><th scope="col">Estado</th><th scope="col">Puntaje</th><th scope="col">Nivel</th><th scope="col" class="derecha">Consulta</th></tr>
+                <tr><th scope="col">Estudiante</th><th scope="col" class="rp-c-estado">Estado</th><th scope="col" class="rp-c-puntaje">Puntaje</th>
+                  <th scope="col" class="rp-c-nivel">Nivel</th><th scope="col" class="rp-c-consulta">Consulta</th></tr>
               </thead>
               <tbody>
                 @for (fila of filasPagina(); track fila.email) {
+                  @let nivelFila = nivel(fila.nota);
                   <tr>
-                    <td><div class="adm-celda-doble"><strong>{{ fila.estudiante }}</strong><small>{{ fila.email }}</small></div></td>
-                    <td><span class="adm-estado-pill" [attr.data-estado]="fila.estado">{{ etiquetaFila(fila.estado) }}</span></td>
-                    <td>{{ fila.nota ?? '—' }} / 5,0</td>
-                    <td class="gris">{{ nivel(fila.nota) }}</td>
-                    <td class="derecha">
-                      <div class="adm-acciones-celda">
-                        @if (fila.repeticionAutorizada) { <span class="gris">Repetición autorizada</span> }
+                    <td class="rp-td-persona">
+                      <span class="rp-iniciales" aria-hidden="true">{{ iniciales(fila.estudiante) }}</span>
+                      <span class="rp-persona"><strong [title]="fila.estudiante">{{ fila.estudiante }}</strong><small [title]="fila.email">{{ fila.email }}</small></span>
+                    </td>
+                    <td class="rp-td-estado"><span class="rp-estado" [attr.data-estado]="fila.estado"><i aria-hidden="true"></i>{{ etiquetaFila(fila.estado) }}</span></td>
+                    <td class="rp-td-puntaje">
+                      @if (fila.nota != null) {
+                        <span class="rp-puntaje"><b>{{ fila.nota.toFixed(1) }}</b><span class="solo-lector"> de 5,0</span>
+                          <span class="rp-puntaje-barra" aria-hidden="true"><i [attr.data-nivel]="nivelFila" [style.width.%]="fila.nota / 5 * 100"></i></span></span>
+                      } @else { <span class="rp-tenue" aria-label="Sin puntaje">—</span> }
+                    </td>
+                    <td class="rp-td-nivel">
+                      @if (fila.nota != null) { <span class="rp-nivel"><i [attr.data-nivel]="nivelFila" aria-hidden="true"></i>{{ nivelFila }}</span> }
+                      @else { <span class="rp-tenue">Sin nivel aún</span> }
+                    </td>
+                    <td class="rp-td-consulta">
+                      <div class="rp-consulta">
+                        @if (fila.repeticionAutorizada) { <span class="rp-tenue">Repetición autorizada</span> }
                         @if (intentosDe(fila); as lista) {
                           @if (lista.length) {
                             @if (lista.length > 1) {
@@ -2389,43 +2610,154 @@ export class ProgramarComponent {
                                 }
                               </select>
                             }
-                            <a class="adm-enlace" [routerLink]="['/docente/seguimiento', lista[lista.length - 1].id]">Último intento <span aria-hidden="true">›</span></a>
+                            <a class="rp-enlace" [routerLink]="['/docente/seguimiento', lista[lista.length - 1].id]">Último intento <span aria-hidden="true">›</span></a>
                           } @else if (fila.participacionId) {
-                            <a class="adm-enlace" [routerLink]="['/docente/seguimiento', fila.participacionId]">Ver respuestas <span aria-hidden="true">›</span></a>
+                            <a class="rp-enlace" [routerLink]="['/docente/seguimiento', fila.participacionId]">Ver respuestas <span aria-hidden="true">›</span></a>
+                          } @else {
+                            <span class="rp-tenue">Sin intentos</span>
                           }
                         }
                       </div>
                     </td>
                   </tr>
-                } @empty { <tr><td colspan="5" class="adm-vacio">No hay estudiantes en esta convocatoria.</td></tr> }
+                } @empty { <tr class="rp-sin-coincidencias"><td colspan="5">Ningún estudiante coincide con la búsqueda.</td></tr> }
               </tbody>
             </table>
-          </div>
-          <app-paginacion-tabla [total]="visibles().length" [pagina]="paginaActual()" (cambiar)="pagina.set($event)" />
-        </article>
-
-        <aside class="adm-tarjeta rp-ficha" aria-label="Ficha de cohorte">
-          <h2>Ficha de cohorte</h2>
-          <div class="adm-cifras">
-            <div><small>Promedio</small><strong>{{ promedio() }}</strong></div>
-            <div><small>Hechos</small><strong>{{ finalizados() }}/{{ filas().length }}</strong></div>
-            <div><small>Pendientes</small><strong>{{ filas().length - finalizados() }}</strong></div>
-          </div>
-          <div class="rp-niveles">
-            <span><small>Superior</small>{{ conteo('Superior') }}</span>
-            <span><small>Alto</small>{{ conteo('Alto') }}</span>
-            <span><small>Básico</small>{{ conteo('Básico') }}</span>
-            <span><small>Bajo</small>{{ conteo('Bajo') }}</span>
-          </div>
-          <div class="adm-acciones-fila" role="group" aria-label="Exportar reporte">
-            <button class="adm-boton-contorno adm-boton-chico" type="button" (click)="descargar('csv')">CSV</button>
-            <button class="adm-boton-contorno adm-boton-chico" type="button" (click)="descargar('pdf')">PDF</button>
-            <button class="adm-boton-contorno adm-boton-chico" type="button" (click)="descargar('xlsx')">Excel</button>
-          </div>
-        </aside>
+            <div class="rp-pie">
+              <app-paginacion-tabla [total]="visibles().length" [pagina]="paginaActual()" (cambiar)="pagina.set($event)" />
+            </div>
+          }
+        </section>
       </div>
     </app-marco-docente>
-  `
+  `,
+  styles: [`
+    .rp-pagina { position: relative; z-index: 1; display: grid; gap: 16px; min-width: 0; }
+
+    /* Barra de filtros en una línea. */
+    .rp-barra { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .rp-caso { position: relative; flex: 0 1 460px; min-width: 0; height: 42px; box-sizing: border-box; display: flex; align-items: center; gap: 10px;
+      padding: 0 12px 0 14px; background: #fff; border: 1px solid #e1e9f6; border-radius: 12px; }
+    .rp-caso:focus-within { border-color: #1f5cf0; box-shadow: 0 0 0 3px rgba(31, 92, 240, .15); }
+    .rp-caso-etiqueta { flex: none; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #8a96b2; }
+    .rp-caso select.rp-caso-select { flex: 1; min-width: 0; width: auto; height: 100%; padding: 0 24px 0 0; margin: 0; border: 0; border-radius: 0;
+      background: transparent; box-shadow: none; outline: none; appearance: none; -webkit-appearance: none; cursor: pointer;
+      font: inherit; font-size: 14px; font-weight: 600; color: var(--dl-tinta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rp-caso-flecha { position: absolute; right: 12px; top: 50%; width: 16px; height: 16px; transform: translateY(-50%); pointer-events: none;
+      fill: none; stroke: #4d5b7c; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .rp-vista { flex: none; display: flex; gap: 2px; padding: 3px; background: #fff; border: 1px solid #e1e9f6; border-radius: 12px; }
+    .rp-vista button { height: 34px; padding: 0 12px; border: 0; border-radius: 9px; background: transparent; color: #4d5b7c; box-shadow: none;
+      font: inherit; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+    .rp-vista button:hover { color: var(--dl-tinta); transform: none; }
+    .rp-vista button.activa { background: #eef4ff; color: #1747c2; }
+    .rp-exportar { position: relative; flex: none; margin-left: auto; }
+    .rp-exportar-boton { height: 42px; display: inline-flex; align-items: center; gap: 8px; padding: 0 14px; background: #fff; border: 1px solid #e1e9f6;
+      border-radius: 12px; color: #1f5cf0; box-shadow: none; font: inherit; font-size: 13.5px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+    .rp-exportar-boton:hover:not(:disabled) { background: #f5f8fe; transform: none; }
+    .rp-exportar-boton:disabled { opacity: .5; cursor: default; }
+    .rp-exportar-boton svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .rp-exportar-boton .rp-exportar-flecha { width: 14px; height: 14px; }
+    .rp-menu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 30; min-width: 150px; padding: 6px; display: grid; background: #fff;
+      border: 1px solid #e3eaf6; border-radius: 12px; box-shadow: 0 12px 28px rgba(15, 27, 61, .12); }
+    .rp-menu button { padding: 9px 12px; border: 0; border-radius: 8px; background: transparent; color: var(--dl-tinta); box-shadow: none; text-align: left;
+      font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+    .rp-menu button:hover, .rp-menu button:focus-visible { background: #eef4ff; color: #1747c2; transform: none; outline: none; }
+    .rp-vista button:focus-visible, .rp-exportar-boton:focus-visible { outline: 3px solid #7aa7ff; outline-offset: 2px; }
+
+    /* Resumen del grupo: 4 tarjetas pequeñas. */
+    .rp-resumen { display: grid; grid-template-columns: .8fr .8fr .8fr 1.6fr; gap: 14px; }
+    .rp-cifra { min-width: 0; padding: 14px 18px; background: #fff; border: 1px solid #e6edf8; border-radius: 16px; box-shadow: 0 1px 2px rgba(16, 24, 40, .03); }
+    .rp-cifra h2 { margin: 0 0 4px; font-size: 12.5px; font-weight: 600; color: #7a86a3; }
+    .rp-cifra p { margin: 0; display: flex; align-items: baseline; gap: 6px; }
+    .rp-cifra strong { font-size: 24px; font-weight: 800; line-height: 1.15; color: var(--dl-tinta); }
+    .rp-cifra p span { font-size: 12.5px; color: #8a96b2; }
+    .rp-barra-niveles { display: flex; gap: 2px; height: 10px; margin: 8px 0 8px; border-radius: 999px; overflow: hidden; background: #eef2f9; }
+    .rp-barra-niveles span { flex: 1 1 0; min-width: 6px; }
+    .rp-leyenda { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: #4d5b7c; }
+    .rp-leyenda li { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+    .rp-leyenda b { color: var(--dl-tinta); font-weight: 800; }
+    [data-nivel="Superior"] { --nivel: #22a55a; } [data-nivel="Alto"] { --nivel: #2a7bff; }
+    [data-nivel="Básico"] { --nivel: #f0a020; } [data-nivel="Bajo"] { --nivel: #e5484d; }
+    .rp-barra-niveles span, .rp-puntaje-barra i { background: var(--nivel, #c9d3e6); }
+    .rp-leyenda i, .rp-nivel i { width: 7px; height: 7px; flex: none; border-radius: 50%; background: var(--nivel, #c9d3e6); }
+
+    /* Tabla de estudiantes. */
+    .rp-panel { min-width: 0; background: #fff; border: 1px solid #e6edf8; border-radius: 18px; box-shadow: 0 1px 2px rgba(16, 24, 40, .03); }
+    .rp-panel-cabeza { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; }
+    .rp-panel-cabeza h2 { margin: 0; font-size: 16px; font-weight: 800; color: var(--dl-tinta); }
+    .rp-panel-cabeza h2 span { font-weight: 500; color: #9aa6c0; }
+    .rp-buscar { display: flex; align-items: center; gap: 8px; width: 240px; max-width: 100%; height: 38px; padding: 0 14px; box-sizing: border-box;
+      border-radius: 999px; background: #f5f8fe; color: #7a86a3; }
+    .rp-buscar:focus-within { box-shadow: 0 0 0 2px rgba(31, 92, 240, .35); }
+    .rp-buscar svg { flex: none; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+    .rp-panel .rp-buscar input[type="search"] { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; border-radius: 0; background: transparent;
+      box-shadow: none; outline: none; font: inherit; font-size: 13px; color: var(--dl-tinta); }
+    .rp-panel .rp-buscar input[type="search"]::placeholder { color: #7a86a3; }
+    .rp-tabla { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 14px; }
+    .rp-tabla th { padding: 10px 18px; text-align: left; font-size: 12px; font-weight: 650; letter-spacing: .05em; text-transform: uppercase; color: #8a96b2;
+      background: #f8fbff; border-top: 1px solid #eef2f9; border-bottom: 1px solid #eef2f9; white-space: nowrap; }
+    .rp-c-estado { width: 15%; } .rp-c-puntaje { width: 22%; } .rp-c-nivel { width: 14%; } .rp-c-consulta { width: 260px; }
+    .rp-tabla th.rp-c-consulta { text-align: right; }
+    .rp-tabla td { height: 62px; padding: 0 18px; box-sizing: border-box; vertical-align: middle; border-bottom: 1px solid #f0f4fa; }
+    .rp-tabla tbody tr:last-child td { border-bottom: 0; }
+    .rp-td-persona > * { vertical-align: middle; }
+    .rp-iniciales { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: #eaf1ff; color: #1747c2;
+      font-size: 12.5px; font-weight: 800; flex: none; margin-right: 12px; }
+    .rp-persona { display: inline-grid; gap: 1px; max-width: calc(100% - 52px); }
+    .rp-persona strong { font-size: 14px; font-weight: 600; color: var(--dl-tinta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rp-persona small { font-size: 12px; color: #8a96b2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rp-estado { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #5b6b8c; white-space: nowrap; }
+    .rp-estado i { width: 7px; height: 7px; border-radius: 50%; flex: none; background: #9fb2d6; }
+    .rp-estado[data-estado="FINALIZADA"] { color: #17683d; } .rp-estado[data-estado="FINALIZADA"] i { background: #22a55a; }
+    .rp-estado[data-estado="EN_CURSO"] { color: #1747c2; } .rp-estado[data-estado="EN_CURSO"] i { background: #2a7bff; }
+    .rp-puntaje { display: flex; align-items: center; gap: 12px; }
+    .rp-puntaje b { min-width: 26px; font-size: 14px; font-weight: 700; color: var(--dl-tinta); }
+    .rp-puntaje-barra { flex: 0 1 120px; height: 6px; border-radius: 999px; background: #eef2f9; overflow: hidden; }
+    .rp-puntaje-barra i { display: block; height: 100%; border-radius: 999px; }
+    .rp-nivel { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--dl-tinta); white-space: nowrap; }
+    .rp-tenue { font-size: 13px; color: #a7b2c8; white-space: nowrap; }
+    .rp-consulta { display: flex; align-items: center; justify-content: flex-end; gap: 4px 10px; }
+    .rp-enlace { font-size: 14px; font-weight: 700; color: #1f5cf0; text-decoration: none; white-space: nowrap; }
+    .rp-enlace:hover { text-decoration: underline; }
+    .rp-enlace:focus-visible { outline: 3px solid #7aa7ff; outline-offset: 2px; border-radius: 4px; }
+    .rp-intento { max-width: 120px; height: 30px; font-size: 12.5px; }
+    .rp-sin-coincidencias td { height: 80px; text-align: center; color: #6b7690; }
+    .rp-vacio { margin: 0; padding: 48px 18px 56px; border-top: 1px solid #eef2f9; text-align: center; font-size: 14px; color: #6b7690; }
+    .rp-pie { padding: 12px 18px; border-top: 1px solid #f0f4fa; }
+
+    @media (max-width: 1100px) {
+      .rp-barra { flex-wrap: wrap; }
+      .rp-caso { flex: 1 1 320px; }
+    }
+    @media (max-width: 767.98px) {
+      .rp-barra { flex-direction: column; align-items: stretch; gap: 10px; }
+      .rp-caso { flex: none; width: 100%; }
+      .rp-vista button { flex: 1; }
+      .rp-exportar { margin-left: 0; }
+      .rp-exportar-boton { width: 100%; justify-content: center; }
+      .rp-menu { left: 0; right: 0; }
+      .rp-resumen { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+      .rp-cifra-niveles { grid-column: 1 / -1; }
+      .rp-panel-cabeza { flex-direction: column; align-items: stretch; padding: 14px; }
+      .rp-buscar { width: 100%; }
+      /* Sin tabla: persona y consulta arriba; estado, puntaje y nivel debajo. */
+      .rp-tabla, .rp-tabla tbody { display: block; }
+      .rp-tabla thead { display: none; }
+      .rp-tabla tr { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 12px 14px; border-top: 1px solid #f0f4fa; }
+      .rp-tabla tr::after { content: ""; order: 3; flex-basis: 100%; height: 0; margin-top: -8px; }
+      .rp-tabla td { height: auto; padding: 0; border: 0; }
+      .rp-tabla td.rp-td-persona { order: 1; flex: 1 1 190px; min-width: 0; display: flex; align-items: center; gap: 12px; }
+      .rp-iniciales { margin-right: 0; }
+      .rp-persona { display: grid; min-width: 0; max-width: none; }
+      .rp-td-consulta { order: 2; flex: none; max-width: 100%; margin-left: auto; }
+      .rp-td-estado { order: 4; padding-left: 48px !important; }
+      .rp-td-puntaje { order: 5; }
+      .rp-puntaje-barra { flex-basis: 60px; width: 60px; }
+      .rp-td-nivel { order: 6; }
+      .rp-tabla tr.rp-sin-coincidencias { display: block; text-align: center; }
+      .rp-pie { padding: 12px 14px; }
+    }
+  `]
 })
 export class SeguimientoComponent {
   enlaces = enlaces;
@@ -2507,6 +2839,28 @@ export class SeguimientoComponent {
     return (notas.reduce((a, b) => a + b, 0) / notas.length).toFixed(1);
   }
   conteo(nivel: string) { return this.filas().filter((f) => this.nivel(f.nota) === nivel).length; }
+  readonly niveles = ['Superior', 'Alto', 'Básico', 'Bajo'];
+  iniciales(nombre: string) {
+    const partes = nombre.trim().split(/\s+/).filter(Boolean);
+    if (!partes.length) return '?';
+    return ((partes[0][0] ?? '') + (partes.length > 1 ? partes[partes.length - 1][0] : '')).toUpperCase();
+  }
+  /** Menú "Exportar": CSV, PDF y Excel. */
+  exportarAbierto = signal(false);
+  alternarExportar() {
+    const abrir = !this.exportarAbierto();
+    this.exportarAbierto.set(abrir);
+    if (abrir) setTimeout(() => document.querySelector<HTMLElement>('.rp-menu [role="menuitem"]')?.focus());
+  }
+  cerrarExportar() {
+    if (!this.exportarAbierto()) return;
+    this.exportarAbierto.set(false);
+    document.getElementById('rp-exportar')?.focus();
+  }
+  exportar(formato: 'csv' | 'pdf' | 'xlsx') {
+    this.exportarAbierto.set(false);
+    this.descargar(formato);
+  }
   descargar(formato: 'csv' | 'pdf' | 'xlsx') {
     this.bajar(`/api/docente/sesiones/${this.sesionId}/reporte`, `reporte-${this.sesionId}.${formato}`, { formato });
   }

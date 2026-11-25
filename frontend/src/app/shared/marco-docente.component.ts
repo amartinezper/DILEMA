@@ -12,7 +12,7 @@ import { IconoComponent, NombreIcono } from './icono.component';
   imports: [RouterLink, RouterLinkActive, MarcoDilemaComponent, IconoComponent],
   styles: [`:host { display: block; width: 100%; height: 100%; }`],
   template: `
-    <app-marco-dilema [inicio]="inicio()" [descripcion]="descripcion()" [compacto]="compacto()" [lemaIcono]="true"
+    <app-marco-dilema [inicio]="inicio()" [descripcion]="descripcion()" [compacto]="compacto()" [saludoChico]="!esAdmin()" [lemaIcono]="true"
       [lemaTexto]="esAdmin() ? 'Nuevo docente' : 'Crear caso'"
       [lemaEnlace]="esAdmin() ? '/admin/usuarios/nuevo' : '/docente/casos/nuevo'">
       <ng-container ngProjectAs="[menu]">

@@ -2167,6 +2167,16 @@ body:has(.modal-vista) .inicio-menu-btn { display: none !important; }
 .marco-dilema.dl-compacto app-encabezado-dilema .lienzo { transform: scale(.8); transform-origin: top right; }
 .inicio-est.marco-dilema.dl-compacto .inicio-est-cuerpo { gap: 20px; }
 
+/* Saludo del docente: letra más pequeña; la altura del encabezado no cambia. */
+.inicio-est.marco-dilema.dl-saludo-chico .inicio-saludo h1 { font-size: 24px; font-weight: 800; }
+.inicio-est.marco-dilema.dl-saludo-chico .marco-descripcion { font-size: 14px; }
+@media (max-width: 767.98px) {
+  .inicio-est.marco-dilema.dl-saludo-chico .inicio-saludo h1 { font-size: 20px; }
+  .inicio-est.marco-dilema.dl-saludo-chico .marco-descripcion { font-size: 13px; }
+}
+/* Panel lateral de Programar: su velo debe quedar sobre el menú y su botón (z-index 70–90). */
+.inicio-est.marco-dilema .inicio-est-cuerpo:has(.pg-velo) { z-index: 100; }
+
 /* Pantallas medianas: el menú pasa al desplegable que ya existe. */
 @media (max-width: 1100px) {
   .inicio-est.marco-dilema { grid-template-columns: 1fr; }
