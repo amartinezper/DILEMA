@@ -16,7 +16,7 @@ import { IconoComponent } from './icono.component';
   imports: [RouterLink, EncabezadoDilemaComponent, IconoComponent],
   styles: [`:host { display: block; width: 100%; height: 100%; }`],
   template: `
-    <div class="inicio-est marco-claro marco-dilema" [class.menu-abierto]="menuAbierto()">
+    <div class="inicio-est marco-claro marco-dilema" [class.menu-abierto]="menuAbierto()" [class.dl-compacto]="compacto()">
       <button class="inicio-menu-btn" type="button" (click)="alternarMenu()" [attr.aria-expanded]="menuAbierto()" aria-label="Menú">
         <app-icono nombre="menu" [tamano]="22" />
       </button>
@@ -84,6 +84,8 @@ export class MarcoDilemaComponent {
   inicio = input('/');
   /** Texto gris bajo el saludo: qué se hace en la pantalla actual. */
   descripcion = input('');
+  /** Encabezado más bajo (ola y cerebro más pequeños), para pantallas de listas como Mis casos. */
+  compacto = input(false);
   /** Botón de la tarjeta del cohete: texto, destino y si lleva "+" (crear) o "›" (ir). */
   lemaTexto = input.required<string>();
   lemaEnlace = input.required<string>();

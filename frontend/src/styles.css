@@ -2159,6 +2159,12 @@ html.novela-agrandada .inicio-menu-btn { display: none !important; }
 /* Editor de caso: solo color; la pestaña activa en azul con degradado. */
 .inicio-est.marco-dilema .pasos button.activa { background: var(--dl-degradado); border-color: var(--dl-azul-fuerte); color: #fff; }
 
+/* Encabezado compacto (Mis casos): ola y cerebro más pequeños y el saludo más bajo. */
+.inicio-est.marco-dilema.dl-compacto .inicio-cuerpo .inicio-hero { min-height: 124px; }
+.marco-dilema.dl-compacto app-encabezado-dilema { height: 152px; }
+.marco-dilema.dl-compacto app-encabezado-dilema .lienzo { transform: scale(.8); transform-origin: top right; }
+.inicio-est.marco-dilema.dl-compacto .inicio-est-cuerpo { gap: 20px; }
+
 /* Pantallas medianas: el menú pasa al desplegable que ya existe. */
 @media (max-width: 1100px) {
   .inicio-est.marco-dilema { grid-template-columns: 1fr; }
@@ -2187,4 +2193,7 @@ html.novela-agrandada .inicio-menu-btn { display: none !important; }
   .inicio-est.marco-dilema .letrero-escena { font-size: 13.5px; left: 10px; bottom: 10px; max-width: calc(100% - 20px); }
   .inicio-est.marco-dilema .btn-resolver { min-height: 48px; font-size: 16px; }
   .inicio-est.marco-dilema .inicio-progreso { padding: 18px 16px; }
+  .marco-dilema.dl-compacto app-encabezado-dilema { height: 120px; }
+  .marco-dilema.dl-compacto app-encabezado-dilema .lienzo { transform: scale(.62); }
+  .inicio-est.marco-dilema.dl-compacto .inicio-cuerpo .inicio-hero { min-height: 0; padding-top: 100px; }
 }

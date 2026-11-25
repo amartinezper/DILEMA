@@ -1,0 +1,50 @@
+{
+  "nota": "Animaciones de Mixamo (Adobe), FBX sin piel a 30 fps. Las usa la escena de la novela (src/app/shared/novela/gestos.ts y animaciones-vrm.ts). papel: habla, escucha o ambos. bucle: solo los reposos se repiten; los gestos se hacen una vez por línea (quien habla, hasta 2 veces mientras se escribe el texto) y luego el personaje pasa al reposo. Los reposos se suavizan por código: cadera y piernas quietas y el resto al 35 %, a 0,8x. amplio: brazos muy abiertos, no se usa junto al borde. pendiente: todavía no se usa. Si una categoría no tiene animación (tristeza), el personaje usa el reposo y la cara muestra la emoción. Las descartadas están en descartadas/ y no se publican.",
+  "animaciones": [
+    { "id": "reposo", "archivo": "reposo.fbx", "categoria": "reposo", "papel": "ambos", "bucle": true },
+    { "id": "reposo2", "archivo": "Idle.fbx", "categoria": "reposo", "papel": "ambos", "bucle": true },
+
+    { "id": "hablar", "archivo": "Talking.fbx", "categoria": "hablar", "papel": "habla", "bucle": false },
+    { "id": "hablar2", "archivo": "Talking (1).fbx", "categoria": "hablar", "papel": "habla", "bucle": false },
+    { "id": "hablar3", "archivo": "Talking (2).fbx", "categoria": "hablar", "papel": "habla", "bucle": false },
+    { "id": "hablar4", "archivo": "Hands Forward Gesture.fbx", "categoria": "hablar", "papel": "habla", "bucle": false },
+
+    { "id": "asentir", "archivo": "Head Nod Yes.fbx", "categoria": "escuchar", "papel": "escucha", "bucle": false },
+    { "id": "asentir2", "archivo": "Lengthy Head Nod.fbx", "categoria": "escuchar", "papel": "escucha", "bucle": false },
+    { "id": "asentir3", "archivo": "Acknowledging.fbx", "categoria": "escuchar", "papel": "escucha", "bucle": false },
+
+    { "id": "llanto", "archivo": "Crying.fbx", "categoria": "llanto", "papel": "ambos", "bucle": false },
+
+    { "id": "rabia", "archivo": "Angry Gesture.fbx", "categoria": "rabia", "papel": "habla", "bucle": false },
+    { "id": "discutir", "archivo": "Standing Arguing.fbx", "categoria": "rabia", "papel": "habla", "bucle": false, "amplio": true },
+    { "id": "gritar", "archivo": "Yelling.fbx", "categoria": "rabia", "papel": "habla", "bucle": false, "amplio": true },
+    { "id": "molestia", "archivo": "Annoyed Head Shake.fbx", "categoria": "rabia", "papel": "escucha", "bucle": false },
+    { "id": "negar", "archivo": "Shaking Head No.fbx", "categoria": "rabia", "papel": "escucha", "bucle": false },
+    { "id": "enojo", "archivo": "Angry.fbx", "categoria": "rabia", "papel": "escucha", "bucle": false },
+
+    { "id": "nervios", "archivo": "Nervously Look Around.fbx", "categoria": "nervios", "papel": "ambos", "bucle": false },
+
+    { "id": "pensar", "archivo": "Thinking.fbx", "categoria": "pensar", "papel": "ambos", "bucle": false },
+    { "id": "pensar2", "archivo": "Thoughtful Head Shake.fbx", "categoria": "pensar", "papel": "ambos", "bucle": false },
+
+    { "id": "alivio", "archivo": "Relieved Sigh.fbx", "categoria": "alivio", "papel": "ambos", "bucle": false },
+
+    { "id": "saludo", "archivo": "Standing Greeting.fbx", "categoria": "saludo", "papel": "ambos", "bucle": false },
+    { "id": "saludo2", "archivo": "Waving.fbx", "categoria": "saludo", "papel": "ambos", "bucle": false },
+
+    { "id": "sentado", "archivo": "Sitting Idle.fbx", "categoria": "sentado", "papel": "ambos", "bucle": false, "pendiente": true },
+    { "id": "sentado_hablar", "archivo": "Sitting Talking.fbx", "categoria": "sentado", "papel": "habla", "bucle": false, "pendiente": true }
+  ],
+  "descartadas": [
+    { "archivo": "descartadas/Weight Shift.fbx", "motivo": "balanceo exagerado" },
+    { "archivo": "descartadas/Talking On Phone.fbx", "motivo": "habla por teléfono (mano en la oreja), camina y gira 144°" },
+    { "archivo": "descartadas/Look Around.fbx", "motivo": "gira el cuerpo de lado (56°) con los brazos abiertos" },
+    { "archivo": "descartadas/Terrified.fbx", "motivo": "se agacha y se cubre: exagerado para casos sensibles" },
+    { "archivo": "descartadas/Defeated.fbx", "motivo": "echa la cabeza hacia atrás de golpe: exagerado (la tristeza usa el reposo con la cara triste)" },
+    { "archivo": "descartadas/Sad Idle.fbx", "motivo": "levanta una pierna y dobla mucho la cabeza: se ve raro" },
+    { "archivo": "descartadas/Disappointed.fbx", "motivo": "lanza un brazo hacia el lado: exagerado y se sale del cuadro" },
+    { "archivo": "descartadas/Pointing.fbx", "motivo": "señala con el dedo: se lee como acusación" },
+    { "archivo": "descartadas/Bored.fbx", "motivo": "aburrimiento: falta de respeto en un caso sensible" },
+    { "archivo": "descartadas/Shrugging.fbx", "motivo": "encoger los hombros se lee como indiferencia" }
+  ]
+}

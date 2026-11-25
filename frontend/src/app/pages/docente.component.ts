@@ -10,8 +10,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { AuthService } from '../core/auth.service';
 import { BusquedaService } from '../core/busqueda.service';
-import { BloqueNovela, CasoNovela, EscenaNovelaComponent, PersonajeNovela } from '../shared/novela/escena-novela.component';
-import { Asignacion } from '../shared/novela/elenco.service';
+import type { BloqueNovela, CasoNovela, PersonajeNovela } from '../shared/novela/escena-novela.component';
+import { EscenaNovelaComponent } from '../shared/novela/escena-novela.component';
+import type { Asignacion } from '../shared/novela/elenco';
 import { FONDOS_MANUALES } from '../shared/novela/escena.service';
 import { NovelaReproductorComponent } from '../shared/novela/novela-reproductor.component';
 import { ResultadosNovela, calcularResultados } from '../shared/novela/resultados';
@@ -330,39 +331,46 @@ const ESTILOS_GP = `
 type FiltroCaso = 'TODOS' | 'BORRADOR' | 'PUBLICADO' | 'ARCHIVADO';
 type OrdenCaso = 'recientes' | 'nombre' | 'estado';
 const ETIQUETA_CASO: Record<string, string> = { BORRADOR: 'Borrador', PUBLICADO: 'Publicado', ARCHIVADO: 'Archivado' };
+/** Grupos de "Todos" en Mis casos: título, nota y plural para "Ver todos los …". */
+const GRUPOS_CASO: { estado: FiltroCaso; titulo: string; nota: string; plural: string }[] = [
+  { estado: 'PUBLICADO', titulo: 'Publicados', nota: 'los ven los estudiantes', plural: 'publicados' },
+  { estado: 'BORRADOR', titulo: 'Borradores', nota: 'solo los ves tú', plural: 'borradores' },
+  { estado: 'ARCHIVADO', titulo: 'Archivados', nota: 'no se pueden programar', plural: 'archivados' }
+];
 
 function leerVistaCasos(): 'tarjetas' | 'lista' {
-  try { return sessionStorage.getItem('dilema-vista-casos') === 'lista' ? 'lista' : 'tarjetas'; } catch { return 'tarjetas'; }
+  try { return sessionStorage.getItem('dilema-vista-casos') === 'tarjetas' ? 'tarjetas' : 'lista'; } catch { return 'lista'; }
 }
 
 @Component({
   selector: 'app-casos',
-  imports: [IconoComponent, MarcoDocenteComponent, RouterLink, FormsModule, PaginacionGpComponent, NgTemplateOutlet],
+  imports: [IconoComponent, MarcoDocenteComponent, RouterLink, FormsModule, NgTemplateOutlet],
   host: { '(document:click)': 'cerrarMenu()', '(document:keydown.escape)': 'cerrarMenu(true)' },
   template: `
-    <app-marco-docente [enlaces]="enlaces" descripcion="Diseña, publica y reabre el editor de cada caso.">
+    <app-marco-docente [enlaces]="enlaces" [compacto]="true" descripcion="Diseña, publica y reabre el editor de cada caso.">
       @if (!puedeEditar()) {
         <p class="gp-error">La administración debe asignarte el permiso Editar para guardar o publicar casos.</p>
       }
       @if (error()) { <p class="gp-error" role="alert">{{ error() }}</p> }
       @if (ok()) { <p class="gp-ok" role="status">{{ ok() }}</p> }
 
-      <div class="adm-herramientas mc-herramientas">
-        <div class="adm-filtros" role="group" aria-label="Filtrar por estado">
-          @for (f of filtros; track f.valor) {
-            <button type="button" class="adm-filtro" [class.activo]="filtroEstado() === f.valor" [attr.aria-pressed]="filtroEstado() === f.valor"
-              (click)="filtrar(f.valor)">{{ f.texto }} <span>({{ cuenta(f.valor) }})</span></button>
-          }
-        </div>
-        <div class="adm-barra">
-          <label class="adm-buscar">
-            <app-icono nombre="buscar" [tamano]="20" />
-            <span class="solo-lector">Buscar caso</span>
-            <input type="search" placeholder="Buscar caso" [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event); pagina.set(1)" />
+      <!-- Herramientas: buscador a la izquierda; estado, orden, vista y "+ Crear caso" a la derecha. -->
+      <div class="mc-herramientas">
+        <label class="adm-buscar mc-buscar">
+          <app-icono nombre="buscar" [tamano]="20" />
+          <span class="solo-lector">Buscar caso por nombre</span>
+          <input type="search" placeholder="Buscar caso por nombre" [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event); reiniciarLimites()" />
+        </label>
+        <div class="mc-derecha">
+          <label class="adm-orden">
+            <span class="solo-lector">Estado</span>
+            <select [ngModel]="filtroEstado()" (ngModelChange)="filtrar($event)">
+              @for (f of filtros; track f.valor) { <option [value]="f.valor">{{ f.texto }}</option> }
+            </select>
           </label>
           <label class="adm-orden">
             <span class="solo-lector">Ordenar</span>
-            <select [ngModel]="orden()" (ngModelChange)="orden.set($event); pagina.set(1)">
+            <select [ngModel]="orden()" (ngModelChange)="orden.set($event); reiniciarLimites()">
               <option value="recientes">Más recientes</option>
               <option value="nombre">Nombre A–Z</option>
               <option value="estado">Estado</option>
@@ -371,14 +379,14 @@ function leerVistaCasos(): 'tarjetas' | 'lista' {
           <div class="mc-vistas" role="group" aria-label="Vista">
             <button type="button" [class.activa]="vista() === 'tarjetas'" [attr.aria-pressed]="vista() === 'tarjetas'" aria-label="Ver como tarjetas"
               title="Tarjetas" (click)="cambiarVista('tarjetas')">
-              <app-icono nombre="cuadricula" [tamano]="18" />
+              <app-icono nombre="cuadricula" [tamano]="20" />
             </button>
             <button type="button" [class.activa]="vista() === 'lista'" [attr.aria-pressed]="vista() === 'lista'" aria-label="Ver como lista"
               title="Lista" (click)="cambiarVista('lista')">
-              <app-icono nombre="lista" [tamano]="18" />
+              <app-icono nombre="lista" [tamano]="20" />
             </button>
           </div>
-          <a class="adm-boton" routerLink="/docente/casos/nuevo"><span aria-hidden="true">+</span> Crear caso</a>
+          <a class="adm-boton mc-crear" routerLink="/docente/casos/nuevo"><app-icono nombre="mas" [tamano]="20" /> Crear caso</a>
         </div>
       </div>
 
@@ -402,100 +410,160 @@ function leerVistaCasos(): 'tarjetas' | 'lista' {
         </div>
       </ng-template>
 
-      @if (!paginaCasos().length) {
-        <p class="mc-vacio">{{ cargando() ? 'Cargando casos…' : busqueda().trim() || filtro.texto().trim() ? 'Ningún caso coincide con la búsqueda.' : filtroEstado() === 'TODOS' ? 'Todavía no tienes casos.' : 'No hay casos en este estado.' }}</p>
-      } @else if (vista() === 'tarjetas') {
-        <ul class="mc-rejilla" aria-label="Casos">
-          @for (caso of paginaCasos(); track caso.id) {
+      <!-- Filas de un grupo (vista de lista, la de por defecto). Clic en la fila: abre el editor; el "⋯" no. -->
+      <ng-template #filas let-lista>
+        <ul class="mc-filas">
+          @for (caso of lista; track caso.id) {
+            <li class="mc-fila" [attr.data-estado]="caso.estado" (click)="abrir(caso)">
+              <span class="mc-doc" [attr.data-estado]="caso.estado"><app-icono nombre="documento" [tamano]="20" /></span>
+              <div class="mc-fila-texto">
+                <strong [title]="caso.nombre">{{ caso.nombre }}</strong>
+                <small>{{ caso.bloques }} {{ caso.bloques === 1 ? 'escenario' : 'escenarios' }} · {{ caso.preguntas }} {{ caso.preguntas === 1 ? 'pregunta' : 'preguntas' }}<span class="mc-dur-movil"> · {{ caso.tiempoEstimadoMin }} min</span></small>
+              </div>
+              <span class="mc-dur"><app-icono nombre="reloj" [tamano]="16" /> {{ caso.tiempoEstimadoMin }} min</span>
+              <a class="mc-editar" [routerLink]="['/docente/casos', caso.id]" (click)="$event.stopPropagation()" [attr.aria-label]="'Editar ' + caso.nombre">Editar</a>
+              <ng-container *ngTemplateOutlet="menuCaso; context: { $implicit: caso }" />
+            </li>
+          }
+        </ul>
+      </ng-template>
+
+      <!-- Tarjetas de un grupo (opción del botón de vista). -->
+      <ng-template #tarjetas let-lista>
+        <ul class="mc-rejilla">
+          @for (caso of lista; track caso.id) {
             <li class="mc-caso" [class.archivado]="caso.estado === 'ARCHIVADO'">
               <div class="mc-cabeza">
-                <span class="mc-estado" [attr.data-estado]="caso.estado">{{ etiqueta(caso.estado) }}</span>
-                <ng-container *ngTemplateOutlet="menuCaso; context: { $implicit: caso }" />
+                <h3 [title]="caso.nombre">{{ caso.nombre }}</h3>
+                <div class="mc-cabeza-der"><ng-container *ngTemplateOutlet="menuCaso; context: { $implicit: caso }" /></div>
               </div>
-              <h3 [title]="caso.nombre">{{ caso.nombre }}</h3>
-              <p class="mc-meta">
-                <span><app-icono nombre="imagen" [tamano]="16" />{{ caso.bloques }} {{ caso.bloques === 1 ? 'escenario' : 'escenarios' }}</span>
-                <span><app-icono nombre="pregunta" [tamano]="16" />{{ caso.preguntas }} {{ caso.preguntas === 1 ? 'pregunta' : 'preguntas' }}</span>
-                <span><app-icono nombre="reloj" [tamano]="16" />{{ caso.tiempoEstimadoMin }} min</span>
-              </p>
               <div class="mc-pie">
-                <a class="mc-abrir" [routerLink]="['/docente/casos', caso.id]" [attr.aria-label]="'Abrir editor de ' + caso.nombre">Abrir editor</a>
+                <p class="mc-meta">
+                  <span [title]="caso.bloques + (caso.bloques === 1 ? ' escenario' : ' escenarios')"><app-icono nombre="imagen" [tamano]="16" />{{ caso.bloques }}<span class="solo-lector">{{ caso.bloques === 1 ? ' escenario' : ' escenarios' }}</span></span>
+                  <span [title]="caso.preguntas + (caso.preguntas === 1 ? ' pregunta' : ' preguntas')"><app-icono nombre="pregunta" [tamano]="16" />{{ caso.preguntas }}<span class="solo-lector">{{ caso.preguntas === 1 ? ' pregunta' : ' preguntas' }}</span></span>
+                  <span><app-icono nombre="reloj" [tamano]="16" />{{ caso.tiempoEstimadoMin }} min</span>
+                </p>
+                <a class="mc-abrir" [routerLink]="['/docente/casos', caso.id]" [attr.aria-label]="'Abrir editor de ' + caso.nombre">Abrir editor <app-icono nombre="flecha" [tamano]="16" /></a>
               </div>
             </li>
           }
         </ul>
+      </ng-template>
+
+      <!-- Un grupo: encabezado, sus casos (10 a la vez) y "Ver más (N)". -->
+      <ng-template #grupo let-g>
+        <section class="mc-grupo" [attr.aria-label]="g.titulo + ': ' + g.casos.length">
+          <h2 class="mc-grupo-fila"><span class="mc-grupo-punto" [attr.data-estado]="g.estado" aria-hidden="true"></span>
+            {{ g.titulo }} · {{ g.casos.length }} <span class="mc-grupo-nota">· {{ g.nota }}</span></h2>
+          <ng-container *ngTemplateOutlet="vista() === 'lista' ? filas : tarjetas; context: { $implicit: g.casos.slice(0, limite(g.estado)) }" />
+          @if (g.casos.length > limite(g.estado)) {
+            <button type="button" class="mc-ver-mas" (click)="verMas(g.estado)">Ver más ({{ g.casos.length - limite(g.estado) }})</button>
+          }
+        </section>
+      </ng-template>
+
+      @if (!grupos().length && !archivados().length) {
+        <p class="mc-vacio">{{ cargando() ? 'Cargando casos…' : busqueda().trim() || filtro.texto().trim() ? 'Ningún caso coincide con la búsqueda.' : filtroEstado() === 'TODOS' ? 'Todavía no tienes casos.' : 'No hay casos en este estado.' }}</p>
       } @else {
-        <article class="adm-tarjeta adm-tabla-tarjeta">
-          <div class="adm-tabla-caja">
-            <table class="adm-tabla">
-              <thead>
-                <tr><th scope="col">Caso</th><th scope="col">Estado</th><th scope="col">Duración</th><th scope="col" class="derecha">Acciones</th></tr>
-              </thead>
-              <tbody>
-                @for (caso of paginaCasos(); track caso.id) {
-                  <tr [class.mc-fila-archivada]="caso.estado === 'ARCHIVADO'">
-                    <td><div class="adm-celda-doble"><strong>{{ caso.nombre }}</strong>
-                      <small>{{ caso.bloques }} {{ caso.bloques === 1 ? 'escenario' : 'escenarios' }} · {{ caso.preguntas }} {{ caso.preguntas === 1 ? 'pregunta' : 'preguntas' }}</small></div></td>
-                    <td><span class="mc-estado" [attr.data-estado]="caso.estado">{{ etiqueta(caso.estado) }}</span></td>
-                    <td class="gris">{{ caso.tiempoEstimadoMin }} min</td>
-                    <td class="derecha">
-                      <div class="mc-acciones">
-                        <a class="mc-abrir" [routerLink]="['/docente/casos', caso.id]" [attr.aria-label]="'Abrir editor de ' + caso.nombre">Abrir editor</a>
-                        <ng-container *ngTemplateOutlet="menuCaso; context: { $implicit: caso }" />
-                      </div>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        </article>
+        <!-- Un solo panel blanco con los grupos; los archivados, plegados al final. -->
+        <div class="mc-panel" [class.mc-panel-tarjetas]="vista() === 'tarjetas'">
+          @for (g of grupos(); track g.estado) {
+            <ng-container *ngTemplateOutlet="grupo; context: { $implicit: g }" />
+          }
+          @if (archivados().length) {
+            @if (mostrarArchivados()) {
+              <ng-container *ngTemplateOutlet="grupo; context: { $implicit: grupoArchivados() }" />
+            }
+            <button type="button" class="mc-franja" [attr.aria-expanded]="mostrarArchivados()" (click)="mostrarArchivados.set(!mostrarArchivados())">
+              {{ mostrarArchivados() ? 'Ocultar archivados' : 'Ver archivados' }} ({{ archivados().length }})
+              <app-icono class="mc-franja-flecha" nombre="flecha" [tamano]="18" />
+            </button>
+          }
+        </div>
       }
-      <app-paginacion-gp [total]="filtrados().length" [pagina]="pagina()" [porPagina]="porPagina()" que="casos" prefijo="Mostrando "
-        (cambiar)="pagina.set($event)" />
     </app-marco-docente>
   `,
   styles: [ESTILOS_GP + `
-    .mc-herramientas { flex-wrap: wrap; row-gap: 10px; }
-    .mc-herramientas .adm-buscar { width: clamp(170px, 15vw, 240px); }
-    .mc-vistas { display: inline-flex; gap: 2px; padding: 3px; border-radius: 12px; background: #e8edf6; }
-    .mc-vistas button { width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 9px;
+    /* Herramientas: una sola fila (en celular puede pasar a dos). */
+    .mc-herramientas { display: flex; align-items: center; justify-content: space-between; gap: 12px 16px; flex-wrap: wrap; }
+    .mc-herramientas .mc-buscar { flex: 1 1 280px; max-width: 400px; width: auto; height: 48px; padding: 0 18px; gap: 10px; }
+    .mc-herramientas .mc-buscar input { font-size: 15px; }
+    .mc-derecha { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; flex-wrap: wrap; }
+    .mc-derecha .adm-orden select { height: 48px; font-size: 15px; padding-left: 20px; }
+    .mc-crear { height: 48px; padding: 0 22px; font-size: 15px; }
+    .mc-vistas { display: inline-flex; gap: 2px; padding: 4px; border-radius: 14px; background: #e3ebf9; }
+    .mc-vistas button { width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 10px;
       background: transparent; color: #5b6782; cursor: pointer; }
-    .mc-vistas button.activa { background: #fff; color: var(--dl-tinta); box-shadow: 0 1px 2px rgba(16, 24, 40, .08); }
-    .mc-vistas svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
+    .mc-vistas button.activa { background: #fff; color: var(--dl-tinta); box-shadow: 0 1px 3px rgba(16, 24, 40, .1); }
     .mc-vistas button:focus-visible { outline: 3px solid #7aa7ff; outline-offset: 1px; }
 
-    .mc-rejilla { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
-    .mc-caso { display: flex; flex-direction: column; gap: 12px; padding: 16px 20px 18px;
-      border: 1px solid #e6ecf6; border-radius: 16px; background: #fff; box-shadow: 0 1px 2px rgba(16, 24, 40, .03); }
-    .mc-cabeza { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 34px; }
-    .mc-estado { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 600; white-space: nowrap; color: #6b7489; }
-    .mc-estado::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-    .mc-estado[data-estado="PUBLICADO"] { color: #16803c; }
-    .mc-estado[data-estado="BORRADOR"] { color: var(--dl-azul); }
-    .mc-estado[data-estado="ARCHIVADO"] { color: #6b7489; }
-    .mc-caso h3 { margin: 0; height: 2.6em; font-size: 16px; font-weight: 700; line-height: 1.3; color: var(--dl-tinta);
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .mc-meta { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-size: 13px; color: #5b6782; }
-    .mc-meta span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
-    .mc-meta svg { flex: none; width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
-    .mc-pie { margin-top: auto; padding-top: 14px; border-top: 1px solid #eef2f8; }
-    .mc-abrir { min-height: 36px; display: inline-flex; align-items: center; padding: 0 14px; border-radius: 10px;
-      background: var(--dl-azul-claro); color: var(--dl-azul); font-size: 13.5px; font-weight: 700; text-decoration: none; white-space: nowrap; }
-    .mc-abrir:hover { background: #e1ebff; }
-    .mc-abrir:focus-visible, .mc-mas:focus-visible, .mc-menu a:focus-visible { outline: 3px solid #7aa7ff; outline-offset: 2px; }
-    .mc-caso.archivado { background: #fbfcfe; }
-    .mc-caso.archivado h3 { color: #6b7489; }
-    .mc-fila-archivada strong { color: #6b7489; }
+    /* Un solo panel blanco; queda por encima de las ondas del fondo. */
+    .mc-panel { position: relative; z-index: 1; background: #fff; border: 1px solid #e3eaf6; border-radius: 22px; overflow: hidden;
+      box-shadow: 0 10px 30px rgba(30, 108, 245, .06); }
+    .mc-grupo + .mc-grupo { border-top: 1px solid #e3eaf6; }
+    .mc-grupo-fila { margin: 0; display: flex; align-items: center; gap: 8px; padding: 14px 24px; background: #fafcff;
+      border-bottom: 1px solid #edf2fa; font-size: 15px; font-weight: 700; color: #1f2f50; }
+    .mc-grupo-nota { font-weight: 500; color: #6b7894; }
+    .mc-grupo-punto { width: 9px; height: 9px; border-radius: 50%; flex: none; display: inline-block; margin-right: 6px; background: #9aa4b8; }
+    .mc-grupo-punto[data-estado="PUBLICADO"] { background: #16a34a; }
+    .mc-grupo-punto[data-estado="BORRADOR"] { background: var(--dl-azul); }
 
-    .mc-acciones { display: inline-flex; align-items: center; gap: 6px; }
+    /* Filas: ícono, título en una línea con su detalle, duración, "Editar" y "⋯". */
+    .mc-filas { list-style: none; margin: 0; padding: 0; }
+    .mc-fila { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto auto; align-items: center; gap: 16px;
+      padding: 16px 24px; cursor: pointer; transition: background .12s ease; }
+    .mc-fila + .mc-fila { border-top: 1px solid #edf2fa; }
+    .mc-fila:hover { background: #f3f7ff; }
+    .mc-doc { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: var(--dl-azul-claro); color: var(--dl-azul); }
+    .mc-doc[data-estado="PUBLICADO"] { background: #e3f6ea; color: #16803c; }
+    .mc-doc[data-estado="ARCHIVADO"] { background: #eef1f6; color: #8a94a8; }
+    .mc-fila-texto { display: grid; gap: 3px; min-width: 0; }
+    .mc-fila-texto strong { font-size: 16.5px; font-weight: 700; color: var(--dl-tinta); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mc-fila-texto small { font-size: 14px; color: #5b6782; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mc-dur-movil { display: none; }
+    .mc-dur { display: inline-flex; align-items: center; gap: 6px; min-width: 84px; font-size: 14.5px; color: #5b6782; white-space: nowrap; }
+    .mc-editar { padding: 6px 12px; border-radius: 9px; color: var(--dl-azul); font-size: 15px; font-weight: 700; text-decoration: underline;
+      text-underline-offset: 3px; white-space: nowrap; }
+    .mc-fila:hover .mc-editar, .mc-editar:hover { background: var(--dl-azul-claro); }
+    .mc-fila[data-estado="ARCHIVADO"] .mc-fila-texto strong, .mc-fila[data-estado="ARCHIVADO"] .mc-fila-texto small,
+    .mc-fila[data-estado="ARCHIVADO"] .mc-dur { color: #8a94a8; }
+    .mc-fila[data-estado="ARCHIVADO"] .mc-editar { color: #6b7894; }
+
+    .mc-ver-mas { width: 100%; padding: 12px; border: 0; border-top: 1px solid #edf2fa; background: #fff; color: var(--dl-azul);
+      font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; }
+    .mc-ver-mas:hover { background: #f3f7ff; transform: none; }
+    .mc-franja { width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 16px; border: 0;
+      border-top: 1px solid #e3eaf6; background: #fafcff; color: #33415c; font: inherit; font-size: 15.5px; font-weight: 600; cursor: pointer; }
+    .mc-franja:hover { background: #f3f7ff; transform: none; }
+    .mc-franja-flecha { transition: transform .15s ease; }
+    .mc-franja[aria-expanded="true"] .mc-franja-flecha { transform: rotate(-90deg); }
+    .mc-editar:focus-visible, .mc-mas:focus-visible, .mc-menu a:focus-visible, .mc-ver-mas:focus-visible, .mc-franja:focus-visible,
+    .mc-abrir:focus-visible { outline: 3px solid #7aa7ff; outline-offset: -3px; border-radius: 8px; }
+
+    /* Vista de tarjetas (opción): las tarjetas van dentro del panel, 3 por fila. */
+    .mc-panel-tarjetas .mc-grupo-fila { border-bottom: 0; }
+    .mc-rejilla { list-style: none; margin: 0; padding: 4px 24px 20px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; background: #fafcff; }
+    .mc-caso { display: flex; flex-direction: column; gap: 16px; padding: 18px 20px 16px; border: 1px solid #e6ecf6; border-radius: 16px;
+      background: #fff; transition: border-color .15s ease, box-shadow .15s ease; }
+    .mc-caso:hover { border-color: #b7cdf7; box-shadow: 0 10px 26px rgba(30, 108, 245, .12); }
+    .mc-cabeza { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .mc-caso h3 { margin: 0; min-width: 0; height: 2.6em; font-size: 16.5px; font-weight: 700; line-height: 1.3; color: var(--dl-tinta);
+      display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .mc-cabeza-der { flex: none; margin: -6px -8px 0 0; }
+    .mc-pie { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .mc-meta { margin: 0; display: flex; align-items: center; gap: 14px; font-size: 14px; color: #5b6782; white-space: nowrap; }
+    .mc-meta > span { display: inline-flex; align-items: center; gap: 6px; }
+    .mc-abrir { flex: none; display: inline-flex; align-items: center; gap: 2px; color: var(--dl-azul); font-size: 14.5px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+    .mc-abrir:hover { text-decoration: underline; }
+    .mc-caso.archivado { background: #f7f9fc; }
+    .mc-caso.archivado h3, .mc-caso.archivado .mc-meta { color: #8a94a8; }
+
     .mc-menu-ancla { position: relative; }
-    .mc-mas { width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent;
-      color: #33415c; cursor: pointer; }
-    .mc-mas svg { width: 17px; height: 17px; fill: currentColor; }
-    .mc-mas:hover, .mc-mas[aria-expanded="true"] { background: #eef2f9; }
-    /* Fijo a la ventana: no lo recorta la tabla que se desplaza de lado. */
-    .mc-menu { position: fixed; z-index: 50; min-width: 180px; padding: 4px; display: grid; gap: 2px;
+    .mc-mas { width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 9px; background: transparent;
+      color: #5b6782; cursor: pointer; }
+    .mc-mas:hover, .mc-mas[aria-expanded="true"] { background: #e6eefc; color: var(--dl-tinta); }
+    /* Fijo a la ventana: no lo recorta el panel. */
+    .mc-menu { position: fixed; z-index: 50; min-width: 180px; padding: 4px; display: grid; gap: 2px; cursor: default;
       background: #fff; border: 1px solid #e6ecf6; border-radius: 10px; box-shadow: 0 8px 20px rgba(16, 24, 40, .10); }
     .mc-menu a, .mc-menu button { min-height: 36px; display: flex; align-items: center; padding: 0 12px; text-align: left; border: 0;
       border-radius: 7px; background: transparent; color: var(--dl-tinta); font: inherit; font-size: 13.5px; font-weight: 600; text-decoration: none; cursor: pointer; }
@@ -505,8 +573,23 @@ function leerVistaCasos(): 'tarjetas' | 'lista' {
     .mc-vacio { margin: 0; padding: 36px 12px; text-align: center; color: #5b6782; border: 1px dashed #d6deec; border-radius: 14px; background: #fff; }
     @media (max-width: 1200px) { .mc-rejilla { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 720px) {
-      .mc-rejilla { grid-template-columns: minmax(0, 1fr); }
-      .mc-herramientas .adm-buscar { width: 100%; }
+      .mc-herramientas .mc-buscar { flex: 1 1 100%; max-width: none; }
+      /* Celular: buscador; luego estado y orden a la mitad cada uno; luego vista y "+ Crear caso". */
+      .mc-derecha { flex: 1 1 100%; gap: 8px; }
+      .mc-derecha .adm-orden { flex: 1 1 calc(50% - 4px); min-width: 0; }
+      .mc-derecha .adm-orden select { width: 100%; height: 44px; padding: 0 28px 0 12px; font-size: 13.5px; background-position: right 9px center; }
+      .mc-vistas { padding: 3px; }
+      .mc-vistas button { width: 36px; height: 36px; }
+      .mc-crear { flex: 1 1 auto; height: 44px; padding: 0 12px; font-size: 14px; gap: 4px; }
+      /* Fila en celular: ícono, título y "⋯"; duración y escenarios · preguntas en la línea gris. */
+      .mc-fila { grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; padding: 14px 12px 14px 16px; }
+      .mc-dur, .mc-editar { display: none; }
+      .mc-dur-movil { display: inline; }
+      .mc-doc { width: 42px; height: 42px; border-radius: 12px; }
+      .mc-fila-texto strong { font-size: 15.5px; }
+      .mc-fila-texto small { font-size: 13px; }
+      .mc-grupo-fila { padding: 12px 16px; flex-wrap: wrap; font-size: 14.5px; }
+      .mc-rejilla { grid-template-columns: minmax(0, 1fr); padding: 4px 12px 14px; }
     }
   `]
 })
@@ -520,26 +603,29 @@ export class CasosComponent {
   cargando = signal(true);
   error = signal('');
   ok = signal('');
-  /** Filtro, búsqueda, orden, página y menú "⋯" (en el navegador, con lo que ya llegó del backend). */
+  /** Estado, búsqueda, orden y menú "⋯" (en el navegador, con lo que ya llegó del backend). */
   readonly filtros: { valor: FiltroCaso; texto: string }[] = [
-    { valor: 'TODOS', texto: 'Todos' }, { valor: 'BORRADOR', texto: 'Borradores' },
-    { valor: 'PUBLICADO', texto: 'Publicados' }, { valor: 'ARCHIVADO', texto: 'Archivados' }
+    { valor: 'TODOS', texto: 'Todos los estados' }, { valor: 'PUBLICADO', texto: 'Publicados' },
+    { valor: 'BORRADOR', texto: 'Borradores' }, { valor: 'ARCHIVADO', texto: 'Archivados' }
   ];
+  /** Casos que se ven por grupo; "Ver más" muestra 10 más. */
+  readonly porGrupo = 10;
+  private limites = signal<Record<string, number>>({});
+  /** "Ver archivados" al final del panel (empieza plegado). */
+  mostrarArchivados = signal(false);
   filtroEstado = signal<FiltroCaso>('TODOS');
   busqueda = signal('');
   orden = signal<OrdenCaso>('recientes');
-  pagina = signal(1);
   menuAbierto = signal<number | null>(null);
-  /** Posición del menú "⋯" (fijo a la ventana, para que la tabla no lo recorte). */
+  /** Posición del menú "⋯" (fijo a la ventana, para que el panel no lo recorte). */
   menuPos = signal<{ top: number | null; bottom: number | null; right: number }>({ top: null, bottom: null, right: 0 });
-  /** Tarjetas o lista; se recuerda mientras el docente navega (sesión del navegador). */
+  /** Lista (por defecto) o tarjetas; se recuerda mientras el docente navega (sesión del navegador). */
   vista = signal<'tarjetas' | 'lista'>(leerVistaCasos());
-  readonly porPagina = computed(() => this.vista() === 'lista' ? 8 : 9);
-  readonly filtrados = computed(() => {
-    const estado = this.filtroEstado();
+  /** Búsqueda y orden sobre toda la lista; luego cada grupo toma los de su estado. */
+  readonly ordenados = computed(() => {
     const q = (this.busqueda() + ' ' + this.filtro.texto()).trim().toLowerCase();
-    const lista = this.casos().filter((c) => (estado === 'TODOS' || c.estado === estado)
-      && (!q || q.split(/\s+/).every((t) => c.nombre.toLowerCase().includes(t) || (ETIQUETA_CASO[c.estado] ?? c.estado).toLowerCase().includes(t))));
+    const lista = this.casos().filter((c) =>
+      !q || q.split(/\s+/).every((t) => c.nombre.toLowerCase().includes(t) || (ETIQUETA_CASO[c.estado] ?? c.estado).toLowerCase().includes(t)));
     const rango: Record<string, number> = { PUBLICADO: 0, BORRADOR: 1, ARCHIVADO: 2 };
     const porNombre = (a: CasoResumen, b: CasoResumen) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' });
     // "Más recientes": el backend no envía fecha; el id más alto es el último creado.
@@ -547,18 +633,32 @@ export class CasosComponent {
     if (this.orden() === 'estado') return [...lista].sort((a, b) => (rango[a.estado] ?? 9) - (rango[b.estado] ?? 9) || porNombre(a, b));
     return [...lista].sort((a, b) => b.id - a.id);
   });
-  readonly paginaCasos = computed(() => paginar(this.filtrados(), this.pagina(), this.porPagina()));
+  /**
+   * Grupos del panel. Con "Todos los estados": publicados y borradores (los archivados van plegados al final).
+   * Con un solo estado: solo ese grupo (también si es Archivados).
+   */
+  readonly grupos = computed(() => {
+    const estado = this.filtroEstado();
+    const visibles = estado === 'TODOS' ? GRUPOS_CASO.filter((g) => g.estado !== 'ARCHIVADO') : GRUPOS_CASO.filter((g) => g.estado === estado);
+    return visibles.map((g) => ({ ...g, casos: this.ordenados().filter((c) => c.estado === g.estado) })).filter((g) => g.casos.length);
+  });
+  /** Archivados para la franja "Ver archivados" (solo con "Todos los estados"). */
+  readonly archivados = computed(() => this.filtroEstado() === 'TODOS' ? this.ordenados().filter((c) => c.estado === 'ARCHIVADO') : []);
+  grupoArchivados() { return { ...GRUPOS_CASO.find((g) => g.estado === 'ARCHIVADO')!, casos: this.archivados() }; }
+  limite(estado: string) { return this.limites()[estado] ?? this.porGrupo; }
+  verMas(estado: string) { this.limites.update((l) => ({ ...l, [estado]: this.limite(estado) + this.porGrupo })); }
+  reiniciarLimites() { this.limites.set({}); }
   cambiarVista(vista: 'tarjetas' | 'lista') {
     this.vista.set(vista);
-    this.pagina.set(1);
     this.menuAbierto.set(null);
     try { sessionStorage.setItem('dilema-vista-casos', vista); } catch { /* sin almacenamiento: solo dura esta pantalla */ }
   }
   puedeEditar() { return this.auth.puede('EDITAR'); }
   constructor() { this.cargar(); }
   etiqueta(estado: string) { return ETIQUETA_CASO[estado] ?? estado; }
-  cuenta(estado: FiltroCaso) { return estado === 'TODOS' ? this.casos().length : this.casos().filter((c) => c.estado === estado).length; }
-  filtrar(estado: FiltroCaso) { this.filtroEstado.set(estado); this.pagina.set(1); }
+  filtrar(estado: FiltroCaso) { this.filtroEstado.set(estado); this.reiniciarLimites(); }
+  /** Clic en la fila: abre el editor (el "⋯" y "Editar" detienen el clic). */
+  abrir(caso: CasoResumen) { this.router.navigate(['/docente/casos', caso.id]); }
   // Mismas reglas que los botones del editor.
   puedePublicar(c: CasoResumen) { return this.auth.puede('EDITAR') && (c.estado === 'BORRADOR' || c.estado === 'ARCHIVADO'); }
   puedeVolverBorrador(c: CasoResumen) { return this.auth.puede('EDITAR') && c.estado === 'PUBLICADO'; }
@@ -614,8 +714,6 @@ export class CasosComponent {
       next: (dato) => {
         this.casos.set(dato);
         this.cargando.set(false);
-        const paginas = Math.max(1, Math.ceil(this.filtrados().length / this.porPagina()));
-        if (this.pagina() > paginas) this.pagina.set(paginas);
       },
       error: (falla) => { this.cargando.set(false); this.error.set(mensajeError(falla)); }
     });
@@ -940,10 +1038,15 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
             </section>
             <section class="caso-casilla">
               <h3>Boceto de escena</h3>
-              <app-escena-novela
-                [caso]="casoEscena()" [bloque]="bloqueEscena()" [personajes]="personajesEscena()"
-                [modoEditor]="true" [bloqueado]="bloqueado()" [fondoManual]="fondoManual()" [posiciones]="posicionesEscena()"
-                (elenco)="recibirElenco($event)" (mover)="moverPersona($event)" />
+              <!-- three.js y el motor de la novela se descargan solo al entrar a un caso (carga diferida). -->
+              @defer (on immediate) {
+                <app-escena-novela
+                  [caso]="casoEscena()" [bloque]="bloqueEscena()" [personajes]="personajesEscena()"
+                  [modoEditor]="true" [bloqueado]="bloqueado()" [fondoManual]="fondoManual()" [posiciones]="posicionesEscena()"
+                  (elenco)="recibirElenco($event)" (mover)="moverPersona($event)" />
+              } @placeholder {
+                <div class="escena-espera" aria-hidden="true" style="width: 100%; aspect-ratio: 16 / 9; border-radius: 14px; background: linear-gradient(180deg, #d8e4ea, #b7c7cf);"></div>
+              }
               @if (detectados()) { <p class="sub">{{ detectados() }}</p> }
             </section>
           </div>
@@ -1039,10 +1142,14 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
           </header>
           <div class="modal-cuerpo">
             <!-- Los resultados se calculan aquí, con los datos del editor: no hay peticiones al backend. -->
-            <app-novela-reproductor [caso]="vista" [personajes]="vista.personajes"
-              [resultados]="resultadosVista()" [mostrarCerrar]="true"
-              (finalizar)="resultadosVista.set(calcularResultados(vista, $event))" (reiniciar)="resultadosVista.set(null)"
-              (cerrar)="cerrarVistaPrevia()" anchoMaximo="calc((100vh - 130px) * 16 / 9)" />
+            @defer (on immediate) {
+              <app-novela-reproductor [caso]="vista" [personajes]="vista.personajes"
+                [resultados]="resultadosVista()" [mostrarCerrar]="true"
+                (finalizar)="resultadosVista.set(calcularResultados(vista, $event))" (reiniciar)="resultadosVista.set(null)"
+                (cerrar)="cerrarVistaPrevia()" anchoMaximo="calc((100vh - 130px) * 16 / 9)" />
+            } @placeholder {
+              <div class="escena-espera" role="status" style="width: 100%; max-width: calc((100vh - 130px) * 16 / 9); margin: 0 auto; aspect-ratio: 16 / 9; border-radius: 14px; display: grid; place-items: center; background: rgba(15,20,28,.55); color: #fff; font-size: 1rem;">Preparando la escena…</div>
+            }
           </div>
         </div>
       }
@@ -1050,6 +1157,13 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
   `
 })
 export class EditorCasoComponent {
+  /**
+   * Al entrar a un caso se descarga en segundo plano el motor de la novela (three.js), para que la vista previa
+   * y el boceto abran sin esperar. En el panel y en las demás pantallas no se descarga.
+   */
+  private readonly precargaNovela = typeof window !== 'undefined' && setTimeout(() => {
+    import('../shared/novela/novela-reproductor.component').catch(() => undefined);
+  }, 1500);
   readonly musica = inject(MusicaNovelaService);
   // Si se sale del editor con la vista previa abierta, la música no sigue sonando.
   private readonly alSalir = inject(DestroyRef).onDestroy(() => this.musica.detener());
@@ -1223,8 +1337,13 @@ export class EditorCasoComponent {
     this.resultadosVista.set(null);
     this.musica.iniciar();
     document.body.style.overflow = 'hidden';
-    // Foco en el reproductor para usarlo con teclado.
-    setTimeout(() => document.querySelector<HTMLElement>('.modal-vista .reproductor')?.focus(), 0);
+    // Foco en el reproductor para usarlo con teclado (se carga diferido: se reintenta hasta que aparece).
+    const enfocar = (intentos: number) => {
+      const r = document.querySelector<HTMLElement>('.modal-vista .reproductor');
+      if (r) r.focus();
+      else if (intentos > 0) setTimeout(() => enfocar(intentos - 1), 100);
+    };
+    setTimeout(() => enfocar(50), 0);
   }
   cerrarVistaPrevia() {
     this.musica.detener();

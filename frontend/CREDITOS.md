@@ -31,3 +31,9 @@ WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF 
 NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
 THIS SOFTWARE.
 ```
+
+## Animaciones
+
+Animaciones: Mixamo (Adobe)
+
+Archivos FBX en `public/animaciones/` (catálogo en `public/animaciones/animaciones.json`).

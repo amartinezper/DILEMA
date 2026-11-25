@@ -11,6 +11,9 @@ escenas-originales
 public/personajes/M03-original.vrm
 public/personajes/M03-optimizado.vrm
 
+# Animaciones de Mixamo revisadas y descartadas (no se usan en la app)
+public/animaciones/descartadas
+
 # Secretos y respaldos
 .env
 .env.*

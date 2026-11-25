@@ -56,16 +56,79 @@ export class ElencoService {
     return p;
   }
 
-  /** Precarga los archivos de los personajes de un escenario (para la siguiente escena). */
+  /**
+   * Prepara de antemano los personajes de un escenario (la siguiente escena): descarga, lee el modelo y aplica
+   * su aspecto, uno por uno y cuando el navegador está libre, para que el cambio de escena sea inmediato.
+   * Las escenas abiertas compilan sus shaders al enterarse (alPreparar).
+   */
   async precargar(casoId: number | string | null | undefined, personajes: PersonajeEntrada[] | null | undefined,
     textos: TextosCaso, bloque: number): Promise<void> {
     const asignados = await this.asignar(casoId, personajes, textos);
-    await Promise.all(asignados.filter(a => a.modelo && a.personaje.escenarios.includes(bloque))
-      .map(a => this.bytes(a.modelo!.archivo).catch(() => undefined)));
+    for (const a of asignados.filter(x => x.modelo && x.personaje.escenarios.includes(bloque))) {
+      if (!this.escenasAbiertas) return;
+      await enReposo();
+      await this.preparar(a).catch(() => undefined);
+    }
+  }
+
+  // ------------------------------------------------------------ personajes preparados de antemano
+
+  /** Personajes listos para usar (uno por modelo y aspecto), antes de que su escena los pida. */
+  private readonly preparados = new Map<string, Promise<PersonajeCargado>>();
+  private readonly oyentes = new Set<(p: PersonajeCargado) => void>();
+  private escenasAbiertas = 0;
+
+  private claveDe(a: Asignacion): string {
+    return `${a.modelo?.archivo}|${JSON.stringify(a.aspecto)}`;
+  }
+
+  /** Prepara un personaje y lo guarda hasta que una escena lo pida (si ya está preparado, no repite). */
+  preparar(asignacion: Asignacion): Promise<PersonajeCargado> {
+    const clave = this.claveDe(asignacion);
+    let p = this.preparados.get(clave);
+    if (!p) {
+      p = this.construir(asignacion);
+      this.preparados.set(clave, p);
+      p.then(x => { if (this.preparados.get(clave) === p) this.oyentes.forEach(f => f(x)); },
+        () => { if (this.preparados.get(clave) === p) this.preparados.delete(clave); });
+    }
+    return p;
+  }
+
+  /** Avisa cada vez que se prepara un personaje (la escena compila sus shaders). Devuelve cómo dejar de escuchar. */
+  alPreparar(oyente: (p: PersonajeCargado) => void): () => void {
+    this.oyentes.add(oyente);
+    return () => this.oyentes.delete(oyente);
+  }
+
+  registrarEscena(): void { this.escenasAbiertas++; }
+
+  /**
+   * Al cerrarse la última escena se liberan los personajes preparados que nadie usó y los archivos en memoria.
+   * Devuelve true si era la última (entonces también se pueden soltar las animaciones).
+   */
+  soltarEscena(): boolean {
+    this.escenasAbiertas = Math.max(0, this.escenasAbiertas - 1);
+    if (this.escenasAbiertas) return false;
+    for (const p of this.preparados.values()) p.then(x => this.liberar(x), () => undefined);
+    this.preparados.clear();
+    this.archivos.clear();
+    return true;
+  }
+
+  /** Instancia del personaje para una escena: la preparada de antemano si la hay; si no, una nueva. */
+  crear(asignacion: Asignacion): Promise<PersonajeCargado> {
+    const clave = this.claveDe(asignacion);
+    const p = this.preparados.get(clave);
+    if (p) {
+      this.preparados.delete(clave);
+      return p.catch(() => this.construir(asignacion));
+    }
+    return this.construir(asignacion);
   }
 
   /** Crea una instancia nueva del personaje (materiales propios) con su aspecto y pose de reposo. */
-  async crear(asignacion: Asignacion): Promise<PersonajeCargado> {
+  private async construir(asignacion: Asignacion): Promise<PersonajeCargado> {
     if (!asignacion.modelo) throw new Error('No hay modelo para este personaje.');
     const buffer = await this.bytes(asignacion.modelo.archivo);
     const cargador = new GLTFLoader();
@@ -87,6 +150,14 @@ export class ElencoService {
   liberar(p: PersonajeCargado): void {
     VRMUtils.deepDispose(p.vrm.scene);
   }
+}
+
+/** Espera a que el navegador esté libre (o como mucho 1 s) para no trabar lo que se está viendo. */
+function enReposo(): Promise<void> {
+  return new Promise(r => {
+    const ric = (window as Window & { requestIdleCallback?: (f: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+    if (ric) ric(() => r(), { timeout: 1000 }); else setTimeout(r, 200);
+  });
 }
 
 // ---------------------------------------------------------------- aspecto (three.js + canvas)

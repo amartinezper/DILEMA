@@ -1,0 +1,9 @@
+{
+  "name": "convertir-animaciones",
+  "private": true,
+  "description": "Convierte una vez los FBX de Mixamo de frontend/public/animaciones al formato liviano listo para VRM (public/animaciones/vrm/*.json). Usa el three.js ya instalado en frontend/node_modules y el mismo código de conversión de la app.",
+  "type": "module",
+  "scripts": {
+    "convertir": "node convertir.mjs"
+  }
+}

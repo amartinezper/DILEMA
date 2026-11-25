@@ -4,6 +4,8 @@ import {
 } from '@angular/core';
 import * as THREE from 'three';
 import { NivelExpresion, Visema, respirar } from './cara-vrm';
+import { animaciones } from './animaciones-vrm';
+import { AnimacionCatalogo, Gesto, elegirVersion } from './gestos';
 import { Asignacion, ElencoService, PersonajeCargado } from './elenco.service';
 import { personajesValidos } from './elenco';
 import { EscenaService, FondoElegido } from './escena.service';
@@ -76,13 +78,68 @@ interface Medidas { rodilla: number; cadera: number; cabeza: number; tope: numbe
 /** Medidas de una persona adulta para las siluetas (sin modelo cargado). */
 const MEDIDAS_SILUETA: Medidas = { rodilla: 0.5, cadera: 0.95, cabeza: 1.45, tope: 1.66, hombros: 0.56 };
 
+/** Transición entre animaciones (s): nunca un salto brusco. */
+const FUNDIDO_S = 0.5;
+/** Un gesto largo (algunos de Mixamo duran 20 s) se corta con un fundido a los 6 s: el personaje no gesticula toda la línea. */
+const LIMITE_GESTO_S = 6;
+/** Gesto por defecto (sin guion, en el editor o con movimiento reducido). */
+const REPOSO: Gesto = { categoria: 'reposo', papel: 'escucha' };
+/** Fracción del ancho desde la que un personaje está junto al borde (sin gestos de brazos muy abiertos). */
+const BORDE = 0.27;
+
+/** Cuerpo animado de un personaje: mezclador, animación actual y punto al que miran sus ojos. */
+interface Cuerpo {
+  mezclador: THREE.AnimationMixer;
+  accion: THREE.AnimationAction | null;
+  animacion: string | null;
+  /** Animación pedida que todavía se está descargando. */
+  pedida: string | null;
+  /** El gesto de esta línea ya terminó (o quien habla terminó su texto): queda en reposo hasta la siguiente. */
+  terminado: boolean;
+  /** Segundos que lleva el gesto de esta línea (0 en reposo). */
+  tiempoGesto: number;
+  esGesto: boolean;
+  mirada: THREE.Object3D;
+}
+
+let hayWebgl: boolean | undefined;
+/** Prueba WebGL una sola vez y suelta el contexto de prueba (cada contexto ocupa memoria de video). */
 function webglDisponible(): boolean {
+  if (hayWebgl !== undefined) return hayWebgl;
   try {
     const c = document.createElement('canvas');
-    return !!(c.getContext('webgl2') || c.getContext('webgl'));
+    const g = c.getContext('webgl2') || c.getContext('webgl');
+    hayWebgl = !!g;
+    g?.getExtension('WEBGL_lose_context')?.loseContext();
   } catch {
-    return false;
+    hayWebgl = false;
   }
+  return hayWebgl;
+}
+
+/** Resolución interna máxima: 1,5 en computador y 1 en celular (pantallas táctiles). */
+function resolucionMaxima(): number {
+  const celular = window.matchMedia?.('(pointer: coarse)').matches ?? false;
+  return Math.min(window.devicePixelRatio || 1, celular ? 1 : 1.5);
+}
+
+/** Si nada cambia (solo el reposo), se dibuja a 30 cuadros por segundo. */
+const INTERVALO_QUIETO_S = 1 / 30;
+/** Tras un cambio (gesto, fundido, entrada, expresión, mirada) se dibuja a todo ritmo durante este tiempo. */
+const MOVIMIENTO_TRAS_CAMBIO_S = 0.9;
+/** Por debajo de estos cuadros por segundo (moviéndose) pasa a calidad ligera. */
+const FPS_MINIMO = 30;
+
+/**
+ * Mismo orden que VRM.update de three-vrm, pero sin la física del cabello y la ropa (huesos con resortes):
+ * en calidad ligera solo la conserva quien habla.
+ */
+function actualizarSinFisica(vrm: PersonajeCargado['vrm'], dt: number): void {
+  vrm.humanoid.update();
+  vrm.lookAt?.update(dt);
+  vrm.expressionManager?.update();
+  vrm.nodeConstraintManager?.update();
+  vrm.materials?.forEach(m => (m as THREE.Material & { update?: (d: number) => void }).update?.(dt));
 }
 
 /**
@@ -93,6 +150,7 @@ function webglDisponible(): boolean {
 @Component({
   selector: 'app-escena-novela',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '[class.ligero]': 'ligero()' },
   template: `
     <div class="novela" [class.editor]="modoEditor()" [class.sin-dialogo]="!mostrarDialogo()">
       @if (fondoPrevio(); as previo) { <img class="fondo" [src]="previo" alt="" /> }
@@ -164,6 +222,8 @@ function webglDisponible(): boolean {
     /* Agrandada: semitransparente, máximo 25 % del alto y sin pasar por debajo de los controles (columna a la derecha). */
     :host-context(.pantalla-completa) .dialogo { left: 2%; right: calc(112px + 16px); bottom: 3%; min-height: 0;
       max-height: 25%; background: rgba(15,20,28,.62); backdrop-filter: blur(4px); }
+    /* Calidad ligera (el equipo no llega a 30 cuadros por segundo): sin desenfoque, fondo del cuadro un poco más opaco. */
+    :host-context(.pantalla-completa):host(.ligero) .dialogo { backdrop-filter: none; background: rgba(15,20,28,.74); }
     .dialogo p { margin: 0; line-height: 1.35; white-space: pre-line; }
     .dialogo .nombre { display: inline-block; margin-bottom: 4px; padding: 2px 10px; border-radius: 6px;
       background: #2f6f68; color: #fff; font-weight: 600; font-size: clamp(.72rem, 1.6cqi, .9rem); }
@@ -198,6 +258,14 @@ export class EscenaNovelaComponent implements AfterViewInit, OnDestroy {
   readonly boca = input<{ personaje: number; visema: Visema | null } | null>(null);
   /** Emoción de cada personaje (por id); si falta, usa `expresion` y `nivel`. */
   readonly emociones = input<Record<number, EmocionNovela> | null>(null);
+  /** Gesto del cuerpo de cada personaje (por id, de gestos.ts); null = todos en reposo. */
+  readonly gestos = input<Record<number, Gesto> | null>(null);
+  /** Hay una ventana encima que tapa la escena (historial en celular, resultados): no se dibuja. */
+  readonly pausado = input(false);
+  /** Línea actual (índice del paso): al cambiar, con Siguiente o Anterior, cada gesto se hace una vez más. */
+  readonly paso = input<number | null>(null);
+  /** El texto se está escribiendo: quien habla gesticula solo mientras tanto. */
+  readonly escribiendo = input(false);
 
   /** Asignación del motor para todo el caso (perfil, Id y modelo de cada personaje). */
   readonly elenco = output<Asignacion[]>();
@@ -236,9 +304,26 @@ export class EscenaNovelaComponent implements AfterViewInit, OnDestroy {
     aparicion: number; luz: number; luzAplicada: number;
     /** Escala y altura que fija colocar(); la aparición las ajusta un poco. */
     escalaBase: number; yBase: number;
+    cuerpo: Cuerpo;
   }>();
+  /** Catálogo de animaciones (null mientras carga; vacío si no se pudo leer: respiración por código). */
+  private catalogoAnimaciones: AnimacionCatalogo[] | null = null;
   private readonly pendientes = new Set<string>();
   private observador?: ResizeObserver;
+  private visor?: IntersectionObserver;
+  /** La escena se ve en la pantalla (no quedó fuera al desplazarse). */
+  private enPantalla = true;
+  /** Calidad ligera: sin desenfoque del cuadro y sin física de cabello y ropa en quienes no hablan. */
+  readonly ligero = signal(false);
+  /** Tiempo acumulado desde el último dibujo (para dibujar a 30 cuadros por segundo si nada cambia). */
+  private acumulado = 0;
+  /** Momento (reloj de la escena) del último cambio visible: mientras tanto se dibuja a todo ritmo. */
+  private ultimoCambio = 0;
+  /** Medición de cuadros por segundo mientras hay movimiento, para pasar a calidad ligera. */
+  private medida = { cuadros: 0, tiempo: 0 };
+  /** El último dibujo no tenía personajes visibles: no hace falta volver a dibujar el lienzo vacío. */
+  private lienzoVacio = false;
+  private quitarOyente?: () => void;
   private raf = 0;
   private generacion = 0;
   private destruido = false;
@@ -269,8 +354,23 @@ export class EscenaNovelaComponent implements AfterViewInit, OnDestroy {
     });
     // Expresiones y boca de cada personaje.
     effect(() => {
-      this.expresion(); this.nivel(); this.emociones(); this.boca();
-      untracked(() => this.instancias.forEach(i => this.aplicarCara(i)));
+      // También quien habla y quién se ve: la mirada y la luz cambian (se dibuja a todo ritmo un momento).
+      this.expresion(); this.nivel(); this.emociones(); this.boca(); this.hablante(); this.visibles();
+      untracked(() => { this.instancias.forEach(i => this.aplicarCara(i)); this.marcarCambio(); });
+    });
+    // Gestos del cuerpo (animaciones de Mixamo).
+    effect(() => {
+      this.gestos(); this.paso();
+      untracked(() => this.aplicarGestos());
+    });
+    // Termina de escribirse el texto: quien habla deja de gesticular y pasa al reposo.
+    let escribia = false;
+    effect(() => {
+      const escribe = this.escribiendo();
+      untracked(() => {
+        if (escribia && !escribe) this.terminarHablante();
+        escribia = escribe;
+      });
     });
   }
 
@@ -285,7 +385,7 @@ export class EscenaNovelaComponent implements AfterViewInit, OnDestroy {
         try {
           const renderer = new THREE.WebGLRenderer({ canvas: this.lienzo().nativeElement, alpha: true, antialias: true });
           renderer.outputColorSpace = THREE.SRGBColorSpace;
-          renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+          renderer.setPixelRatio(resolucionMaxima());
           renderer.setClearColor(0x000000, 0);
           this.renderer = renderer;
           const luz = new THREE.DirectionalLight(0xffffff, 2.1);
@@ -300,19 +400,41 @@ export class EscenaNovelaComponent implements AfterViewInit, OnDestroy {
       // Las etiquetas del docente se apoyan en el borde del cuadro de diálogo: si el texto crece, se reacomodan.
       const dialogo = this.host.nativeElement.querySelector('.dialogo');
       if (dialogo) this.observador.observe(dialogo);
+      // Fuera de la pantalla (se desplazó la página) no se dibuja.
+      this.visor = new IntersectionObserver(e => {
+        this.enPantalla = e.some(x => x.isIntersecting);
+        if (this.enPantalla) this.marcarCambio();
+      });
+      this.visor.observe(this.host.nativeElement);
       this.ajustarTamano();
       this.bucle();
     });
+    // Los personajes que se preparan de antemano (siguiente escena) compilan aquí sus shaders, en segundo plano.
+    this.elencoSrv.registrarEscena();
+    this.quitarOyente = this.elencoSrv.alPreparar(p => {
+      if (this.renderer && !this.destruido) this.renderer.compileAsync(p.vrm.scene, this.camara, this.escena).catch(() => undefined);
+    });
     // Si el elenco se armó antes de tener renderer, se cargan ahora los modelos.
     this.sincronizarInstancias();
+    // Catálogo de animaciones: solo la lista; cada FBX se descarga cuando un personaje lo necesita.
+    animaciones.catalogo()
+      .then(c => { this.catalogoAnimaciones = c; })
+      .catch(() => { this.catalogoAnimaciones = []; })
+      .finally(() => { if (!this.destruido) this.aplicarGestos(); });
   }
 
   ngOnDestroy(): void {
     this.destruido = true;
     cancelAnimationFrame(this.raf);
     this.observador?.disconnect();
-    for (const i of this.instancias.values()) { this.escena.remove(i.vrm.scene); this.elencoSrv.liberar(i); }
+    this.visor?.disconnect();
+    this.quitarOyente?.();
+    for (const i of this.instancias.values()) this.quitar(i);
     this.instancias.clear();
+    // Al salir del caso se sueltan también los personajes preparados y los archivos en memoria.
+    if (this.elencoSrv.soltarEscena()) animaciones.vaciar();
+    this.escena.clear();
+    this.renderer?.renderLists.dispose();
     this.renderer?.dispose();
     this.renderer?.forceContextLoss();
     clearTimeout(this.temporizadorFondo);
@@ -414,8 +536,7 @@ export class EscenaNovelaComponent implements AfterViewInit, OnDestroy {
     for (const f of this.fichas()) if (!f.silueta && f.asignacion?.modelo) deseadas.set(this.claveDe(f), f);
     for (const [clave, inst] of this.instancias) {
       if (deseadas.has(clave)) continue;
-      this.escena.remove(inst.vrm.scene);
-      this.elencoSrv.liberar(inst);
+      this.quitar(inst);
       this.instancias.delete(clave);
     }
     const faltan = [...deseadas].filter(([clave]) => !this.instancias.has(clave) && !this.pendientes.has(clave));
@@ -433,12 +554,13 @@ export class EscenaNovelaComponent implements AfterViewInit, OnDestroy {
         p.cara.movimientoReducido = this.movimientoReducido;
         const inst = {
           ...p, slot: ficha.slot, clave, medidas, materiales: this.guardarMateriales(p.vrm.scene),
-          aparicion: 0, luz: 1, luzAplicada: 1, escalaBase: 1, yBase: 0
+          aparicion: 0, luz: 1, luzAplicada: 1, escalaBase: 1, yBase: 0, cuerpo: this.crearCuerpo(p)
         };
         this.aplicarCara(inst);
         this.instancias.set(clave, inst);
         this.escena.add(p.vrm.scene);
         this.colocar();
+        this.aplicarGestos();
       }).catch(() => {
         this.pendientes.delete(clave);
         if (!this.destruido) this.planB('No se pudieron cargar los personajes: se muestran solo el fondo y el texto.');
@@ -452,7 +574,7 @@ export class EscenaNovelaComponent implements AfterViewInit, OnDestroy {
   private planB(motivo: string): void {
     this.motivoPlanB.set(motivo);
     this.estado.set('planb');
-    for (const i of this.instancias.values()) { this.escena.remove(i.vrm.scene); this.elencoSrv.liberar(i); }
+    for (const i of this.instancias.values()) this.quitar(i);
     this.instancias.clear();
     this.proyectar();
   }
@@ -518,6 +640,7 @@ export class EscenaNovelaComponent implements AfterViewInit, OnDestroy {
 
   /** Ubica a cada personaje (de pie sobre el mismo suelo) y actualiza la capa de etiquetas. */
   private colocar(): void {
+    this.marcarCambio();
     if (!this.ancho || !this.alto) return;
     const { s, suelo } = this.encuadre();
     // Cámara ortográfica en metros: 1 m = s px. Arriba a la izquierda es (0, 0).
@@ -588,13 +711,53 @@ export class EscenaNovelaComponent implements AfterViewInit, OnDestroy {
     this.colocar();
   }
 
+  /** Algo visible cambió (gesto, fundido, entrada, cara, posición): se dibuja a todo ritmo un momento. */
+  private marcarCambio(): void {
+    this.ultimoCambio = this.reloj.elapsedTime;
+    this.lienzoVacio = false;
+  }
+
+  /** Hay movimiento que conviene dibujar a todo ritmo (no solo el reposo). */
+  private hayMovimiento(): boolean {
+    if (this.escribiendo() || this.reloj.elapsedTime - this.ultimoCambio < MOVIMIENTO_TRAS_CAMBIO_S) return true;
+    const hablante = this.hablante();
+    for (const i of this.instancias.values()) {
+      if (i.cuerpo.esGesto && !i.cuerpo.terminado) return true;
+      if (Math.abs(i.aparicion - (this.esVisible(i.slot) ? 1 : 0)) > 0.001) return true;
+      if (Math.abs(i.luz - (hablante === null || hablante === i.slot ? 1 : 0.68)) > 0.003) return true;
+    }
+    return false;
+  }
+
+  /**
+   * Cuadros por segundo mientras hay movimiento (ventanas de 2 s): si bajan de 30, pasa a calidad ligera y
+   * se queda así en este caso (sin ir y volver).
+   */
+  private medirRitmo(dt: number, moviendo: boolean): void {
+    if (this.ligero() || !moviendo || this.estado() !== 'listo' || this.pendientes.size) { this.medida = { cuadros: 0, tiempo: 0 }; return; }
+    this.medida.cuadros++;
+    this.medida.tiempo += dt;
+    if (this.medida.tiempo < 2) return;
+    if (this.medida.cuadros / this.medida.tiempo < FPS_MINIMO) this.ligero.set(true);
+    this.medida = { cuadros: 0, tiempo: 0 };
+  }
+
   private bucle = (): void => {
     if (this.destruido) return;
     this.raf = requestAnimationFrame(this.bucle);
     if (!this.renderer || this.estado() === 'planb') return;
-    const dt = Math.min(this.reloj.getDelta(), 0.1);
+    // Pausa: pestaña oculta, escena fuera de la pantalla o una ventana encima. Al volver no hay salto (dt se descarta).
+    if (document.hidden || !this.enPantalla || this.pausado()) { this.reloj.getDelta(); this.acumulado = 0; return; }
+    this.acumulado += this.reloj.getDelta();
+    const moviendo = this.hayMovimiento();
+    // Si solo queda el reposo, a 30 cuadros por segundo.
+    if (!moviendo && this.acumulado < INTERVALO_QUIETO_S - 0.004) return;
+    const dt = Math.min(this.acumulado, 0.1);
+    this.acumulado = 0;
+    this.medirRitmo(dt, moviendo);
     const t = this.reloj.elapsedTime;
     const hablante = this.hablante();
+    let alguienVisible = false;
     for (const inst of this.instancias.values()) {
       // Entrada (~400 ms): sale de la sombra a su color con un leve acercamiento. Se hace con el color de los
       // materiales y no con transparencia, que obligaría a compilar otros shaders y tarda mucho la primera vez.
@@ -612,12 +775,169 @@ export class EscenaNovelaComponent implements AfterViewInit, OnDestroy {
       inst.vrm.scene.position.y = inst.yBase - (1 - a) * 0.05;
       this.aplicarLuz(inst, inst.luz * (0.25 + 0.75 * a));
       inst.cara.antesDeActualizar(dt);
-      if (!this.movimientoReducido) respirar(inst.vrm, t, inst.slot * 1.7);
-      inst.vrm.update(dt);
+      if (inst.vrm.scene.visible) inst.cuerpo.mezclador.update(dt);
+      const c = inst.cuerpo;
+      if (c.esGesto && !c.terminado && (c.tiempoGesto += dt) > LIMITE_GESTO_S) { c.terminado = true; this.aplicarGestos(); }
+      // Respaldo sin animación (no cargó o falta): respiración suave por código sobre la pose de reposo.
+      if (!inst.cuerpo.accion && !this.movimientoReducido) respirar(inst.vrm, t, inst.slot * 1.7);
+      this.mirar(inst, hablante, dt);
+      // Calidad ligera: la física del cabello y la ropa solo para quien habla.
+      if (this.ligero() && inst.slot !== hablante) actualizarSinFisica(inst.vrm, dt);
+      else inst.vrm.update(dt);
       inst.cara.despuesDeActualizar();
+      if (inst.vrm.scene.visible) alguienVisible = true;
     }
+    // Sin nadie en escena (portada, presentación, final) basta con dejar el lienzo limpio una vez.
+    if (!alguienVisible && this.lienzoVacio) return;
     this.renderer.render(this.escena, this.camara);
+    this.lienzoVacio = !alguienVisible;
   };
+
+  // ------------------------------------------------------------ cuerpo: animaciones y mirada
+
+  private crearCuerpo(p: PersonajeCargado): Cuerpo {
+    const mezclador = new THREE.AnimationMixer(p.vrm.scene);
+    const mirada = new THREE.Object3D();
+    this.escena.add(mirada);
+    if (p.vrm.lookAt) { p.vrm.lookAt.target = mirada; p.vrm.lookAt.autoUpdate = true; }
+    const cuerpo: Cuerpo = { mezclador, accion: null, animacion: null, pedida: null, terminado: false, tiempoGesto: 0, esGesto: false, mirada };
+    // El gesto de la línea termina (quedó en su último cuadro): pasa al reposo con un fundido.
+    mezclador.addEventListener('finished', e => {
+      if (e.action !== cuerpo.accion) return;
+      cuerpo.terminado = true;
+      this.aplicarGestos();
+    });
+    return cuerpo;
+  }
+
+  private terminarHablante(): void {
+    const hablante = this.hablante();
+    for (const inst of this.instancias.values()) {
+      if (inst.slot !== hablante || inst.cuerpo.terminado) continue;
+      inst.cuerpo.terminado = true;
+      this.aplicarGestos();
+    }
+  }
+
+  private quitar(inst: PersonajeCargado & { cuerpo: Cuerpo }): void {
+    inst.cuerpo.mezclador.stopAllAction();
+    inst.cuerpo.mezclador.uncacheRoot(inst.vrm.scene);
+    this.escena.remove(inst.cuerpo.mirada, inst.vrm.scene);
+    this.elencoSrv.liberar(inst);
+  }
+
+  /**
+   * Elige la animación de cada personaje según su gesto (gestos.ts) sin repetir la misma versión en dos
+   * personajes a la vez; quien ya hace un gesto de esa categoría lo sigue haciendo.
+   */
+  /**
+   * Gesto de cada personaje en la línea actual: se hace UNA vez (quien habla, hasta 2 veces mientras se
+   * escribe su texto) y después el personaje pasa a un reposo tranquilo hasta la línea siguiente. Al cambiar
+   * de línea (Siguiente o Anterior) el gesto vuelve a empezar.
+   */
+  private aplicarGestos(): void {
+    const catalogo = this.catalogoAnimaciones;
+    if (!catalogo) return;
+    const gestos = this.gestos();
+    const paso = this.paso();
+    const nuevaLinea = paso !== this.lineaGestos;
+    this.lineaGestos = paso;
+    const fichas = this.fichas();
+    const ocupadas = new Set<string>();
+    const lista = [...this.instancias.values()].sort((a, b) => a.slot - b.slot);
+    for (const inst of lista) {
+      const c = inst.cuerpo;
+      if (nuevaLinea) c.terminado = false;
+      const pedido = this.movimientoReducido ? REPOSO : gestos?.[inst.slot] ?? REPOSO;
+      const gesto = c.terminado ? REPOSO : pedido;
+      const esGesto = gesto.categoria !== 'reposo';
+      const f = fichas.find(x => x.slot === inst.slot);
+      const fx = f ? this.fraccionX(f.pos) : 0.5;
+      // En una línea nueva se prefiere otra versión del gesto (si la hay) para no reiniciar la misma de golpe.
+      const evitar = new Set(ocupadas);
+      if (nuevaLinea && esGesto && c.animacion) evitar.add(c.animacion);
+      const opciones = {
+        slot: inst.slot, actual: nuevaLinea && esGesto ? null : c.pedida ?? c.animacion,
+        ocupadas: evitar, junto_al_borde: fx < BORDE || fx > 1 - BORDE
+      };
+      const a = elegirVersion(catalogo, gesto, opciones) ?? elegirVersion(catalogo, REPOSO, opciones);
+      if (!a) continue;
+      ocupadas.add(a.id);
+      // Quien habla puede repetir el gesto (máx. 2) solo si su texto se está escribiendo; con el texto ya completo
+      // (al volver con Anterior) lo hace una vez, como los demás.
+      this.reproducir(inst, a, catalogo, nuevaLinea && esGesto, gesto.papel === 'habla' && this.escribiendo() ? 2 : 1);
+    }
+  }
+  private lineaGestos: number | null | undefined = undefined;
+
+  /**
+   * Pasa a la animación con un fundido de ~0,5 s; si todavía no está descargada, la pide y sigue con la actual.
+   * Los gestos se hacen `veces` veces y quedan en su último cuadro hasta el fundido al reposo (sin saltos).
+   */
+  private reproducir(inst: PersonajeCargado & { slot: number; clave: string; cuerpo: Cuerpo }, a: AnimacionCatalogo,
+    catalogo: AnimacionCatalogo[], reiniciar = false, veces = 1): void {
+    const c = inst.cuerpo;
+    if (c.animacion === a.id && c.accion && (!reiniciar || c.accion.isRunning())) { c.pedida = null; return; }
+    c.pedida = a.id;
+    const clip = animaciones.clipListo(inst.vrm, a);
+    if (!clip) {
+      animaciones.base(a).then(() => {
+        if (!this.destruido && c.pedida === a.id && this.instancias.get(inst.clave) === inst) this.reproducir(inst, a, catalogo, reiniciar, veces);
+      }).catch(() => {
+        if (this.destruido || c.pedida !== a.id || this.instancias.get(inst.clave) !== inst) return;
+        // Respaldo: si no carga, su reposo; si el reposo tampoco, respiración por código (nunca la pose en T).
+        const reposo = a.categoria === 'reposo' ? null
+          : elegirVersion(catalogo, REPOSO, { slot: inst.slot, actual: null, ocupadas: new Set(), junto_al_borde: false });
+        if (reposo) { this.reproducir(inst, reposo, catalogo); return; }
+        c.pedida = null;
+        c.accion?.fadeOut(FUNDIDO_S);
+        c.accion = null;
+        c.animacion = null;
+      });
+      return;
+    }
+    c.pedida = null;
+    const nueva = c.mezclador.clipAction(clip);
+    nueva.reset();
+    const reposo = a.categoria === 'reposo';
+    nueva.setLoop(THREE.LoopRepeat, reposo ? Infinity : veces);
+    nueva.clampWhenFinished = !reposo;
+    // Reposo a 0,8x (más lento con movimiento reducido), cada personaje desde un momento distinto para no ir a la par.
+    nueva.timeScale = reposo ? (this.movimientoReducido ? 0.6 : 0.8) : 1;
+    if (reposo) nueva.time = Math.random() * clip.duration;
+    nueva.play();
+    if (c.accion && c.accion !== nueva) c.accion.crossFadeTo(nueva, FUNDIDO_S, false);
+    else nueva.fadeIn(FUNDIDO_S);
+    this.marcarCambio();
+    c.accion = nueva;
+    c.animacion = a.id;
+    c.esGesto = !reposo;
+    c.tiempoGesto = 0;
+  }
+
+  /**
+   * Ojos: quienes escuchan miran a quien habla; quien habla mira al personaje más cercano; si nadie habla,
+   * al frente. El punto se mueve suave (~150 ms) y un poco hacia la cámara para que el giro sea natural.
+   */
+  private mirar(inst: { slot: number; vrm: PersonajeCargado['vrm']; cuerpo: Cuerpo }, hablante: number | null, dt: number): void {
+    const cabeza = inst.vrm.humanoid.getNormalizedBoneNode('head');
+    if (!inst.vrm.lookAt || !cabeza) return;
+    const cabezaDe = (vrm: PersonajeCargado['vrm']) => vrm.humanoid.getNormalizedBoneNode('head')?.getWorldPosition(new THREE.Vector3()) ?? null;
+    const otros = [...this.instancias.values()].filter(i => i.slot !== inst.slot && i.vrm.scene.visible);
+    const x = inst.vrm.scene.position.x;
+    let destino: THREE.Vector3 | null = null;
+    if (hablante !== null && hablante !== inst.slot) {
+      const h = otros.find(i => i.slot === hablante);
+      destino = h ? cabezaDe(h.vrm) : null;
+    } else if (hablante === inst.slot && otros.length) {
+      const cercano = otros.reduce((m, i) => Math.abs(i.vrm.scene.position.x - x) < Math.abs(m.vrm.scene.position.x - x) ? i : m);
+      destino = cabezaDe(cercano.vrm);
+    }
+    destino = destino ? destino.add(new THREE.Vector3(0, 0, 0.6)) : cabeza.getWorldPosition(new THREE.Vector3()).add(new THREE.Vector3(0, 0, 3));
+    const m = inst.cuerpo.mirada;
+    if (m.position.lengthSq() === 0) m.position.copy(destino);
+    else m.position.lerp(destino, this.movimientoReducido ? 1 : 1 - Math.exp(-dt / 0.15));
+  }
 
   private esVisible(slot: number): boolean {
     const v = this.visibles();

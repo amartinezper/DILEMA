@@ -7,6 +7,8 @@ import { EscenaService } from './escena.service';
 import {
   BloqueNovela, CasoNovela, EmocionNovela, EscenaNovelaComponent, PersonajeNovela, slotDe
 } from './escena-novela.component';
+import { animaciones } from './animaciones-vrm';
+import { elegirGestos } from './gestos';
 import { Paso, PersonajeGuion, armarGuion, normalizar } from './guion';
 import { MusicaNovelaService } from './musica-novela.service';
 import { ResultadosNovela } from './resultados';
@@ -62,7 +64,7 @@ function visemaDe(letra: string, anterior: Visema | null): Visema | null {
       <div class="lienzo" [style.max-width]="anchoMaximo()" (click)="clicEscena($event)">
         <app-escena-novela
           [caso]="casoEscena()" [bloque]="bloqueActual()" [personajes]="personajes()"
-          [presentes]="reparto()" [visibles]="visibles()" [hablante]="hablante()" [boca]="boca()" [emociones]="emociones()"
+          [presentes]="reparto()" [visibles]="visibles()" [hablante]="hablante()" [boca]="boca()" [emociones]="emociones()" [gestos]="gestos()" [paso]="indice()" [escribiendo]="escribiendo()" [pausado]="escenaTapada()"
           [titulo]="nombreHablante()" [texto]="textoVisible()" [mostrarDialogo]="conDialogo()" />
 
         <div class="sobre-escena" (click)="$event.stopPropagation()">
@@ -481,6 +483,29 @@ export class NovelaReproductorComponent implements OnDestroy {
     for (const [id, v] of Object.entries(e)) r[Number(id)] = { emocion: v.emocion, nivel: v.nivel };
     return r;
   });
+  /** Gesto del cuerpo de cada personaje en este paso (gestos.ts: hablar, asentir, llanto, rabia…). */
+  readonly gestos = computed(() => {
+    const p = this.paso();
+    return p ? this.gestosDe(p) : null;
+  });
+  /**
+   * La escena queda tapada y no hace falta dibujarla: resultados al final, o el historial en celular
+   * (en computador ocupa solo un lado y los personajes siguen a la vista).
+   */
+  readonly escenaTapada = computed(() => this.paso()?.tipo === 'fin'
+    || (this.historialAbierto() && typeof window !== 'undefined' && window.innerWidth <= 720));
+
+  private gestosDe(p: Paso) {
+    return elegirGestos({
+      tipo: p.tipo === 'dialogo' || p.tipo === 'narracion' ? p.tipo : 'otro',
+      presentes: p.escena.presentes,
+      hablante: p.tipo === 'dialogo' ? p.personaje : null,
+      emocionFrase: p.tipo === 'dialogo' && p.emocion ? { emocion: p.emocion, nivel: p.nivel } : null,
+      emociones: p.escena.emociones,
+      reacciones: p.tipo === 'narracion' ? p.reacciones : [],
+      texto: p.tipo === 'dialogo' || p.tipo === 'narracion' ? p.texto : ''
+    }, this.movimientoReducido);
+  }
   readonly boca = computed(() => {
     const h = this.hablante();
     return h === null ? null : { personaje: h, visema: this.escribiendo() ? this.visemaActual() : null };
@@ -782,6 +807,7 @@ export class NovelaReproductorComponent implements OnDestroy {
     const p = this.paso()!;
     // Al salir del escenario cuya narración se volvió a ver, la próxima vez se vuelve a saltar.
     if (this.releyendo() !== null && p.escena.escenario !== this.releyendo()) this.releyendo.set(null);
+    this.precargarAnimaciones(p.escena.escenario);
     this.precargarSiguiente(p.escena.escenario);
     if (p.tipo === 'narracion' || p.tipo === 'dialogo') {
       const nombre = p.tipo === 'dialogo' ? this.nombres().get(p.personaje) : '';
@@ -904,6 +930,21 @@ export class NovelaReproductorComponent implements OnDestroy {
   }
 
   // ------------------------------------------------------------ precarga
+
+  private animacionesPrecargadas = new Set<number>();
+  /** Precarga en segundo plano las animaciones que usarán este escenario y el siguiente (y siempre el reposo). */
+  private precargarAnimaciones(escenario: number): void {
+    for (const n of [escenario, escenario + 1]) {
+      if (this.animacionesPrecargadas.has(n)) continue;
+      this.animacionesPrecargadas.add(n);
+      const categorias = new Set<string>(['reposo']);
+      for (const q of this.pasos()) {
+        if (q.escena.escenario !== n) continue;
+        for (const g of Object.values(this.gestosDe(q))) categorias.add(g.categoria);
+      }
+      animaciones.precargar(categorias);
+    }
+  }
 
   /** Precarga personajes y fondo del siguiente escenario. */
   private precargarSiguiente(escenario: number): void {

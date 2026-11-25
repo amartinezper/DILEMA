@@ -10,7 +10,8 @@ import { MarcoEstudianteComponent } from '../shared/marco-estudiante.component';
 import { AuthService } from '../core/auth.service';
 import { BusquedaService } from '../core/busqueda.service';
 import { Aviso, OpcionJuego, PanelEstudiante, Participacion, PersonajeCaso, PreguntaJuego, Sesion, mensajeError } from '../core/api.service';
-import { NovelaReproductorComponent, CasoReproductor, OpcionElegida } from '../shared/novela/novela-reproductor.component';
+import type { CasoReproductor, OpcionElegida } from '../shared/novela/novela-reproductor.component';
+import { NovelaReproductorComponent } from '../shared/novela/novela-reproductor.component';
 import { MusicaNovelaService } from '../shared/novela/musica-novela.service';
 import { ResultadosNovelaComponent } from '../shared/novela/resultados-novela.component';
 import { resultadosDeParticipacion } from '../shared/novela/resultados';
@@ -643,13 +644,18 @@ export class BriefingComponent {
                 [attr.aria-label]="actual.estado === 'EN_CURSO' ? 'Cerrar y volver al panel (el intento sigue abierto y el reloj sigue corriendo)' : 'Cerrar y volver al panel'">Cerrar</button>
             </header>
             <div class="modal-cuerpo">
-              <app-novela-reproductor #reproductor
-                [caso]="caso" [personajes]="elenco()" [tiempoRestante]="restante()"
-                [resultados]="resultados()" [mostrarCerrar]="true" (cerrar)="volverAlPanel()"
-                anchoMaximo="calc((100vh - 130px) * 16 / 9)"
-                [modoEstudiante]="true" [seleccion]="seleccion()" [empezarEn]="empezarEn()"
-                textoFin="Enviando tus respuestas…" [textoVolver]="null"
-                (opcion)="elegirNovela($event)" (deshacer)="deshacer()" (finalizar)="finalizar()" />
+              <!-- three.js y el motor de la novela se descargan solo al entrar al caso (no con el panel). -->
+              @defer (on immediate) {
+                <app-novela-reproductor #reproductor
+                  [caso]="caso" [personajes]="elenco()" [tiempoRestante]="restante()"
+                  [resultados]="resultados()" [mostrarCerrar]="true" (cerrar)="volverAlPanel()"
+                  anchoMaximo="calc((100vh - 130px) * 16 / 9)"
+                  [modoEstudiante]="true" [seleccion]="seleccion()" [empezarEn]="empezarEn()"
+                  textoFin="Enviando tus respuestas…" [textoVolver]="null"
+                  (opcion)="elegirNovela($event)" (deshacer)="deshacer()" (finalizar)="finalizar()" />
+              } @placeholder {
+                <div class="escena-espera" role="status" style="width: 100%; max-width: calc((100vh - 130px) * 16 / 9); margin: 0 auto; aspect-ratio: 16 / 9; border-radius: 14px; display: grid; place-items: center; background: rgba(15,20,28,.55); color: #fff; font-size: 1rem;">Preparando la escena…</div>
+              }
               @if (error()) { <p class="error-juego" role="alert">{{ error() }}</p> }
             </div>
           </div>
