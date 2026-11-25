@@ -5,7 +5,7 @@ import { IconoComponent, NombreIcono } from './icono.component';
 
 /**
  * Marco del docente y del administrador: el marco común (app-marco-dilema) con las opciones del rol y el
- * botón de la tarjeta del cohete ("+ Crear caso" para el docente, "+ Nuevo docente" para administración).
+ * botón de la tarjeta del cohete ("+ Crear caso" para el docente; administración no lleva botón).
  */
 @Component({
   selector: 'app-marco-docente',
@@ -13,8 +13,8 @@ import { IconoComponent, NombreIcono } from './icono.component';
   styles: [`:host { display: block; width: 100%; height: 100%; }`],
   template: `
     <app-marco-dilema [inicio]="inicio()" [descripcion]="descripcion()" [compacto]="compacto()" [saludoChico]="!esAdmin()" [lemaIcono]="true"
-      [lemaTexto]="esAdmin() ? 'Nuevo docente' : 'Crear caso'"
-      [lemaEnlace]="esAdmin() ? '/admin/usuarios/nuevo' : '/docente/casos/nuevo'">
+      [lemaTexto]="esAdmin() ? '' : 'Crear caso'"
+      [lemaEnlace]="esAdmin() ? '/' : '/docente/casos/nuevo'">
       <ng-container ngProjectAs="[menu]">
         @for (enlace of enlaces(); track enlace.href) {
           <a [routerLink]="enlace.href" routerLinkActive="activa" ariaCurrentWhenActive="page"

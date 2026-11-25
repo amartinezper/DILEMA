@@ -38,11 +38,13 @@ import { IconoComponent } from './icono.component';
         <div class="dl-lema">
           <app-icono class="dl-lema-cohete" nombre="cohete" [tamano]="34" />
           <p>Piensa. Decide.<br />Aprende.</p>
-          <a class="dl-lema-boton" [routerLink]="lemaEnlace()" [queryParams]="lemaParametros()" (click)="cerrarMenu()">
-            @if (lemaIcono()) { <app-icono nombre="mas" [tamano]="18" /> }
-            {{ lemaTexto() }}
-            @if (!lemaIcono()) { <app-icono nombre="flecha" [tamano]="18" /> }
-          </a>
+          @if (lemaTexto()) {
+            <a class="dl-lema-boton" [routerLink]="lemaEnlace()" [queryParams]="lemaParametros()" (click)="cerrarMenu()">
+              @if (lemaIcono()) { <app-icono nombre="mas" [tamano]="18" /> }
+              {{ lemaTexto() }}
+              @if (!lemaIcono()) { <app-icono nombre="flecha" [tamano]="18" /> }
+            </a>
+          }
         </div>
         <button class="inicio-salir" type="button" (click)="auth.salir()">
           <app-icono nombre="salir" [tamano]="22" /> Cerrar sesión
@@ -89,9 +91,9 @@ export class MarcoDilemaComponent {
   compacto = input(false);
   /** Saludo y descripción en letra más pequeña (páginas del docente). */
   saludoChico = input(false);
-  /** Botón de la tarjeta del cohete: texto, destino y si lleva "+" (crear) o "›" (ir). */
-  lemaTexto = input.required<string>();
-  lemaEnlace = input.required<string>();
+  /** Botón de la tarjeta del cohete: texto, destino y si lleva "+" (crear) o "›" (ir). Sin texto, no hay botón. */
+  lemaTexto = input('');
+  lemaEnlace = input('/');
   lemaParametros = input<Record<string, string> | null>(null);
   lemaIcono = input(false);
   menuAbierto = signal(false);
