@@ -760,16 +760,9 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
     .form-dialogo button { padding: 0 16px; height: 36px; font: inherit; font-size: 13px; border: 0; border-radius: 999px; background: var(--dl-degradado, #2563eb); color: #fff; cursor: pointer; font-weight: 700; box-shadow: none; }
     .form-dialogo button:last-child { background: #fff; color: var(--dl-azul); border: 1.5px solid var(--dl-azul); }
     .ayuda-dialogo { display: block; margin-top: 4px; font-size: .78rem; color: #6b7280; }
-    .modal-vista { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; background: #0f141c; color: #f3f3f3; }
-    .modal-cabeza { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 10px 16px; background: #0a1733; }
-    .modal-cabeza .cerrar, .modal-cabeza .musica { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
-      border-radius: 999px; border: 1px solid #cfd8ee; background: #fff; color: #0a1733; font: inherit; font-weight: 650; line-height: 1.5; cursor: pointer; }
-    /* "Música" va a la izquierda de "Cerrar", los dos pegados a la derecha. */
-    .modal-cabeza .musica + .cerrar { margin-left: 0; }
-    .modal-cabeza .musica svg { width: 1.15em; height: 1.15em; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-    .modal-cabeza .musica .parlante { fill: currentColor; }
-    .modal-cabeza .cerrar:focus-visible, .modal-cabeza .musica:focus-visible { outline: 2px solid #9fe3d9; outline-offset: 2px; }
-    .modal-cuerpo { flex: 1; overflow: auto; padding: 12px 16px; }
+    /* Libreta del caso: fondo azul claro; la libreta trae sus pestañas (Música, Pantalla, Salir). */
+    .modal-vista { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; background: #d8e5ff; color: #1c2541; }
+    .modal-cuerpo { flex: 1; overflow: auto; padding: 18px 22px 22px; }
     @media (max-width: 768px) {
       .pasos { display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch; }
       .pasos button { flex: 0 0 auto; }
@@ -1123,30 +1116,13 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
 
       @if (vistaAbierta(); as vista) {
         <div class="modal-vista" role="dialog" aria-modal="true" aria-label="Vista previa del caso" (keydown.escape)="cerrarVistaPrevia()">
-          <header class="modal-cabeza">
-            @if (musica.disponible()) {
-              <button type="button" class="musica" [attr.aria-pressed]="musica.activa()"
-                [attr.aria-label]="musica.activa() ? 'Silenciar música' : 'Activar música'" (click)="musica.alternar()">
-                <svg viewBox="0 0 20 20" aria-hidden="true">
-                  <path class="parlante" d="M3 7.5h3l4.5-3.5v12L6 12.5H3z" />
-                  @if (musica.activa()) {
-                    <path d="M13.5 7.2a4 4 0 0 1 0 5.6M15.8 5a7 7 0 0 1 0 10" />
-                  } @else {
-                    <path d="M13.5 7.5l5 5M18.5 7.5l-5 5" />
-                  }
-                </svg>
-                <span>Música</span>
-              </button>
-            }
-            <button type="button" class="cerrar" (click)="cerrarVistaPrevia()">Cerrar</button>
-          </header>
           <div class="modal-cuerpo">
             <!-- Los resultados se calculan aquí, con los datos del editor: no hay peticiones al backend. -->
             @defer (on immediate) {
               <app-novela-reproductor [caso]="vista" [personajes]="vista.personajes"
                 [resultados]="resultadosVista()" [mostrarCerrar]="true"
                 (finalizar)="resultadosVista.set(calcularResultados(vista, $event))" (reiniciar)="resultadosVista.set(null)"
-                (cerrar)="cerrarVistaPrevia()" anchoMaximo="calc((100vh - 130px) * 16 / 9)" />
+                (cerrar)="cerrarVistaPrevia()" etiquetaSalir="Cerrar la vista previa" />
             } @placeholder {
               <div class="escena-espera" role="status" style="width: 100%; max-width: calc((100vh - 130px) * 16 / 9); margin: 0 auto; aspect-ratio: 16 / 9; border-radius: 14px; display: grid; place-items: center; background: rgba(15,20,28,.55); color: #fff; font-size: 1rem;">Preparando la escena…</div>
             }

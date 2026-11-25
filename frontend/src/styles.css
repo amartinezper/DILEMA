@@ -1607,6 +1607,8 @@ a.fila-lista { text-decoration: none; color: inherit; }
 
 /* Novela agrandada (shared/novela/novela-reproductor): el menu fijo no tapa la escena. */
 html.novela-agrandada .inicio-menu-btn { display: none !important; }
+/* Con el juego o la vista previa abiertos (libreta del caso), el menú ☰ tampoco se monta encima. */
+body:has(.modal-vista) .inicio-menu-btn { display: none !important; }
 
 /* =====================================================================
  * Marco claro (rol administrador). Se activa con <app-marco-docente [claro]="true">.

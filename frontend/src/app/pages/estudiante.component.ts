@@ -618,38 +618,13 @@ export class BriefingComponent {
             y el caso completo (portada, presentación, escenarios, preguntas y resultados al final).
           -->
           <div class="modal-vista" role="dialog" aria-modal="true" [attr.aria-label]="'Caso: ' + actual.caso">
-            <header class="modal-cabeza">
-              <div class="modal-info">
-                @if (actual.estado === 'EN_CURSO') {
-                  <strong class="reloj-juego" [class.urgente]="restante() <= 60" role="timer"
-                    [attr.aria-label]="'Tiempo restante ' + reloj()">{{ reloj() }}</strong>
-                }
-                <span class="modal-titulo">{{ tituloEscena() }}</span>
-              </div>
-              @if (musica.disponible()) {
-                <button type="button" class="musica" [attr.aria-pressed]="musica.activa()"
-                  [attr.aria-label]="musica.activa() ? 'Silenciar música' : 'Activar música'" (click)="musica.alternar()">
-                  <svg viewBox="0 0 20 20" aria-hidden="true">
-                    <path class="parlante" d="M3 7.5h3l4.5-3.5v12L6 12.5H3z" />
-                    @if (musica.activa()) {
-                      <path d="M13.5 7.2a4 4 0 0 1 0 5.6M15.8 5a7 7 0 0 1 0 10" />
-                    } @else {
-                      <path d="M13.5 7.5l5 5M18.5 7.5l-5 5" />
-                    }
-                  </svg>
-                  <span>Música</span>
-                </button>
-              }
-              <button type="button" class="cerrar" (click)="volverAlPanel()"
-                [attr.aria-label]="actual.estado === 'EN_CURSO' ? 'Cerrar y volver al panel (el intento sigue abierto y el reloj sigue corriendo)' : 'Cerrar y volver al panel'">Cerrar</button>
-            </header>
             <div class="modal-cuerpo">
               <!-- three.js y el motor de la novela se descargan solo al entrar al caso (no con el panel). -->
               @defer (on immediate) {
                 <app-novela-reproductor #reproductor
-                  [caso]="caso" [personajes]="elenco()" [tiempoRestante]="restante()"
+                  [caso]="caso" [personajes]="elenco()" [tiempoRestante]="actual.estado === 'EN_CURSO' ? restante() : null"
                   [resultados]="resultados()" [mostrarCerrar]="true" (cerrar)="volverAlPanel()"
-                  anchoMaximo="calc((100vh - 130px) * 16 / 9)"
+                  [etiquetaSalir]="actual.estado === 'EN_CURSO' ? 'Salir y volver al panel (el intento sigue abierto y el reloj sigue corriendo)' : 'Salir y volver al panel'"
                   [modoEstudiante]="true" [seleccion]="seleccion()" [empezarEn]="empezarEn()"
                   textoFin="Enviando tus respuestas…" [textoVolver]="null"
                   (opcion)="elegirNovela($event)" (deshacer)="deshacer()" (finalizar)="finalizar()" />
@@ -674,15 +649,9 @@ export class BriefingComponent {
   `,
   styles: [`
     /* Copia de la ventana de la vista previa del docente (docente.component.ts). */
-    .modal-vista { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; background: #0f141c; color: #f3f3f3; }
-    .modal-cabeza { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 10px 16px; background: #0a1733; }
-    .modal-cabeza .cerrar, .modal-cabeza .musica { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px;
-      border-radius: 999px; border: 1px solid #cfd8ee; background: #fff; color: #0a1733; font: inherit; font-weight: 650; line-height: 1.5; cursor: pointer; }
-    .modal-cabeza .musica + .cerrar { margin-left: 0; }
-    .modal-cabeza .musica svg { width: 1.15em; height: 1.15em; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-    .modal-cabeza .musica .parlante { fill: currentColor; }
-    .modal-cabeza .cerrar:focus-visible, .modal-cabeza .musica:focus-visible { outline: 2px solid #9fe3d9; outline-offset: 2px; }
-    .modal-cuerpo { flex: 1; overflow: auto; padding: 12px 16px; }
+    /* Libreta del caso: fondo azul claro; la libreta trae sus pestañas (Música, Pantalla, Salir). */
+    .modal-vista { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; background: #d8e5ff; color: #1c2541; }
+    .modal-cuerpo { flex: 1; overflow: auto; padding: 18px 22px 22px; }
     /* Lo único que el estudiante tiene de más: el reloj y la escena actual, a la izquierda de la franja. */
     .modal-info { display: flex; align-items: center; gap: 12px; min-width: 0; }
     .modal-titulo { font-weight: 650; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

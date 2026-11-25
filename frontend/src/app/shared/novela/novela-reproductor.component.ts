@@ -10,6 +10,7 @@ import {
 import { animaciones } from './animaciones-vrm';
 import { elegirGestos } from './gestos';
 import { Paso, PersonajeGuion, armarGuion, normalizar } from './guion';
+import { EfectosNovelaService } from './efectos-novela.service';
 import { MusicaNovelaService } from './musica-novela.service';
 import { ResultadosNovela } from './resultados';
 import { ResultadosNovelaComponent } from './resultados-novela.component';
@@ -59,151 +60,409 @@ function visemaDe(letra: string, anterior: Visema | null): Visema | null {
   template: `
     <div class="reproductor" #raiz tabindex="0" (keydown)="tecla($event)"
       [class.pantalla-completa]="pantallaCompleta()" [class.capa]="modoPantalla() === 'capa'" [class.girada]="girada()"
+      [class.animado]="!movimientoReducido"
       [style.--pc-ancho]="pantallaAncho() + 'px'" [style.--pc-alto]="pantallaAlto() + 'px'"
       aria-label="Novela del caso. Usa Enter o Espacio para avanzar.">
-      <div class="lienzo" [style.max-width]="anchoMaximo()" (click)="clicEscena($event)">
-        <app-escena-novela
-          [caso]="casoEscena()" [bloque]="bloqueActual()" [personajes]="personajes()"
-          [presentes]="reparto()" [visibles]="visibles()" [hablante]="hablante()" [boca]="boca()" [emociones]="emociones()" [gestos]="gestos()" [paso]="indice()" [escribiendo]="escribiendo()" [pausado]="escenaTapada()"
-          [titulo]="nombreHablante()" [texto]="textoVisible()" [mostrarDialogo]="conDialogo()" />
 
-        <div class="sobre-escena" (click)="$event.stopPropagation()">
-          <!-- Fuera de pantalla completa el reloj va en la barra de la página; aquí solo en pantalla completa. -->
-          @if (tiempoRestante() != null && pantallaCompleta()) {
-            <strong class="reloj" [class.urgente]="tiempoRestante()! <= 60" [attr.aria-label]="'Tiempo restante ' + reloj()">{{ reloj() }}</strong>
-          }
-          <!-- La página tiene su propio botón de música; agrandada, la escena tapa la página y lo trae aquí. -->
-          @if (pantallaCompleta() && musica.disponible()) {
-            <button type="button" class="icono" (click)="musica.alternar()" [attr.aria-pressed]="musica.activa()"
-              [attr.aria-label]="musica.activa() ? 'Silenciar música' : 'Activar música'">
-              <svg viewBox="0 0 20 20" aria-hidden="true" class="parlante">
-                <path d="M3 7.5h3l4.5-3.5v12L6 12.5H3z" />
-                @if (musica.activa()) {
-                  <path class="trazo" d="M13.5 7.2a4 4 0 0 1 0 5.6M15.8 5a7 7 0 0 1 0 10" />
-                } @else {
-                  <path class="trazo" d="M13.5 7.5l5 5M18.5 7.5l-5 5" />
-                }
+      <!-- Libreta del caso: todo lo de alrededor de la escena (la escena 3D y su cuadro de diálogo no cambian). -->
+      <div class="libreta" [class.velada]="!!preguntaActual() || !!finEscena()">
+        <span class="anillos" aria-hidden="true">@for (a of anillos; track a) { <i></i> }</span>
+
+        <nav class="pestanas" aria-label="Opciones del caso">
+          @if (musica.disponible()) {
+            <button type="button" class="pestana musica" [class.apagada]="!musica.activa()" [attr.aria-pressed]="musica.activa()"
+              [attr.aria-label]="musica.activa() ? 'Silenciar música' : 'Activar música'" (click)="musica.alternar()">
+              <svg viewBox="0 0 20 20" aria-hidden="true">
+                <path class="parlante" d="M3 7.5h3l4.5-3.5v12L6 12.5H3z" />
+                @if (musica.activa()) { <path d="M13.5 7.2a4 4 0 0 1 0 5.6" /> } @else { <path d="M13.5 7.5l5 5M18.5 7.5l-5 5" /> }
               </svg>
+              Música
             </button>
           }
-          <button type="button" class="icono" (click)="alternarPantalla()"
-            [attr.aria-pressed]="pantallaCompleta()"
-            [attr.aria-label]="pantallaCompleta() ? 'Salir de pantalla completa' : 'Ver el caso en pantalla completa'">
-            @if (pantallaCompleta()) {
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3v2H5v4H3V3h6zm12 0v6h-2V5h-4V3h6zM3 15h2v4h4v2H3v-6zm18 0v6h-6v-2h4v-4h2z"/></svg>
-            } @else {
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h8v2H5v6H3V3zm10 0h8v8h-2V5h-6V3zM3 13h2v6h6v2H3v-8zm16 0h2v8h-8v-2h6v-6z"/></svg>
-            }
-          </button>
-        </div>
+          <button type="button" class="pestana pantalla" (click)="alternarPantalla()" [attr.aria-pressed]="pantallaCompleta()"
+            aria-label="Ver el caso en pantalla completa">Pantalla</button>
+          @if (mostrarSalir()) {
+            <button type="button" class="pestana salir" (click)="cerrar.emit()" [attr.aria-label]="etiquetaSalir()">Salir</button>
+          }
+        </nav>
 
-        @if (!pasos().length) { <div class="velo">Preparando la escena…</div> }
+        <header class="cabeza">
+          <p class="rotulo">Caso</p>
+          <h2 class="titulo-caso">{{ caso().nombre }}</h2>
+          @if (tiempoRestante() != null) {
+            <strong class="reloj-libreta" [class.urgente]="tiempoRestante()! <= 60" role="timer"
+              [attr.aria-label]="'Tiempo restante ' + reloj()">{{ reloj() }}</strong>
+          }
+        </header>
 
-        @switch (paso()?.tipo) {
-          @case ('portada') {
-            <div class="portada">
-              <h2>{{ tituloPaso() }}</h2>
-              <p>Toca la escena o pulsa Enter para empezar</p>
-            </div>
-          }
-          @case ('transicion') {
-            <div class="letrero" [class.animado]="!movimientoReducido"><span>{{ tituloPaso() }}</span></div>
-          }
-          @case ('fin') {
-            @if (resultados(); as r) {
-              <div class="resultados" (click)="$event.stopPropagation()">
-                <app-resultados-novela [resultados]="r"
-                  [textoCerrar]="mostrarCerrar() ? (modoEstudiante() ? 'Volver al panel' : 'Cerrar') : null"
-                  [textoReiniciar]="modoEstudiante() ? null : 'Volver a empezar'"
-                  (reiniciar)="volverAEmpezar()" (cerrar)="cerrar.emit()" />
-              </div>
-            } @else {
-              <div class="portada">
-                <h2>{{ textoFin() }}</h2>
-                @if (textoVolver()) {
-                  <button type="button" (click)="volverAEmpezar(); $event.stopPropagation()">{{ textoVolver() }}</button>
-                }
-              </div>
+        <aside class="recorrido" aria-label="Mi recorrido">
+          <button type="button" class="recorrido-boton" (click)="recorridoAbierto.set(!recorridoAbierto())"
+            [attr.aria-expanded]="recorridoAbierto()">Mi recorrido <span aria-hidden="true">▾</span></button>
+          <h3 class="recorrido-titulo">Mi recorrido</h3>
+          <ul class="recorrido-lista" [class.abierta]="recorridoAbierto()">
+            @for (r of recorrido(); track r.clave) {
+              <li [class]="'paso-recorrido ' + r.estado" [attr.aria-current]="r.estado === 'actual' ? 'step' : null">
+                <span class="casilla" aria-hidden="true">
+                  @if (r.estado === 'hecho') { <svg viewBox="0 0 16 16"><path d="M3.5 8.4l3 3 6-6.6" /></svg> }
+                </span>
+                <span class="item-texto">{{ r.texto }}</span>
+                @if (r.estado === 'hecho') { <span class="solo-lector">(hecho)</span> }
+              </li>
             }
-          }
-          @case ('pregunta') {
-            @if (preguntaActual(); as q) {
-              <section class="pregunta" (click)="$event.stopPropagation()" aria-label="Pregunta">
-                <p class="marca">Decisión</p>
-                <div class="enunciado" [innerHTML]="q.enunciado"></div>
-                @if (q.pista) { <p class="pista">{{ q.pista }}</p> }
-                <div class="opciones" role="group" aria-label="Opciones">
-                  @for (o of q.opciones; track $index; let i = $index) {
-                    <button type="button" class="opcion" [attr.aria-pressed]="elegida() === i"
-                      [class.elegida]="elegida() === i" (click)="elegir(i)">
-                      <span class="clave">{{ 'ABCDEFGHIJ'.charAt(i) }}</span>
-                      <span class="texto">{{ o.texto }}</span>
-                    </button>
-                  }
-                </div>
-                @if (modoEstudiante()) {
-                  <div class="acciones-pregunta">
-                    @if (tieneNarracion()) {
-                      <button type="button" (click)="releer()">Ver narración otra vez</button>
+          </ul>
+          <p class="contador" [attr.aria-label]="'Línea ' + (indice() + 1) + ' de ' + pasos().length">{{ contador() }}</p>
+        </aside>
+
+        <figure class="foto">
+          <span class="cinta cinta-izq" aria-hidden="true"></span>
+          <span class="cinta cinta-der" aria-hidden="true"></span>
+          <div class="lienzo" [style.max-width]="anchoMaximo()" (click)="clicEscena($event)">
+            <app-escena-novela
+              [caso]="casoEscena()" [bloque]="bloqueActual()" [personajes]="personajes()"
+              [presentes]="reparto()" [visibles]="visibles()" [hablante]="hablante()" [boca]="boca()" [emociones]="emociones()" [gestos]="gestos()" [paso]="indice()" [escribiendo]="escribiendo()" [pausado]="escenaTapada()"
+              [titulo]="nombreHablante()" [texto]="textoVisible()" [mostrarDialogo]="conDialogo()" />
+
+            <!-- Solo en pantalla completa: reloj, música, historial y salir de pantalla completa. -->
+            <div class="sobre-escena" (click)="$event.stopPropagation()">
+              @if (tiempoRestante() != null) {
+                <strong class="reloj" [class.urgente]="tiempoRestante()! <= 60" [attr.aria-label]="'Tiempo restante ' + reloj()">{{ reloj() }}</strong>
+              }
+              @if (musica.disponible()) {
+                <button type="button" class="icono" (click)="musica.alternar()" [attr.aria-pressed]="musica.activa()"
+                  [attr.aria-label]="musica.activa() ? 'Silenciar música' : 'Activar música'">
+                  <svg viewBox="0 0 20 20" aria-hidden="true" class="parlante">
+                    <path d="M3 7.5h3l4.5-3.5v12L6 12.5H3z" />
+                    @if (musica.activa()) {
+                      <path class="trazo" d="M13.5 7.2a4 4 0 0 1 0 5.6M15.8 5a7 7 0 0 1 0 10" />
+                    } @else {
+                      <path class="trazo" d="M13.5 7.5l5 5M18.5 7.5l-5 5" />
                     }
-                    <button type="button" (click)="deshacer.emit()">Deshacer última respuesta</button>
+                  </svg>
+                </button>
+              }
+              <button type="button" class="icono" [attr.aria-pressed]="historialAbierto()" aria-label="Historial"
+                (click)="historialAbierto.set(!historialAbierto())">
+                <svg viewBox="0 0 24 24" aria-hidden="true" class="linea"><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /><path d="M12 7v5l3 2" /></svg>
+              </button>
+              <button type="button" class="icono" (click)="alternarPantalla()" [attr.aria-pressed]="pantallaCompleta()"
+                aria-label="Salir de pantalla completa">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3v2H5v4H3V3h6zm12 0v6h-2V5h-4V3h6zM3 15h2v4h4v2H3v-6zm18 0v6h-6v-2h4v-4h2z"/></svg>
+              </button>
+            </div>
+
+            @if (!pasos().length) { <div class="velo">Preparando la escena…</div> }
+
+            @switch (paso()?.tipo) {
+              @case ('portada') {
+                <div class="portada">
+                  <h2>{{ tituloPaso() }}</h2>
+                  <p>Toca la escena o pulsa Enter para empezar</p>
+                </div>
+              }
+              @case ('transicion') {
+                <div class="letrero" [class.animado]="!movimientoReducido"><span>{{ tituloPaso() }}</span></div>
+              }
+              @case ('fin') {
+                @if (resultados(); as r) {
+                  <div class="resultados" (click)="$event.stopPropagation()">
+                    <app-resultados-novela [resultados]="r"
+                      [textoCerrar]="mostrarCerrar() ? (modoEstudiante() ? 'Volver al panel' : 'Cerrar') : null"
+                      [textoReiniciar]="modoEstudiante() ? null : 'Volver a empezar'"
+                      (reiniciar)="volverAEmpezar()" (cerrar)="cerrar.emit()" />
+                  </div>
+                } @else {
+                  <div class="portada">
+                    <h2>{{ textoFin() }}</h2>
+                    @if (textoVolver()) {
+                      <button type="button" (click)="volverAEmpezar(); $event.stopPropagation()">{{ textoVolver() }}</button>
+                    }
                   </div>
                 }
-              </section>
-            }
-          }
-        }
-
-        @if (historialAbierto()) {
-          <aside class="historial" aria-label="Historial" (click)="$event.stopPropagation()">
-            <div class="historial-cabeza">
-              <div>
-                <p>Recorrido</p>
-                <h3>Historial</h3>
-              </div>
-              <button type="button" class="cerrar" (click)="historialAbierto.set(false)" aria-label="Cerrar historial">×</button>
-            </div>
-            <ol class="historial-lista">
-              @for (h of historial(); track $index) {
-                <li [class]="'entrada ' + h.clase">
-                  <button type="button" (click)="ir(h.indice, true)">
-                    @if (h.clase === 'habla') {
-                      <span class="avatar" aria-hidden="true">{{ h.inicial }}</span>
-                    }
-                    <span class="cuerpo">
-                      @if (h.nombre) { <strong>{{ h.nombre }}</strong> }
-                      <span>{{ h.texto }}</span>
-                    </span>
-                  </button>
-                </li>
-              } @empty {
-                <li class="vacio">Aún no hay diálogos. Avanza la escena para ver el recorrido aquí.</li>
               }
-            </ol>
-          </aside>
+            }
+
+            @if (historialAbierto()) {
+              <aside class="historial" aria-label="Historial" (click)="$event.stopPropagation()">
+                <div class="historial-cabeza">
+                  <div>
+                    <p>Recorrido</p>
+                    <h3>Historial</h3>
+                  </div>
+                  <button type="button" class="cerrar" (click)="historialAbierto.set(false)" aria-label="Cerrar historial">×</button>
+                </div>
+                <ol class="historial-lista">
+                  @for (h of historial(); track $index) {
+                    <li [class]="'entrada ' + h.clase">
+                      <button type="button" (click)="ir(h.indice, true)">
+                        @if (h.clase === 'habla') {
+                          <span class="avatar" aria-hidden="true">{{ h.inicial }}</span>
+                        }
+                        <span class="cuerpo">
+                          @if (h.nombre) { <strong>{{ h.nombre }}</strong> }
+                          <span>{{ h.texto }}</span>
+                        </span>
+                      </button>
+                    </li>
+                  } @empty {
+                    <li class="vacio">Aún no hay diálogos. Avanza la escena para ver el recorrido aquí.</li>
+                  }
+                </ol>
+              </aside>
+            }
+          </div>
+          <figcaption class="pie-foto">{{ pieFoto() }}</figcaption>
+        </figure>
+
+        @if (avisoAnotado() && paso()?.tipo !== 'fin') {
+          <div class="nota-adhesiva" role="status">
+            <span class="cinta cinta-nota" aria-hidden="true"></span>
+            <strong>¡Anotado!</strong>
+            <p>Tu decisión quedó en la libreta.<br />La historia continúa.</p>
+          </div>
         }
+
+        <div class="pie-libreta" [class.oculto]="paso()?.tipo === 'fin' && !!resultados()">
+          <div class="redondos">
+            <button type="button" class="redondo historial-boton" [class.activo]="historialAbierto()"
+              (click)="historialAbierto.set(!historialAbierto())" [attr.aria-expanded]="historialAbierto()" aria-label="Historial" title="Historial">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /><path d="M12 7v5l3 2" /></svg>
+            </button>
+            <button type="button" class="redondo efectos" [class.apagado]="!efectos.activos()" (click)="efectos.alternar()"
+              [attr.aria-pressed]="efectos.activos()" [attr.aria-label]="efectos.activos() ? 'Efectos de sonido activados' : 'Efectos de sonido apagados'"
+              title="Efectos">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" />
+                @if (!efectos.activos()) { <path class="tachado" d="M3 3l18 18" /> }
+              </svg>
+            </button>
+          </div>
+          <div class="fichas">
+            <button type="button" class="ficha atras" (click)="atras()" [disabled]="destinoAtras() === null">‹ Atrás</button>
+            <button type="button" class="ficha seguir" (click)="seguir()" [disabled]="!pasos().length || paso()?.tipo === 'fin'">
+              {{ paso()?.tipo === 'portada' ? 'Empezar' : 'Seguir leyendo' }} ›</button>
+          </div>
+        </div>
       </div>
 
-      <div class="controles" [class.oculto]="paso()?.tipo === 'fin' && !!resultados()">
-        <button type="button" (click)="anterior()" [disabled]="destinoAtras() === null">Anterior</button>
-        <button type="button" class="principal" (click)="avanzar()" [disabled]="!pasos().length || paso()?.tipo === 'fin'">
-          {{ escribiendo() ? 'Completar' : esUltimaPregunta() ? 'Finalizar' : 'Siguiente' }}</button>
-        <button type="button" [class.activo]="historialAbierto()"
-          (click)="historialAbierto.set(!historialAbierto())" [attr.aria-expanded]="historialAbierto()">Historial</button>
-        <span class="avance" aria-hidden="true">{{ indice() + 1 }} / {{ pasos().length }}</span>
-      </div>
+      <!-- ¡Momento de decidir!: fichas de cartulina; elegir nunca muestra si la opción es correcta. -->
+      @if (!finEscena() && preguntaActual(); as q) {
+        <div class="velo-libreta" (click)="$event.stopPropagation()">
+          <section class="decidir" role="group" [attr.aria-label]="'Momento de decidir, decisión ' + numeroDecision() + ' de ' + totalDecisiones()">
+            <p class="decidir-rotulo">¡Momento de decidir! · {{ numeroDecision() }} de {{ totalDecisiones() }}</p>
+            <div class="decidir-enunciado" [innerHTML]="q.enunciado"></div>
+            @if (q.pista) { <p class="decidir-pista">{{ q.pista }}</p> }
+            <div class="cartulinas" role="group" aria-label="Opciones">
+              @for (o of q.opciones; track $index; let i = $index) {
+                <button type="button" class="cartulina" [class.elegida]="elegida() === i" [attr.aria-pressed]="elegida() === i"
+                  [style.--giro]="giros[i % giros.length]" (click)="elegirOpcion(i)">
+                  <span class="cinta cinta-cartulina" aria-hidden="true"></span>
+                  <span class="numero">{{ i + 1 }}.</span>
+                  <span class="texto">{{ o.texto }}</span>
+                  @if (elegida() === i) { <span class="sello sello-decision" aria-hidden="true">Mi decisión</span> }
+                </button>
+              }
+            </div>
+            <div class="decidir-acciones">
+              <button type="button" class="ficha seguir anotar" (click)="anotar()" [disabled]="elegida() === null">Anotar mi decisión ✓</button>
+              <span class="atajo-teclado">o usa {{ atajos(q.opciones.length) }} y Enter</span>
+            </div>
+            <div class="decidir-extra">
+              @if (modoEstudiante()) {
+                @if (tieneNarracion()) { <button type="button" (click)="releer()">Ver narración otra vez</button> }
+                <button type="button" (click)="deshacer.emit()">Deshacer última respuesta</button>
+              }
+            </div>
+          </section>
+        </div>
+      }
+
+      <!-- Fin de escena: hoja con el sello "Completada". -->
+      @if (finEscena(); as f) {
+        <div class="velo-libreta" (click)="$event.stopPropagation()">
+          <section class="hoja-fin" role="dialog" [attr.aria-label]="'Escena ' + f.numero + ' lista'">
+            <span class="sello sello-completada" aria-hidden="true">Completada</span>
+            <h3>Escena {{ f.numero }} lista</h3>
+            <p>{{ f.ultima ? 'Tus decisiones quedaron anotadas. Ahora verás los resultados del caso.' : 'Tus decisiones quedaron anotadas. Verás los resultados al final del caso.' }}</p>
+            <button type="button" class="ficha seguir" (click)="pasarPagina()">{{ f.ultima ? 'Ver resultados' : 'Pasar la página' }} ›</button>
+          </section>
+        </div>
+      }
 
       <div class="solo-lector" aria-live="polite">{{ anuncio() }}</div>
     </div>
   `,
   styles: [`
     :host { display: block; }
-    .reproductor { display: grid; gap: 10px; outline: none; position: relative; }
-    .reproductor:focus-visible { box-shadow: 0 0 0 3px #9fe3d9; border-radius: 14px; }
-    .lienzo { position: relative; width: 100%; margin: 0 auto; cursor: pointer; user-select: none; }
-    .sobre-escena {
-      position: absolute; top: 12px; right: 12px; z-index: 5; display: flex; align-items: center; gap: 8px;
+    /*
+     * Libreta del caso: hoja de cuaderno (renglones azules, margen rojo y anillos), pestañas arriba, la escena como
+     * foto pegada con cinta, "Mi recorrido" a la izquierda y fichas de cartulina abajo. Caveat para lo escrito a
+     * mano y Plus Jakarta Sans para leer.
+     */
+    .reproductor {
+      --tinta: #1f3fb0; --tinta-suave: #5b6b94; --rojo: #c0294f; --azul: #2f6df6; --azul-hover: #2459d8;
+      --papel: #fdfcf8; --renglon: #dfe7f7; --margen: #f2a7b6; --cinta-azul: rgba(124, 163, 255, .5); --cinta-amarilla: rgba(246, 214, 140, .85);
+      --mano: 'Caveat', 'Segoe Print', cursive; --letra: 'Plus Jakarta Sans', Inter, 'Segoe UI', sans-serif;
+      position: relative; outline: none; font-family: var(--letra); color: #1c2541;
     }
+    .reproductor:focus-visible .libreta { box-shadow: 0 0 0 3px #9db8ff, 0 18px 40px rgba(30, 60, 140, .16); }
+    .solo-lector { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+    .libreta {
+      position: relative; max-width: 1180px; margin: 22px auto 0; box-sizing: border-box;
+      display: grid; grid-template-columns: 150px minmax(0, 1fr); grid-template-rows: auto auto auto;
+      grid-template-areas: "recorrido cabeza" "recorrido foto" "recorrido pie";
+      column-gap: 28px; padding: 26px 46px 22px 124px; border-radius: 22px; border: 1px solid #e3e9f6;
+      background:
+        linear-gradient(90deg, transparent 95px, var(--margen) 95px, var(--margen) 97px, transparent 97px),
+        repeating-linear-gradient(180deg, transparent 0 31px, var(--renglon) 31px 32px),
+        var(--papel);
+      box-shadow: 0 18px 40px rgba(30, 60, 140, .16);
+      transition: filter .25s ease;
+    }
+    .libreta.velada { filter: blur(2px); }
+    .anillos { position: absolute; left: 34px; top: 52px; bottom: 40px; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+    .anillos i { display: block; width: 30px; height: 11px; border-radius: 999px; background: linear-gradient(180deg, #c4cee2, #9eaccb);
+      box-shadow: inset 0 -1px 0 rgba(0,0,0,.12), 0 1px 0 rgba(255,255,255,.8); }
+
+    /* Pestañas pegadas al borde de arriba de la hoja. */
+    .pestanas { position: absolute; top: -22px; right: 58px; display: flex; gap: 6px; z-index: 3; }
+    .pestana { display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px 10px; border: 0; border-radius: 10px 10px 0 0;
+      font: 700 1.2rem/1 var(--mano); cursor: pointer; transition: transform .15s ease; }
+    .pestana:hover { transform: translateY(-2px); }
+    .pestana:focus-visible { outline: 2px solid var(--tinta); outline-offset: 2px; }
+    .pestana svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+    .pestana svg .parlante { fill: currentColor; stroke: none; }
+    .pestana.musica { background: var(--azul); color: #fff; }
+    .pestana.musica.apagada { background: #dbe6ff; color: var(--tinta); }
+    .pestana.pantalla { background: #fde7a6; color: #8a5a00; }
+    .pestana.salir { background: #ffd3dc; color: var(--rojo); }
+
+    .cabeza { grid-area: cabeza; position: relative; padding-right: 90px; }
+    .rotulo { margin: 0 0 2px; font: 700 11px/1.2 var(--letra); letter-spacing: .14em; text-transform: uppercase; color: #6b7590; }
+    .titulo-caso { margin: 0; font: 700 clamp(1.6rem, 2.6vw, 2.3rem)/1.15 var(--mano); color: var(--tinta); }
+    .reloj-libreta { position: absolute; right: 0; top: 6px; font: 700 1.5rem/1 var(--mano); color: var(--tinta);
+      font-variant-numeric: tabular-nums; transform: rotate(2deg); }
+    .reloj-libreta::before { content: '⏱ '; font-size: 1.1rem; }
+    .reloj-libreta.urgente { color: var(--rojo); }
+
+    /* Mi recorrido: escenarios y decisiones reales del caso. */
+    .recorrido { grid-area: recorrido; padding-top: 92px; position: relative; }
+    .recorrido-titulo { margin: 0 0 10px; font: 700 1.35rem/1.2 var(--mano); color: var(--tinta); }
+    .recorrido-boton { display: none; }
+    .recorrido-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+    .paso-recorrido { display: flex; align-items: center; gap: 8px; font: 600 1.25rem/1.3 var(--mano); color: #9aa3b8; }
+    .casilla { flex: 0 0 auto; width: 15px; height: 15px; border-radius: 3px; border: 1.5px solid #b9c2d6; background: #fff; display: grid; place-items: center; }
+    .casilla svg { width: 13px; height: 13px; fill: none; stroke: var(--tinta); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+    .paso-recorrido.hecho { color: var(--tinta); }
+    .paso-recorrido.hecho .item-texto { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+    .paso-recorrido.hecho .casilla { border-color: var(--tinta-suave); }
+    .paso-recorrido.actual { color: var(--tinta); }
+    .paso-recorrido.actual .casilla { border-color: var(--azul); background: #e6eeff; box-shadow: 0 0 0 2px rgba(47, 109, 246, .15); }
+    .contador { margin: 18px 0 0; font: 600 1.25rem/1 var(--mano); color: var(--tinta-suave); letter-spacing: .06em; font-variant-numeric: tabular-nums; }
+
+    /* La escena como foto pegada con cinta. */
+    /* La foto (escena 16:9 + pie) cabe en el alto de la ventana: el resto de la libreta ocupa unos 360 px. */
+    .foto { grid-area: foto; position: relative; margin: -6px 0 0; padding: 12px 12px 0; background: #fff; transform: rotate(-1.4deg);
+      box-shadow: 0 2px 4px rgba(20, 40, 90, .08), 0 18px 34px rgba(20, 40, 90, .18); justify-self: center; box-sizing: border-box;
+      width: min(100%, max(380px, calc((100dvh - 360px) * 16 / 9 + 24px))); }
+    .lienzo { position: relative; width: 100%; margin: 0 auto; cursor: pointer; user-select: none; }
+    .pie-foto { margin: 0; padding: 8px 4px 12px; font: 600 1.35rem/1.2 var(--mano); color: var(--tinta); }
+    .cinta { position: absolute; width: 110px; height: 30px; background: var(--cinta-azul); z-index: 2; pointer-events: none;
+      box-shadow: 0 1px 2px rgba(30, 60, 140, .08); }
+    .cinta-izq { left: -38px; top: -6px; transform: rotate(-32deg); }
+    .cinta-der { right: -38px; top: -6px; transform: rotate(32deg); }
+
+    /* Pie de la hoja: historial y efectos a la izquierda; fichas Atrás y Seguir leyendo a la derecha. */
+    .pie-libreta { grid-area: pie; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-top: -16px; position: relative; z-index: 2; }
+    .pie-libreta.oculto { visibility: hidden; }
+    .redondos { display: flex; align-items: center; gap: 10px; padding-top: 34px; }
+    .redondo { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--tinta);
+      background: #fff; border: 1.5px dashed #9fb1d6; transition: transform .15s ease, background .15s ease; }
+    .redondo:hover { transform: rotate(-6deg); }
+    .redondo.activo { background: #e6eeff; border-style: solid; }
+    .redondo.efectos { background: #e6eeff; border: 1.5px solid #9db8ff; }
+    .redondo.efectos.apagado { background: #fff; border-style: dashed; color: #8a94ad; }
+    .redondo svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    .redondo svg .tachado { stroke: var(--rojo); }
+    .redondo:focus-visible, .ficha:focus-visible { outline: 3px solid #9db8ff; outline-offset: 3px; }
+    .fichas { display: flex; align-items: flex-start; gap: 14px; }
+    .ficha { position: relative; border: 0; cursor: pointer; font: 700 1.6rem/1 var(--mano); padding: 16px 26px 14px;
+      box-shadow: 0 8px 18px rgba(20, 40, 90, .18); transition: transform .15s ease, box-shadow .15s ease, background .15s ease; }
+    .ficha::before { content: ''; position: absolute; top: -9px; left: 50%; width: 46px; height: 16px; transform: translateX(-50%) rotate(-2deg); }
+    .ficha.atras { background: #fff; color: var(--tinta); transform: rotate(-2deg); margin-top: 8px; }
+    .ficha.atras::before { background: var(--cinta-azul); }
+    .ficha.seguir { background: var(--azul); color: #fff; transform: rotate(1.5deg); padding: 20px 34px 18px; }
+    .ficha.seguir::before { background: var(--cinta-amarilla); }
+    .ficha:hover:not(:disabled) { transform: rotate(0) translateY(-2px); box-shadow: 0 12px 24px rgba(20, 40, 90, .22); }
+    .ficha.seguir:hover:not(:disabled) { background: var(--azul-hover); }
+    .ficha:disabled { opacity: .45; cursor: default; }
+
+    /* Aviso: nota adhesiva amarilla. */
+    .nota-adhesiva { position: absolute; top: 70px; right: 54px; z-index: 4; width: 200px; padding: 16px 18px 18px;
+      background: linear-gradient(180deg, #fff3ad, #ffeb94); color: #3b3b2e; transform: rotate(-2.5deg);
+      box-shadow: 0 10px 22px rgba(90, 70, 0, .2); }
+    .nota-adhesiva strong { display: block; font: 700 1.7rem/1.1 var(--mano); color: var(--tinta); }
+    .nota-adhesiva p { margin: 6px 0 0; font: 600 1.15rem/1.25 var(--mano); }
+    .cinta-nota { width: 64px; height: 18px; top: -10px; left: 50%; transform: translateX(-50%) rotate(-3deg); background: rgba(255, 255, 255, .7); }
+
+    /* Velo azul claro sobre la libreta (pregunta y fin de escena). */
+    .velo-libreta { position: absolute; inset: 0; z-index: 20; display: grid; place-items: center; padding: 24px; box-sizing: border-box;
+      overflow: auto; border-radius: 22px; background: rgba(214, 228, 255, .78); cursor: default; }
+    .decidir { width: min(980px, 100%); display: grid; justify-items: center; gap: 14px; }
+    .decidir-rotulo { margin: 0; font: 700 1.45rem/1 var(--mano); color: var(--rojo); transform: rotate(-2deg); }
+    .decidir-enunciado { font: 800 clamp(1.25rem, 2.1vw, 1.75rem)/1.25 var(--letra); color: #16213e; text-align: center; max-width: 900px; }
+    /* El enunciado llega como HTML: sus párrafos toman la letra grande de la pregunta. */
+    :host ::ng-deep .decidir-enunciado :is(p, div, span, strong, em) { font: inherit; color: inherit; }
+    :host ::ng-deep .decidir-enunciado > :first-child { margin-top: 0; }
+    :host ::ng-deep .decidir-enunciado > :last-child { margin-bottom: 0; }
+    .decidir-pista { margin: -4px 0 0; font: 600 1.2rem/1.2 var(--mano); color: var(--tinta-suave); }
+    .cartulinas { width: 100%; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; align-items: start; margin-top: 6px; }
+    .cartulina { position: relative; min-height: 196px; padding: 26px 18px 34px 52px; text-align: left; cursor: pointer; border: 3px solid transparent;
+      background:
+        linear-gradient(90deg, transparent 34px, var(--margen) 34px, var(--margen) 36px, transparent 36px),
+        repeating-linear-gradient(180deg, transparent 0 27px, var(--renglon) 27px 28px),
+        var(--papel);
+      box-shadow: 0 10px 22px rgba(20, 40, 90, .16); transform: rotate(var(--giro, 0deg)); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+      font: 500 .98rem/28px var(--letra); color: #2a3350; }
+    .cartulina:hover { transform: rotate(0) translateY(-4px); box-shadow: 0 16px 30px rgba(20, 40, 90, .2); }
+    .cartulina.elegida { border-color: var(--azul); }
+    .cartulina:focus-visible { outline: 3px solid #9db8ff; outline-offset: 3px; }
+    .cartulina .numero { position: absolute; left: 12px; top: 26px; font: 700 1.5rem/1 var(--mano); color: var(--rojo); }
+    .cartulina .texto { display: block; padding-top: 10px; }
+    .cinta-cartulina { width: 74px; height: 22px; top: -10px; left: 50%; transform: translateX(-50%) rotate(-1deg); }
+    .sello { display: inline-block; font: 800 .78rem/1 var(--letra); letter-spacing: .1em; text-transform: uppercase; border-radius: 8px; }
+    .sello-decision { position: absolute; right: 10px; bottom: 10px; padding: 5px 8px; color: var(--azul); border: 2px solid var(--azul);
+      background: rgba(255, 255, 255, .85); transform: rotate(-12deg); }
+    .decidir-acciones { display: flex; align-items: center; gap: 14px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
+    .atajo-teclado { font: 600 1.15rem/1 var(--mano); color: #4d5674; }
+    .decidir-extra { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+    .decidir-extra button { border: 0; background: none; padding: 4px 6px; cursor: pointer; font: 600 1.2rem/1 var(--mano); color: var(--tinta);
+      text-decoration: underline; text-decoration-color: rgba(31, 63, 176, .35); text-underline-offset: 4px; }
+
+    .hoja-fin { position: relative; width: min(460px, 100%); padding: 34px 40px 40px; text-align: center; display: grid; justify-items: center; gap: 10px;
+      background: repeating-linear-gradient(180deg, transparent 0 21px, var(--renglon) 21px 22px), var(--papel);
+      box-shadow: 0 18px 40px rgba(20, 40, 90, .22); transform: rotate(-1deg); }
+    .sello-completada { padding: 8px 18px; font-size: 1.3rem; color: #1f9a4f; border: 3px solid #1f9a4f; border-radius: 10px; transform: rotate(-8deg); margin-bottom: 4px; }
+    .hoja-fin h3 { margin: 0; font: 700 2.3rem/1.1 var(--mano); color: var(--tinta); }
+    .hoja-fin p { margin: 0 0 12px; font: 500 .92rem/1.5 var(--letra); color: #4d5674; max-width: 340px; }
+
+    /* Animaciones (sin ellas con "reducir movimiento"). */
+    .animado .velo-libreta { animation: aparecer .22s ease both; }
+    .animado .decidir, .animado .hoja-fin { animation: subir .3s ease both; }
+    .animado .nota-adhesiva { animation: pegar .38s cubic-bezier(.2, .9, .3, 1.3) both; }
+    .animado .sello-decision { animation: sellar-decision .28s ease-out both; }
+    .animado .sello-completada { animation: sellar-completada .36s ease-out .12s both; }
+    @keyframes aparecer { from { opacity: 0; } }
+    @keyframes subir { from { opacity: 0; transform: translateY(14px); } }
+    @keyframes pegar { from { opacity: 0; transform: rotate(-9deg) translateY(-14px) scale(.92); } }
+    @keyframes sellar-decision { from { opacity: 0; transform: rotate(-12deg) scale(1.9); } }
+    @keyframes sellar-completada { from { opacity: 0; transform: rotate(-8deg) scale(1.8); } }
+    @media (prefers-reduced-motion: reduce) {
+      .ficha, .cartulina, .redondo, .pestana, .libreta { transition: none; }
+    }
+
+    /* ---- Lo que va dentro de la foto (escena): igual que antes. */
+    .sobre-escena { display: none; position: absolute; top: 12px; right: 12px; z-index: 5; align-items: center; gap: 8px; }
     .reloj {
       font-variant-numeric: tabular-nums; min-width: 4.4rem; text-align: center; padding: 7px 12px;
       border-radius: 999px; background: rgba(11, 18, 32, .78); color: #f4f7fb; font-size: 14px; font-weight: 700;
@@ -215,7 +474,10 @@ function visemaDe(letra: string, anterior: Visema | null): Visema | null {
       background: rgba(11, 18, 32, .78); color: #f4f7fb; box-shadow: 0 8px 20px rgba(0,0,0,.28); backdrop-filter: blur(8px);
     }
     .icono svg { width: 18px; height: 18px; fill: currentColor; }
+    .icono svg.linea { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
     .icono:hover, .icono[aria-pressed="true"] { background: #1e3a5f; }
+    .icono svg.parlante { fill: currentColor; }
+    .icono svg .trazo { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
     .velo, .portada, .letrero { position: absolute; inset: 0; z-index: 1; display: grid; place-content: center; text-align: center; border-radius: 14px; pointer-events: none; }
     .portada button { pointer-events: auto; }
     .velo { background: rgba(15,20,28,.55); color: #fff; font-size: 1rem; }
@@ -227,59 +489,11 @@ function visemaDe(letra: string, anterior: Visema | null): Visema | null {
       font-size: clamp(1rem, 3vw, 1.6rem); font-weight: 600; }
     .letrero.animado span { animation: letrero 1.8s ease both; }
     @keyframes letrero { 0% { opacity: 0; transform: translateY(6px); } 20%, 80% { opacity: 1; transform: none; } 100% { opacity: .85; } }
-    .pregunta { position: absolute; left: 3%; right: 3%; bottom: 3%; z-index: 2; max-height: 72%; overflow: auto; cursor: default;
-      padding: 16px 16px 14px; border-radius: 18px; color: #f4f7fb;
-      background: linear-gradient(180deg, rgba(10, 23, 51, .92), rgba(12, 22, 40, .88));
-      border: 1px solid rgba(159, 227, 217, .22); box-shadow: 0 18px 40px rgba(5, 10, 22, .45); backdrop-filter: blur(16px); }
-    .marca { margin: 0 0 6px; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #9fe3d9; }
-    .enunciado { font-weight: 650; margin-bottom: 8px; color: #fff; font-size: 1.02rem; line-height: 1.35; }
-    .enunciado :first-child { margin-top: 0; }
-    .pista { margin: 0 0 12px; font-size: .86rem; color: #c5d4f0; }
-    .pista::before { content: 'Pista · '; font-weight: 700; color: #9fe3d9; }
-    .opciones { display: grid; gap: 8px; }
-    .opcion { display: flex; align-items: center; gap: 12px; text-align: left; padding: 10px 12px; border-radius: 12px;
-      border: 1px solid rgba(197, 212, 238, .18); background: rgba(232, 238, 252, .08); color: #eef2f8; font: inherit; cursor: pointer; }
-    .opcion:hover { border-color: rgba(159, 227, 217, .55); background: rgba(47, 111, 104, .28); }
-    .opcion.elegida { border-color: #9fe3d9; background: rgba(47, 111, 104, .5); box-shadow: inset 0 0 0 1px #9fe3d9; }
-    .clave {
-      flex: 0 0 auto; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px;
-      background: #16325c; color: #9fe3d9; font-size: 12px; font-weight: 800;
-    }
-    .opcion.elegida .clave { background: #9fe3d9; color: #0a1733; }
-    .texto { min-width: 0; line-height: 1.35; }
-    .acciones-pregunta { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 12px; }
-    .acciones-pregunta button { padding: 7px 14px; border-radius: 10px; border: 1px solid rgba(197, 212, 238, .28);
-      background: transparent; color: #dfe7f3; font: inherit; font-size: .88rem; cursor: pointer; }
-    .acciones-pregunta button:hover { border-color: #9fe3d9; color: #fff; }
-    .acciones-pregunta button:focus-visible { outline: 2px solid #9fe3d9; outline-offset: 2px; }
     .resultados { position: absolute; inset: 0; z-index: 2; overflow: auto; cursor: default; border-radius: 14px;
       background: rgba(13,19,30,.94); backdrop-filter: blur(3px); overscroll-behavior: contain; }
-    .controles.oculto { display: none; }
-    .controles {
-      display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center;
-      padding: 8px; border-radius: 16px; width: fit-content; margin: 0 auto;
-      background: rgba(10, 23, 51, .88); border: 1px solid rgba(159, 227, 217, .18);
-      box-shadow: 0 10px 24px rgba(5, 10, 22, .22);
-    }
-    .controles button {
-      padding: 8px 16px; border-radius: 12px; border: 1px solid rgba(197, 212, 238, .2);
-      background: rgba(232, 238, 252, .08); color: #eef2f8; font: inherit; font-weight: 650; cursor: pointer;
-    }
-    .controles button:hover:not(:disabled) { border-color: rgba(159, 227, 217, .5); background: rgba(47, 111, 104, .28); }
-    .controles button:disabled { opacity: .38; cursor: default; }
-    .controles .principal {
-      background: #2f6f68; color: #fff; border-color: #3d8a81; min-width: 118px;
-      box-shadow: 0 6px 16px rgba(47, 111, 104, .35);
-    }
-    .controles .principal:hover:not(:disabled) { background: #3a8880; border-color: #9fe3d9; }
-    .controles .activo { background: #16325c; color: #9fe3d9; border-color: #9fe3d9; }
-    .avance {
-      font-size: .8rem; font-weight: 700; color: #9fe3d9; font-variant-numeric: tabular-nums;
-      padding: 6px 10px; letter-spacing: .04em;
-    }
     .historial {
-      position: absolute; top: 58px; right: 12px; bottom: 12px; width: min(340px, 88%); z-index: 4; display: grid;
-      grid-template-rows: auto minmax(0, 1fr); overflow: hidden; border-radius: 16px;
+      position: absolute; top: 12px; right: 12px; bottom: 12px; width: min(340px, 88%); z-index: 4; display: grid;
+      grid-template-rows: auto minmax(0, 1fr); overflow: hidden; border-radius: 16px; cursor: default;
       background: linear-gradient(180deg, rgba(12, 18, 32, .94), rgba(16, 24, 40, .9)); color: #eef2f8;
       box-shadow: 0 16px 40px rgba(0,0,0,.4); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,.08);
     }
@@ -309,24 +523,63 @@ function visemaDe(letra: string, anterior: Visema | null): Visema | null {
     .cuerpo span { font-size: .88rem; line-height: 1.4; color: #e8eef6; }
     .entrada.narra .cuerpo span { font-style: italic; color: #c5cedd; }
     .entrada.pregunta .cuerpo strong { color: #d7efe9; }
-    .solo-lector { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-    .icono svg.parlante { fill: currentColor; }
-    .icono svg .trazo { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+
+    /* ---- Celular vertical: libreta simplificada (sin anillos, recorrido en un botón, foto a todo el ancho). */
+    @media (max-width: 720px) {
+      .reproductor:not(.pantalla-completa) .libreta {
+        grid-template-columns: minmax(0, 1fr); grid-template-areas: "cabeza" "recorrido" "foto" "pie";
+        margin-top: 26px; padding: 18px 12px 14px; border-radius: 18px; column-gap: 0;
+        background: repeating-linear-gradient(180deg, transparent 0 31px, var(--renglon) 31px 32px), var(--papel);
+      }
+      .reproductor:not(.pantalla-completa) .anillos { display: none; }
+      .pestanas { right: 14px; top: -20px; gap: 4px; }
+      .pestana { padding: 6px 11px 8px; font-size: 1.05rem; }
+      .cabeza { padding-right: 64px; }
+      .titulo-caso { font-size: 1.5rem; }
+      .reloj-libreta { font-size: 1.25rem; }
+      .recorrido { padding-top: 6px; display: flex; align-items: center; justify-content: space-between; gap: 10px; z-index: 6; }
+      .recorrido-titulo { display: none; }
+      .recorrido-boton { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 4px 14px; border-radius: 999px;
+        border: 1.5px dashed #9fb1d6; background: #fff; cursor: pointer; font: 700 1.25rem/1 var(--mano); color: var(--tinta); }
+      .recorrido-lista { display: none; position: absolute; top: calc(100% + 6px); left: 0; min-width: 210px; padding: 14px 16px;
+        background: var(--papel); box-shadow: 0 14px 30px rgba(20, 40, 90, .22); border: 1px solid #e3e9f6; border-radius: 12px; }
+      .recorrido-lista.abierta { display: grid; }
+      .contador { margin: 0; }
+      .foto { margin: 10px 0 0; padding: 6px 6px 0; transform: none; width: 100%; box-sizing: border-box; }
+      .lienzo { width: 100%; min-width: 0; }
+      .cinta { width: 70px; height: 20px; }
+      .cinta-izq { left: -18px; top: -6px; } .cinta-der { right: -18px; top: -6px; }
+      .pie-foto { font-size: 1.15rem; padding: 6px 2px 8px; }
+      .pie-libreta { flex-direction: column-reverse; align-items: stretch; margin-top: 14px; gap: 10px; }
+      .redondos { padding-top: 0; }
+      .fichas { display: grid; grid-template-columns: 1fr 1.6fr; gap: 12px; }
+      .ficha { min-height: 58px; font-size: 1.5rem; padding: 12px 10px; }
+      .ficha.seguir { padding: 12px 10px; }
+      .ficha.atras { margin-top: 0; }
+      .nota-adhesiva { top: 112px; right: 10px; width: 170px; padding: 12px 14px 14px; }
+      /* En celular la pregunta y el fin de escena cubren toda la pantalla y se desplazan si no caben. */
+      .reproductor:not(.pantalla-completa) .velo-libreta { position: fixed; inset: 0; z-index: 1500; padding: 18px 12px 28px;
+        place-items: start center; border-radius: 0; background: rgba(214, 228, 255, .9); }
+      .cartulinas { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+      .cartulina { min-height: 0; padding: 22px 14px 30px 48px; transform: none; }
+      .hoja-fin { padding: 28px 22px 30px; }
+      .historial { left: 8px; right: 8px; width: auto; top: 8px; bottom: 8px; }
+    }
 
     /*
-     * Escena agrandada (horizontal). Con pantalla completa real (Android/escritorio) el reproductor ocupa la
-     * pantalla; sin ella (iPhone) es una "capa" fija del tamaño de la ventana y, si el celular está vertical,
-     * se gira 90° para que la escena use el alto del celular como ancho. La escena queda en 16:9 dentro del
-     * espacio libre, con franjas negras si sobra (container queries: 100cqw/100cqh = espacio libre).
+     * Pantalla completa (horizontal): se oculta la libreta y solo quedan la escena y dos fichas pequeñas flotantes.
+     * Con pantalla completa real (Android/escritorio) el reproductor ocupa la pantalla; sin ella (iPhone) es una
+     * "capa" fija del tamaño de la ventana y, si el celular está vertical, se gira 90°. La escena queda en 16:9
+     * dentro del espacio libre (container queries: 100cqw/100cqh = espacio libre).
      * --seg-*: márgenes seguros (notch y barra inferior) ya orientados según el giro.
      */
     .reproductor.pantalla-completa {
       --seg-arriba: env(safe-area-inset-top, 0px); --seg-derecha: env(safe-area-inset-right, 0px);
       --seg-abajo: env(safe-area-inset-bottom, 0px); --seg-izquierda: env(safe-area-inset-left, 0px);
-      --borde: 6px; --controles: 112px;
+      --borde: 6px;
       --escena-ancho: min(100cqw, 100cqh * 16 / 9); --escena-alto: min(100cqh, 100cqw * 9 / 16);
       position: fixed; inset: 0; z-index: 2000; width: 100%; height: 100%; margin: 0;
-      box-sizing: border-box; display: grid; place-items: center; gap: 0;
+      box-sizing: border-box; display: grid; place-items: center;
       padding: max(var(--borde), var(--seg-arriba)) max(var(--borde), var(--seg-derecha))
         max(var(--borde), var(--seg-abajo)) max(var(--borde), var(--seg-izquierda));
       background: #000; border-radius: 0; container-type: size; overscroll-behavior: contain; touch-action: manipulation;
@@ -335,38 +588,32 @@ function visemaDe(letra: string, anterior: Visema | null): Visema | null {
     .reproductor.capa.girada {
       width: var(--pc-alto); height: var(--pc-ancho);
       transform-origin: top left; transform: translateX(var(--pc-ancho)) rotate(90deg);
-      /* Girada 90° a la derecha: su borde de arriba queda a la derecha del celular, el izquierdo arriba (notch), etc. */
       --seg-arriba: env(safe-area-inset-right, 0px); --seg-derecha: env(safe-area-inset-bottom, 0px);
       --seg-abajo: env(safe-area-inset-left, 0px); --seg-izquierda: env(safe-area-inset-top, 0px);
     }
-    .reproductor.pantalla-completa .lienzo { width: var(--escena-ancho); max-width: none !important; margin: 0; }
-    .reproductor.pantalla-completa .sobre-escena { top: 8px; right: 8px; gap: 6px; }
+    .reproductor.pantalla-completa .libreta { display: contents; }
+    .reproductor.pantalla-completa :is(.anillos, .pestanas, .cabeza, .recorrido, .cinta-izq, .cinta-der, .pie-foto, .redondos, .nota-adhesiva) { display: none; }
+    .reproductor.pantalla-completa .foto { margin: 0; padding: 0; transform: none; box-shadow: none; background: none; width: auto; }
+    .reproductor.pantalla-completa .lienzo { width: var(--escena-ancho); min-width: 0; max-width: none !important; margin: 0; }
+    .reproductor.pantalla-completa .sobre-escena { display: flex; top: 8px; right: 8px; gap: 6px; }
     .reproductor.pantalla-completa .icono { width: 36px; height: 36px; border-radius: 10px; }
     .reproductor.pantalla-completa .reloj { padding: 6px 10px; font-size: 13px; }
-    /* Anterior, Siguiente e Historial: columna compacta dentro de la escena, abajo a la derecha. */
-    .reproductor.pantalla-completa .controles {
-      position: absolute; z-index: 6; margin: 0; width: var(--controles); box-sizing: border-box;
-      right: calc(max(var(--borde), var(--seg-derecha)) + (100cqw - var(--escena-ancho)) / 2 + 8px);
-      bottom: calc(max(var(--borde), var(--seg-abajo)) + (100cqh - var(--escena-alto)) / 2 + 8px);
-      flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 5px; padding: 5px; border-radius: 12px;
-      background: rgba(10, 23, 51, .72); backdrop-filter: blur(8px);
-    }
-    .reproductor.pantalla-completa .controles button {
-      min-height: 32px; padding: 5px 8px; border-radius: 9px; font-size: 13px; line-height: 1.1; min-width: 0;
-    }
-    .reproductor.pantalla-completa .controles .avance { display: none; }
-    /* Lo que va dentro de la escena deja libre la columna de controles. */
-    .reproductor.pantalla-completa .pregunta { right: calc(var(--controles) + 16px); left: 2%; bottom: 3%; max-height: 82%; padding: 12px; }
-    .reproductor.pantalla-completa .historial { right: calc(var(--controles) + 16px); top: 52px; bottom: 8px; width: auto; left: auto;
-      min-width: min(300px, 50%); border-radius: 12px; }
-    @media (max-width: 768px) {
-      .reproductor:not(.pantalla-completa) .pregunta { left: 2%; right: 2%; bottom: 2%; max-height: 78%; padding: 12px; }
-      .opcion { min-height: 44px; align-items: center; }
-      .reproductor:not(.pantalla-completa) .controles button { min-height: 44px; padding: 10px 14px; }
-      .reproductor:not(.pantalla-completa) .historial { left: 8px; right: 8px; width: auto; top: 54px; bottom: 8px; }
-      .sobre-escena { top: 8px; right: 8px; }
-    }
-    .reproductor.pantalla-completa .opcion { min-height: 38px; padding: 7px 10px; }
+    /* Atrás y Seguir: dos fichas pequeñas flotantes, abajo a la derecha de la escena. */
+    .reproductor.pantalla-completa .pie-libreta { position: absolute; z-index: 6; margin: 0;
+      right: calc(max(var(--borde), var(--seg-derecha)) + (100cqw - var(--escena-ancho)) / 2 + 10px);
+      bottom: calc(max(var(--borde), var(--seg-abajo)) + (100cqh - var(--escena-alto)) / 2 + 12px); }
+    /* Caben en la columna que el cuadro de diálogo deja libre a la derecha (112 px). */
+    .reproductor.pantalla-completa .fichas { display: flex; flex-direction: column; align-items: stretch; gap: 8px; width: 112px; }
+    .reproductor.pantalla-completa .ficha { min-height: 0; font-size: 1rem; padding: 8px 4px 7px; opacity: .95; white-space: nowrap; }
+    .reproductor.pantalla-completa .ficha.seguir { padding: 8px 4px 7px; }
+    .reproductor.pantalla-completa .ficha::before { width: 30px; height: 10px; top: -6px; }
+    .reproductor.pantalla-completa .ficha.atras { margin: 0; }
+    .reproductor.pantalla-completa .historial { right: 8px; top: 52px; bottom: 8px; width: min(340px, 50%); left: auto; border-radius: 12px; }
+    .reproductor.pantalla-completa .velo-libreta { border-radius: 0; padding: 12px; place-items: start center; }
+    .reproductor.pantalla-completa .cartulinas { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+    .reproductor.pantalla-completa .cartulina { min-height: 0; padding: 18px 12px 28px 44px; font-size: .88rem; line-height: 24px; }
+    .reproductor.pantalla-completa .decidir { gap: 8px; }
+    .reproductor.pantalla-completa .decidir-enunciado { font-size: 1.15rem; }
   `]
 })
 export class NovelaReproductorComponent implements OnDestroy {
@@ -403,6 +650,9 @@ export class NovelaReproductorComponent implements OnDestroy {
   /** Pantalla final sin resultados: título y botón (vacío = sin botón). */
   readonly textoFin = input('Fin del caso');
   readonly textoVolver = input<string | null>('Volver a empezar');
+  /** Pestaña "Salir" de la libreta (emite `cerrar`) y su etiqueta para lectores de pantalla. */
+  readonly mostrarSalir = input(true);
+  readonly etiquetaSalir = input('Salir del caso');
 
   readonly opcion = output<OpcionElegida>();
   /** Se pulsó "Finalizar" en la última pregunta: opciones elegidas ("escenario:pregunta" → índice). */
@@ -437,6 +687,17 @@ export class NovelaReproductorComponent implements OnDestroy {
   readonly pantallaAncho = signal(0);
   readonly pantallaAlto = signal(0);
   readonly musica = inject(MusicaNovelaService);
+  readonly efectos = inject(EfectosNovelaService);
+  /** Anillos de la libreta y la inclinación de cada ficha de cartulina. */
+  readonly anillos = Array.from({ length: 8 }, (_, i) => i);
+  readonly giros = ['-1.4deg', '1.3deg', '-0.9deg', '1.6deg', '-1.2deg'];
+  /** Celular: la lista de "Mi recorrido" se abre con su botón. */
+  readonly recorridoAbierto = signal(false);
+  /** Hoja "Escena N lista" después de anotar la última decisión de un escenario. */
+  readonly finEscena = signal<{ numero: number; ultima: boolean } | null>(null);
+  /** Nota adhesiva "¡Anotado!" (unos segundos después de anotar). */
+  readonly avisoAnotado = signal(false);
+  private temporizadorAviso?: ReturnType<typeof setTimeout>;
   private readonly escena = viewChild(EscenaNovelaComponent);
   private entradaHistorial = false;
   private viewportOriginal: string | null = null;
@@ -543,6 +804,55 @@ export class NovelaReproductorComponent implements OnDestroy {
     const p = this.paso();
     return p?.tipo === 'pregunta' && !this.pasos().slice(this.indice() + 1).some(x => x.tipo === 'pregunta');
   });
+  /** Contador real de líneas con dos cifras ("06 / 67"). */
+  readonly contador = computed(() => {
+    const dos = (n: number) => String(n).padStart(2, '0');
+    const total = this.pasos().length;
+    return total ? `${dos(this.indice() + 1)} / ${dos(total)}` : '';
+  });
+  /** Pie de la foto: escenario actual ("Escena 1 · Cafetería de la universidad"). */
+  readonly pieFoto = computed(() => {
+    const p = this.paso();
+    if (!p || p.escena.escenario < 0) return p?.tipo === 'portada' ? 'Portada del caso' : 'Presentación del caso';
+    const b = this.caso().bloques[p.escena.escenario];
+    return `Escena ${p.escena.escenario + 1}${b?.nombre?.trim() ? ' · ' + b.nombre.trim() : ''}`;
+  });
+  /** Número de la decisión actual en todo el caso y cuántas hay ("1 de 3"). */
+  readonly totalDecisiones = computed(() => this.pasos().filter(p => p.tipo === 'pregunta').length);
+  readonly numeroDecision = computed(() => {
+    const i = this.indice();
+    return this.pasos().slice(0, i + 1).filter(p => p.tipo === 'pregunta').length;
+  });
+  /**
+   * "Mi recorrido": cada escenario del caso y, de los ya alcanzados, sus decisiones. Hecho: el escenario ya se
+   * leyó (o se pasó) y la decisión ya se anotó; actual: donde va; pendiente: lo que falta. Nunca dice si una
+   * decisión fue correcta.
+   */
+  readonly recorrido = computed(() => {
+    type Item = { clave: string; texto: string; estado: 'hecho' | 'actual' | 'pendiente' };
+    const p = this.paso();
+    const pasos = this.pasos();
+    const elegidas = this.selecciones();
+    const fin = p?.tipo === 'fin';
+    const actual = p?.escena.escenario ?? -1;
+    const items: Item[] = [];
+    let numero = 0;
+    this.caso().bloques.forEach((b, i) => {
+      let estado: Item['estado'] = 'pendiente';
+      if (fin || i < actual || (i === actual && p?.tipo === 'pregunta')) estado = 'hecho';
+      else if (i === actual) estado = 'actual';
+      items.push({ clave: `e${i}`, texto: `Escena ${i + 1}`, estado });
+      for (const q of pasos) {
+        if (q.tipo !== 'pregunta' || q.bloqueIndice !== i) continue;
+        numero++;
+        if (!fin && i > actual) continue;
+        const respondida = elegidas[`${q.bloqueIndice}:${q.preguntaIndice}`] != null && p !== q;
+        const esta = p === q;
+        items.push({ clave: `d${i}:${q.preguntaIndice}`, texto: `Decisión ${numero}`, estado: respondida ? 'hecho' : esta ? 'actual' : 'pendiente' });
+      }
+    });
+    return items;
+  });
   readonly reloj = computed(() => {
     const segundos = this.tiempoRestante();
     if (segundos == null) return '';
@@ -634,6 +944,7 @@ export class NovelaReproductorComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    clearTimeout(this.temporizadorAviso);
     clearInterval(this.temporizador);
     clearTimeout(this.autoAvance);
     // Al cerrar el caso con la escena agrandada se deshace todo, sin tocar el historial (la página ya navega).
@@ -803,6 +1114,7 @@ export class NovelaReproductorComponent implements OnDestroy {
     const pasos = this.pasos();
     if (!pasos.length) return;
     clearTimeout(this.autoAvance);
+    this.finEscena.set(null);
     this.indice.set(Math.min(Math.max(0, i), pasos.length - 1));
     const p = this.paso()!;
     // Al salir del escenario cuya narración se volvió a ver, la próxima vez se vuelve a saltar.
@@ -830,9 +1142,78 @@ export class NovelaReproductorComponent implements OnDestroy {
     }
   }
 
-  /** Si está escribiendo, completa la frase; si ya terminó, pasa al siguiente paso. */
+  /**
+   * Si está escribiendo, completa la frase; si ya terminó, pasa al siguiente paso. En una pregunta, avanzar es
+   * anotar la decisión elegida (ver anotar()).
+   */
   avanzar(): void {
     if (this.escribiendo()) { this.terminarTexto(this.textoCompleto()); return; }
+    if (this.finEscena()) { this.pasarPagina(); return; }
+    if (this.paso()?.tipo === 'pregunta') { this.anotar(); return; }
+    this.siguientePaso();
+  }
+
+  /** Ficha "Seguir leyendo" (y clic en la escena, Enter o →): con su sonido suave. */
+  seguir(): void {
+    if (this.paso()?.tipo === 'fin') return;
+    this.efectos.sonar('avanzar');
+    this.avanzar();
+  }
+
+  /** Ficha "Atrás" (y ←). */
+  atras(): void {
+    if (this.destinoAtras() === null) return;
+    this.efectos.sonar('avanzar');
+    this.anterior();
+  }
+
+  /** Elige una ficha de cartulina: queda marcada "Mi decisión" (nunca se dice si es correcta). */
+  elegirOpcion(i: number): void {
+    if (this.paso()?.tipo !== 'pregunta') return;
+    this.efectos.sonar('elegir');
+    this.elegir(i);
+  }
+
+  /**
+   * "Anotar mi decisión": si quedan preguntas en el escenario, pasa a la siguiente con la nota "¡Anotado!"; si
+   * era la última del escenario, muestra la hoja "Escena N lista" (y, si era la última del caso, lleva a los
+   * resultados al pasar la página).
+   */
+  anotar(): void {
+    const p = this.paso();
+    if (p?.tipo !== 'pregunta' || this.elegida() === null) return;
+    this.efectos.sonar('anotar');
+    const siguiente = this.pasos()[this.indice() + 1];
+    const quedanEnEscenario = siguiente?.tipo === 'pregunta' && siguiente.bloqueIndice === p.bloqueIndice;
+    if (quedanEnEscenario) { this.siguientePaso(); this.mostrarAviso(); return; }
+    this.finEscena.set({ numero: p.bloqueIndice + 1, ultima: this.esUltimaPregunta() });
+    this.anuncio.set(`Escena ${p.bloqueIndice + 1} lista. Tus decisiones quedaron anotadas.`);
+  }
+
+  /** "Pasar la página" (o "Ver resultados" en la última escena). */
+  pasarPagina(): void {
+    const f = this.finEscena();
+    if (!f) return;
+    this.finEscena.set(null);
+    this.efectos.sonar('avanzar');
+    if (f.ultima) { this.finalizarCaso(); return; }
+    this.siguientePaso();
+    this.mostrarAviso();
+  }
+
+  private mostrarAviso(): void {
+    clearTimeout(this.temporizadorAviso);
+    this.avisoAnotado.set(true);
+    this.temporizadorAviso = setTimeout(() => this.avisoAnotado.set(false), 4000);
+  }
+
+  /** "1, 2, 3" para el atajo de teclado de las fichas. */
+  atajos(n: number): string {
+    const lista = Array.from({ length: Math.min(n, 9) }, (_, i) => String(i + 1));
+    return lista.join(', ');
+  }
+
+  private siguientePaso(): void {
     if (this.paso()?.tipo === 'fin') return;
     if (this.esUltimaPregunta()) { this.finalizarCaso(); return; }
     let i = this.indice() + 1;
@@ -876,21 +1257,28 @@ export class NovelaReproductorComponent implements OnDestroy {
   }
 
   clicEscena(evento: MouseEvent): void {
-    if ((evento.target as HTMLElement).closest('button, a, select, input, .pregunta')) return;
-    if (this.paso()?.tipo === 'pregunta' || this.paso()?.tipo === 'fin') return;   // se avanza con los botones
-    this.avanzar();
+    if ((evento.target as HTMLElement).closest('button, a, select, input, .historial')) return;
+    if (this.paso()?.tipo === 'pregunta' || this.paso()?.tipo === 'fin' || this.finEscena()) return;   // se avanza con las fichas
+    this.seguir();
   }
 
   tecla(evento: KeyboardEvent): void {
     const objetivo = evento.target as HTMLElement;
     const enControl = !!objetivo.closest('button, a, select, input, textarea');
+    const pregunta = this.paso()?.tipo === 'pregunta' ? this.preguntaActual() : null;
+    // Fichas de la pregunta: 1, 2, 3… eligen y Enter anota.
+    if (pregunta && !this.finEscena() && /^[1-9]$/.test(evento.key) && Number(evento.key) <= pregunta.opciones.length) {
+      evento.preventDefault(); this.elegirOpcion(Number(evento.key) - 1); return;
+    }
     if ((evento.key === ' ' || evento.key === 'Enter') && !enControl) {
       evento.preventDefault();
-      if (this.paso()?.tipo !== 'pregunta') this.avanzar();
-    } else if (evento.key === 'ArrowRight' && !enControl) {
-      evento.preventDefault(); this.avanzar();
+      if (this.finEscena()) this.pasarPagina();
+      else if (pregunta) { if (evento.key === 'Enter') this.anotar(); }
+      else this.seguir();
+    } else if (evento.key === 'ArrowRight' && !enControl && !pregunta) {
+      evento.preventDefault(); this.seguir();
     } else if (evento.key === 'ArrowLeft' && !enControl) {
-      evento.preventDefault(); this.anterior();
+      evento.preventDefault(); this.atras();
     } else if (evento.key === 'Escape' && this.pantallaCompleta() && !document.fullscreenElement) {
       this.salirPantalla();
     }
