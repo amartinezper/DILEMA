@@ -4,17 +4,15 @@ import { MarcoDilemaComponent } from './marco-dilema.component';
 import { IconoComponent, NombreIcono } from './icono.component';
 
 /**
- * Marco del docente y del administrador: el marco común (app-marco-dilema) con las opciones del rol y el
- * botón de la tarjeta del cohete ("+ Crear caso" para el docente; administración no lleva botón).
+ * Marco del docente y del administrador: el marco común (app-marco-dilema) con las opciones del rol.
+ * La tarjeta del cohete queda solo con "Piensa. Decide. Aprende.", sin botón.
  */
 @Component({
   selector: 'app-marco-docente',
   imports: [RouterLink, RouterLinkActive, MarcoDilemaComponent, IconoComponent],
   styles: [`:host { display: block; width: 100%; height: 100%; }`],
   template: `
-    <app-marco-dilema [inicio]="inicio()" [descripcion]="descripcion()" [compacto]="compacto()" [saludoChico]="!esAdmin()" [lemaIcono]="true"
-      [lemaTexto]="esAdmin() ? '' : 'Crear caso'"
-      [lemaEnlace]="esAdmin() ? '/' : '/docente/casos/nuevo'">
+    <app-marco-dilema [inicio]="inicio()" [descripcion]="descripcion()" [compacto]="compacto()" [saludoChico]="!esAdmin()">
       <ng-container ngProjectAs="[menu]">
         @for (enlace of enlaces(); track enlace.href) {
           <a [routerLink]="enlace.href" routerLinkActive="activa" ariaCurrentWhenActive="page"

@@ -150,23 +150,23 @@ type FiltroCuenta = 'todos' | 'docentes' | 'admin' | 'inactivos';
       @if (error()) { <p class="error">{{ error() }}</p> }
       <article class="adm-tarjeta adm-tabla-tarjeta">
         <div class="adm-tabla-caja">
-          <table class="adm-tabla">
+          <table class="adm-tabla tabla-movil">
             <thead>
               <tr><th scope="col">Cuenta</th><th scope="col">Rol</th><th scope="col">Permisos</th><th scope="col">Estado</th><th scope="col" class="derecha">Acciones</th></tr>
             </thead>
             <tbody>
               @for (usuario of filas(); track usuario.id) {
                 <tr>
-                  <td>
+                  <td class="tm-principal">
                     <div class="adm-cuenta-celda">
                       <span class="adm-iniciales" aria-hidden="true">{{ iniciales(usuario.nombre) }}</span>
                       <div class="adm-celda-doble"><strong>{{ usuario.nombre }}</strong><small>{{ usuario.email }}</small></div>
                     </div>
                   </td>
-                  <td>{{ usuario.rol === 'PROFESOR' ? 'Docente' : 'Administración' }}</td>
-                  <td class="gris">{{ etiquetaPermisos(usuario.permisos) }}</td>
-                  <td><span class="adm-estado" [class.inactiva]="usuario.activo === false"><i aria-hidden="true"></i>{{ usuario.activo === false ? 'Inactiva' : 'Activa' }}</span></td>
-                  <td class="derecha">
+                  <td class="tm-secundario">{{ usuario.rol === 'PROFESOR' ? 'Docente' : 'Administración' }}</td>
+                  <td class="gris tm-secundario">{{ etiquetaPermisos(usuario.permisos) }}</td>
+                  <td class="tm-estado"><span class="adm-estado" [class.inactiva]="usuario.activo === false"><i aria-hidden="true"></i>{{ usuario.activo === false ? 'Inactiva' : 'Activa' }}</span></td>
+                  <td class="derecha tm-accion">
                     @if (usuario.id === yo()) {
                       <span class="gris">Tu cuenta</span>
                     } @else {
@@ -422,21 +422,21 @@ type FiltroEstudiante = 'todos' | 'activos' | 'inactivos';
       @if (error()) { <p class="error">{{ error() }}</p> }
       <article class="adm-tarjeta adm-tabla-tarjeta">
         <div class="adm-tabla-caja">
-          <table class="adm-tabla">
+          <table class="adm-tabla tabla-movil">
             <thead>
               <tr><th scope="col">Estudiante</th><th scope="col">Estado</th><th scope="col" class="derecha">Acciones</th></tr>
             </thead>
             <tbody>
               @for (estudiante of filas(); track estudiante.id) {
                 <tr>
-                  <td>
+                  <td class="tm-principal">
                     <div class="adm-cuenta-celda">
                       <span class="adm-iniciales" aria-hidden="true">{{ iniciales(estudiante.nombre) }}</span>
                       <div class="adm-celda-doble"><strong>{{ estudiante.nombre }}</strong><small>{{ estudiante.email }}</small></div>
                     </div>
                   </td>
-                  <td><span class="adm-estado" [class.inactiva]="estudiante.activo === false"><i aria-hidden="true"></i>{{ estudiante.activo === false ? 'Inactiva' : 'Activa' }}</span></td>
-                  <td class="derecha">
+                  <td class="tm-estado"><span class="adm-estado" [class.inactiva]="estudiante.activo === false"><i aria-hidden="true"></i>{{ estudiante.activo === false ? 'Inactiva' : 'Activa' }}</span></td>
+                  <td class="derecha tm-accion">
                     <div class="adm-menu">
                       <button type="button" class="adm-mas" aria-haspopup="menu" [attr.aria-expanded]="menu() === estudiante.id"
                         [attr.aria-label]="'Cambiar estado de ' + estudiante.nombre" (click)="alternarMenu(estudiante.id, $event)">⋯</button>
@@ -592,17 +592,17 @@ type FiltroGrupo = 'todos' | 'con' | 'sin';
       </div>
       <article class="adm-tarjeta adm-tabla-tarjeta">
         <div class="adm-tabla-caja">
-          <table class="adm-tabla">
+          <table class="adm-tabla tabla-movil">
             <thead>
               <tr><th scope="col">Grupo</th><th scope="col">Docente</th><th scope="col">Estudiantes</th><th scope="col" class="derecha">Acciones</th></tr>
             </thead>
             <tbody>
               @for (grupo of filas(); track grupo.id) {
                 <tr>
-                  <td><div class="adm-celda-doble"><strong>{{ grupo.nombre }}</strong><small>{{ grupo.espacioAcademico }}</small></div></td>
-                  <td>{{ grupo.docente.nombre }}</td>
-                  <td>{{ grupo.estudiantes.length }}</td>
-                  <td class="derecha">
+                  <td class="tm-principal"><div class="adm-celda-doble"><strong>{{ grupo.nombre }}</strong><small>{{ grupo.espacioAcademico }}</small></div></td>
+                  <td class="tm-secundario">{{ grupo.docente.nombre }}</td>
+                  <td class="tm-secundario">{{ grupo.estudiantes.length }}<span class="solo-movil"> {{ grupo.estudiantes.length === 1 ? 'estudiante' : 'estudiantes' }}</span></td>
+                  <td class="derecha tm-accion">
                     @if (grupo.estudiantes.length) {
                       <button type="button" class="adm-enlace" [attr.aria-expanded]="abierto() === grupo.id" (click)="alternar(grupo.id)">
                         {{ abierto() === grupo.id ? 'Ocultar estudiantes' : 'Ver estudiantes' }} <span aria-hidden="true">{{ abierto() === grupo.id ? '⌄' : '›' }}</span></button>

@@ -17,3 +17,6 @@ frontend/public/personajes/M03-optimizado.vrm
 frontend/vroid-hub/
 # Respaldos locales de la base de datos (pg_dump), no se suben
 tools/casos-prueba/respaldo-*.sql
+
+# Ajustes locales de Claude Code (permisos personales, no se suben)
+.claude/settings.local.json

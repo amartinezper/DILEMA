@@ -89,7 +89,8 @@ type FiltroDilema = 'todos' | 'pendientes' | 'en_curso' | 'finalizados';
   selector: 'app-panel-estudiante',
   imports: [RouterLink, MarcoEstudianteComponent, PaginacionTablaComponent, IconoComponent],
   template: `
-    <app-marco-estudiante [activa]="seccion()" [sinLeer]="sinLeer()" [descripcion]="descripcionSeccion()">
+    <app-marco-estudiante [activa]="seccion()" [sinLeer]="sinLeer()" [descripcion]="descripcionSeccion()"
+      [movilCompacto]="seccion() === 'dilemas'" [descripcionMovil]="seccion() === 'dilemas' ? 'Tus casos y tu avance en cada uno.' : ''">
         @if (error()) { <p class="error">{{ error() }}</p> }
 
         @if (seccion() === 'inicio') {
@@ -174,11 +175,11 @@ type FiltroDilema = 'todos' | 'pendientes' | 'en_curso' | 'finalizados';
         }
 
         @if (seccion() === 'dilemas') {
-          <div class="adm-herramientas">
+          <div class="adm-herramientas md-herramientas">
             <div class="adm-filtros" role="group" aria-label="Filtrar dilemas">
               @for (f of filtrosDilemas; track f.id) {
                 <button type="button" class="adm-filtro" [class.activo]="filtroDilemas() === f.id" [attr.aria-pressed]="filtroDilemas() === f.id"
-                  (click)="filtroDilemas.set(f.id); paginaDilemas.set(1)">{{ f.texto }} <span>({{ cuantosDilemas(f.id) }})</span></button>
+                  (click)="filtroDilemas.set(f.id); paginaDilemas.set(1)">{{ f.texto }} <span class="md-cuenta">{{ cuantosDilemas(f.id) }}</span></button>
               }
             </div>
             <div class="adm-barra">
@@ -198,20 +199,23 @@ type FiltroDilema = 'todos' | 'pendientes' | 'en_curso' | 'finalizados';
           </div>
           <article class="adm-tarjeta adm-tabla-tarjeta">
             <div class="adm-tabla-caja">
-              <table class="adm-tabla">
+              <table class="adm-tabla tabla-movil">
                 <thead>
                   <tr><th scope="col">Caso</th><th scope="col">Estado</th><th scope="col">Avance</th><th scope="col">Puntaje</th><th scope="col" class="derecha">Acción</th></tr>
                 </thead>
                 <tbody>
                   @for (sesion of dilemasPagina(); track sesion.id) {
-                    <tr>
-                      <td><div class="adm-celda-doble"><strong>{{ sesion.caso }}</strong><small>{{ sesion.grupo }} · {{ sesion.espacio }}</small></div></td>
-                      <td><span class="adm-estado-pill" [attr.data-estado]="sesion.participacionEstado ?? 'PENDIENTE'">{{ etiqueta(sesion) }}</span></td>
-                      <td><span class="adm-avance"><span class="adm-avance-barra"><i [style.width.%]="barra(sesion)"></i></span>{{ barra(sesion) }}%</span></td>
-                      <td>{{ sesion.nota != null ? sesion.nota + ' / 5,0' : '—' }}</td>
-                      <td class="derecha">
+                    <tr class="tm-tocable" (click)="tocarFila($event)">
+                      <td class="tm-principal"><div class="adm-celda-doble"><strong>{{ sesion.caso }}</strong><small>{{ sesion.grupo }} · {{ sesion.espacio }}</small></div></td>
+                      <td class="tm-estado"><span class="adm-estado-pill" [attr.data-estado]="sesion.participacionEstado ?? 'PENDIENTE'">{{ etiqueta(sesion) }}</span></td>
+                      <td class="tm-oculto"><span class="adm-avance"><span class="adm-avance-barra"><i [style.width.%]="barra(sesion)"></i></span>{{ barra(sesion) }}%</span></td>
+                      <td class="tm-dato" [class.tm-oculto]="sesion.nota == null">
+                        <span class="solo-pc">{{ sesion.nota != null ? sesion.nota + ' / 5,0' : '—' }}</span>
+                        @if (sesion.nota != null) { <span class="solo-movil">Puntaje <b>{{ notaMovil(sesion.nota) }}</b> / 5,0</span> }
+                      </td>
+                      <td class="derecha tm-accion">
                         @if (sesion.repeticionAutorizada || sesion.participacionEstado === 'EN_CURSO' || !sesion.participacionEstado) {
-                          <button class="adm-enlace" type="button" (click)="iniciarCaso(sesion)">Ingresar al caso <span aria-hidden="true">›</span></button>
+                          <button class="adm-enlace" type="button" (click)="iniciarCaso(sesion)">Ingresar<span class="solo-pc"> al caso</span> <span aria-hidden="true">›</span></button>
                         } @else if (sesion.participacionEstado === 'FINALIZADA' && sesion.participacionId) {
                           <a class="adm-enlace" [routerLink]="['/estudiante/participacion', sesion.participacionId]">Ver resultados <span aria-hidden="true">›</span></a>
                         } @else if (sesion.estado === 'SIN_INICIAR') {
@@ -219,11 +223,13 @@ type FiltroDilema = 'todos' | 'pendientes' | 'en_curso' | 'finalizados';
                         } @else if (sesion.estado === 'FINALIZADO' && !sesion.participacionId) {
                           <span class="gris">No participaste</span>
                         } @else {
-                          <button class="adm-enlace" type="button" (click)="iniciarCaso(sesion)">Ingresar al caso <span aria-hidden="true">›</span></button>
+                          <button class="adm-enlace" type="button" (click)="iniciarCaso(sesion)">Ingresar<span class="solo-pc"> al caso</span> <span aria-hidden="true">›</span></button>
                         }
                       </td>
                     </tr>
-                  } @empty { <tr><td colspan="5" class="adm-vacio">No hay casos en esta vista.</td></tr> }
+                  } @empty {
+                    <tr><td colspan="5" class="adm-vacio"><span class="solo-pc">No hay casos en esta vista.</span><span class="solo-movil">{{ vacioDilemas() }}</span></td></tr>
+                  }
                 </tbody>
               </table>
             </div>
@@ -350,6 +356,21 @@ export class PanelEstudianteComponent {
     return true;
   }
   cuantosDilemas(filtro: FiltroDilema) { return (this.panel()?.sesiones ?? []).filter((s) => this.pasaFiltroDilema(s, filtro)).length; }
+  notaMovil(nota: number) { return nota.toLocaleString('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 }); }
+  vacioDilemas() {
+    if (this.busquedaDilemas().trim()) return 'Ningún caso coincide con tu búsqueda';
+    const filtro = this.filtroDilemas();
+    if (filtro === 'pendientes') return 'No tienes casos pendientes';
+    if (filtro === 'en_curso') return 'No tienes casos en curso';
+    if (filtro === 'finalizados') return 'No tienes casos finalizados';
+    return 'No tienes casos asignados';
+  }
+  /** En celular toda la fila hace lo mismo que su enlace de la derecha. */
+  tocarFila(evento: MouseEvent) {
+    if (!matchMedia('(max-width: 767.98px)').matches) return;
+    const accion = (evento.currentTarget as HTMLElement).querySelector<HTMLElement>('.tm-accion a, .tm-accion button');
+    if (accion && !accion.contains(evento.target as Node)) accion.click();
+  }
   valorCampo(evento: Event) { return (evento.target as HTMLInputElement | HTMLSelectElement).value; }
   canalAviso(canal: string) { return canal === 'CORREO' ? 'Correo' : canal === 'SISTEMA' ? 'Sistema' : canal; }
   descripcionSeccion() {

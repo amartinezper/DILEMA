@@ -17,7 +17,7 @@ import { IconoComponent } from './icono.component';
   styles: [`:host { display: block; width: 100%; height: 100%; }`],
   template: `
     <div class="inicio-est marco-claro marco-dilema" [class.menu-abierto]="menuAbierto()" [class.dl-compacto]="compacto()"
-      [class.dl-saludo-chico]="saludoChico()">
+      [class.dl-saludo-chico]="saludoChico()" [class.dl-movil-compacto]="movilCompacto()">
       <button class="inicio-menu-btn" type="button" (click)="alternarMenu()" [attr.aria-expanded]="menuAbierto()" aria-label="Menú">
         <app-icono nombre="menu" [tamano]="22" />
       </button>
@@ -66,7 +66,11 @@ import { IconoComponent } from './icono.component';
                 @if (texto === bienvenida) {
                   <p class="marco-descripcion">Bienvenido a <strong>Dilema</strong>, donde cada decisión cuenta.</p>
                 } @else {
-                  <p class="marco-descripcion">{{ texto }}</p>
+                  <p class="marco-descripcion">
+                    @if (descripcionMovil()) {
+                      <span class="solo-pc">{{ texto }}</span><span class="solo-movil">{{ descripcionMovil() }}</span>
+                    } @else { {{ texto }} }
+                  </p>
                 }
               }
             </div>
@@ -91,6 +95,9 @@ export class MarcoDilemaComponent {
   compacto = input(false);
   /** Saludo y descripción en letra más pequeña (páginas del docente). */
   saludoChico = input(false);
+  /** En celular: ola más baja, saludo pequeño y el texto de `descripcionMovil` (si lo hay) en lugar de la descripción. */
+  movilCompacto = input(false);
+  descripcionMovil = input('');
   /** Botón de la tarjeta del cohete: texto, destino y si lleva "+" (crear) o "›" (ir). Sin texto, no hay botón. */
   lemaTexto = input('');
   lemaEnlace = input('/');

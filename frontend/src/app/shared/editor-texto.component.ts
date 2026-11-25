@@ -5,13 +5,25 @@ import { Component, ElementRef, OnDestroy, effect, input, model, viewChild } fro
   template: `
     <div class="editor">
       <div class="editor-bar">
-        <button type="button" (mousedown)="$event.preventDefault()" (click)="cmd('bold')" [disabled]="bloqueado()">Negrita</button>
-        <button type="button" (mousedown)="$event.preventDefault()" (click)="cmd('italic')" [disabled]="bloqueado()">Cursiva</button>
-        <button type="button" (mousedown)="$event.preventDefault()" (click)="cmd('insertUnorderedList')" [disabled]="bloqueado()">Lista</button>
+        <button type="button" title="Negrita" aria-label="Negrita" (mousedown)="$event.preventDefault()" (click)="cmd('bold')" [disabled]="bloqueado()"><b>B</b></button>
+        <button type="button" title="Cursiva" aria-label="Cursiva" (mousedown)="$event.preventDefault()" (click)="cmd('italic')" [disabled]="bloqueado()"><i>I</i></button>
+        <button type="button" title="Lista" aria-label="Lista" (mousedown)="$event.preventDefault()" (click)="cmd('insertUnorderedList')" [disabled]="bloqueado()">
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M9 6h12M9 12h12M9 18h12M4 6h.01M4 12h.01M4 18h.01" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <span class="editor-extra"><ng-content /></span>
       </div>
       <div #area class="editor-area" [attr.contenteditable]="bloqueado() ? 'false' : 'true'" (input)="emitir()"></div>
     </div>
-  `
+  `,
+  styles: [`
+    .editor-bar { display: flex; align-items: center; gap: 2px; padding: 4px 8px; background: #f8fbff; border-bottom: 1px solid #e1e9f6; }
+    .editor-bar > button { width: 30px; height: 28px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 8px;
+      background: transparent; color: #4d5b7c; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: none; }
+    .editor-bar > button:hover:not(:disabled) { background: #e8eef9; transform: none; }
+    .editor-bar > button svg { display: block; }
+    .editor-extra { margin-left: auto; display: flex; align-items: center; }
+    .editor-extra:empty { display: none; }
+  `]
 })
 export class EditorTextoComponent implements OnDestroy {
   valor = model('');

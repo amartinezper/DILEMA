@@ -2170,6 +2170,17 @@ body:has(.modal-vista) .inicio-menu-btn { display: none !important; }
 /* Saludo del docente: letra más pequeña; la altura del encabezado no cambia. */
 .inicio-est.marco-dilema.dl-saludo-chico .inicio-saludo h1 { font-size: 24px; font-weight: 800; }
 .inicio-est.marco-dilema.dl-saludo-chico .marco-descripcion { font-size: 14px; }
+/* Solo el editor de casos: el subtítulo largo cabe en una línea y corta con puntos. */
+.inicio-cuerpo:has(.tablero-caso) .inicio-hero-copy,
+.inicio-cuerpo:has(.tablero-caso) .inicio-saludo,
+.inicio-cuerpo:has(.tablero-caso) .marco-descripcion { min-width: 0; }
+.inicio-cuerpo:has(.tablero-caso) .marco-descripcion {
+  display: block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.tablero-caso.ed .editor-area {
+  font-size: 14px !important; line-height: 1.45; min-height: 104px !important;
+  max-height: 320px !important; overflow: auto !important;
+}
 @media (max-width: 767.98px) {
   .inicio-est.marco-dilema.dl-saludo-chico .inicio-saludo h1 { font-size: 20px; }
   .inicio-est.marco-dilema.dl-saludo-chico .marco-descripcion { font-size: 13px; }
@@ -2208,4 +2219,133 @@ body:has(.modal-vista) .inicio-menu-btn { display: none !important; }
   .marco-dilema.dl-compacto app-encabezado-dilema { height: 120px; }
   .marco-dilema.dl-compacto app-encabezado-dilema .lienzo { transform: scale(.62); }
   .inicio-est.marco-dilema.dl-compacto .inicio-cuerpo .inicio-hero { min-height: 0; padding-top: 100px; }
+}
+
+/* ---------------------------------------------------------------------
+ * Celular (< 768 px): tablas como filas apiladas y encabezado compacto de Mis dilemas.
+ * En computador solo aplican los paréntesis del conteo de pestañas y las clases solo-pc / solo-movil.
+ * --------------------------------------------------------------------- */
+.solo-movil { display: none; }
+.marco-claro .adm-enlace span.solo-pc { font-size: inherit; line-height: inherit; }
+.md-cuenta::before { content: "("; }
+.md-cuenta::after { content: ")"; }
+
+@media (max-width: 767.98px) {
+  .solo-pc { display: none; }
+  .solo-movil { display: inline; }
+
+  /* Encabezado de Mis dilemas: la ola azul cruza todo el ancho y el cerebro queda grande, arriba a la derecha. */
+  .marco-dilema.dl-movil-compacto app-encabezado-dilema {
+    height: 156px; overflow: hidden;
+    background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 390 156' preserveAspectRatio='none'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%231e6cf5'/><stop offset='1' stop-color='%230b50d8'/></linearGradient></defs><path fill='%238fbaff' fill-opacity='.35' d='M0,0 H390 V142 C300,158 190,126 96,92 C44,70 14,66 0,80 Z'/><path fill='url(%23g)' d='M0,0 H390 V116 C310,138 210,104 112,72 C52,50 18,46 0,62 Z'/><path fill='none' stroke='%23bcd6ff' stroke-width='2' stroke-opacity='.55' d='M0,62 C18,46 52,50 112,72 C210,104 310,138 390,116'/><path fill='%23ffffff' fill-opacity='.08' d='M80,0 C160,36 270,54 390,42 V0 Z'/></svg>") left top / 100% 100% no-repeat;
+  }
+  .marco-dilema.dl-movil-compacto app-encabezado-dilema .lienzo { transform: none; left: 0; right: 0; width: 100%; height: 100%; }
+  .marco-dilema.dl-movil-compacto app-encabezado-dilema .ola { display: none; }
+  .marco-dilema.dl-movil-compacto app-encabezado-dilema .cerebro { top: 4px; right: 2px; width: 188px; }
+  .inicio-est.marco-dilema.dl-movil-compacto .inicio-cuerpo .inicio-hero { min-height: 0; padding-top: 150px; }
+  .inicio-est.marco-dilema.dl-movil-compacto .inicio-menu-btn {
+    top: 16px; left: 14px; width: 42px; height: 42px; border-radius: 12px;
+    background: #e7f0ff; color: #163a86; box-shadow: 0 4px 12px rgba(11, 40, 120, .12);
+  }
+  .inicio-est.marco-dilema.dl-movil-compacto .inicio-saludo h1 { font-size: 28px; font-weight: 800; line-height: 1.15; }
+  .inicio-est.marco-dilema.dl-movil-compacto .marco-descripcion { margin-top: 2px; font-size: 12.5px; color: #4d5b7c; }
+
+  /* Mis dilemas: pestañas subrayadas que se deslizan de lado, y búsqueda + botón de orden en una línea. */
+  .marco-claro .md-herramientas { gap: 12px; }
+  .marco-dilema .md-herramientas .adm-filtros {
+    display: flex; align-self: stretch; gap: 22px; padding: 0; border-radius: 0; background: none;
+    border-bottom: 1px solid #e3eaf6; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+  }
+  .marco-dilema .md-herramientas .adm-filtros::-webkit-scrollbar { display: none; }
+  .inicio-est.marco-dilema .md-herramientas .adm-filtro {
+    position: relative; flex: none; padding: 10px 0; border-radius: 0; background: none;
+    color: #4d5b7c; font-size: 13.5px; font-weight: 650;
+  }
+  .inicio-est.marco-dilema .md-herramientas .adm-filtro.activo { background: none; color: #13213f; font-weight: 700; }
+  .inicio-est.marco-dilema .md-herramientas .adm-filtro.activo::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2.5px; border-radius: 2px; background: #1f5cf0;
+  }
+  .inicio-est.marco-dilema .md-herramientas .adm-filtro:hover:not(.activo) { background: none; }
+  .marco-claro .md-herramientas .adm-filtro .md-cuenta { margin-left: 2px; color: #9aa6bf; font-weight: 600; opacity: 1; }
+  .md-cuenta::before, .md-cuenta::after { content: none; }
+  .marco-claro .md-herramientas .adm-barra { flex-wrap: nowrap; gap: 8px; }
+  .marco-dilema .md-herramientas .adm-buscar {
+    flex: 1 1 auto; width: auto; height: 40px; padding: 0 12px; border-radius: 12px; background: #fff; border-color: #e1e9f6;
+  }
+  .marco-claro .md-herramientas .adm-orden { flex: none; }
+  .inicio-est.marco-dilema .md-herramientas .adm-orden select {
+    width: 40px; height: 40px; padding: 0; border-radius: 12px; border-color: #e1e9f6; color: transparent;
+    background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231f5cf0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21 16-4 4-4-4M17 20V4M3 8l4-4 4 4M7 4v16'/%3E%3C/svg%3E") no-repeat center / 18px;
+  }
+  .inicio-est.marco-dilema .md-herramientas .adm-orden option { color: #13213f; }
+
+  /* Tablas como filas apiladas: arriba lo principal, debajo lo secundario en gris y al final estado y acción. */
+  .marco-claro .adm-tabla-caja:has(> .tabla-movil) { overflow: visible; }
+  .marco-claro .adm-tabla-tarjeta:has(.tabla-movil) { border: 1px solid #e6edf8; border-radius: 18px; background: #fff; box-shadow: none; }
+  .inicio-est.marco-claro .adm-tabla.tabla-movil, .inicio-est.marco-claro .adm-tabla.tabla-movil tbody { display: block; width: 100%; min-width: 0; }
+  .inicio-est.marco-claro .adm-tabla.tabla-movil thead { display: none; }
+  .inicio-est.marco-claro .adm-tabla.tabla-movil tbody tr {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 3px 12px; padding: 13px 16px; border-bottom: 1px solid #f0f4fa;
+  }
+  .inicio-est.marco-claro .adm-tabla.tabla-movil tbody tr:last-child { border-bottom: 0; }
+  .inicio-est.marco-claro .adm-tabla.tabla-movil tbody tr::after { content: ""; order: 3; flex-basis: 100%; height: 0; }
+  .inicio-est.marco-claro .adm-tabla.tabla-movil tbody td {
+    display: block; min-width: 0; padding: 0; border: 0; background: none; white-space: normal; text-align: left;
+  }
+  .inicio-est.marco-claro .adm-tabla.tabla-movil td.tm-oculto { display: none; }
+  .inicio-est.marco-claro .adm-tabla.tabla-movil td.tm-principal { order: 1; flex: 1 1 100%; }
+  .marco-claro .tabla-movil .tm-principal .adm-cuenta-celda { min-width: 0; }
+  .marco-claro .tabla-movil .tm-principal .adm-celda-doble { min-width: 0; gap: 2px; }
+  .marco-claro .tabla-movil .tm-principal .adm-celda-doble strong {
+    font-size: 14px; font-weight: 700; line-height: 1.3; white-space: normal;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
+  }
+  .marco-claro .tabla-movil .tm-principal .adm-celda-doble small {
+    font-size: 12px; color: #7a86a3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .inicio-est.marco-claro .adm-tabla.tabla-movil td.tm-secundario { order: 2; font-size: 12px; color: #7a86a3; }
+  .inicio-est.marco-claro .adm-tabla.tabla-movil td.tm-secundario + td.tm-secundario { margin-left: -8px; }
+  .marco-claro .tabla-movil td.tm-secundario + td.tm-secundario::before { content: "· "; }
+  .inicio-est.marco-claro .adm-tabla.tabla-movil td.tm-estado,
+  .inicio-est.marco-claro .adm-tabla.tabla-movil td.tm-dato,
+  .inicio-est.marco-claro .adm-tabla.tabla-movil td.tm-accion { margin-top: 6px; font-size: 12px; }
+  .inicio-est.marco-claro .adm-tabla.tabla-movil td.tm-estado { order: 4; }
+  .inicio-est.marco-claro .adm-tabla.tabla-movil td.tm-dato { order: 5; color: #4d5b7c; }
+  .marco-claro .tabla-movil td.tm-dato b { font-weight: 700; color: #13213f; }
+  .inicio-est.marco-claro .adm-tabla.tabla-movil td.tm-accion { order: 6; margin-left: auto; text-align: right; }
+  .inicio-est.marco-claro .tabla-movil .tm-accion .adm-enlace { font-size: 12.5px; font-weight: 700; color: #1f5cf0; padding: 0; }
+  .marco-claro .tabla-movil .tm-accion .adm-enlace span { font-size: 15px; }
+  .marco-claro .tabla-movil .tm-accion .adm-mas { width: 28px; height: 28px; }
+  .marco-claro .tabla-movil .adm-estado { font-size: 12px; font-weight: 700; }
+  .marco-claro .tabla-movil .adm-estado i { width: 7px; height: 7px; }
+  /* Estado como punto + texto (en vez de píldora). */
+  .marco-claro .tabla-movil .adm-estado-pill {
+    gap: 6px; padding: 0; border-radius: 0; background: none; font-size: 12px; font-weight: 700; color: #4d5b7c;
+  }
+  .marco-claro .tabla-movil .adm-estado-pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #9fb2d6; }
+  .marco-claro .tabla-movil .adm-estado-pill[data-estado] { background: none; }
+  .marco-claro .tabla-movil .adm-estado-pill[data-estado="FINALIZADA"], .marco-claro .tabla-movil .adm-estado-pill[data-estado="FINALIZADO"] { color: #17683d; }
+  .marco-claro .tabla-movil .adm-estado-pill[data-estado="FINALIZADA"]::before, .marco-claro .tabla-movil .adm-estado-pill[data-estado="FINALIZADO"]::before { background: #22a55a; }
+  .marco-claro .tabla-movil .adm-estado-pill[data-estado="EN_CURSO"] { color: #1747c2; }
+  .marco-claro .tabla-movil .adm-estado-pill[data-estado="EN_CURSO"]::before { background: #2a7bff; }
+  .marco-claro .tabla-movil .adm-estado-pill[data-estado="AUSENTE"] { color: #b42318; }
+  .marco-claro .tabla-movil .adm-estado-pill[data-estado="AUSENTE"]::before { background: #e5484d; }
+  .marco-claro .tabla-movil .adm-estado-pill[data-estado="PENDIENTE"], .marco-claro .tabla-movil .adm-estado-pill[data-estado="SIN_INICIAR"] { color: #4d5b7c; }
+  .marco-claro .tabla-movil .adm-estado-pill[data-estado="PENDIENTE"]::before, .marco-claro .tabla-movil .adm-estado-pill[data-estado="SIN_INICIAR"]::before { background: #9fb2d6; }
+  /* Admin: .adm-estado (punto + texto) también se ve bien en la fila apilada. */
+  .marco-claro .tabla-movil .adm-estado { display: inline-flex; align-items: center; gap: 6px; padding: 0; background: none; }
+  .marco-claro .tabla-movil .adm-estado.inactiva { color: #b42318; }
+  .marco-claro .tabla-movil .adm-estado.inactiva i { background: #e5484d; }
+  .marco-claro .tabla-movil .adm-estado:not(.inactiva) { color: #17683d; }
+  .marco-claro .tabla-movil .adm-estado:not(.inactiva) i { background: #22a55a; }
+  /* Fila tocable (Mis dilemas) y filas especiales: vacío centrado y detalle desplegable a todo el ancho. */
+  .marco-claro .tabla-movil tr.tm-tocable { cursor: pointer; }
+  .marco-claro .tabla-movil tr.tm-tocable:active { background: #f7faff; }
+  .inicio-est.marco-claro .adm-tabla.tabla-movil td.adm-vacio { flex: 1 1 100%; padding: 22px 0; text-align: center; color: #7a86a3; font-size: 13px; }
+  .inicio-est.marco-claro .adm-tabla.tabla-movil tr.adm-fila-detalle { padding: 10px 16px 14px; background: #f8faff; }
+  .inicio-est.marco-claro .adm-tabla.tabla-movil tr.adm-fila-detalle td { flex: 1 1 100%; }
+  .marco-claro .tabla-movil .adm-fila-detalle ul { grid-template-columns: 1fr; }
+  .marco-claro .tabla-movil .adm-fila-detalle .adm-celda-doble { min-width: 0; }
+  .marco-claro .tabla-movil .adm-fila-detalle .adm-celda-doble strong,
+  .marco-claro .tabla-movil .adm-fila-detalle .adm-celda-doble small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 }

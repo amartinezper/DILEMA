@@ -1,4 +1,4 @@
-import { Component, DestroyRef, computed, inject, signal, viewChild, input, output } from '@angular/core';
+import { AfterViewInit, Component, DestroyRef, Directive, ElementRef, HostListener, computed, inject, signal, viewChild, input, output } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -648,15 +648,38 @@ const ROLES_AYUDA = [
 /** Roles que ya implican un género (si no se eligió género en la lista). */
 const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
 
+/** Caja de texto que empieza en una línea y crece con lo escrito. `edTope` limita el alto y luego hace scroll. */
+@Directive({ selector: 'textarea[edCrece]' })
+export class CreceDirective implements AfterViewInit {
+  private readonly el = inject(ElementRef<HTMLTextAreaElement>);
+  readonly edTope = input<string>('');
+
+  ngAfterViewInit() {
+    this.ajustar();
+    queueMicrotask(() => this.ajustar());
+    setTimeout(() => this.ajustar());
+  }
+
+  @HostListener('input')
+  ajustar() {
+    const nodo = this.el.nativeElement;
+    const tope = Number(this.edTope()) || 0;
+    nodo.style.height = 'auto';
+    const alto = nodo.scrollHeight;
+    nodo.style.height = `${tope > 0 ? Math.min(alto, tope) : alto}px`;
+    nodo.style.overflowY = tope > 0 && alto > tope ? 'auto' : 'hidden';
+  }
+}
+
 @Component({
   selector: 'app-editor-caso',
   host: { '(document:click)': 'menuAcciones.set(false)', '(document:keydown.escape)': 'menuAcciones.set(false)' },
   imports: [MatButtonModule, MatCardModule, MarcoDocenteComponent, FormsModule, RouterLink, EditorTextoComponent, EscenaNovelaComponent,
-    NovelaReproductorComponent, NgTemplateOutlet],
+    NovelaReproductorComponent, NgTemplateOutlet, CreceDirective],
   styles: [`
     .personaje-fila { display: grid; gap: 12px; }
-    .ayudas { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
-    .ayudas select { flex: 1 1 110px; min-width: 0; padding: 8px 10px; font: inherit; font-size: .85rem; border: 1px solid var(--line, #e6ebf5); border-radius: 12px; background: white; }
+    .ayudas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 0; }
+    .ayudas select { min-width: 0; width: 100%; padding: 8px 10px; font: inherit; font-size: .85rem; border: 1px solid #e1e9f6; border-radius: 12px; background: #f8fbff; }
     .personaje-pie { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 12px; }
     .aparece { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: .85rem; }
     .aparece .chip { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border: 1px solid var(--dl-borde, #cfd8ee); background: #fff; color: var(--dl-tinta, #0a1733); border-radius: 999px; cursor: pointer; font-weight: 650; }
@@ -675,31 +698,270 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
     /* Libreta del caso: fondo azul claro; la libreta trae sus pestañas (Música, Pantalla, Salir). */
     .modal-vista { position: fixed; inset: 0; z-index: 1000; display: flex; flex-direction: column; background: #d8e5ff; color: #1c2541; }
     .modal-cuerpo { flex: 1; overflow: auto; padding: 18px 22px 22px; }
-    @media (max-width: 768px) {
-      .pasos { display: flex; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-      .pasos button { flex: 0 0 auto; }
+    .ed { min-width: 0; max-width: 100%; }
+    .ed-barra {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px 16px;
+      background: #fff; border: 1px solid #e6edf8; border-radius: 18px; padding: 14px 20px; min-width: 0;
+    }
+    .ed-barra-acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+    .ed-barra-acciones > * { transform: none; }
+    .ed-cuerpo { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 16px; align-items: start; min-width: 0; }
+    .ed-pasos {
+      display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 10px;
+      background: #fff; border: 1px solid #e6edf8; border-radius: 18px; min-width: 0;
+    }
+    .tablero-caso .ed-pasos button {
+      display: flex !important; align-items: center; justify-content: flex-start !important; gap: 10px;
+      width: 100%; height: auto !important; min-height: 44px; padding: 8px 10px !important; margin: 0;
+      border: 0 !important; border-radius: 12px !important; background: transparent !important; box-shadow: none !important;
+      color: #1a2744 !important; font-size: 13.5px !important; font-weight: 700 !important; text-align: left; white-space: normal;
+      transform: none !important;
+    }
+    .tablero-caso .ed-pasos button:hover { background: #f6f9ff !important; transform: none !important; }
+    .tablero-caso .ed-pasos button.activa { background: #eef4ff !important; color: #1747c2 !important; border-color: transparent !important; }
+    .ed-num {
+      width: 28px; height: 28px; flex: none; display: grid; place-items: center; border-radius: 50%;
+      background: #eef2f9; color: #4d5b7c; font-size: 12px; font-weight: 800;
+    }
+    .ed-pasos button.activa .ed-num { background: #1f5cf0; color: #fff; }
+    .ed-paso-nombre { min-width: 0; line-height: 1.25; }
+    .ed-panel {
+      background: #fff; border: 1px solid #e6edf8; border-radius: 18px; padding: 18px 20px 22px; min-width: 0;
+    }
+    .ed-panel .caso-vista { gap: 20px; }
+    .ed-panel .caso-titulo { display: grid; gap: 4px; padding-bottom: 14px; margin: 0; border-bottom: 1px solid #f0f4fa; }
+    .ed-panel .caso-titulo.ed-titulo-fila { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .ed-panel .caso-titulo h2 {
+      margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -.02em; text-transform: none; color: #1a2744;
+    }
+    .ed-panel .caso-titulo .sub, .ed-panel .sub { margin: 0; font-size: 14px; line-height: 1.45; color: #6b7894; }
+    .ed-panel .caso-casilla {
+      background: transparent; border: 0; border-radius: 0; box-shadow: none; padding: 0; gap: 14px; min-width: 0;
+    }
+    .ed-panel h3.ed-seccion {
+      margin: 0 !important; font-size: 12px !important; font-weight: 700 !important; letter-spacing: .04em !important;
+      text-transform: uppercase !important; color: #6b7894 !important;
+    }
+    .ed-bloque-titulo { font-size: 15px; font-weight: 700; color: #1a2744; line-height: 1.3; }
+    .ed-lista { display: grid; gap: 12px; min-width: 0; }
+    .ed-barra-paso { display: flex; justify-content: flex-end; }
+    .ed-enlace {
+      border: 0 !important; background: transparent !important; box-shadow: none !important;
+      padding: 0 !important; height: auto !important; min-height: 0 !important; width: auto !important;
+      color: #1f5cf0 !important; font: inherit; font-size: 13px !important; font-weight: 650 !important;
+      cursor: pointer; white-space: nowrap;
+    }
+    .ed-enlace:hover { text-decoration: underline; transform: none !important; }
+    .ed-fila-nombre { display: grid; grid-template-columns: minmax(0, 1fr) 180px; gap: 14px; }
+    .ed-criterio-peso { display: grid; grid-template-columns: minmax(0, 1fr) 120px; gap: 14px; align-items: start; }
+    .ed-par { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+    .ed-persona-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 14px; }
+    .ed-panel .caso-etiqueta,
+    .ed-panel label span {
+      color: #4d5b7c !important; font-size: 12.5px !important; font-weight: 600 !important;
+      text-transform: none !important; letter-spacing: 0 !important; line-height: 1.3;
+    }
+    .ed-panel .caso-campo input:not([type="checkbox"]):not([type="radio"]),
+    .ed-panel .caso-campo select,
+    .ed-panel .ayudas select,
+    .ed-panel .caso-campo textarea,
+    .ed-panel .editor-area {
+      font-size: 14px !important; line-height: 1.45; color: #1a2744;
+    }
+    .ed-panel .caso-campo input:not([type="checkbox"]):not([type="radio"]),
+    .ed-panel .caso-campo select,
+    .ed-panel .ayudas select {
+      height: 40px !important; background: #f8fbff !important; border: 1px solid #e1e9f6 !important;
+      border-radius: 12px !important; box-shadow: none !important; padding: 0 12px !important; box-sizing: border-box;
+    }
+    .ed-panel .caso-campo textarea,
+    .ed-panel textarea.ed-crece {
+      background: #f8fbff !important; border: 1px solid #e1e9f6 !important; border-radius: 12px !important;
+      box-shadow: none !important; box-sizing: border-box; width: 100%;
+    }
+    .ed-panel textarea.ed-crece {
+      display: block; min-height: 40px !important; height: 40px; padding: 9px 12px !important;
+      line-height: 20px !important; resize: none !important; overflow: hidden;
+    }
+    .ed-panel .editor { border: 1px solid #e1e9f6 !important; border-radius: 14px !important; box-shadow: none !important; overflow: hidden; background: #fff; }
+    .ed-panel .editor-area {
+      min-height: 104px !important; max-height: 320px; overflow: auto; padding: 12px 14px; line-height: 1.45;
+    }
+    .ed-panel .editor-bar { background: #f8fbff; }
+    .ed-editor-bloque { display: grid; gap: 4px; min-width: 0; }
+    .ed-editor-bloque .ayuda-dialogo { margin: 0 !important; }
+    .ed-editor-plano {
+      border: 1px solid #e1e9f6; border-radius: 14px; overflow: hidden; background: #fff; min-width: 0;
+      display: flex; flex-direction: column;
+    }
+    .ed-editor-plano .editor-bar {
+      display: flex; justify-content: flex-end; align-items: center; min-height: 36px; padding: 4px 8px;
+      background: #f8fbff; border-bottom: 1px solid #e1e9f6;
+    }
+    .ed-panel .ed-editor-plano textarea.ed-crece {
+      display: block; width: 100%; border: 0 !important; border-radius: 0 !important; box-shadow: none !important;
+      background: #fff !important; resize: none !important; min-height: 104px !important; height: auto; max-height: 320px;
+      padding: 12px 14px !important; font-size: 14px !important; line-height: 1.45 !important;
+    }
+    .ed-panel .insertar {
+      height: 28px !important; min-height: 28px !important; padding: 0 12px !important; border-radius: 999px !important;
+      border: 1.5px solid #1f5cf0 !important; background: #fff !important; color: #1f5cf0 !important;
+      box-shadow: none !important; font-size: 12px !important; font-weight: 700 !important;
+    }
+    .ed-panel .insertar:hover { background: #f2f6ff !important; transform: none !important; }
+    .ed-sensible { background: #fff8ec; border: 1px solid #f6e3bf; border-radius: 12px; padding: 12px 14px; }
+    .ed-quitar {
+      display: inline-flex !important; align-items: center; gap: 6px;
+      border: 0 !important; background: transparent !important; box-shadow: none !important;
+      padding: 0 !important; height: auto !important; min-height: 0 !important; width: auto !important;
+      color: #6b7894 !important; font: inherit; font-size: 13px !important; font-weight: 650 !important;
+      cursor: pointer; white-space: nowrap;
+    }
+    .ed-quitar:hover { color: #4d5b7c !important; transform: none !important; }
+    .ed-quitar svg { display: block; flex: none; }
+    .ed-agregar {
+      width: 100%; min-height: 48px; padding: 12px 16px;
+      border: 1.5px dashed #1f5cf0 !important; border-radius: 14px !important; background: #f8fbff !important; color: #1747c2 !important;
+      box-shadow: none !important; font: inherit; font-size: 14px !important; font-weight: 700 !important; cursor: pointer;
+    }
+    .ed-agregar:hover { background: #eef4ff !important; transform: none !important; }
+    .ed-suave {
+      display: inline-flex !important; align-items: center; justify-content: center;
+      min-height: 36px; height: auto !important; width: auto !important; padding: 0 16px !important;
+      border: 0 !important; border-radius: 999px !important; background: #eef4ff !important; color: #1747c2 !important;
+      box-shadow: none !important; font: inherit; font-size: 13.5px !important; font-weight: 700 !important; cursor: pointer;
+    }
+    .ed-suave:hover { background: #e3edff !important; transform: none !important; }
+    .ed-acordeon, .ed-panel .ed-persona, .ed-panel .ed-boceto {
+      border: 1px solid #e6edf8; border-radius: 16px; background: #fff; min-width: 0;
+    }
+    .ed-panel .ed-persona, .ed-panel .ed-boceto { display: grid; gap: 14px; padding: 14px 16px; }
+    .ed-acordeon-cabeza { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px 12px; padding: 12px 14px; min-width: 0; }
+    .ed-acordeon-toggle {
+      flex: 1 1 200px; min-width: 0; display: flex; align-items: flex-start; gap: 8px;
+      border: 0; background: transparent; box-shadow: none; padding: 0; margin: 0; height: auto; min-height: 0;
+      text-align: left; cursor: pointer; color: inherit; font: inherit;
+    }
+    .ed-acordeon-toggle:hover { transform: none; }
+    .ed-acordeon-textos { min-width: 0; display: grid; gap: 2px; flex: 1; }
+    .ed-preview { font-size: 13px; color: #6b7894; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ed-acordeon-lado { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px 10px; margin-left: auto; max-width: 100%; }
+    .ed-acordeon-cuerpo { display: grid; gap: 14px; padding: 0 14px 14px; min-width: 0; }
+    .ed-chevron { width: 16px; height: 16px; flex: none; margin-top: 2px; color: #6b7894; transition: transform .15s ease; }
+    .ed-chevron.abierto { transform: rotate(90deg); }
+    .ed-chevron-abajo { transform: rotate(90deg); }
+    .ed-chevron-abajo.abierto { transform: rotate(-90deg); }
+    .ed-chip {
+      display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px;
+      background: #eef2f9; color: #4d5b7c; font-size: 12px; font-weight: 700; white-space: nowrap;
+    }
+    .ed-chip-alerta { background: #fff1e0; color: #b45309; }
+    .ed-contexto { background: #f4f7fb; border-radius: 12px; padding: 10px 12px; min-width: 0; }
+    .ed-contexto-btn {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%;
+      border: 0; background: transparent; box-shadow: none; padding: 0; margin: 0; height: auto; min-height: 0;
+      color: #4d5b7c; font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; text-align: left;
+    }
+    .ed-contexto-btn:hover { transform: none; }
+    .ed-contexto-cuerpo { margin-top: 8px; color: #3d4b68; font-size: 14px; line-height: 1.45; overflow-wrap: anywhere; }
+    :host ::ng-deep .ed-contexto-cuerpo p,
+    :host ::ng-deep .ed-contexto-cuerpo ul,
+    :host ::ng-deep .ed-contexto-cuerpo ol { margin: 0 0 8px; }
+    :host ::ng-deep .ed-contexto-cuerpo :last-child { margin-bottom: 0; }
+    .ed-opciones { display: grid; gap: 12px; }
+    .ed-panel .caso-subgrupo {
+      display: grid; gap: 14px; padding: 12px 14px; border: 1px solid #e6edf8; border-radius: 16px;
+      background: #fff; box-shadow: none; min-width: 0;
+    }
+    .ed-panel .caso-subgrupo.ed-correcta { background: #f6fcf8; border-color: #bfe8cf; }
+    .ed-opcion-linea { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: start; }
+    .ed-letra {
+      width: 28px; height: 28px; margin-top: 24px; display: grid; place-items: center; border-radius: 50%;
+      background: #eef2f9; color: #1a2744; font-size: 13px; font-weight: 800;
+    }
+    .ed-opcion-linea .check { margin-top: 26px; white-space: nowrap; }
+    .ed-reparto-linea { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+    .ed-reparto {
+      display: inline-flex; gap: 4px; padding: 4px; width: max-content; max-width: 100%;
+      background: #f4f7fb; border-radius: 12px;
+    }
+    .ed-reparto button {
+      height: 36px; min-height: 36px; padding: 0 16px; border: 0; border-radius: 10px;
+      background: transparent; color: #4d5b7c; box-shadow: none; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+    }
+    .ed-reparto button.activa { background: #1f5cf0; color: #fff; }
+    .ed-reparto button:hover { transform: none; }
+    .ed-tabla { display: grid; min-width: 0; }
+    .ed-tabla-cabeza, .ed-tabla-fila, .ed-tabla-total {
+      display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.4fr) 120px; gap: 12px; align-items: center; min-width: 0;
+    }
+    .ed-tabla-cabeza {
+      padding-bottom: 8px; color: #4d5b7c; font-size: 12.5px; font-weight: 600; letter-spacing: 0;
+    }
+    .ed-tabla-fila, .ed-tabla-total { padding: 12px 0; border-top: 1px solid #f0f4fa; }
+    .ed-tabla-fila span, .ed-tabla-cabeza span { min-width: 0; overflow-wrap: anywhere; }
+    .ed-tabla-fila .ed-criterio { color: #6b7894; font-size: 14px; }
+    .ed-panel .ed-tabla-fila input {
+      height: 40px !important; width: 120px !important; text-align: right; font-size: 14px !important;
+      background: #f8fbff !important; border: 1px solid #e1e9f6 !important; border-radius: 12px !important;
+      box-shadow: none !important; padding: 0 12px !important; box-sizing: border-box;
+    }
+    .ed-tabla-total strong { width: 120px !important; text-align: right; font-size: 14px; }
+    .ed-tabla-total span { grid-column: 1 / 3; text-align: right; font-weight: 700; color: #1a2744; }
+    .ed-tabla-total strong { font-weight: 800; }
+    .ed-panel .ed-estado-actual {
+      background: #f8fbff; border: 1px solid #e6edf8; border-radius: 16px; padding: 16px; gap: 12px;
+    }
+    .ed .ficha-estado-cabeza h3.ed-bloque-titulo {
+      margin: 0; flex: 1 1 180px; font-size: 15px !important; font-weight: 700 !important;
+      text-transform: none !important; letter-spacing: 0 !important; color: #1a2744;
+    }
+    .ed-panel .ficha-estado { border-top: 0; padding-top: 0; }
+    @media (max-width: 1099.98px) {
+      .ed-cuerpo { grid-template-columns: minmax(0, 1fr); }
+      .ed-pasos { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .tablero-caso .ed-pasos button { width: auto; flex: 0 0 auto; }
+      .ed-paso-nombre { white-space: nowrap; }
+    }
+    @media (max-width: 767.98px) {
+      .ed-barra { flex-direction: column; align-items: stretch; }
+      .ed-barra-acciones { display: grid; grid-template-columns: 1fr 1fr; }
+      .ed-barra-acciones > * { width: 100% !important; min-width: 0; }
+      .ed-fila-nombre, .ed-criterio-peso, .ed-par, .ed-opcion-linea, .ed-persona-grid, .ayudas,
+      .ed-tabla-cabeza, .ed-tabla-fila, .ed-tabla-total { grid-template-columns: minmax(0, 1fr); }
+      .ed-tabla-total span { grid-column: auto; text-align: left; }
+      .ed-tabla-fila input, .ed-tabla-total strong { width: 120px !important; }
+      .ed-letra, .ed-opcion-linea .check { margin-top: 0; }
+      .ed-panel .resumen-cifras { grid-template-columns: minmax(0, 1fr); max-width: none; }
       .modal-cuerpo { padding: 8px; }
     }
   `],
   template: `
     <app-marco-docente [enlaces]="enlaces" [descripcion]="descripcionEditor()">
-      <section class="tablero tablero-caso">
-        <div class="adm-herramientas">
+      <section class="tablero tablero-caso ed">
+        <div class="ed-barra">
           <a class="adm-volver" routerLink="/docente/casos"><span aria-hidden="true">‹</span> Volver a mis casos</a>
-          <div class="adm-barra">
+          <div class="ed-barra-acciones">
             <button class="adm-boton-contorno" type="button" (click)="abrirVistaPrevia($any($event.currentTarget))">Vista previa</button>
+            <button class="btn-suave" type="button" (click)="vistaPrevia.set(!vistaPrevia())">Previsualizar</button>
+            @if (!bloqueado()) { <button class="btn-oscuro" type="button" (click)="guardar()">Guardar borrador</button> }
           </div>
-        </div>
-        <div class="pasos">
-          @for (paso of pasos; track paso.id) {
-            <button type="button" [class.activa]="activo() === paso.id" (click)="irA(paso.id)">{{ paso.texto }}</button>
-          }
         </div>
         @if (!puedeEditar()) {
           <p class="error">La administración debe asignarte el permiso Editar para guardar o publicar este caso.</p>
         }
         @if (error()) { <p class="error">{{ error() }}</p> }
         @if (ok()) { <p class="ok">{{ ok() }}</p> }
+        <div class="ed-cuerpo">
+        <div class="pasos ed-pasos">
+          @for (paso of pasos; track paso.id; let i = $index) {
+            <button type="button" [class.activa]="activo() === paso.id" (click)="irA(paso.id)">
+              <span class="ed-num">{{ i + 1 }}</span>
+              <span class="ed-paso-nombre">{{ paso.texto }}</span>
+            </button>
+          }
+        </div>
+        <div class="ed-panel">
 
         @if (activo() === 'estructura') {
           <div class="caso-vista">
@@ -708,16 +970,18 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
               <p class="sub">Nombre, desarrollo y contexto del caso.</p>
             </header>
             <section class="caso-casilla">
-              <h3>Datos del caso</h3>
-              <label class="caso-campo">
-                <span class="caso-etiqueta">Nombre</span>
-                <input [(ngModel)]="caso.nombre" [disabled]="bloqueado()" />
-              </label>
-              <label class="caso-campo">
-                <span class="caso-etiqueta">Tiempo estimado (min)</span>
-                <input type="number" [(ngModel)]="caso.tiempoEstimadoMin" [disabled]="bloqueado()" />
-              </label>
-              <div class="caso-casilla-check">
+              <h3 class="ed-seccion">Datos del caso</h3>
+              <div class="ed-fila-nombre">
+                <label class="caso-campo">
+                  <span class="caso-etiqueta">Nombre</span>
+                  <input [(ngModel)]="caso.nombre" [disabled]="bloqueado()" />
+                </label>
+                <label class="caso-campo ed-tiempo">
+                  <span class="caso-etiqueta">Tiempo estimado (min)</span>
+                  <input type="number" [(ngModel)]="caso.tiempoEstimadoMin" [disabled]="bloqueado()" />
+                </label>
+              </div>
+              <div class="caso-casilla-check ed-sensible">
                 <label class="check"><input type="checkbox" [(ngModel)]="caso.sensible" [disabled]="bloqueado()" /> <span>Contenido sensible (el estudiante verá una advertencia)</span></label>
               </div>
               @if (caso.sensible) {
@@ -728,18 +992,19 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
               }
             </section>
             <section class="caso-casilla">
-              <div class="campo-cabeza">
-                <h3>Desarrollo situacional</h3>
-                @if (!bloqueado()) { <button type="button" class="insertar" (click)="abrirInsertar('desarrollo')">Insertar diálogo</button> }
+              <h3 class="ed-seccion">Desarrollo situacional</h3>
+              <div class="ed-editor-bloque">
+                @if (insertando() === 'desarrollo') {
+                  <ng-container *ngTemplateOutlet="formDialogo; context: { $implicit: 'desarrollo' }" />
+                }
+                <app-editor #editorDesarrollo [(valor)]="caso.desarrolloSituacional" [bloqueado]="bloqueado()">
+                  @if (!bloqueado()) { <button type="button" class="insertar" (click)="abrirInsertar('desarrollo')">Insertar diálogo</button> }
+                </app-editor>
+                <small class="ayuda-dialogo">{{ ayudaDialogo }}</small>
               </div>
-              @if (insertando() === 'desarrollo') {
-                <ng-container *ngTemplateOutlet="formDialogo; context: { $implicit: 'desarrollo' }" />
-              }
-              <app-editor #editorDesarrollo [(valor)]="caso.desarrolloSituacional" [bloqueado]="bloqueado()" />
-              <small class="ayuda-dialogo">{{ ayudaDialogo }}</small>
             </section>
             <section class="caso-casilla">
-              <h3>Contexto</h3>
+              <h3 class="ed-seccion">Contexto</h3>
               <app-editor [(valor)]="caso.contexto" [bloqueado]="bloqueado()" />
             </section>
           </div>
@@ -747,103 +1012,164 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
 
         @if (activo() === 'escenas') {
           <div class="caso-vista">
-            <header class="caso-titulo">
-              <h2>Escenas y contexto</h2>
-              <p class="sub">Cada escena lleva su contexto. Las decisiones se arman en el siguiente paso.</p>
-            </header>
-            @for (bloque of caso.bloques; track $index) {
-              <section class="caso-casilla">
-                <h3>Escenario {{ $index + 1 }}</h3>
-                <label class="caso-campo">
-                  <span class="caso-etiqueta">Nombre del escenario</span>
-                  <input [(ngModel)]="bloque.nombre" [disabled]="bloqueado()" />
-                </label>
-                <div class="caso-campo">
-                  <div class="campo-cabeza">
-                    <span class="caso-etiqueta">Contexto situacional</span>
-                    @if (!bloqueado()) { <button type="button" class="insertar" (click)="abrirInsertar('bloque-' + $index)">Insertar diálogo</button> }
-                  </div>
-                  @if (insertando() === 'bloque-' + $index) {
-                    <ng-container *ngTemplateOutlet="formDialogo; context: { $implicit: { bloque: $index, area: ctx } }" />
-                  }
-                  <textarea #ctx [(ngModel)]="bloque.contexto" [disabled]="bloqueado()"
-                    [attr.aria-label]="'Contexto situacional del escenario ' + ($index + 1)"></textarea>
-                  <small class="ayuda-dialogo">{{ ayudaDialogo }}</small>
-                </div>
-                @if (!bloqueado()) {
-                  <div class="caso-acciones">
-                    <button class="btn-suave" type="button" (click)="caso.bloques.splice($index, 1)">Quitar escenario</button>
-                  </div>
-                }
-              </section>
-            }
-            @if (!bloqueado()) {
-              <div class="caso-acciones">
-                <button class="btn-oscuro" type="button" (click)="agregarBloque()">Agregar escenario académico</button>
+            <header class="caso-titulo ed-titulo-fila">
+              <div>
+                <h2>Escenas y contexto</h2>
+                <p class="sub">Cada escena lleva su contexto. Las decisiones se arman en el siguiente paso.</p>
               </div>
+              @if (caso.bloques.length) {
+                <button type="button" class="ed-enlace" (click)="alternarTodasEscenas()">{{ todasEscenasAbiertas() ? 'Cerrar todo' : 'Abrir todo' }}</button>
+              }
+            </header>
+            <div class="ed-lista">
+              @for (bloque of caso.bloques; track $index) {
+                <section class="ed-acordeon">
+                  <div class="ed-acordeon-cabeza">
+                    <button type="button" class="ed-acordeon-toggle" (click)="alternarEscena($index)" [attr.aria-expanded]="escenaAbierta($index)">
+                      <svg class="ed-chevron" [class.abierto]="escenaAbierta($index)" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                      <span class="ed-acordeon-textos">
+                        <span class="ed-bloque-titulo">{{ $index + 1 }} · {{ bloque.nombre || 'Escenario' }}</span>
+                        @if (!escenaAbierta($index) && primeraLinea(bloque.contexto)) {
+                          <span class="ed-preview">{{ primeraLinea(bloque.contexto) }}</span>
+                        }
+                      </span>
+                    </button>
+                    @if (!bloqueado()) {
+                      <button class="ed-quitar" type="button" (click)="quitarBloque($index)">
+                        <ng-container *ngTemplateOutlet="iconoBasura" /> Quitar escenario
+                      </button>
+                    }
+                  </div>
+                  @if (escenaAbierta($index)) {
+                    <div class="ed-acordeon-cuerpo">
+                      <label class="caso-campo">
+                        <span class="caso-etiqueta">Nombre del escenario</span>
+                        <input [(ngModel)]="bloque.nombre" [disabled]="bloqueado()" />
+                      </label>
+                      <div class="caso-campo">
+                        <span class="caso-etiqueta">Contexto situacional</span>
+                        <div class="ed-editor-bloque">
+                          @if (insertando() === 'bloque-' + $index) {
+                            <ng-container *ngTemplateOutlet="formDialogo; context: { $implicit: { bloque: $index } }" />
+                          }
+                          <app-editor #editorBloque [(valor)]="bloque.contexto" [bloqueado]="bloqueado()">
+                            @if (!bloqueado()) { <button type="button" class="insertar" (click)="abrirInsertarBloque($index, editorBloque)">Insertar diálogo</button> }
+                          </app-editor>
+                          <small class="ayuda-dialogo">{{ ayudaDialogo }}</small>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </section>
+              }
+            </div>
+            @if (!bloqueado()) {
+              <button class="ed-agregar" type="button" (click)="agregarBloque()">Agregar escenario académico</button>
             }
           </div>
         }
 
         @if (activo() === 'preguntas') {
           <div class="caso-vista">
-            @for (bloque of caso.bloques; track $index) {
-              <header class="caso-titulo">
-                <h2>{{ bloque.nombre || 'Escenario' }}</h2>
-                <p class="sub">{{ bloque.contexto }}</p>
-              </header>
-              @for (pregunta of bloque.preguntas; track $index; let p = $index) {
-                <section class="caso-casilla">
-                  <h3>Pregunta {{ p + 1 }}</h3>
-                  <div class="caso-campo">
-                    <span class="caso-etiqueta">Enunciado</span>
-                    <app-editor [(valor)]="pregunta.enunciado" [bloqueado]="bloqueado()" />
+            @if (totalPreguntas()) {
+              <div class="ed-barra-paso">
+                <button type="button" class="ed-enlace" (click)="alternarTodasPreguntas()">{{ todasPreguntasAbiertas() ? 'Cerrar todo' : 'Abrir todo' }}</button>
+              </div>
+            }
+            @for (bloque of caso.bloques; track $index; let b = $index) {
+              <section class="caso-casilla">
+                <h3 class="ed-seccion">Escenario {{ b + 1 }} · {{ bloque.nombre || 'Escenario' }}</h3>
+                @if (primeraLinea(bloque.contexto)) {
+                  <div class="ed-contexto">
+                    <button type="button" class="ed-contexto-btn" (click)="alternarContexto(b)" [attr.aria-expanded]="contextoAbierto(b)">
+                      <span>Ver contexto del escenario</span>
+                      <svg class="ed-chevron ed-chevron-abajo" [class.abierto]="contextoAbierto(b)" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    @if (contextoAbierto(b)) {
+                      <div class="ed-contexto-cuerpo" [innerHTML]="contextoHtml(bloque.contexto)"></div>
+                    }
                   </div>
-                  <label class="caso-campo">
-                    <span class="caso-etiqueta">Herramienta (pista, opcional)</span>
-                    <input [(ngModel)]="pregunta.pista" [disabled]="bloqueado()" />
-                  </label>
-                  <div class="grid-2">
-                    <label class="caso-campo">
-                      <span class="caso-etiqueta">Criterio</span>
-                      <input [(ngModel)]="pregunta.criterio" [disabled]="bloqueado()" />
-                    </label>
-                    <label class="caso-campo">
-                      <span class="caso-etiqueta">Peso</span>
-                      <input type="number" step="0.1" [(ngModel)]="pregunta.peso" [disabled]="bloqueado()" />
-                    </label>
-                  </div>
-                  @for (opcion of pregunta.opciones; track $index; let o = $index) {
-                    <div class="caso-subgrupo">
-                      <h3>Opción {{ o + 1 }}</h3>
-                      <label class="caso-campo">
-                        <span class="caso-etiqueta">Texto</span>
-                        <input [(ngModel)]="opcion.texto" [disabled]="bloqueado()" />
-                      </label>
-                      <label class="check"><input type="checkbox" [checked]="opcion.correcta" [disabled]="bloqueado()" (change)="marcar(pregunta, o)" /> <span>Correcta</span></label>
-                      <label class="caso-campo">
-                        <span class="caso-etiqueta">Por qué</span>
-                        <input [(ngModel)]="opcion.explicacion" [disabled]="bloqueado()" />
-                      </label>
-                      <label class="caso-campo">
-                        <span class="caso-etiqueta">Fundamento</span>
-                        <input [(ngModel)]="opcion.fundamento" [disabled]="bloqueado()" />
-                      </label>
-                    </div>
+                }
+                <div class="ed-lista">
+                  @for (pregunta of bloque.preguntas; track $index; let p = $index) {
+                    <section class="ed-acordeon">
+                      <div class="ed-acordeon-cabeza">
+                        <button type="button" class="ed-acordeon-toggle" (click)="alternarPregunta(b, p)" [attr.aria-expanded]="preguntaAbierta(b, p)">
+                          <svg class="ed-chevron" [class.abierto]="preguntaAbierta(b, p)" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                          <span class="ed-acordeon-textos">
+                            <span class="ed-bloque-titulo">Pregunta {{ p + 1 }}</span>
+                            @if (primeraLinea(pregunta.enunciado)) {
+                              <span class="ed-preview">{{ primeraLinea(pregunta.enunciado) }}</span>
+                            }
+                          </span>
+                        </button>
+                        <div class="ed-acordeon-lado">
+                          <span class="ed-chip">Peso {{ pesoCorto(pregunta.peso) }}</span>
+                          <span class="ed-chip">{{ textoOpciones(pregunta.opciones.length) }}</span>
+                          @if (sinCorrecta(pregunta)) { <span class="ed-chip ed-chip-alerta">Sin correcta</span> }
+                          @if (!bloqueado()) {
+                            <button class="ed-quitar" type="button" (click)="quitarPregunta(bloque, p)">
+                              <ng-container *ngTemplateOutlet="iconoBasura" /> Quitar pregunta
+                            </button>
+                          }
+                        </div>
+                      </div>
+                      @if (preguntaAbierta(b, p)) {
+                        <div class="ed-acordeon-cuerpo">
+                          <div class="caso-campo">
+                            <span class="caso-etiqueta">Enunciado</span>
+                            <app-editor [(valor)]="pregunta.enunciado" [bloqueado]="bloqueado()" />
+                          </div>
+                          <div class="ed-criterio-peso">
+                            <label class="caso-campo">
+                              <span class="caso-etiqueta">Criterio</span>
+                              <textarea class="ed-crece" edCrece rows="1" [(ngModel)]="pregunta.criterio" [disabled]="bloqueado()"></textarea>
+                            </label>
+                            <label class="caso-campo">
+                              <span class="caso-etiqueta">Peso</span>
+                              <input type="number" step="0.1" [(ngModel)]="pregunta.peso" [disabled]="bloqueado()" />
+                            </label>
+                          </div>
+                          <label class="caso-campo">
+                            <span class="caso-etiqueta">Herramienta (pista, opcional)</span>
+                            <input [(ngModel)]="pregunta.pista" [disabled]="bloqueado()" />
+                          </label>
+                          <div class="ed-opciones">
+                            @for (opcion of pregunta.opciones; track $index; let o = $index) {
+                              <div class="caso-subgrupo" [class.ed-correcta]="opcion.correcta">
+                                <div class="ed-opcion-linea">
+                                  <span class="ed-letra" aria-hidden="true">{{ letraOpcion(o) }}</span>
+                                  <label class="caso-campo">
+                                    <span class="caso-etiqueta">Texto</span>
+                                    <textarea class="ed-crece" edCrece rows="1" [(ngModel)]="opcion.texto" [disabled]="bloqueado()"></textarea>
+                                  </label>
+                                  <label class="check"><input type="checkbox" [checked]="opcion.correcta" [disabled]="bloqueado()" (change)="marcar(pregunta, o)" /> <span>Correcta</span></label>
+                                </div>
+                                <div class="ed-par">
+                                  <label class="caso-campo">
+                                    <span class="caso-etiqueta">Por qué</span>
+                                    <textarea class="ed-crece" edCrece rows="1" [(ngModel)]="opcion.explicacion" [disabled]="bloqueado()"></textarea>
+                                  </label>
+                                  <label class="caso-campo">
+                                    <span class="caso-etiqueta">Fundamento</span>
+                                    <textarea class="ed-crece" edCrece rows="1" [(ngModel)]="opcion.fundamento" [disabled]="bloqueado()"></textarea>
+                                  </label>
+                                </div>
+                              </div>
+                            }
+                          </div>
+                          @if (!bloqueado()) {
+                            <button class="ed-suave" type="button" (click)="pregunta.opciones.push(opcionVacia())">Agregar opción</button>
+                          }
+                        </div>
+                      }
+                    </section>
                   }
-                  @if (!bloqueado()) {
-                    <div class="caso-acciones">
-                      <button class="btn-oscuro" type="button" (click)="pregunta.opciones.push(opcionVacia())">Agregar opción</button>
-                      <button class="btn-suave" type="button" (click)="quitarPregunta(bloque, p)">Quitar pregunta</button>
-                    </div>
-                  }
-                </section>
-              }
-              @if (!bloqueado()) {
-                <div class="caso-acciones">
-                  <button class="btn-oscuro" type="button" (click)="agregarPregunta(bloque)">Agregar pregunta</button>
                 </div>
-              }
+                @if (!bloqueado()) {
+                  <button class="ed-suave" type="button" (click)="agregarPregunta(bloque)">Agregar pregunta</button>
+                }
+              </section>
             }
           </div>
         }
@@ -855,25 +1181,41 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
               <p class="sub">Cada pregunta tiene su criterio. Los pesos van de 0,0 a 5,0 y deben sumar 5,0.</p>
             </header>
             <section class="caso-casilla">
-              <h3>Reparto</h3>
-              <div class="caso-acciones">
-                <button class="btn-oscuro" type="button" [disabled]="bloqueado()" (click)="elegirReparto('PONDERADA')">Ponderada</button>
-                <button class="btn-oscuro" type="button" [disabled]="bloqueado()" (click)="elegirReparto('EQUITATIVA')">Equitativa</button>
+              <div class="ed-reparto-linea">
+                <h3 class="ed-seccion">Reparto</h3>
+                <div class="ed-reparto">
+                  <button type="button" [class.activa]="caso.repartoRubrica !== 'EQUITATIVA'" [disabled]="bloqueado()" (click)="elegirReparto('PONDERADA')">Ponderada</button>
+                  <button type="button" [class.activa]="caso.repartoRubrica === 'EQUITATIVA'" [disabled]="bloqueado()" (click)="elegirReparto('EQUITATIVA')">Equitativa</button>
+                </div>
                 <span class="sub">{{ caso.repartoRubrica === 'EQUITATIVA' ? 'El sistema reparte 5,0.' : 'Tú fijas cada peso.' }}</span>
               </div>
-              @for (bloque of caso.bloques; track $index) {
-                @for (pregunta of bloque.preguntas; track $index) {
-                  <label class="caso-campo">
-                    <span class="caso-etiqueta">{{ bloque.nombre }} · {{ pregunta.criterio || 'Sin criterio' }}</span>
-                    @if (caso.repartoRubrica === 'EQUITATIVA') {
-                      <strong>{{ pregunta.peso || 0 }}</strong>
-                    } @else {
-                      <input type="number" min="0" max="5" step="0.1" [(ngModel)]="pregunta.peso" [disabled]="bloqueado()" />
-                    }
-                  </label>
+            </section>
+            <section class="caso-casilla">
+              <div class="ed-tabla">
+                <div class="ed-tabla-cabeza">
+                  <span>Escenario · Pregunta</span>
+                  <span>Criterio</span>
+                  <span>Peso</span>
+                </div>
+                @for (bloque of caso.bloques; track $index; let b = $index) {
+                  @for (pregunta of bloque.preguntas; track $index; let p = $index) {
+                    <div class="ed-tabla-fila">
+                      <span>{{ bloque.nombre || 'Escenario' }} · Pregunta {{ p + 1 }}</span>
+                      <span class="ed-criterio">{{ pregunta.criterio || 'Sin criterio' }}</span>
+                      @if (caso.repartoRubrica === 'EQUITATIVA') {
+                        <strong>{{ pregunta.peso || 0 }}</strong>
+                      } @else {
+                        <input type="number" min="0" max="5" step="0.1" [(ngModel)]="pregunta.peso" [disabled]="bloqueado()"
+                          [attr.aria-label]="'Peso de ' + (bloque.nombre || 'escenario') + ', pregunta ' + (p + 1)" />
+                      }
+                    </div>
+                  }
                 }
-              }
-              <p>Suma actual: {{ suma() }}</p>
+                <div class="ed-tabla-total">
+                  <span>Suma actual</span>
+                  <strong>{{ suma() }}</strong>
+                </div>
+              </div>
             </section>
           </div>
         }
@@ -884,18 +1226,49 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
               <h2>Diseño de escena</h2>
               <p class="sub">Describe a cada personaje (por ejemplo «madre de 38 años») y el sistema elige un personaje 3D que encaje. Marca en qué escenarios aparece y arrástralo en la escena: a los lados, o hacia arriba y abajo para alejarlo o acercarlo. La posición es solo el boceto de tu vista.</p>
             </header>
+            <section class="caso-casilla ed-boceto">
+              <h3 class="ed-seccion">Boceto de escena</h3>
+              <h3 class="ed-seccion">Escenario y fondo</h3>
+              <div class="row escena-controles">
+                <div class="fondos" role="group" aria-label="Escenario">
+                  @for (bloque of casoEscena().bloques; track $index; let b = $index) {
+                    <button type="button" [class.activa]="escenarioActivo() === b" (click)="escenarioActivo.set(b)">Escenario {{ b + 1 }}</button>
+                  }
+                </div>
+                <div class="fondos" role="group" aria-label="Fondo (solo en tu vista)">
+                  <button type="button" [class.activa]="!fondoManual()" (click)="elegirFondo(null)">Fondo automático</button>
+                  @for (fondo of fondos; track fondo.id) {
+                    <button type="button" [class.activa]="fondoManual() === fondo.id" (click)="elegirFondo(fondo.id)">{{ fondo.nombre }}</button>
+                  }
+                </div>
+              </div>
+              <!-- three.js y el motor de la novela se descargan solo al entrar a un caso (carga diferida). -->
+              @defer (on immediate) {
+                <app-escena-novela
+                  [caso]="casoEscena()" [bloque]="bloqueEscena()" [personajes]="personajesEscena()"
+                  [modoEditor]="true" [bloqueado]="bloqueado()" [fondoManual]="fondoManual()" [posiciones]="posicionesEscena()"
+                  (elenco)="recibirElenco($event)" (mover)="moverPersona($event)" />
+              } @placeholder {
+                <div class="escena-espera" aria-hidden="true" style="width: 100%; aspect-ratio: 16 / 9; border-radius: 14px; background: linear-gradient(180deg, #d8e4ea, #b7c7cf);"></div>
+              }
+              @if (detectados()) { <p class="sub">{{ detectados() }}</p> }
+            </section>
+            <div class="ed-lista">
             @for (personaje of caso.personajes; track $index; let i = $index) {
-              <section class="caso-casilla personaje-fila">
-                <h3>{{ personaje.nombre || ('Persona ' + (i + 1)) }}</h3>
-                <label class="caso-campo">
-                  <span class="caso-etiqueta">Nombre</span>
-                  <input [(ngModel)]="personaje.nombre" [disabled]="bloqueado()" (ngModelChange)="cambioPersonaje(i)" />
-                </label>
-                <div class="caso-campo">
-                  <span class="caso-etiqueta">Descripción</span>
-                  <input [(ngModel)]="personaje.descripcion" [disabled]="bloqueado()" (ngModelChange)="cambioPersonaje(i)"
-                    placeholder="Ej.: madre de 38 años, trabaja en una panadería" [attr.aria-label]="'Descripción de ' + (personaje.nombre || 'Persona ' + (i + 1))" />
-                  <div class="ayudas" role="group" [attr.aria-label]="'Ayudas para describir a ' + (personaje.nombre || 'Persona ' + (i + 1))">
+              <section class="caso-casilla personaje-fila ed-persona">
+                <h3 class="ed-bloque-titulo">{{ personaje.nombre || ('Persona ' + (i + 1)) }}</h3>
+                <div class="ed-persona-grid">
+                  <label class="caso-campo">
+                    <span class="caso-etiqueta">Nombre</span>
+                    <input [(ngModel)]="personaje.nombre" [disabled]="bloqueado()" (ngModelChange)="cambioPersonaje(i)" />
+                  </label>
+                  <label class="caso-campo">
+                    <span class="caso-etiqueta">Descripción</span>
+                    <input [(ngModel)]="personaje.descripcion" [disabled]="bloqueado()" (ngModelChange)="cambioPersonaje(i)"
+                      placeholder="Ej.: madre de 38 años, trabaja en una panadería" [attr.aria-label]="'Descripción de ' + (personaje.nombre || 'Persona ' + (i + 1))" />
+                  </label>
+                </div>
+                <div class="ayudas" role="group" [attr.aria-label]="'Ayudas para describir a ' + (personaje.nombre || 'Persona ' + (i + 1))">
                     <select [disabled]="bloqueado()" [value]="ayuda(i).genero" (change)="escribirAyuda(i, 'genero', $any($event.target).value)" aria-label="Género">
                       <option value="">Género…</option>
                       <option value="mujer">Mujer</option>
@@ -909,7 +1282,6 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
                       <option value="">Rol…</option>
                       @for (r of roles; track r.id) { <option [value]="r.id">{{ ayuda(i).genero === 'hombre' ? r.m : r.f }}</option> }
                     </select>
-                  </div>
                 </div>
                 <div class="caso-campo">
                   <span class="caso-etiqueta">Aparece en</span>
@@ -925,35 +1297,7 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
                 </div>
               </section>
             }
-            <section class="caso-casilla">
-              <h3>Escenario y fondo</h3>
-              <div class="row escena-controles">
-                <div class="fondos" role="group" aria-label="Escenario">
-                  @for (bloque of casoEscena().bloques; track $index; let b = $index) {
-                    <button type="button" [class.activa]="escenarioActivo() === b" (click)="escenarioActivo.set(b)">Escenario {{ b + 1 }}</button>
-                  }
-                </div>
-                <div class="fondos" role="group" aria-label="Fondo (solo en tu vista)">
-                  <button type="button" [class.activa]="!fondoManual()" (click)="elegirFondo(null)">Fondo automático</button>
-                  @for (fondo of fondos; track fondo.id) {
-                    <button type="button" [class.activa]="fondoManual() === fondo.id" (click)="elegirFondo(fondo.id)">{{ fondo.nombre }}</button>
-                  }
-                </div>
-              </div>
-            </section>
-            <section class="caso-casilla">
-              <h3>Boceto de escena</h3>
-              <!-- three.js y el motor de la novela se descargan solo al entrar a un caso (carga diferida). -->
-              @defer (on immediate) {
-                <app-escena-novela
-                  [caso]="casoEscena()" [bloque]="bloqueEscena()" [personajes]="personajesEscena()"
-                  [modoEditor]="true" [bloqueado]="bloqueado()" [fondoManual]="fondoManual()" [posiciones]="posicionesEscena()"
-                  (elenco)="recibirElenco($event)" (mover)="moverPersona($event)" />
-              } @placeholder {
-                <div class="escena-espera" aria-hidden="true" style="width: 100%; aspect-ratio: 16 / 9; border-radius: 14px; background: linear-gradient(180deg, #d8e4ea, #b7c7cf);"></div>
-              }
-              @if (detectados()) { <p class="sub">{{ detectados() }}</p> }
-            </section>
+            </div>
           </div>
         }
 
@@ -963,12 +1307,14 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
               <h2>Estado del caso</h2>
               <p class="sub">Los cambios de estado (guardar, publicar, archivar) están en la barra de abajo, a la derecha.</p>
             </header>
-            <section class="caso-casilla ficha-estado">
+            <section class="caso-casilla ficha-estado ed-estado-actual">
               <div class="ficha-estado-cabeza">
                 <span class="ficha-estado-pill" [attr.data-estado]="caso.estado || 'NUEVO'">{{ etiquetaEstado() }}</span>
-                <h3>{{ caso.nombre || 'Sin nombre' }}</h3>
+                <h3 class="ed-bloque-titulo">{{ caso.nombre || 'Sin nombre' }}</h3>
               </div>
               <p class="sub">{{ textoEstado() }}</p>
+            </section>
+            <section class="caso-casilla">
               <div class="resumen-cifras">
                 <article><small>Escenarios</small><strong>{{ caso.bloques.length }}</strong></article>
                 <article><small>Decisiones</small><strong>{{ totalPreguntas() }}</strong></article>
@@ -989,9 +1335,10 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
             </section>
           </div>
         }
+        </div>
+        </div>
+        @if (caso.id || puedePublicar() || puedeVolverBorrador() || puedeArchivar()) {
         <div class="row acciones-caso">
-          @if (!bloqueado()) { <button class="btn-oscuro" type="button" (click)="guardar()">Guardar borrador</button> }
-          <button class="btn-suave" type="button" (click)="vistaPrevia.set(!vistaPrevia())">Previsualizar</button>
           @if (caso.id) { <button class="btn-suave" type="button" (click)="duplicar()">Duplicar</button> }
           @if (puedePublicar()) { <button class="btn-oscuro" type="button" (click)="transicion('publicar')">Publicar</button> }
           @if (puedeVolverBorrador()) { <button class="btn-suave" type="button" (click)="transicion('despublicar')">Volver a borrador</button> }
@@ -1007,9 +1354,14 @@ const GENERO_DEL_ROL: Record<string, string> = { madre: 'mujer' };
             </div>
           }
         </div>
+        }
       </section>
 
       <!-- Formulario de "Insertar diálogo" (desarrollo situacional o contexto de un escenario). -->
+      <ng-template #iconoBasura>
+        <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M4 7h16M9 7V5h6v2M7 7l1 13h8l1-13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </ng-template>
+
       <ng-template #formDialogo let-destino>
         <div class="form-dialogo" role="group" aria-label="Insertar diálogo">
           @if (hablantes().length) {
@@ -1074,6 +1426,11 @@ export class EditorCasoComponent {
   vistaPrevia = signal(false);
   /** Menú "⋯" de la barra de acciones (Archivar). */
   menuAcciones = signal(false);
+  /** Qué bloques están abiertos. Solo ordena la pantalla: no se guarda con el caso. */
+  private readonly escenasAbiertas = signal<ReadonlySet<number>>(new Set([0]));
+  private readonly preguntasAbiertas = signal<ReadonlySet<string>>(new Set());
+  private readonly contextosAbiertos = signal<ReadonlySet<number>>(new Set());
+  private preguntasTocadas = false;
   descripcionEditor() {
     return this.caso.nombre
       ? `Editando «${this.caso.nombre}». Diseña la historia, las escenas y las decisiones del caso.`
@@ -1244,29 +1601,25 @@ export class EditorCasoComponent {
     return (this.caso.personajes ?? []).filter((p) => (p.descripcion ?? '').trim())
       .map((p, i) => (p.nombre ?? '').trim() || `Persona ${i + 1}`);
   }
+  private editorBloqueActivo: EditorTextoComponent | null = null;
   abrirInsertar(destino: string) {
     this.insertando.set(this.insertando() === destino ? null : destino);
     this.dialogoTexto = '';
     if (!this.hablantes().includes(this.dialogoPersonaje)) this.dialogoPersonaje = this.hablantes()[0] ?? '';
   }
+  abrirInsertarBloque(indice: number, editor: EditorTextoComponent) {
+    this.editorBloqueActivo = editor;
+    this.abrirInsertar('bloque-' + indice);
+  }
   /** Inserta "Nombre: texto" en una línea nueva donde estaba el cursor. Se guarda en el mismo campo de siempre. */
-  insertarDialogo(destino: 'desarrollo' | { bloque: number; area: HTMLTextAreaElement }) {
+  insertarDialogo(destino: 'desarrollo' | { bloque: number }) {
     const texto = this.dialogoTexto.trim();
     if (!this.dialogoPersonaje || !texto) return;
     const linea = `${this.dialogoPersonaje}: ${texto}`;
     if (destino === 'desarrollo') {
       this.editorDesarrollo()?.insertarLinea(linea);
-    } else {
-      const bloque = this.caso.bloques[destino.bloque];
-      if (!bloque) return;
-      const valor = bloque.contexto ?? '';
-      const pos = Math.min(destino.area.selectionStart ?? valor.length, valor.length);
-      const antes = valor.slice(0, pos), despues = valor.slice(pos);
-      const prefijo = antes && !antes.endsWith('\n') ? '\n' : '';
-      const sufijo = despues && !despues.startsWith('\n') ? '\n' : '';
-      bloque.contexto = antes + prefijo + linea + sufijo + despues;
-      const cursor = (antes + prefijo + linea).length;
-      setTimeout(() => { destino.area.focus(); destino.area.setSelectionRange(cursor, cursor); });
+    } else if (this.caso.bloques[destino.bloque]) {
+      this.editorBloqueActivo?.insertarLinea(linea);
     }
     this.dialogoTexto = '';
     this.insertando.set(null);
@@ -1333,14 +1686,153 @@ export class EditorCasoComponent {
   agregarBloque() {
     this.caso.bloques.push({ nombre: `Escenario académico ${this.caso.bloques.length + 1}`, contexto: '', preguntas: [preguntaVacia()] });
     if (this.caso.repartoRubrica === 'EQUITATIVA') this.repartir();
+    const indice = this.caso.bloques.length - 1;
+    const escenas = new Set(this.escenasAbiertas());
+    escenas.add(indice);
+    this.escenasAbiertas.set(escenas);
+    if (this.preguntasTocadas) {
+      const abiertas = new Set(this.preguntasAbiertas());
+      abiertas.add(this.clavePregunta(indice, 0));
+      this.preguntasAbiertas.set(abiertas);
+    }
   }
   agregarPregunta(bloque: Bloque) {
     bloque.preguntas.push(preguntaVacia());
     if (this.caso.repartoRubrica === 'EQUITATIVA') this.repartir();
+    const b = this.caso.bloques.indexOf(bloque);
+    this.sembrarPreguntas();
+    const abiertas = new Set(this.preguntasAbiertas());
+    abiertas.add(this.clavePregunta(b, bloque.preguntas.length - 1));
+    this.preguntasAbiertas.set(abiertas);
+  }
+  quitarBloque(indice: number) {
+    this.caso.bloques.splice(indice, 1);
+    const escenas = new Set<number>();
+    for (const i of this.escenasAbiertas()) {
+      if (i < indice) escenas.add(i);
+      else if (i > indice) escenas.add(i - 1);
+    }
+    this.escenasAbiertas.set(escenas);
+    if (this.preguntasTocadas) {
+      const abiertas = new Set<string>();
+      for (const clave of this.preguntasAbiertas()) {
+        const [b, p] = clave.split('-').map(Number);
+        if (b < indice) abiertas.add(clave);
+        else if (b > indice) abiertas.add(this.clavePregunta(b - 1, p));
+      }
+      this.preguntasAbiertas.set(abiertas);
+    }
+    const contextos = new Set<number>();
+    for (const i of this.contextosAbiertos()) {
+      if (i < indice) contextos.add(i);
+      else if (i > indice) contextos.add(i - 1);
+    }
+    this.contextosAbiertos.set(contextos);
   }
   quitarPregunta(bloque: Bloque, indice: number) {
+    const b = this.caso.bloques.indexOf(bloque);
     bloque.preguntas.splice(indice, 1);
     if (this.caso.repartoRubrica === 'EQUITATIVA') this.repartir();
+    if (!this.preguntasTocadas) return;
+    const abiertas = new Set<string>();
+    for (const clave of this.preguntasAbiertas()) {
+      const [bloqueIndice, preguntaIndice] = clave.split('-').map(Number);
+      if (bloqueIndice !== b) abiertas.add(clave);
+      else if (preguntaIndice < indice) abiertas.add(clave);
+      else if (preguntaIndice > indice) abiertas.add(this.clavePregunta(b, preguntaIndice - 1));
+    }
+    this.preguntasAbiertas.set(abiertas);
+  }
+  escenaAbierta(indice: number) { return this.escenasAbiertas().has(indice); }
+  alternarEscena(indice: number) {
+    const next = new Set(this.escenasAbiertas());
+    if (next.has(indice)) next.delete(indice); else next.add(indice);
+    this.escenasAbiertas.set(next);
+  }
+  todasEscenasAbiertas() {
+    return this.caso.bloques.length > 0 && this.caso.bloques.every((_, i) => this.escenasAbiertas().has(i));
+  }
+  alternarTodasEscenas() {
+    this.escenasAbiertas.set(this.todasEscenasAbiertas() ? new Set() : new Set(this.caso.bloques.map((_, i) => i)));
+  }
+  preguntaAbierta(bloque: number, pregunta: number) {
+    if (!this.preguntasTocadas) return pregunta === 0;
+    return this.preguntasAbiertas().has(this.clavePregunta(bloque, pregunta));
+  }
+  alternarPregunta(bloque: number, pregunta: number) {
+    this.sembrarPreguntas();
+    const next = new Set(this.preguntasAbiertas());
+    const clave = this.clavePregunta(bloque, pregunta);
+    if (next.has(clave)) next.delete(clave); else next.add(clave);
+    this.preguntasAbiertas.set(next);
+  }
+  todasPreguntasAbiertas() {
+    const total = this.totalPreguntas();
+    if (!total) return false;
+    if (!this.preguntasTocadas) return this.caso.bloques.every((bloque) => (bloque.preguntas?.length || 0) <= 1);
+    return this.caso.bloques.every((bloque, b) => bloque.preguntas.every((_, p) => this.preguntasAbiertas().has(this.clavePregunta(b, p))));
+  }
+  alternarTodasPreguntas() {
+    if (this.todasPreguntasAbiertas()) {
+      this.preguntasTocadas = true;
+      this.preguntasAbiertas.set(new Set());
+      return;
+    }
+    const abiertas = new Set<string>();
+    this.caso.bloques.forEach((bloque, b) => bloque.preguntas.forEach((_, p) => abiertas.add(this.clavePregunta(b, p))));
+    this.preguntasTocadas = true;
+    this.preguntasAbiertas.set(abiertas);
+  }
+  contextoAbierto(indice: number) { return this.contextosAbiertos().has(indice); }
+  alternarContexto(indice: number) {
+    const next = new Set(this.contextosAbiertos());
+    if (next.has(indice)) next.delete(indice); else next.add(indice);
+    this.contextosAbiertos.set(next);
+  }
+  /** Primera línea, sin etiquetas, para el resumen del acordeón. */
+  primeraLinea(valor: string | null | undefined) {
+    return (valor ?? '')
+      .replace(/<br\s*\/?>/gi, ' ')
+      .replace(/<\/(p|div|li|h[1-6])>/gi, ' ')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/&amp;/gi, '&')
+      .replace(/&lt;/gi, '<')
+      .replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+  /** El mismo contexto de siempre, listo para leerse con formato y sin etiquetas a la vista. */
+  contextoHtml(valor: string | null | undefined) {
+    const texto = valor ?? '';
+    if (/<[a-z][\s\S]*>/i.test(texto)) return texto;
+    return texto.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+  }
+  pesoCorto(peso: number | null | undefined) {
+    const n = Number(peso || 0);
+    return Number.isInteger(n) ? String(n) : n.toLocaleString('es-CO', { maximumFractionDigits: 1 });
+  }
+  textoOpciones(cantidad: number) {
+    return cantidad === 1 ? '1 opción' : `${cantidad} opciones`;
+  }
+  sinCorrecta(pregunta: { opciones: { correcta: boolean }[] }) {
+    return !pregunta.opciones.some((opcion) => opcion.correcta);
+  }
+  letraOpcion(indice: number) {
+    return String.fromCharCode(65 + indice);
+  }
+  private clavePregunta(bloque: number, pregunta: number) {
+    return `${bloque}-${pregunta}`;
+  }
+  private sembrarPreguntas() {
+    if (this.preguntasTocadas) return;
+    const abiertas = new Set<string>();
+    this.caso.bloques.forEach((bloque, b) => {
+      if (bloque.preguntas?.length) abiertas.add(this.clavePregunta(b, 0));
+    });
+    this.preguntasAbiertas.set(abiertas);
+    this.preguntasTocadas = true;
   }
   marcar(pregunta: { opciones: { correcta: boolean }[] }, indice: number) {
     pregunta.opciones.forEach((opcion, i) => opcion.correcta = i === indice);

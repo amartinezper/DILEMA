@@ -12,7 +12,7 @@ import { IconoComponent } from './icono.component';
   imports: [MarcoDilemaComponent, IconoComponent],
   styles: [`:host { display: block; width: 100%; height: 100%; }`],
   template: `
-    <app-marco-dilema inicio="/estudiante" [descripcion]="descripcion()"
+    <app-marco-dilema inicio="/estudiante" [descripcion]="descripcion()" [movilCompacto]="movilCompacto()" [descripcionMovil]="descripcionMovil()"
       lemaTexto="¡A decidir!" lemaEnlace="/estudiante" [lemaParametros]="{ vista: 'dilemas' }">
       <ng-container ngProjectAs="[menu]">
         <button type="button" [class.activa]="marca() === 'inicio'" [attr.aria-current]="marca() === 'inicio' ? 'page' : null" (click)="ir('inicio')">
@@ -39,6 +39,9 @@ export class MarcoEstudianteComponent {
   sinLeer = input(0);
   /** Texto gris bajo el saludo: qué se hace en la sección actual. */
   descripcion = input('Bienvenido a Dilema, donde cada decisión cuenta.');
+  /** Encabezado compacto en celular (ver app-marco-dilema). */
+  movilCompacto = input(false);
+  descripcionMovil = input('');
   marca() { return this.activa() || 'inicio'; }
   ir(vista: string) {
     if (vista === 'inicio') this.router.navigate(['/estudiante']);
