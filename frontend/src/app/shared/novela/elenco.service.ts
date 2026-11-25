@@ -142,6 +142,7 @@ export class ElencoService {
     vrm.scene.traverse(o => { o.frustumCulled = false; });
     posarEnReposo(vrm);
     if (asignacion.aspecto.recolorear) aplicarAspecto(vrm, asignacion.modelo, asignacion.aspecto);
+    afinarTexturas(vrm);
     vrm.update(0);
     return { vrm, cara, asignacion };
   }
@@ -157,6 +158,34 @@ function enReposo(): Promise<void> {
   return new Promise(r => {
     const ric = (window as Window & { requestIdleCallback?: (f: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
     if (ric) ric(() => r(), { timeout: 1000 }); else setTimeout(r, 200);
+  });
+}
+
+/**
+ * Texturas nítidas sin reducirlas: mipmaps (ya vienen activados) y filtro anisotrópico 4. three.js lo limita
+ * solo al máximo del equipo (capabilities.getMaxAnisotropy), así que queda min(4, máximo).
+ */
+const ANISOTROPIA = 4;
+function afinarTexturas(vrm: VRM): void {
+  const vistas = new Set<THREE.Texture>();
+  vrm.scene.traverse(o => {
+    const malla = o as THREE.Mesh;
+    if (!malla.isMesh) return;
+    for (const m of Array.isArray(malla.material) ? malla.material : [malla.material]) {
+      // MToon guarda sus texturas en uniforms (map, shadeMultiplyTexture, matcap, rim…), no como propiedades propias.
+      const mat = m as THREE.Material & { uniforms?: Record<string, { value: unknown }> };
+      const candidatas = [...Object.values(mat as unknown as Record<string, unknown>), ...Object.values(mat.uniforms ?? {}).map(u => u?.value),
+        (mat as THREE.Material & { map?: unknown }).map];
+      for (const valor of candidatas) {
+        const t = valor as THREE.Texture | null;
+        if (!t?.isTexture || vistas.has(t)) continue;
+        vistas.add(t);
+        t.generateMipmaps = true;
+        if (t.minFilter === THREE.LinearFilter) t.minFilter = THREE.LinearMipmapLinearFilter;
+        t.anisotropy = ANISOTROPIA;
+        t.needsUpdate = true;
+      }
+    }
   });
 }
 

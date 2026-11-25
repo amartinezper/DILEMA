@@ -117,18 +117,43 @@ function webglDisponible(): boolean {
   return hayWebgl;
 }
 
-/** Resolución interna máxima: 1,5 en computador y 1 en celular (pantallas táctiles). */
+function esCelular(): boolean {
+  return window.matchMedia?.('(pointer: coarse)').matches ?? false;
+}
+
+/**
+ * Resolución interna (pixelRatio) con la que se dibuja la escena. En celular: la de la pantalla hasta 2 (un
+ * iPhone de DPR 3 dibuja a 2, nítido y sin pagar el triple de píxeles); en computador: hasta 1,5, como antes.
+ */
 function resolucionMaxima(): number {
-  const celular = window.matchMedia?.('(pointer: coarse)').matches ?? false;
-  return Math.min(window.devicePixelRatio || 1, celular ? 1 : 1.5);
+  const dpr = window.devicePixelRatio || 1;
+  return Math.min(dpr, esCelular() ? 2 : 1.5);
+}
+
+/**
+ * Piso de calidad: la calidad adaptativa nunca dibuja por debajo de esto. En celulares con pantalla retina
+ * (DPR 2 o más) nunca menos de 1,5; en los demás, la resolución de la pantalla hasta 1.
+ */
+function resolucionPiso(): number {
+  const dpr = window.devicePixelRatio || 1;
+  if (esCelular() && dpr >= 2) return 1.5;
+  return Math.min(dpr, 1);
 }
 
 /** Si nada cambia (solo el reposo), se dibuja a 30 cuadros por segundo. */
 const INTERVALO_QUIETO_S = 1 / 30;
 /** Tras un cambio (gesto, fundido, entrada, expresión, mirada) se dibuja a todo ritmo durante este tiempo. */
 const MOVIMIENTO_TRAS_CAMBIO_S = 0.9;
-/** Por debajo de estos cuadros por segundo (moviéndose) pasa a calidad ligera. */
+/** Por debajo de estos cuadros por segundo (moviéndose) baja un nivel de calidad. */
 const FPS_MINIMO = 30;
+/** Con el tope de 30 cuadros por segundo (nivel 2), lento es bajar de esto. */
+const FPS_MINIMO_CON_TOPE = 24;
+/**
+ * Niveles de calidad adaptativa, de a uno y en este orden (lo último que se toca es la resolución):
+ * 0 normal; 1 ligera (sin desenfoque y sin física de cabello y ropa en quienes no hablan); 2 además tope de
+ * 30 cuadros por segundo; 3 además la resolución baja hasta el piso (resolucionPiso), nunca por debajo.
+ */
+const NIVEL_MAXIMO = 3;
 
 /**
  * Mismo orden que VRM.update de three-vrm, pero sin la física del cabello y la ropa (huesos con resortes):
@@ -314,7 +339,8 @@ export class EscenaNovelaComponent implements AfterViewInit, OnDestroy {
   /** La escena se ve en la pantalla (no quedó fuera al desplazarse). */
   private enPantalla = true;
   /** Calidad ligera: sin desenfoque del cuadro y sin física de cabello y ropa en quienes no hablan. */
-  readonly ligero = signal(false);
+  readonly nivelCalidad = signal(0);
+  readonly ligero = computed(() => this.nivelCalidad() >= 1);
   /** Tiempo acumulado desde el último dibujo (para dibujar a 30 cuadros por segundo si nada cambia). */
   private acumulado = 0;
   /** Momento (reloj de la escena) del último cambio visible: mientras tanto se dibuja a todo ritmo. */
@@ -385,7 +411,7 @@ export class EscenaNovelaComponent implements AfterViewInit, OnDestroy {
         try {
           const renderer = new THREE.WebGLRenderer({ canvas: this.lienzo().nativeElement, alpha: true, antialias: true });
           renderer.outputColorSpace = THREE.SRGBColorSpace;
-          renderer.setPixelRatio(resolucionMaxima());
+          renderer.setPixelRatio(this.resolucionActual());
           renderer.setClearColor(0x000000, 0);
           this.renderer = renderer;
           const luz = new THREE.DirectionalLight(0xffffff, 2.1);
@@ -707,8 +733,21 @@ export class EscenaNovelaComponent implements AfterViewInit, OnDestroy {
     const w = Math.round(ancho), h = Math.round(ancho * 9 / 16);
     if (!w || !h) return;
     this.ancho = w; this.alto = h;
+    if (this.renderer && this.renderer.getPixelRatio() !== this.resolucionActual()) this.renderer.setPixelRatio(this.resolucionActual());
     this.renderer?.setSize(w, h, false);
     this.colocar();
+  }
+
+  /** Baja un nivel de calidad (ver NIVEL_MAXIMO); en el último, la resolución baja solo hasta el piso. */
+  private bajarCalidad(): void {
+    const nivel = Math.min(NIVEL_MAXIMO, this.nivelCalidad() + 1);
+    this.nivelCalidad.set(nivel);
+    if (nivel >= NIVEL_MAXIMO) this.ajustarTamano();
+  }
+
+  /** pixelRatio del nivel actual: el máximo, o el piso en el último nivel. */
+  private resolucionActual(): number {
+    return this.nivelCalidad() >= NIVEL_MAXIMO ? Math.min(resolucionMaxima(), resolucionPiso()) : resolucionMaxima();
   }
 
   /** Algo visible cambió (gesto, fundido, entrada, cara, posición): se dibuja a todo ritmo un momento. */
@@ -734,11 +773,11 @@ export class EscenaNovelaComponent implements AfterViewInit, OnDestroy {
    * se queda así en este caso (sin ir y volver).
    */
   private medirRitmo(dt: number, moviendo: boolean): void {
-    if (this.ligero() || !moviendo || this.estado() !== 'listo' || this.pendientes.size) { this.medida = { cuadros: 0, tiempo: 0 }; return; }
+    if (this.nivelCalidad() >= NIVEL_MAXIMO || !moviendo || this.estado() !== 'listo' || this.pendientes.size) { this.medida = { cuadros: 0, tiempo: 0 }; return; }
     this.medida.cuadros++;
     this.medida.tiempo += dt;
     if (this.medida.tiempo < 2) return;
-    if (this.medida.cuadros / this.medida.tiempo < FPS_MINIMO) this.ligero.set(true);
+    if (this.medida.cuadros / this.medida.tiempo < (this.nivelCalidad() >= 2 ? FPS_MINIMO_CON_TOPE : FPS_MINIMO)) this.bajarCalidad();
     this.medida = { cuadros: 0, tiempo: 0 };
   }
 
@@ -751,7 +790,8 @@ export class EscenaNovelaComponent implements AfterViewInit, OnDestroy {
     this.acumulado += this.reloj.getDelta();
     const moviendo = this.hayMovimiento();
     // Si solo queda el reposo, a 30 cuadros por segundo.
-    if (!moviendo && this.acumulado < INTERVALO_QUIETO_S - 0.004) return;
+    // Si solo queda el reposo (o la calidad está en el tope de 30), a 30 cuadros por segundo.
+    if ((!moviendo || this.nivelCalidad() >= 2) && this.acumulado < INTERVALO_QUIETO_S - 0.004) return;
     const dt = Math.min(this.acumulado, 0.1);
     this.acumulado = 0;
     this.medirRitmo(dt, moviendo);
