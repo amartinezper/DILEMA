@@ -15,6 +15,7 @@ import com.dilema.servicio.programacion.EstadosDeSesion;
 import com.dilema.servicio.programacion.FachadaAgendamiento;
 import com.dilema.servicio.programacion.NotificadorConvocatoria;
 import com.dilema.servicio.programacion.PadronConvocatoria;
+import com.dilema.tiempo.Hora;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -210,7 +211,7 @@ public class AcademiaServicio {
 
     @Transactional
     public void cerrarVencidas() {
-        LocalDateTime ahora = LocalDateTime.now();
+        LocalDateTime ahora = Hora.ahora();
         for (SesionCaso sesion : sesiones.findByCierreRealIsNull()) {
             if (EstadosDeSesion.vencioPlazoDeCierre(sesion, ahora)) {
                 new CierrePorFecha(participacionServicio, participaciones, bitacora).cerrar(sesion, citados(sesion));

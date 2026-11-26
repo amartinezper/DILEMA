@@ -2,6 +2,7 @@ package com.dilema.servicio.programacion;
 
 import com.dilema.modelo.SesionCaso;
 import com.dilema.servicio.ReglaNegocio;
+import com.dilema.tiempo.Hora;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +32,7 @@ class EstadosDeSesionTest {
     @DisplayName("RF-19: en curso admite participar y finalizar, no volver a iniciar")
     void enCursoAdmiteParticiparYFinalizar() {
         SesionCaso sesion = new SesionCaso();
-        sesion.inicioReal = LocalDateTime.now();
+        sesion.inicioReal = Hora.ahora();
         EstadoSesion estado = EstadosDeSesion.de(sesion);
         assertTrue(estado.permiteParticipar());
         assertThrows(ReglaNegocio.class, () -> estado.iniciar(sesion));
@@ -42,8 +43,8 @@ class EstadosDeSesionTest {
     @DisplayName("RF-19: finalizada rechaza iniciar, finalizar y participar")
     void finalizadaRechazaTodaOperacion() {
         SesionCaso sesion = new SesionCaso();
-        sesion.inicioReal = LocalDateTime.now().minusHours(2);
-        sesion.cierreReal = LocalDateTime.now();
+        sesion.inicioReal = Hora.ahora().minusHours(2);
+        sesion.cierreReal = Hora.ahora();
         EstadoSesion estado = EstadosDeSesion.de(sesion);
         assertFalse(estado.permiteParticipar());
         assertThrows(ReglaNegocio.class, () -> estado.iniciar(sesion));

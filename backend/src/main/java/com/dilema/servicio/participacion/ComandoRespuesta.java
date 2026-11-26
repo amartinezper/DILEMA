@@ -5,8 +5,8 @@ import com.dilema.modelo.Participacion;
 import com.dilema.modelo.Pregunta;
 import com.dilema.modelo.Respuesta;
 import com.dilema.servicio.ReglaNegocio;
+import com.dilema.tiempo.Hora;
 
-import java.time.LocalDateTime;
 import java.util.function.Function;
 
 /** Command (RF-10): registrar o cambiar una respuesta, y poder deshacerla. */
@@ -32,11 +32,11 @@ public class ComandoRespuesta {
             respuesta.pregunta = pregunta;
             respuesta.casoId = participacion.casoId;
             respuesta.opcion = opcion;
-            respuesta.fecha = LocalDateTime.now();
+            respuesta.fecha = Hora.ahora();
             participacion.respuestas.add(respuesta);
         } else {
             actual.opcion = opcion;
-            actual.fecha = LocalDateTime.now();
+            actual.fecha = Hora.ahora();
         }
     }
 

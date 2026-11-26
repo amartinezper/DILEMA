@@ -16,6 +16,7 @@ import com.dilema.modelo.Usuario;
 import com.dilema.repo.ParticipacionRepo;
 import com.dilema.repo.SesionRepo;
 import com.dilema.servicio.programacion.PadronConvocatoria;
+import com.dilema.tiempo.Hora;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -82,7 +83,7 @@ class ParticipacionServicioTest {
     @Test
     @DisplayName("RF-22 rechaza el ingreso tardío")
     void ingresoTardio() {
-        sesion.inicioReal = LocalDateTime.now().minusMinutes(40);
+        sesion.inicioReal = Hora.ahora().minusMinutes(40);
         sesion.toleranciaMin = 10;
         when(participaciones.findByEstudianteIdAndSesionId(2L, 4L)).thenReturn(List.of());
         assertEquals("Ya pasó el tiempo que el docente dejó para entrar. Pídele que amplíe el plazo si todavía debes participar.",
@@ -93,7 +94,7 @@ class ParticipacionServicioTest {
     @DisplayName("RF-25 exige autorización para un segundo intento")
     void noRepiteSinAutorizacion() {
         Participacion previa = enCurso();
-        previa.fin = LocalDateTime.now();
+        previa.fin = Hora.ahora();
         when(participaciones.findByEstudianteIdAndSesionId(2L, 4L)).thenReturn(List.of(previa));
         assertThrows(ReglaNegocio.class, () -> servicio.iniciar(estudiante, 4L));
     }
@@ -140,7 +141,7 @@ class ParticipacionServicioTest {
     @DisplayName("RF-25 solo el docente creador autoriza el último intento en curso")
     void autorizarRepeticion() {
         Participacion participacion = enCurso();
-        participacion.fin = LocalDateTime.now();
+        participacion.fin = Hora.ahora();
         when(participaciones.findById(11L)).thenReturn(Optional.of(participacion));
         when(participaciones.findByEstudianteIdAndSesionId(2L, 4L)).thenReturn(List.of(participacion));
 
@@ -148,7 +149,7 @@ class ParticipacionServicioTest {
         assertNotNull(participacion.autorizacion);
 
         assertThrows(ReglaNegocio.class, () -> servicio.autorizarRepeticion(docente, 11L));
-        sesion.cierreReal = LocalDateTime.now();
+        sesion.cierreReal = Hora.ahora();
         participacion.autorizacion = null;
         assertThrows(ReglaNegocio.class, () -> servicio.autorizarRepeticion(docente, 11L));
     }
@@ -158,7 +159,7 @@ class ParticipacionServicioTest {
     void panel() {
         when(sesiones.delEstudiante(2L)).thenReturn(List.of(sesion));
         Participacion participacion = enCurso();
-        participacion.fin = LocalDateTime.now();
+        participacion.fin = Hora.ahora();
         participacion.fijarNota(new BigDecimal("4.0"));
         when(participaciones.findByEstudianteIdAndSesionId(2L, 4L)).thenReturn(List.of(participacion));
         when(participaciones.findByEstudianteIdOrderByIdDesc(2L)).thenReturn(List.of(participacion));
@@ -191,7 +192,7 @@ class ParticipacionServicioTest {
     @Test
     @DisplayName("el seguimiento marca ausente en 0,0 si la sesión ya cerró")
     void seguimiento() {
-        sesion.cierreReal = LocalDateTime.now();
+        sesion.cierreReal = Hora.ahora();
         sesion.grupo.estudiantes.add(estudiante);
         when(padron.convocados(sesion)).thenReturn(List.of(estudiante));
         when(participaciones.findByEstudianteIdAndSesionId(2L, 4L)).thenReturn(List.of());
@@ -272,7 +273,7 @@ class ParticipacionServicioTest {
         participacion.estudiante = estudiante;
         participacion.sesion = sesion;
         participacion.casoId = 5L;
-        participacion.inicio = LocalDateTime.now().minusMinutes(5);
+        participacion.inicio = Hora.ahora().minusMinutes(5);
         return participacion;
     }
 
@@ -310,9 +311,9 @@ class ParticipacionServicioTest {
         sesion.caso = caso;
         sesion.grupo = grupo;
         sesion.codigo = "DL-AB12";
-        sesion.inicio = LocalDateTime.now().minusMinutes(10);
-        sesion.fin = LocalDateTime.now().plusHours(2);
-        sesion.inicioReal = LocalDateTime.now().minusMinutes(10);
+        sesion.inicio = Hora.ahora().minusMinutes(10);
+        sesion.fin = Hora.ahora().plusHours(2);
+        sesion.inicioReal = Hora.ahora().minusMinutes(10);
         sesion.tiempoMaxMin = 40;
         sesion.toleranciaMin = 20;
         sesion.mensaje = "Prepárate";

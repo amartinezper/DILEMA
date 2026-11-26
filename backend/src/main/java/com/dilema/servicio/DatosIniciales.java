@@ -2,6 +2,7 @@ package com.dilema.servicio;
 
 import com.dilema.modelo.*;
 import com.dilema.repo.*;
+import com.dilema.tiempo.Hora;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -126,13 +127,13 @@ public class DatosIniciales implements CommandLineRunner {
         sesion.caso = caso;
         sesion.grupo = grupo;
         sesion.codigo = "DILEMA-2026";
-        sesion.inicio = LocalDateTime.now().minusMinutes(10);
-        sesion.fin = LocalDateTime.now().plusDays(20);
+        sesion.inicio = Hora.ahora().minusMinutes(10);
+        sesion.fin = Hora.ahora().plusDays(20);
         sesion.tiempoMaxMin = 30;
         sesion.toleranciaMin = 10080;
         sesion.lugar = "Aula 3";
         sesion.mensaje = "Caso formativo. El objetivo es el encuadre ético y la ruta de atención, no reconstruir el crimen. No hay escena violenta.";
-        sesion.inicioReal = LocalDateTime.now().minusMinutes(5);
+        sesion.inicioReal = Hora.ahora().minusMinutes(5);
         sesiones.save(sesion);
 
         SesionEstudiante fila = new SesionEstudiante();
@@ -165,7 +166,7 @@ public class DatosIniciales implements CommandLineRunner {
         }
 
         sesiones.findByCodigoIgnoreCase("DILEMA-2026").ifPresent(sesion -> {
-            LocalDateTime ahora = LocalDateTime.now();
+            LocalDateTime ahora = Hora.ahora();
             sesion.inicio = ahora.minusMinutes(10);
             sesion.fin = ahora.plusDays(20);
             sesion.inicioReal = ahora.minusMinutes(5);

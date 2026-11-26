@@ -4,8 +4,7 @@ import com.dilema.modelo.SesionCaso;
 import com.dilema.repo.ParticipacionRepo;
 import com.dilema.servicio.BitacoraServicio;
 import com.dilema.servicio.ParticipacionServicio;
-
-import java.time.LocalDateTime;
+import com.dilema.tiempo.Hora;
 
 public class CierrePorFecha extends CierreSesion {
     public CierrePorFecha(ParticipacionServicio a, ParticipacionRepo b) {
@@ -18,6 +17,6 @@ public class CierrePorFecha extends CierreSesion {
 
     @Override
     protected boolean puedeCerrar(SesionCaso sesion) {
-        return EstadosDeSesion.vencioPlazoDeCierre(sesion, LocalDateTime.now());
+        return EstadosDeSesion.vencioPlazoDeCierre(sesion, Hora.ahora());
     }
 }

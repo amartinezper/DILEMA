@@ -2,6 +2,7 @@ package com.dilema.servicio.programacion;
 
 import com.dilema.modelo.SesionCaso;
 import com.dilema.servicio.ReglaNegocio;
+import com.dilema.tiempo.Hora;
 
 import java.time.LocalDateTime;
 
@@ -19,7 +20,7 @@ public final class EstadosDeSesion {
     public static class SinIniciar implements EstadoSesion {
         @Override
         public void iniciar(SesionCaso sesion) {
-            sesion.inicioReal = LocalDateTime.now();
+            sesion.inicioReal = Hora.ahora();
         }
 
         @Override

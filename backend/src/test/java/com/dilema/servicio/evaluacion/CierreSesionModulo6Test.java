@@ -18,6 +18,7 @@ import com.dilema.servicio.ParticipacionServicio;
 import com.dilema.servicio.ProxyOperacion;
 import com.dilema.servicio.programacion.CierrePorDocente;
 import com.dilema.servicio.programacion.PadronConvocatoria;
+import com.dilema.tiempo.Hora;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -78,15 +79,15 @@ class CierreSesionModulo6Test {
         sesion.id = 4L;
         sesion.caso = caso;
         sesion.grupo = grupo;
-        sesion.inicioReal = LocalDateTime.now().minusHours(1);
-        sesion.fin = LocalDateTime.now().plusHours(1);
+        sesion.inicioReal = Hora.ahora().minusHours(1);
+        sesion.fin = Hora.ahora().plusHours(1);
         sesion.tiempoMaxMin = 40;
 
         Participacion enCurso = new Participacion();
         enCurso.estudiante = enCursoEstudiante;
         enCurso.sesion = sesion;
         enCurso.casoId = caso.id;
-        enCurso.inicio = LocalDateTime.now().minusMinutes(10);
+        enCurso.inicio = Hora.ahora().minusMinutes(10);
         Respuesta respuesta = new Respuesta();
         respuesta.participacion = enCurso;
         respuesta.pregunta = p1;
@@ -166,8 +167,8 @@ class CierreSesionModulo6Test {
         sesion.id = 4L;
         sesion.caso = caso;
         sesion.grupo = grupo;
-        sesion.inicioReal = LocalDateTime.now().minusHours(1);
-        sesion.fin = LocalDateTime.now().plusHours(1);
+        sesion.inicioReal = Hora.ahora().minusHours(1);
+        sesion.fin = Hora.ahora().plusHours(1);
         sesion.tiempoMaxMin = 40;
         return sesion;
     }

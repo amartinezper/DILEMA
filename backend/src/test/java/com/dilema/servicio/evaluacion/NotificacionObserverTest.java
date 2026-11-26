@@ -17,13 +17,13 @@ import com.dilema.servicio.ParticipacionServicio;
 import com.dilema.servicio.ProxyOperacion;
 import com.dilema.servicio.ReglaNegocio;
 import com.dilema.servicio.programacion.PadronConvocatoria;
+import com.dilema.tiempo.Hora;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -76,8 +76,8 @@ class NotificacionObserverTest {
     void sinNotaNuevaNoHayAviso() {
         BitacoraServicio bitacora = mock(BitacoraServicio.class);
         Participacion yaFinalizada = new Participacion();
-        yaFinalizada.inicio = LocalDateTime.now().minusMinutes(20);
-        yaFinalizada.fin = LocalDateTime.now().minusMinutes(10);
+        yaFinalizada.inicio = Hora.ahora().minusMinutes(20);
+        yaFinalizada.fin = Hora.ahora().minusMinutes(10);
 
         new com.dilema.servicio.participacion.FinalizadorParticipacion.PorEstudiante(bitacora, p -> java.math.BigDecimal.ONE)
                 .finalizar(yaFinalizada);
@@ -90,7 +90,7 @@ class NotificacionObserverTest {
     void sinComentarioNuevoNoHayAviso() {
         BitacoraServicio bitacora = mock(BitacoraServicio.class);
         Participacion enCurso = new Participacion();
-        enCurso.inicio = LocalDateTime.now();
+        enCurso.inicio = Hora.ahora();
 
         assertThrows(ReglaNegocio.class,
                 () -> EstadoDeParticipacion.de(enCurso, bitacora).agregarRetroalimentacionGeneral(enCurso, "texto"));
@@ -136,7 +136,7 @@ class NotificacionObserverTest {
         JavaMailSender correo = mock(JavaMailSender.class);
         BitacoraServicio bitacora = new BitacoraServicio(correo, "no-reply@dilema", repo(guardadas));
         Participacion participacion = participacionDe(estudiante());
-        participacion.inicio = LocalDateTime.now().minusMinutes(5);
+        participacion.inicio = Hora.ahora().minusMinutes(5);
 
         new com.dilema.servicio.participacion.FinalizadorParticipacion.PorEstudiante(bitacora, p -> new BigDecimal("4.5"))
                 .finalizar(participacion);
@@ -221,8 +221,8 @@ class NotificacionObserverTest {
         sesion.id = 4L;
         sesion.caso = caso;
         sesion.grupo = new Grupo();
-        sesion.inicio = LocalDateTime.now().minusMinutes(30);
-        sesion.fin = LocalDateTime.now().plusHours(1);
+        sesion.inicio = Hora.ahora().minusMinutes(30);
+        sesion.fin = Hora.ahora().plusHours(1);
         sesion.tiempoMaxMin = 40;
         sesion.mensaje = "Prepárate";
         Participacion participacion = new Participacion();

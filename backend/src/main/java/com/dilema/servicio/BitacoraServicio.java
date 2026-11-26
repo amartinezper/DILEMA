@@ -3,6 +3,7 @@ package com.dilema.servicio;
 import com.dilema.modelo.Notificacion;
 import com.dilema.modelo.Usuario;
 import com.dilema.repo.NotificacionRepo;
+import com.dilema.tiempo.Hora;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +53,7 @@ public class BitacoraServicio {
     public void avisar(Usuario destinatario, String canal, String titulo, String cuerpo) {
         if ("SISTEMA".equals(canal)) {
             log.info("aviso sistema usuario={} titulo={} cuerpo={}", destinatario == null ? null : destinatario.email, titulo, cuerpo);
-            if (destinatario != null) guardar(destinatario, canal, titulo, cuerpo, LocalDateTime.now(), null);
+            if (destinatario != null) guardar(destinatario, canal, titulo, cuerpo, Hora.ahora(), null);
             return;
         }
         if (!"CORREO".equals(canal)) return;
@@ -111,7 +112,7 @@ public class BitacoraServicio {
         notificacion.canal = canal;
         notificacion.titulo = titulo;
         notificacion.cuerpo = cuerpo;
-        notificacion.fecha = fecha == null ? LocalDateTime.now() : fecha;
+        notificacion.fecha = fecha == null ? Hora.ahora() : fecha;
         notificacion.referencia = referencia;
         notificaciones.save(notificacion);
     }

@@ -1,5 +1,7 @@
 package com.dilema.modelo;
 
+import com.dilema.tiempo.Hora;
+
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -24,7 +26,7 @@ public class Notificacion {
     @Column(nullable = false)
     public boolean leida = false;
     @Column(nullable = false)
-    public LocalDateTime fecha = LocalDateTime.now();
+    public LocalDateTime fecha = Hora.ahora();
     /** Clave opcional para no repetir un aviso derivado de una sesión (p. ej. "sesion:4:asignado"). */
     @Column(length = 80)
     public String referencia;

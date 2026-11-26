@@ -3,6 +3,7 @@ package com.dilema.servicio.participacion;
 import com.dilema.modelo.Participacion;
 import com.dilema.servicio.BitacoraServicio;
 import com.dilema.servicio.evaluacion.SujetoNotificador;
+import com.dilema.tiempo.Hora;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -38,7 +39,7 @@ public abstract class FinalizadorParticipacion {
 
         @Override
         protected LocalDateTime determinarFin(Participacion participacion) {
-            return LocalDateTime.now();
+            return Hora.ahora();
         }
     }
 
@@ -49,7 +50,7 @@ public abstract class FinalizadorParticipacion {
 
         @Override
         protected LocalDateTime determinarFin(Participacion participacion) {
-            return RelojParticipacion.finPorLimite(participacion, LocalDateTime.now());
+            return RelojParticipacion.finPorLimite(participacion, Hora.ahora());
         }
     }
 }

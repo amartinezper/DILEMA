@@ -18,6 +18,7 @@ import com.dilema.servicio.participacion.ProxyParticipacion;
 import com.dilema.servicio.participacion.RelojParticipacion;
 import com.dilema.servicio.programacion.NotificadorConvocatoria;
 import com.dilema.servicio.programacion.PadronConvocatoria;
+import com.dilema.tiempo.Hora;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -109,7 +110,7 @@ public class ParticipacionServicio {
         if (!padron.esta(sesion, estudiante)) {
             throw new AccesoDenegado("No estás autorizado en esta convocatoria.");
         }
-        LocalDateTime ahora = LocalDateTime.now();
+        LocalDateTime ahora = Hora.ahora();
         puerta.sesionAbierta(sesion, ahora);
         List<Participacion> propias = participaciones.findByEstudianteIdAndSesionId(estudiante.id, sesion.id);
         Participacion enCurso = propias.stream().filter(Participacion::enCurso).findFirst().orElse(null);
@@ -133,7 +134,7 @@ public class ParticipacionServicio {
     @Transactional
     public Contratos.ParticipacionVista ver(Usuario usuario, Long id) {
         Participacion participacion = propiaODocente(usuario, id);
-        if (usuario.rol == Catalogo.Rol.ESTUDIANTE) cerrarSiVencio(participacion, LocalDateTime.now());
+        if (usuario.rol == Catalogo.Rol.ESTUDIANTE) cerrarSiVencio(participacion, Hora.ahora());
         boolean revelar = new ProxyResultado().revelar(usuario, participacion);
         return vista(participacion, revelar);
     }
@@ -142,7 +143,7 @@ public class ParticipacionServicio {
     public Contratos.ParticipacionVista responder(Usuario estudiante, Long id, Long preguntaId, Long opcionId) {
         proxy.participar(estudiante);
         Participacion participacion = enCurso(estudiante, id);
-        if (cerrarSiVencio(participacion, LocalDateTime.now())) return vista(participacion, true);
+        if (cerrarSiVencio(participacion, Hora.ahora())) return vista(participacion, true);
         Pregunta pregunta = buscarPregunta(participacion.sesion.caso, preguntaId);
         Opcion opcion = pregunta.opciones.stream().filter(o -> o.id.equals(opcionId)).findFirst()
                 .orElseThrow(() -> new ReglaNegocio("La opción no pertenece a la pregunta."));
@@ -158,7 +159,7 @@ public class ParticipacionServicio {
     public Contratos.ParticipacionVista deshacer(Usuario estudiante, Long id) {
         proxy.participar(estudiante);
         Participacion participacion = enCurso(estudiante, id);
-        if (cerrarSiVencio(participacion, LocalDateTime.now())) return vista(participacion, true);
+        if (cerrarSiVencio(participacion, Hora.ahora())) return vista(participacion, true);
         ComandoRespuesta comando = historial.deshacer(participacion.id);
         comando.revertir(participacion, preguntaId -> buscarPregunta(participacion.sesion.caso, preguntaId));
         return vista(participacion, false);
@@ -206,7 +207,7 @@ public class ParticipacionServicio {
         }
         AutorizacionRepeticion permiso = new AutorizacionRepeticion();
         permiso.participacion = participacion;
-        permiso.fechaAutorizacion = LocalDateTime.now();
+        permiso.fechaAutorizacion = Hora.ahora();
         participacion.autorizacion = permiso;
         if (notificador != null) notificador.repeticion(participacion.estudiante, participacion.sesion);
         bitacora.avisar(participacion.estudiante, "SISTEMA", "Repetición autorizada",
@@ -298,7 +299,7 @@ public class ParticipacionServicio {
                         puntaje == null ? null : puntaje.doubleValue(), escenario.orden, peso));
             }
         }
-        LocalDateTime hasta = participacion.fin == null ? LocalDateTime.now() : participacion.fin;
+        LocalDateTime hasta = participacion.fin == null ? Hora.ahora() : participacion.fin;
         long usados = participacion.inicio == null ? 0 : Math.max(0, Duration.between(participacion.inicio, hasta).getSeconds());
         int total = preguntas.size();
         int progreso = ProgresoParticipacion.porcentaje(participacion, total);

@@ -8,6 +8,7 @@ import com.dilema.modelo.Usuario;
 import com.dilema.repo.ParticipacionRepo;
 import com.dilema.servicio.ParticipacionServicio;
 import com.dilema.servicio.ReglaNegocio;
+import com.dilema.tiempo.Hora;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -37,7 +38,7 @@ class CierreSesionTest {
         sesion.grupo.estudiantes.add(presente);
         sesion.grupo.estudiantes.add(ausente);
         Participacion enCurso = new Participacion();
-        enCurso.inicio = LocalDateTime.now().minusMinutes(10);
+        enCurso.inicio = Hora.ahora().minusMinutes(10);
         when(repo.findByEstudianteIdAndSesionId(2L, 4L)).thenReturn(List.of(enCurso));
         when(repo.findByEstudianteIdAndSesionId(3L, 4L)).thenReturn(List.of());
 
@@ -64,7 +65,7 @@ class CierreSesionTest {
         ParticipacionServicio servicio = mock(ParticipacionServicio.class);
         ParticipacionRepo repo = mock(ParticipacionRepo.class);
         SesionCaso sesion = sesionEnCurso();
-        sesion.fin = LocalDateTime.now().minusDays(2);
+        sesion.fin = Hora.ahora().minusDays(2);
         when(repo.findByEstudianteIdAndSesionId(2L, 4L)).thenReturn(List.of());
         sesion.grupo.estudiantes.add(estudiante(2L));
 
@@ -80,7 +81,7 @@ class CierreSesionTest {
         ParticipacionServicio servicio = mock(ParticipacionServicio.class);
         ParticipacionRepo repo = mock(ParticipacionRepo.class);
         SesionCaso sesion = sesionEnCurso();
-        sesion.fin = LocalDateTime.now().plusHours(2);
+        sesion.fin = Hora.ahora().plusHours(2);
         new CierrePorFecha(servicio, repo).cerrar(sesion, List.of());
         verify(repo, never()).save(org.mockito.ArgumentMatchers.any());
         assertNull(sesion.cierreReal);
@@ -95,8 +96,8 @@ class CierreSesionTest {
         sesion.id = 4L;
         sesion.caso = caso;
         sesion.grupo = grupo;
-        sesion.inicioReal = LocalDateTime.now().minusHours(1);
-        sesion.fin = LocalDateTime.now().plusHours(1);
+        sesion.inicioReal = Hora.ahora().minusHours(1);
+        sesion.fin = Hora.ahora().plusHours(1);
         return sesion;
     }
 

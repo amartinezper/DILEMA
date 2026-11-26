@@ -9,12 +9,12 @@ import com.dilema.repo.ParticipacionRepo;
 import com.dilema.repo.SesionEstudianteRepo;
 import com.dilema.repo.SesionRepo;
 import com.dilema.repo.UsuarioRepo;
+import com.dilema.tiempo.Hora;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -196,7 +196,7 @@ class AuthServicioTest {
         sesion.id = 7L;
         sesion.caso = caso;
         sesion.toleranciaMin = 30;
-        if (iniciada) sesion.inicioReal = LocalDateTime.now();
+        if (iniciada) sesion.inicioReal = Hora.ahora();
         return sesion;
     }
 }

@@ -13,6 +13,7 @@ import com.dilema.repo.UsuarioRepo;
 import com.dilema.servicio.programacion.FachadaAgendamiento;
 import com.dilema.servicio.programacion.NotificadorConvocatoria;
 import com.dilema.servicio.programacion.PadronConvocatoria;
+import com.dilema.tiempo.Hora;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -202,7 +203,7 @@ class AcademiaServicioTest {
     @DisplayName("cierra automáticamente las sesiones vencidas")
     void cierraAutomaticamenteSesionesVencidas() {
         SesionCaso sesion = sesionAbierta();
-        sesion.fin = LocalDateTime.now().minusDays(2);
+        sesion.fin = Hora.ahora().minusDays(2);
         when(sesiones.findByCierreRealIsNull()).thenReturn(List.of(sesion));
         servicio.cerrarVencidas();
         assertNotNull(sesion.cierreReal);
@@ -251,9 +252,9 @@ class AcademiaServicioTest {
         sesion.codigo = "DL-AB12";
         sesion.caso = caso;
         sesion.grupo = grupo();
-        sesion.inicio = LocalDateTime.now().minusHours(1);
-        sesion.fin = LocalDateTime.now().plusHours(1);
-        sesion.inicioReal = LocalDateTime.now().minusMinutes(30);
+        sesion.inicio = Hora.ahora().minusHours(1);
+        sesion.fin = Hora.ahora().plusHours(1);
+        sesion.inicioReal = Hora.ahora().minusMinutes(30);
         sesion.tiempoMaxMin = 40;
         sesion.toleranciaMin = 15;
         return sesion;

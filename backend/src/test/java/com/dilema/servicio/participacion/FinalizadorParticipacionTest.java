@@ -5,6 +5,7 @@ import com.dilema.modelo.Participacion;
 import com.dilema.modelo.SesionCaso;
 import com.dilema.modelo.Usuario;
 import com.dilema.servicio.BitacoraServicio;
+import com.dilema.tiempo.Hora;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +40,7 @@ class FinalizadorParticipacionTest {
     void noVuelveACerrarIntentoYaFinalizado() {
         BitacoraServicio bitacora = mock(BitacoraServicio.class);
         Participacion participacion = enCurso();
-        participacion.fin = LocalDateTime.now();
+        participacion.fin = Hora.ahora();
         new FinalizadorParticipacion.PorLimite(bitacora, p -> new BigDecimal("1.0")).finalizar(participacion);
         assertNull(participacion.nota());
         verifyNoInteractions(bitacora);
@@ -50,8 +51,8 @@ class FinalizadorParticipacionTest {
     void cierrePorLimiteNoPasaDelFinDeSesion() {
         BitacoraServicio bitacora = mock(BitacoraServicio.class);
         Participacion participacion = enCurso();
-        participacion.inicio = LocalDateTime.now().minusMinutes(5);
-        participacion.sesion.fin = LocalDateTime.now().minusMinutes(1);
+        participacion.inicio = Hora.ahora().minusMinutes(5);
+        participacion.sesion.fin = Hora.ahora().minusMinutes(1);
         participacion.sesion.tiempoMaxMin = 40;
         new FinalizadorParticipacion.PorLimite(bitacora, p -> new BigDecimal("2.0")).finalizar(participacion);
         assertEquals(participacion.sesion.fin, participacion.fin);
@@ -66,12 +67,12 @@ class FinalizadorParticipacionTest {
         SesionCaso sesion = new SesionCaso();
         sesion.caso = caso;
         sesion.tiempoMaxMin = 40;
-        sesion.fin = LocalDateTime.now().plusHours(1);
+        sesion.fin = Hora.ahora().plusHours(1);
         Participacion participacion = new Participacion();
         participacion.id = 11L;
         participacion.estudiante = estudiante;
         participacion.sesion = sesion;
-        participacion.inicio = LocalDateTime.now().minusMinutes(5);
+        participacion.inicio = Hora.ahora().minusMinutes(5);
         return participacion;
     }
 }

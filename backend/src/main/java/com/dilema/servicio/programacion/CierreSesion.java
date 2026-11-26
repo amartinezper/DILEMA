@@ -9,8 +9,8 @@ import com.dilema.servicio.BitacoraServicio;
 import com.dilema.servicio.ParticipacionServicio;
 import com.dilema.servicio.evaluacion.CalificacionParcial;
 import com.dilema.servicio.evaluacion.SujetoNotificador;
+import com.dilema.tiempo.Hora;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,7 +54,7 @@ public abstract class CierreSesion {
                 if (bitacora != null) SujetoNotificador.publicarNota(ausencia, bitacora);
             }
         }
-        sesion.cierreReal = LocalDateTime.now();
+        sesion.cierreReal = Hora.ahora();
     }
 
     protected abstract boolean puedeCerrar(SesionCaso sesion);

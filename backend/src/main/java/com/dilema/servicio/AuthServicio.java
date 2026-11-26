@@ -8,6 +8,7 @@ import com.dilema.repo.ParticipacionRepo;
 import com.dilema.repo.SesionEstudianteRepo;
 import com.dilema.repo.SesionRepo;
 import com.dilema.repo.UsuarioRepo;
+import com.dilema.tiempo.Hora;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -123,7 +124,7 @@ public class AuthServicio {
                 throw new ReglaNegocio("La sesión todavía no ha sido iniciada por el docente.");
             }
             boolean yaParticipa = !participaciones.findByEstudianteIdAndSesionId(usuario.id, sesion.id).isEmpty();
-            LocalDateTime ahora = LocalDateTime.now();
+            LocalDateTime ahora = Hora.ahora();
             if (sesion.estado() == Catalogo.EstadoSesion.EN_CURSO && !yaParticipa) {
                 if (!sesion.ventanaAbierta(ahora)) {
                     throw new ReglaNegocio("Esta convocatoria ya terminó. La fecha de cierre pasó y ya no puedes entrar con este código.");
