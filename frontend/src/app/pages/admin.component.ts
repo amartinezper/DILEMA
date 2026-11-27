@@ -168,7 +168,7 @@ type FiltroCuenta = 'todos' | 'docentes' | 'admin' | 'inactivos';
                   <td class="tm-estado"><span class="adm-estado" [class.inactiva]="usuario.activo === false"><i aria-hidden="true"></i>{{ usuario.activo === false ? 'Inactiva' : 'Activa' }}</span></td>
                   <td class="derecha tm-accion">
                     @if (usuario.id === yo()) {
-                      <span class="gris">Tu cuenta</span>
+                      <a class="adm-enlace" [routerLink]="['/admin/usuarios', usuario.id, 'editar']">Editar <span aria-hidden="true">›</span></a>
                     } @else {
                       <div class="adm-acciones-celda">
                         @if (usuario.rol === 'PROFESOR') {
@@ -179,6 +179,7 @@ type FiltroCuenta = 'todos' | 'docentes' | 'admin' | 'inactivos';
                             [attr.aria-label]="'Más acciones para ' + usuario.nombre" (click)="alternarMenu(usuario.id, $event)">⋯</button>
                           @if (menu() === usuario.id) {
                             <div class="adm-menu-lista" role="menu">
+                              <button type="button" role="menuitem" (click)="editar(usuario.id)">Editar</button>
                               <button type="button" role="menuitem" (click)="activo(usuario.id, usuario.activo === false)">
                                 {{ usuario.activo === false ? 'Activar' : 'Desactivar' }}</button>
                             </div>
@@ -212,6 +213,7 @@ export class UsuariosComponent {
   /** Cuenta cuyo menú "⋯" está abierto. */
   menu = signal<number | null>(null);
   private http = inject(HttpClient);
+  private router = inject(Router);
   private filtroGlobal = inject(BusquedaService);
   private auth = inject(AuthService);
   usuarios = signal<Usuario[]>([]);
@@ -253,6 +255,10 @@ export class UsuariosComponent {
   alternarMenu(id: number, evento: Event) {
     evento.stopPropagation();
     this.menu.set(this.menu() === id ? null : id);
+  }
+  editar(id: number) {
+    this.menu.set(null);
+    this.router.navigate(['/admin/usuarios', id, 'editar']);
   }
   activo(id: number, activo: boolean) {
     this.menu.set(null);
@@ -442,6 +448,7 @@ type FiltroEstudiante = 'todos' | 'activos' | 'inactivos';
                         [attr.aria-label]="'Cambiar estado de ' + estudiante.nombre" (click)="alternarMenu(estudiante.id, $event)">⋯</button>
                       @if (menu() === estudiante.id) {
                         <div class="adm-menu-lista" role="menu">
+                          <button type="button" role="menuitem" (click)="editar(estudiante.id)">Editar</button>
                           <button type="button" role="menuitem" (click)="activo(estudiante.id, estudiante.activo === false)">
                             {{ estudiante.activo === false ? 'Activar' : 'Desactivar' }}</button>
                         </div>
@@ -472,6 +479,7 @@ export class EstudiantesComponent {
   pagina = signal(1);
   menu = signal<number | null>(null);
   private http = inject(HttpClient);
+  private router = inject(Router);
   private filtroGlobal = inject(BusquedaService);
   estudiantes = signal<Usuario[]>([]);
   error = signal('');
@@ -505,6 +513,10 @@ export class EstudiantesComponent {
     if (this.estudiantes().length === 0) return 'Todavía no hay estudiantes. Da de alta la primera cuenta.';
     return 'No hay estudiantes en este estado.';
   }
+  editar(id: number) {
+    this.menu.set(null);
+    this.router.navigate(['/admin/estudiantes', id]);
+  }
   activo(id: number, activo: boolean) {
     this.menu.set(null);
     this.http.post<Usuario>(`/api/admin/usuarios/${id}/activo`, { activo }).subscribe({
@@ -515,6 +527,71 @@ export class EstudiantesComponent {
   private cargar() {
     this.http.get<Usuario[]>('/api/admin/estudiantes').subscribe({
       next: (dato) => this.estudiantes.set(dato),
+      error: (falla) => this.error.set(mensajeError(falla))
+    });
+  }
+}
+
+@Component({
+  selector: 'app-editar-cuenta',
+  imports: [MarcoDocenteComponent, FormsModule, RouterLink],
+  template: `
+    <app-marco-docente [enlaces]="enlaces" inicio="/admin" [descripcion]="descripcion()">
+      <a class="adm-volver" [routerLink]="volver()"><span aria-hidden="true">‹</span> {{ volverTexto() }}</a>
+      <article class="adm-tarjeta adm-form">
+        <h2>Datos de la cuenta</h2>
+        <div class="adm-campos">
+          <label class="adm-campo"><span>Nombre completo</span><input name="nombre" [(ngModel)]="nombre" placeholder="Nombre y apellido" /></label>
+          <label class="adm-campo"><span>Correo electrónico</span><input name="email" [(ngModel)]="email" placeholder="correo@institucion.edu" /></label>
+          @if (rol() !== 'ESTUDIANTE') {
+            <label class="adm-campo"><span>Contraseña nueva</span>
+              <input name="clave" [(ngModel)]="clave" type="password" autocomplete="new-password" placeholder="En blanco no se cambia" />
+            </label>
+          }
+        </div>
+        @if (error()) { <p class="error">{{ error() }}</p> }
+        <div class="adm-form-pie">
+          <a class="adm-boton-contorno" [routerLink]="volver()">Cancelar</a>
+          <button class="adm-boton" type="button" (click)="guardar()">Guardar</button>
+        </div>
+      </article>
+    </app-marco-docente>
+  `
+})
+export class EditarCuentaComponent {
+  enlaces = enlaces;
+  private http = inject(HttpClient);
+  private router = inject(Router);
+  private ruta = inject(ActivatedRoute);
+  nombre = '';
+  email = '';
+  clave = '';
+  rol = signal('');
+  error = signal('');
+  private id = 0;
+  constructor() {
+    this.id = Number(this.ruta.snapshot.paramMap.get('id'));
+    this.http.get<Usuario>(`/api/admin/usuarios/${this.id}`).subscribe({
+      next: (cuenta) => {
+        this.nombre = cuenta.nombre;
+        this.email = cuenta.email;
+        this.rol.set(cuenta.rol);
+      },
+      error: (falla) => this.error.set(mensajeError(falla))
+    });
+  }
+  private deEstudiante() { return this.ruta.snapshot.routeConfig?.path?.startsWith('admin/estudiantes') ?? false; }
+  volver() { return this.deEstudiante() ? '/admin/estudiantes' : '/admin/usuarios'; }
+  volverTexto() { return this.deEstudiante() ? 'Volver a estudiantes' : 'Volver a docentes'; }
+  descripcion() {
+    return this.rol() === 'ESTUDIANTE'
+      ? 'Corrige el nombre y el correo. El estudiante sigue entrando sin contraseña.'
+      : 'Corrige el nombre y el correo. La contraseña solo cambia si escribes una nueva.';
+  }
+  guardar() {
+    const clave = this.rol() === 'ESTUDIANTE' ? '' : this.clave;
+    this.http.put(`/api/admin/usuarios/${this.id}`, { nombre: this.nombre, email: this.email, clave }).subscribe({
+      next: () => this.router.navigateByUrl(this.volver()),
       error: (falla) => this.error.set(mensajeError(falla))
     });
   }

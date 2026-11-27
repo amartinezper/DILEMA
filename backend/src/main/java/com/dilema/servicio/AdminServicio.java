@@ -42,6 +42,48 @@ public class AdminServicio {
         return cuentas.stream().map(mapeador::usuario).toList();
     }
 
+    @Transactional(readOnly = true)
+    public Contratos.UsuarioVista cuenta(Usuario admin, Long id) {
+        proxy.gestionarUsuarios(admin);
+        return mapeador.usuario(buscar(id));
+    }
+
+    /**
+     * Corrige nombre y correo de una cuenta ya creada. No cambia el rol ni vuelve a nacer la cuenta,
+     * para no borrar los permisos que ya tiene. La clave solo se reemplaza si viene escrita, y nunca en un estudiante.
+     */
+    @Transactional
+    public Contratos.UsuarioVista actualizar(Usuario admin, Long id, Contratos.DatosCuentaIn entrada) {
+        proxy.gestionarUsuarios(admin);
+        Usuario cuenta = buscar(id);
+        if (entrada.nombre() == null || entrada.nombre().isBlank() || entrada.email() == null || entrada.email().isBlank()) {
+            throw new ReglaNegocio("Indica nombre y correo institucional.");
+        }
+        String correo = entrada.email().trim().toLowerCase();
+        if (!correo.contains("@") || correo.length() < 5) {
+            throw new ReglaNegocio("Indica un correo institucional válido.");
+        }
+        var ocupado = usuarios.findByEmailIgnoreCase(correo);
+        if (ocupado.isPresent() && ocupado.get().id != null && !ocupado.get().id.equals(cuenta.id)) {
+            throw new ReglaNegocio("Ya existe una cuenta con ese correo.");
+        }
+        cuenta.nombre = entrada.nombre().trim();
+        cuenta.email = correo;
+        String clave = entrada.clave() == null ? "" : entrada.clave().trim();
+        if (!clave.isEmpty()) {
+            if (cuenta.rol == Catalogo.Rol.ESTUDIANTE) {
+                throw new ReglaNegocio("El estudiante entra sin contraseña.");
+            }
+            if (clave.length() < 6) {
+                throw new ReglaNegocio("La clave debe tener al menos 6 caracteres.");
+            }
+            cuenta.contrasena = cifrado.encode(clave);
+            tokens.revocarUsuario(cuenta.id);
+        }
+        usuarios.save(cuenta);
+        return mapeador.usuario(cuenta);
+    }
+
     /** El administrador crea docentes. El estudiante se da de alta en {@link #matricular}. */
     @Transactional
     public Contratos.UsuarioVista crear(Usuario admin, Contratos.UsuarioIn entrada) {
@@ -119,6 +161,10 @@ public class AdminServicio {
     public List<Contratos.GrupoVista> grupos(Usuario admin) {
         proxy.gestionarUsuarios(admin);
         return grupos.findAll().stream().map(mapeador::grupo).toList();
+    }
+
+    private Usuario buscar(Long id) {
+        return usuarios.findById(id).orElseThrow(() -> new NoEncontrado("Cuenta no encontrada."));
     }
 
     private Catalogo.Rol rolDe(String texto) {

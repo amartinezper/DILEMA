@@ -226,6 +226,16 @@ public class ApiControlador {
         return admin.crear(admin(request), cuerpo);
     }
 
+    @GetMapping("/admin/usuarios/{id}")
+    Contratos.UsuarioVista cuenta(@PathVariable Long id, HttpServletRequest request) {
+        return admin.cuenta(admin(request), id);
+    }
+
+    @PutMapping("/admin/usuarios/{id}")
+    Contratos.UsuarioVista actualizar(@PathVariable Long id, @RequestBody Contratos.DatosCuentaIn cuerpo, HttpServletRequest request) {
+        return admin.actualizar(admin(request), id, cuerpo);
+    }
+
     @PostMapping("/admin/usuarios/{id}/permisos")
     Contratos.UsuarioVista permiso(@PathVariable Long id, @RequestBody Contratos.PermisosIn cuerpo, HttpServletRequest request) {
         return admin.permiso(admin(request), id, cuerpo.permisos());

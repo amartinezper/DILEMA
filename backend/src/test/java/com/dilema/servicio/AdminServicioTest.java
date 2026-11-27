@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -24,6 +25,7 @@ class AdminServicioTest {
     private UsuarioRepo usuarios;
     private FabricaCuentas fabrica;
     private PasswordEncoder cifrado;
+    private Tokens tokens;
     private AdminServicio servicio;
     private Usuario admin;
 
@@ -33,7 +35,8 @@ class AdminServicioTest {
         GrupoRepo grupos = mock(GrupoRepo.class);
         fabrica = mock(FabricaCuentas.class);
         cifrado = mock(PasswordEncoder.class);
-        servicio = new AdminServicio(usuarios, grupos, new ProxyOperacion(), new Mapeador(), fabrica, cifrado, mock(Tokens.class));
+        tokens = mock(Tokens.class);
+        servicio = new AdminServicio(usuarios, grupos, new ProxyOperacion(), new Mapeador(), fabrica, cifrado, tokens);
         admin = new Usuario();
         admin.id = 1L;
         admin.nombre = "Admin";
@@ -128,6 +131,77 @@ class AdminServicioTest {
         assertEquals(false, vista.activo());
         assertEquals(false, activo.activo);
         assertEquals(2, servicio.estudiantes(admin).size());
+    }
+
+    @Test
+    @DisplayName("corrige nombre y correo y conserva la clave si el campo viene vacío")
+    void actualizaSinCambiarClave() {
+        Usuario docente = cuenta(8L, Catalogo.Rol.PROFESOR, "d@psicosim.edu");
+        docente.contrasena = "vieja";
+        when(usuarios.findById(8L)).thenReturn(Optional.of(docente));
+        when(usuarios.findByEmailIgnoreCase("nuevo@psicosim.edu")).thenReturn(Optional.empty());
+        when(usuarios.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Contratos.UsuarioVista vista = servicio.actualizar(admin, 8L,
+                new Contratos.DatosCuentaIn("Nombre Nuevo", "nuevo@psicosim.edu", "  "));
+
+        assertEquals("Nombre Nuevo", vista.nombre());
+        assertEquals("nuevo@psicosim.edu", docente.email);
+        assertEquals("vieja", docente.contrasena);
+        assertEquals(Catalogo.Rol.PROFESOR, docente.rol);
+        verify(cifrado, never()).encode(any());
+        verify(tokens, never()).revocarUsuario(any());
+    }
+
+    @Test
+    @DisplayName("rechaza el correo que ya usa otra cuenta")
+    void rechazaCorreoDeOtraCuenta() {
+        Usuario docente = cuenta(8L, Catalogo.Rol.PROFESOR, "d@psicosim.edu");
+        Usuario otra = cuenta(9L, Catalogo.Rol.PROFESOR, "otra@psicosim.edu");
+        when(usuarios.findById(8L)).thenReturn(Optional.of(docente));
+        when(usuarios.findByEmailIgnoreCase("otra@psicosim.edu")).thenReturn(Optional.of(otra));
+
+        assertEquals("Ya existe una cuenta con ese correo.",
+                assertThrows(ReglaNegocio.class, () -> servicio.actualizar(admin, 8L,
+                        new Contratos.DatosCuentaIn("Docente", "otra@psicosim.edu", null))).getMessage());
+    }
+
+    @Test
+    @DisplayName("cambia la clave del docente y revoca sus tokens")
+    void cambiaClaveDelDocente() {
+        Usuario docente = cuenta(8L, Catalogo.Rol.PROFESOR, "d@psicosim.edu");
+        docente.contrasena = "vieja";
+        when(usuarios.findById(8L)).thenReturn(Optional.of(docente));
+        when(usuarios.findByEmailIgnoreCase("d@psicosim.edu")).thenReturn(Optional.of(docente));
+        when(cifrado.encode("nueva1")).thenReturn("hash-nuevo");
+        when(usuarios.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        servicio.actualizar(admin, 8L, new Contratos.DatosCuentaIn("Docente", "d@psicosim.edu", "nueva1"));
+
+        assertEquals("hash-nuevo", docente.contrasena);
+        verify(tokens).revocarUsuario(8L);
+    }
+
+    @Test
+    @DisplayName("rechaza ponerle contraseña a un estudiante")
+    void rechazaClaveEnEstudiante() {
+        Usuario alumno = estudiante(4L, true);
+        when(usuarios.findById(4L)).thenReturn(Optional.of(alumno));
+        when(usuarios.findByEmailIgnoreCase("ana@psicosim.edu")).thenReturn(Optional.of(alumno));
+
+        assertEquals("El estudiante entra sin contraseña.",
+                assertThrows(ReglaNegocio.class, () -> servicio.actualizar(admin, 4L,
+                        new Contratos.DatosCuentaIn("Ana", "ana@psicosim.edu", "secreta"))).getMessage());
+    }
+
+    private Usuario cuenta(long id, Catalogo.Rol rol, String email) {
+        Usuario cuenta = new Usuario();
+        cuenta.id = id;
+        cuenta.nombre = "Docente";
+        cuenta.email = email;
+        cuenta.rol = rol;
+        cuenta.permisos = new java.util.HashSet<>();
+        return cuenta;
     }
 
     private Usuario estudiante(long id, boolean activo) {

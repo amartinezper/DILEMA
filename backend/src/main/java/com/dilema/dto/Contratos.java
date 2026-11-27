@@ -41,6 +41,8 @@ public final class Contratos {
     public record EscenarioVista(String nombre, String contexto) {}
 
     public record UsuarioIn(String nombre, String email, String clave, String rol) {}
+    /** Corrección de una cuenta ya creada. La clave vacía conserva la actual. El rol no viaja aquí. */
+    public record DatosCuentaIn(String nombre, String email, String clave) {}
     public record PermisosIn(List<String> permisos) {}
     public record ActivoIn(boolean activo) {}
     public record PerfilIn(String nombre, String email, String claveActual, String claveNueva) {}
