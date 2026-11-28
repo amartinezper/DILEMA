@@ -88,23 +88,29 @@ public class AdminServicio {
     @Transactional
     public Contratos.UsuarioVista crear(Usuario admin, Contratos.UsuarioIn entrada) {
         proxy.gestionarUsuarios(admin);
-        if (entrada.nombre() == null || entrada.email() == null) {
+        if (entrada.nombre() == null || entrada.nombre().isBlank()
+                || entrada.email() == null || entrada.email().isBlank()) {
             throw new ReglaNegocio("Indica nombre y correo institucional.");
         }
-        if (usuarios.findByEmailIgnoreCase(entrada.email().trim()).isPresent()) {
+        String correo = entrada.email().trim().toLowerCase();
+        if (!correo.contains("@") || correo.length() < 5) {
+            throw new ReglaNegocio("Indica un correo institucional válido.");
+        }
+        if (usuarios.findByEmailIgnoreCase(correo).isPresent()) {
             throw new ReglaNegocio("Ya existe una cuenta con ese correo.");
         }
         Catalogo.Rol rol = rolDe(entrada.rol());
         if (rol == Catalogo.Rol.ESTUDIANTE) {
             throw new ReglaNegocio("El estudiante se da de alta sin contraseña, en su propia lista.");
         }
-        if (entrada.clave() == null || entrada.clave().length() < 6) {
+        String clave = entrada.clave() == null ? "" : entrada.clave().trim();
+        if (clave.length() < 6) {
             throw new ReglaNegocio("La clave debe tener al menos 6 caracteres.");
         }
         Usuario nuevo = rol == Catalogo.Rol.PROFESOR ? fabrica.nuevoDocente() : fabrica.nuevoAdministrador();
         nuevo.nombre = entrada.nombre().trim();
-        nuevo.email = entrada.email().trim().toLowerCase();
-        nuevo.contrasena = cifrado.encode(entrada.clave());
+        nuevo.email = correo;
+        nuevo.contrasena = cifrado.encode(clave);
         usuarios.save(nuevo);
         return mapeador.usuario(nuevo);
     }

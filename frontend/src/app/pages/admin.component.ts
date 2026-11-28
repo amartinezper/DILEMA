@@ -282,26 +282,28 @@ export class UsuariosComponent {
       <div class="adm-ficha">
         <article class="adm-tarjeta adm-form">
           <h2>Datos de la cuenta</h2>
-          <div class="adm-campos">
-            <label class="adm-campo"><span>Nombre completo</span><input [(ngModel)]="nombre" placeholder="Nombre y apellido" /></label>
-            <label class="adm-campo"><span>Correo electrónico</span><input [(ngModel)]="email" placeholder="docente@institucion.edu" /></label>
-            <label class="adm-campo"><span>Rol</span>
-              <select [(ngModel)]="rol">
-                <option value="PROFESOR">Docente</option>
-                <option value="ADMIN">Administración</option>
-              </select>
+          <form (ngSubmit)="crear()">
+            <div class="adm-campos">
+              <label class="adm-campo"><span>Nombre completo</span><input name="nombre" [(ngModel)]="nombre" placeholder="Nombre y apellido" required /></label>
+              <label class="adm-campo"><span>Correo electrónico</span><input name="email" type="email" [(ngModel)]="email" placeholder="docente@institucion.edu" required /></label>
+              <label class="adm-campo"><span>Rol</span>
+                <select name="rol" [(ngModel)]="rol" required>
+                  <option value="PROFESOR">Docente</option>
+                  <option value="ADMIN">Administración</option>
+                </select>
+              </label>
+              <label class="adm-campo"><span>Contraseña</span><input name="clave" [(ngModel)]="clave" type="password" autocomplete="new-password" required minlength="6" /></label>
+            </div>
+            <label class="adm-check">
+              <input type="checkbox" disabled [checked]="true" />
+              <span>Visualizar queda activo desde el primer ingreso.</span>
             </label>
-            <label class="adm-campo"><span>Contraseña</span><input [(ngModel)]="clave" type="password" autocomplete="new-password" /></label>
-          </div>
-          <label class="adm-check">
-            <input type="checkbox" disabled [checked]="true" />
-            <span>Visualizar queda activo desde el primer ingreso.</span>
-          </label>
-          @if (error()) { <p class="error">{{ error() }}</p> }
-          <div class="adm-form-pie">
-            <a class="adm-boton-contorno" routerLink="/admin/usuarios">Cancelar</a>
-            <button class="adm-boton" type="button" (click)="crear()">Guardar</button>
-          </div>
+            @if (error()) { <p class="error">{{ error() }}</p> }
+            <div class="adm-form-pie">
+              <a class="adm-boton-contorno" routerLink="/admin/usuarios">Cancelar</a>
+              <button class="adm-boton" type="submit">Guardar</button>
+            </div>
+          </form>
         </article>
         <aside class="adm-tarjeta adm-pasos">
           <h2>Después de crearla</h2>

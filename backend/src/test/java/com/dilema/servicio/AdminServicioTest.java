@@ -67,6 +67,27 @@ class AdminServicioTest {
     }
 
     @Test
+    @DisplayName("exige nombre, correo, rol y clave al crear la cuenta")
+    void exigeDatosAlCrearDocente() {
+        when(usuarios.findByEmailIgnoreCase("docente@psicosim.edu")).thenReturn(Optional.empty());
+        assertEquals("Indica nombre y correo institucional.",
+                assertThrows(ReglaNegocio.class, () -> servicio.crear(admin,
+                        new Contratos.UsuarioIn("  ", "docente@psicosim.edu", "secreta", "PROFESOR"))).getMessage());
+        assertEquals("Indica nombre y correo institucional.",
+                assertThrows(ReglaNegocio.class, () -> servicio.crear(admin,
+                        new Contratos.UsuarioIn("Docente", "  ", "secreta", "PROFESOR"))).getMessage());
+        assertEquals("Indica un correo institucional válido.",
+                assertThrows(ReglaNegocio.class, () -> servicio.crear(admin,
+                        new Contratos.UsuarioIn("Docente", "sin-arroba", "secreta", "PROFESOR"))).getMessage());
+        assertEquals("Indica el rol.",
+                assertThrows(ReglaNegocio.class, () -> servicio.crear(admin,
+                        new Contratos.UsuarioIn("Docente", "docente@psicosim.edu", "secreta", null))).getMessage());
+        assertEquals("La clave debe tener al menos 6 caracteres.",
+                assertThrows(ReglaNegocio.class, () -> servicio.crear(admin,
+                        new Contratos.UsuarioIn("Docente", "docente@psicosim.edu", "  ", "PROFESOR"))).getMessage());
+    }
+
+    @Test
     @DisplayName("solo administra permisos de un docente")
     void permisos() {
         Usuario docente = new Usuario();
